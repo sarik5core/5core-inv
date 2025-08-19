@@ -1170,6 +1170,8 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-pls', [ListingPlsController::class, 'listingPls'])->name('listing.pls');
     Route::get('/listing_pls/view-data', [ListingPlsController::class, 'getViewListingPlsData']);
     Route::post('/listing_pls/save-status', [ListingPlsController::class, 'saveStatus']);
+    Route::post('/listing_pls/import', [ListingPlsController::class, 'import'])->name('listing_pls.import');
+    Route::get('/listing_pls/export', [ListingPlsController::class, 'export'])->name('listing_pls.export');
 
     //  AutoDS
     Route::get('/zero-autods', [AutoDSZeroController::class, 'autoDSZeroview'])->name('zero.autods');
@@ -1178,6 +1180,8 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-autods', [ListingAutoDSController::class, 'listingAutoDS'])->name('listing.autods');
     Route::get('/listing_autods/view-data', [ListingAutoDSController::class, 'getViewListingAutoDSData']);
     Route::post('/listing_autods/save-status', [ListingAutoDSController::class, 'saveStatus']);
+    Route::post('/listing_autods/import', [ListingAutoDSController::class, 'import'])->name('listing_autods.import');
+    Route::get('/listing_autods/export', [ListingAutoDSController::class, 'export'])->name('listing_autods.export');
 
     // MercariWoShip
     Route::get('/zero-mercariwoship', [MercariWoShipZeroController::class, 'mercariWoShipZeroview'])->name('zero.mercariwoship');
@@ -1186,6 +1190,8 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-mercariwoship', [ListingMercariWoShipController::class, 'listingMercariWoShip'])->name('listing.mercariwoship');
     Route::get('/listing_mercariwoship/view-data', [ListingMercariWoShipController::class, 'getViewListingMercariWoShipData']);
     Route::post('/listing_mercariwoship/save-status', [ListingMercariWoShipController::class, 'saveStatus']);
+    Route::post('/listing_mercariwoship/import', [ListingMercariWoShipController::class, 'import'])->name('listing_mercariwoship.import');
+    Route::get('/listing_mercariwoship/export', [ListingMercariWoShipController::class, 'export'])->name('listing_mercariwoship.export');
 
     // Poshmark
     Route::get('/zero-poshmark', [PoshmarkZeroController::class, 'poshmarkZeroview'])->name('zero.poshmark');
@@ -1194,6 +1200,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-poshmark', [ListingPoshmarkController::class, 'listingPoshmark'])->name('listing.poshmark');
     Route::get('/listing_poshmark/view-data', [ListingPoshmarkController::class, 'getViewListingPoshmarkData']);
     Route::post('/listing_poshmark/save-status', [ListingPoshmarkController::class, 'saveStatus']);
+    Route::post('/listing_poshmark/import', [ListingPoshmarkController::class, 'import'])->name('listing_poshmark.import');
+    Route::get('/listing_poshmark/export', [ListingPoshmarkController::class, 'export'])->name('listing_poshmark.export');
+
+
 
     // Tiendamia
     Route::get('/zero-tiendamia', [TiendamiaZeroController::class, 'tiendamiaZeroview'])->name('zero.tiendamia');
@@ -1202,6 +1212,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-tiendamia', [ListingTiendamiaController::class, 'listingTiendamia'])->name('listing.tiendamia');
     Route::get('/listing_tiendamia/view-data', [ListingTiendamiaController::class, 'getViewListingTiendamiaData']);
     Route::post('/listing_tiendamia/save-status', [ListingTiendamiaController::class, 'saveStatus']);
+    Route::post('/listing_tiendamia/import', [ListingTiendamiaController::class, 'import'])->name('listing_tiendamia.import');
+    Route::get('/listing_tiendamia/export', [ListingTiendamiaController::class, 'export'])->name('listing_tiendamia.export');
+
+
 
     // Shein
     Route::get('/zero-shein', [SheinZeroController::class, 'sheinZeroview'])->name('zero.shein');
@@ -1210,6 +1224,9 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-shein', [ListingSheinController::class, 'listingShein'])->name('listing.shein');
     Route::get('/listing_shein/view-data', [ListingSheinController::class, 'getViewListingSheinData']);
     Route::post('/listing_shein/save-status', [ListingSheinController::class, 'saveStatus']);
+    Route::post('/listing_shein/import', [ListingSheinController::class, 'import'])->name('listing_shein.import');
+    Route::get('/listing_shein/export', [ListingSheinController::class, 'export'])->name('listing_shein.export');
+
     Route::get('sheinAnalysis', action: [SheinController::class, 'overallShein']);
     Route::get('/shein/view-data', [SheinController::class, 'getViewSheinData']);
     Route::get('sheinPricingCVR', [SheinController::class, 'sheinPricingCVR'])->name('shein.pricing.cvr');
@@ -1241,6 +1258,9 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-syncee', [ListingSynceeController::class, 'listingSyncee'])->name('listing.syncee');
     Route::get('/listing_syncee/view-data', [ListingSynceeController::class, 'getViewListingSynceeData']);
     Route::post('/listing_syncee/save-status', [ListingSynceeController::class, 'saveStatus']);
+    Route::post('/listing_syncee/import', [ListingSynceeController::class, 'import'])->name('listing_syncee.import');
+    Route::get('/listing_syncee/export', [ListingSynceeController::class, 'export'])->name('listing_syncee.export');
+
 
     // Offerup
     Route::get('/zero-offerup', [OfferupZeroController::class, 'offerupZeroview'])->name('zero.offerup');
@@ -1270,6 +1290,9 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-fbshop', [ListingFBShopController::class, 'listingFBShop'])->name('listing.fbshop');
     Route::get('/listing_fbshop/view-data', [ListingFBShopController::class, 'getViewListingFBShopData']);
     Route::post('/listing_fbshop/save-status', [ListingFBShopController::class, 'saveStatus']);
+    Route::post('/listing_fbshop/import', [ListingFBShopController::class, 'import'])->name('listing_fbshop.import');
+    Route::get('/listing_fbshop/export', [ListingFBShopController::class, 'export'])->name('listing_fbshop.export');
+
 
     // Instagram Shop
     Route::get('/zero-instagramshop', [InstagramShopZeroController::class, 'instagramShopZeroview'])->name('zero.instagramshop');
@@ -1278,6 +1301,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-instagramshop', [ListingInstagramShopController::class, 'listingInstagramShop'])->name('listing.instagramshop');
     Route::get('/listing_instagramshop/view-data', [ListingInstagramShopController::class, 'getViewListingInstagramShopData']);
     Route::post('/listing_instagramshop/save-status', [ListingInstagramShopController::class, 'saveStatus']);
+    Route::post('/listing_instagramshop/import', [ListingInstagramShopController::class, 'import'])->name('listing_instagramshop.import');
+    Route::get('/listing_instagramshop/export', [ListingInstagramShopController::class, 'export'])->name('listing_instagramshop.export');
+
+
 
     // listing Yamibuy
     Route::get('/zero-yamibuy', [YamibuyZeroController::class, 'yamibuyZeroview'])->name('zero.yamibuy');
@@ -1286,6 +1313,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-yamibuy', [ListingYamibuyController::class, 'listingYamibuy'])->name('listing.yamibuy');
     Route::get('/listing_yamibuy/view-data', [ListingYamibuyController::class, 'getViewListingYamibuyData']);
     Route::post('/listing_yamibuy/save-status', [ListingYamibuyController::class, 'saveStatus']);
+    Route::post('/listing_yamibuy/import', [ListingYamibuyController::class, 'import'])->name('listing_yamibuy.import');
+    Route::get('/listing_yamibuy/export', [ListingYamibuyController::class, 'export'])->name('listing_yamibuy.export');
+
+
 
     // listing DHGate
     Route::get('/zero-dhgate', [DHGateZeroController::class, 'dhgateZeroview'])->name('zero.dhgate');
@@ -1294,6 +1325,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-dhgate', [ListingDHGateController::class, 'listingDHGate'])->name('listing.dhgate');
     Route::get('/listing_dhgate/view-data', [ListingDHGateController::class, 'getViewListingDHGateData']);
     Route::post('/listing_dhgate/save-status', [ListingDHGateController::class, 'saveStatus']);
+    Route::post('/listing_dhgate/import', [ListingDHGateController::class, 'import'])->name('listing_dhgate.import');
+    Route::get('/listing_dhgate/export', [ListingDHGateController::class, 'export'])->name('listing_dhgate.export');
+
+
 
     // listing Walmart Canada
     Route::get('/zero-swgearexchange', [SWGearExchangeZeroController::class, 'swGearExchangeZeroview'])->name('zero.swgearexchange');
@@ -1302,6 +1337,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-swgearexchange', [ListingSWGearExchangeController::class, 'listingSWGearExchange'])->name('listing.swgearexchange');
     Route::get('/listing_swgearexchange/view-data', [ListingSWGearExchangeController::class, 'getViewListingSWGearExchangeData']);
     Route::post('/listing_swgearexchange/save-status', [ListingSWGearExchangeController::class, 'saveStatus']);
+    Route::post('/listing_swgearexchange/import', [ListingSWGearExchangeController::class, 'import'])->name('listing_swgearexchange.import');
+    Route::get('/listing_swgearexchange/export', [ListingSWGearExchangeController::class, 'export'])->name('listing_swgearexchange.export');
+
+
 
     // listing Bestbuy USA
     Route::get('/zero-bestbuyusa', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroview'])->name('zero.bestbuyusa');
@@ -1310,6 +1349,10 @@ Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
     Route::get('/listing-bestbuyusa', [ListingBestbuyUSAController::class, 'listingBestbuyUSA'])->name('listing.bestbuyusa');
     Route::get('/listing_bestbuyusa/view-data', [ListingBestbuyUSAController::class, 'getViewListingBestbuyUSAData']);
     Route::post('/listing_bestbuyusa/save-status', [ListingBestbuyUSAController::class, 'saveStatus']);
+    Route::post('/listing_bestbuyusa/import', [ListingBestbuyUSAController::class, 'import'])->name('listing_bestbuyusa.import');
+    Route::get('/listing_bestbuyusa/export', [ListingBestbuyUSAController::class, 'export'])->name('listing_bestbuyusa.export');
+
+
 
     //listing Master
     Route::get('/listing-master', [ListingMasterController::class, 'index'])->name('listingMaster');

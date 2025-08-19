@@ -1120,12 +1120,42 @@
                             </div>
                         </div>
 
-                        <!-- Search on right -->
-                        <div class="form-inline">
-                            <div class="form-group">
-                                <label for="search-input" class="mr-2">Search:</label>
+                        <div class="d-flex align-items-center mb-3 gap-2">
+
+                            <!-- Import/Export buttons -->
+                            <button type="button" class="btn btn-sm btn-primary mr-2" id="import-btn">Import</button>
+                            <!-- <button type="button" class="btn btn-sm btn-success mr-3" id="export-btn">Export</button> -->
+                            <a href="{{ route('listing_bestbuyusa.export') }}" class="btn btn-sm btn-success mr-3">Export</a>
+
+                            <!-- Search on right -->
+                            <div class="form-group mb-0 d-flex align-items-center ml-3">
+                                <label for="search-input" class="mr-2 mb-0">Search:</label>
                                 <input type="text" id="search-input" class="form-control form-control-sm"
                                     placeholder="Search all columns...">
+                            </div>
+                        </div>
+                    </div>
+
+                     <!-- Import Modal -->
+                    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Import Editable Fields</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+
+                                <a href="{{ asset('sample_excel/sample_listing_file.csv') }}" download class="btn btn-outline-secondary mb-3">📄 Download Sample File</a>
+
+                                <input type="file" id="importFile" name="file" accept=".xlsx,.xls,.csv" class="form-control" />
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="confirmImportBtn">Import</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -1464,6 +1494,42 @@
                 updatePaginationInfo();
                 $('#visible-rows').text(`Showing all ${$tbody.children().length} rows`);
             }
+
+             //open modal on click import button
+            $('#import-btn').on('click', function () {
+                $('#importModal').modal('show');
+            });
+
+
+            //import data
+            $(document).on('click', '#confirmImportBtn', function () {
+                let file = $('#importFile')[0].files[0];
+                if (!file) {
+                    alert('Please select a file to import.');
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: "{{ route('listing_bestbuyusa.import') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    success: function (response) {
+                        $('#importModal').modal('hide');
+                        $('#importFile').val('');
+                        showNotification('success', response.success);
+                        location.reload(); // refresh your DataTable
+                    },
+                    error: function (xhr) {
+                        showNotification('danger', xhr.responseJSON.error || 'Import failed');
+                    }
+                });
+            });
 
             // Helper function to create a table row
             function createTableRow(item, index) {

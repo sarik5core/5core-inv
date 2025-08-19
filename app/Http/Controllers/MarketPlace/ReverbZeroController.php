@@ -48,6 +48,17 @@ class ReverbZeroController extends Controller
         // Fetch bump, S bump, s price from reverb_view_data
         $reverbViewData = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
 
+        $extraValues = [];
+        foreach ($reverbViewData as $sku => $dataView) {
+            $value = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+            $extraValues[$sku] = [
+                'NR' => $value['NR'] ?? 'REQ',
+                'A_Z_Reason' => $value['A_Z_Reason'] ?? null,
+                'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? null,
+                'A_Z_ActionTaken' => $value['A_Z_ActionTaken'] ?? null,
+            ];
+        }
+
         // Process data from product master and shopify tables
         $processedData = [];
         $slNo = 1;
@@ -117,6 +128,7 @@ class ReverbZeroController extends Controller
                 $processedItem['R&A'] = $valuesArr['R&A'] ?? false;
 
                 // Fetch Reason/Action columns from ReverbViewData
+                $processedItem['NR'] = $extraValues[$sku]['NR'] ?? 'REQ';
                 $processedItem['A_Z_Reason'] = $valuesArr['A_Z_Reason'] ?? '';
                 $processedItem['A_Z_ActionRequired'] = $valuesArr['A_Z_ActionRequired'] ?? '';
                 $processedItem['A_Z_ActionTaken'] = $valuesArr['A_Z_ActionTaken'] ?? '';
@@ -126,6 +138,7 @@ class ReverbZeroController extends Controller
                 $processedItem['S_price'] = null;
                 $processedItem['R&A'] = false;
                 // Default Reason/Action columns
+                $processedItem['NR'] = 'REQ';
                 $processedItem['A_Z_Reason'] = '';
                 $processedItem['A_Z_ActionRequired'] = '';
                 $processedItem['A_Z_ActionTaken'] = '';
@@ -186,6 +199,12 @@ class ReverbZeroController extends Controller
         // 3. Fetch DobaDataView for those SKUs
         $dobaDataViews = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
 
+         // 4. Fetch ReverbProduct for those SKUs (only views = 0 ✅)
+        $reverbProducts = ReverbProduct::whereIn('sku', $skus)
+            ->where('views', 0)
+            ->get()
+            ->keyBy('sku');
+
         $result = [];
         foreach ($productMasters as $pm) {
             $sku = $pm->sku;
@@ -197,7 +216,7 @@ class ReverbZeroController extends Controller
             $ov_dil = ($inv > 0) ? round($ov_l30 / $inv, 4) : 0;
 
             // Only include rows where inv > 0
-            if ($inv > 0) {
+            if ($inv > 0 && isset($reverbProducts[$sku])) {
                 // Fetch DobaDataView values
                 $dobaView = $dobaDataViews[$sku] ?? null;
                 $value = $dobaView ? $dobaView->value : [];
@@ -205,13 +224,17 @@ class ReverbZeroController extends Controller
                     $value = json_decode($value, true) ?: [];
                 }
 
+                $nrValue = $value['NR'] ?? $value['nr'] ?? null;
+
                 $row = [
                     'parent' => $parent,
                     'sku' => $sku,
                     'inv' => $inv,
                     'ov_l30' => $ov_l30,
                     'ov_dil' => $ov_dil,
-                    'NR' => isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ',
+                    'NR' =>  ($nrValue && in_array(strtoupper($nrValue), ['REQ', 'NR']))
+                                ? strtoupper($nrValue)
+                                : 'REQ',
                     'A_Z_Reason' => $value['A_Z_Reason'] ?? '',
                     'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? '',
                     'A_Z_ActionTaken' => $value['A_Z_ActionTaken'] ?? '',

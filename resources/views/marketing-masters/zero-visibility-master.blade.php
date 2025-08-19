@@ -484,6 +484,15 @@
             background: none !important;
             border: none;
         }
+
+        #channelTable {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #channelTable th, #channelTable td {
+            text-align: center; /* optional */
+            vertical-align: middle;
+        }
     </style>
 @endsection
 
@@ -553,7 +562,7 @@
 
 
         <!-- Table Container -->
-        <div class="table-container" id="channelTableWrapper" style="display: none;">
+        <div class="table-container" id="channelTableWrapper">
             <!-- <div class="table-responsive" style="max-height: 500px; overflow: auto;"> -->
             <table class="table table-hover table-striped w-100" id="channelTable">
                 <thead class="table sticky-top bg-white">
