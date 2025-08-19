@@ -1,0 +1,382 @@
+<?php
+
+namespace App\Http\Controllers\MarketPlace;
+
+use App\Http\Controllers\ApiController;
+use App\Http\Controllers\Controller;
+use App\Models\MacyDataView;
+use App\Models\MacyProduct;
+use App\Models\MarketplacePercentage;
+use App\Models\ProductMaster;
+use App\Models\ShopifySku;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
+
+class MacyController extends Controller
+{
+    protected $apiController;
+
+    public function __construct(ApiController $apiController)
+    {
+        $this->apiController = $apiController;
+    }
+    public function macyView(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+
+        // Get percentage from cache or database
+        $percentage = Cache::remember('macys_marketplace_percentage', now()->addDays(30), function () {
+            $marketplaceData = MarketplacePercentage::where('marketplace', 'Macys')->first();
+            return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+        });
+
+        return view('market-places.macys', [
+            'mode' => $mode,
+            'demo' => $demo,
+            'macysPercentage' => $percentage
+        ]);
+    }
+
+
+    public function macyPricingCvr(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+
+        // Get percentage from cache or database
+        $percentage = Cache::remember('macys_marketplace_percentage', now()->addDays(30), function () {
+            $marketplaceData = MarketplacePercentage::where('marketplace', 'Macys')->first();
+            return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+        });
+
+        return view('market-places.macys_pricing_cvr', [
+            'mode' => $mode,
+            'demo' => $demo,
+            'macysPercentage' => $percentage
+        ]);
+    }
+
+
+    public function macyPricingIncreaseandDecrease(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+
+        // Get percentage from cache or database
+        $percentage = Cache::remember('macys_marketplace_percentage', now()->addDays(30), function () {
+            $marketplaceData = MarketplacePercentage::where('marketplace', 'Macys')->first();
+            return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+        });
+
+        return view('market-places.macys_pricing_increase_decrease', [
+            'mode' => $mode,
+            'demo' => $demo,
+            'macysPercentage' => $percentage
+        ]);
+    }
+
+    
+    public function getViewMacyData(Request $request)
+    {
+        $productMasters = ProductMaster::all();
+        $skus = $productMasters->pluck('sku')->toArray();
+
+        $shopifySkus = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $macyProducts = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+        $macyDataViews = MacyDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $sheetResponse = $this->apiController->fetchMacyListingData();
+        $sheetData = [];
+        if ($sheetResponse->getStatusCode() === 200) {
+            $sheetRaw = $sheetResponse->getData();
+            $sheetData = $sheetRaw->data ?? [];
+        }
+
+        $sheetSkuMap = collect($sheetData)
+            ->filter(function ($item) {
+                return !empty($item->{'(Child) sku'} ?? null);
+            })
+            ->keyBy(function ($item) {
+                return $item->{'(Child) sku'};
+            });
+
+        $processedData = $productMasters->map(function ($product) use ($shopifySkus, $macyProducts, $sheetSkuMap, $macyDataViews) {
+            $sku = $product->sku;
+
+            $product->INV = $shopifySkus->has($sku) ? $shopifySkus[$sku]->inv : 0;
+            $product->L30 = $shopifySkus->has($sku) ? $shopifySkus[$sku]->quantity : 0;
+            $product->m_l30 = $macyProducts->has($sku) ? $macyProducts[$sku]->m_l30 : null;
+            $product->m_l60 = $macyProducts->has($sku) ? $macyProducts[$sku]->m_l60 : null;
+            $product->price = $macyProducts->has($sku) ? $macyProducts[$sku]->price : null;
+            $product->sheet_data = $sheetSkuMap->has($sku) ? $sheetSkuMap[$sku] : null;
+
+            $product->NR = 'REQ';
+            $product->SPRICE = null;
+            $product->SPFT = null;
+            $product->SROI = null;
+            $product->Listed = null;
+            $product->APlus = null;
+
+            if ($macyDataViews->has($sku)) {
+                $value = $macyDataViews[$sku]->value;
+
+                // Decode if needed
+                if (!is_array($value)) {
+                    $value = json_decode($value, true);
+                }
+
+                if (is_array($value)) {
+                    $product->NR = $value['NR'] ?? 'REQ';
+                    $product->SPRICE = $value['SPRICE'] ?? null;
+                    $product->SPFT = $value['SPFT'] ?? null;
+                    $product->SROI = $value['SROI'] ?? null;
+                    $product->Listed = isset($value['Listed']) ? filter_var($value['Listed'], FILTER_VALIDATE_BOOLEAN) : null;
+                    $product->APlus = isset($value['APlus']) ? filter_var($value['APlus'], FILTER_VALIDATE_BOOLEAN) : null;
+                }
+            }
+
+
+            // 🟡 LP and SHIP extraction
+            $values = is_array($product->Values)
+                ? $product->Values
+                : (is_string($product->Values) ? json_decode($product->Values, true) : []);
+
+            $lp = 0;
+            foreach ($values as $k => $v) {
+                if (strtolower($k) === 'lp') {
+                    $lp = floatval($v);
+                    break;
+                }
+            }
+            if ($lp === 0 && isset($product->lp)) {
+                $lp = floatval($product->lp);
+            }
+
+            $ship = isset($values['ship']) ? floatval($values['ship']) : (isset($product->ship) ? floatval($product->ship) : 0);
+
+            // 🟡 Macy percentage (default 100%)
+            $percentage = Cache::remember(
+                'macy_marketplace_percentage',
+                now()->addDays(30),
+                function () {
+                    return MarketplacePercentage::where('marketplace', 'Macy')->value('percentage') ?? 100;
+                }
+            ) / 100;
+
+            $price = floatval($product->price ?? 0);
+            $units_ordered_l30 = floatval($product->m_l30 ?? 0);
+
+            // 🟢 Calculations
+            $product->Total_pft = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
+            $product->T_Sale_l30 = round($price * $units_ordered_l30, 2);
+            $product->PFT_percentage = round(
+                $price > 0 ? (($price * $percentage - $lp - $ship) / $price) * 100 : 0,
+                2
+            );
+            $product->ROI_percentage = round(
+                $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) * 100 : 0,
+                2
+            );
+            $product->T_COGS = round($lp * $units_ordered_l30, 2);
+            $product->LP_productmaster = $lp;
+            $product->Ship_productmaster = $ship;
+            $product->percentage = $percentage;
+
+            return $product;
+        })->values();
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'product_master_data' => $processedData,
+            'sheet_data' => $sheetData,
+            'status' => 200
+        ]);
+    }
+
+    // public function getViewMacyData(Request $request)
+    // {
+    //     // Fetch data from the Google Sheet using the ApiController method
+    //     $response = $this->apiController->fetchMacyListingData();
+
+    //     // Check if the response is successful
+    //     if ($response->getStatusCode() === 200) {
+    //         $data = $response->getData(); // Get the JSON data from the response
+
+    //         // Get all non-PARENT SKUs from the data to fetch from ShopifySku model
+    //         $skus = collect($data->data)
+    //             ->filter(function ($item) {
+    //                 $childSku = $item->{'(Child) sku'} ?? '';
+    //                 return !empty($childSku) && stripos($childSku, 'PARENT') === false;
+    //             })
+    //             ->pluck('(Child) sku')
+    //             ->unique()
+    //             ->toArray();
+
+    //         // Fetch Shopify inventory data for non-PARENT SKUs
+    //         $shopifyData = ShopifySku::whereIn('sku', $skus)
+    //             ->get()
+    //             ->keyBy('sku');
+
+    //         // Fetch MacyProduct data for non-PARENT SKUs
+    //         $macyProducts = MacyProduct::whereIn('sku', values: $skus)
+    //             ->get()
+    //             ->keyBy('sku');
+
+    //         // Fetch all products from ProductMaster (parent and sku)
+    //         $productMasters = ProductMaster::select('parent', 'sku', 'Values')->get();
+    //         $skuToProduct = $productMasters->keyBy('sku');
+    //         $parentToProduct = $productMasters->keyBy('parent');
+
+    //         // Filter out rows where both Parent and (Child) sku are empty and process data
+    //         $filteredData = array_filter($data->data, function ($item) {
+    //             $parent = $item->Parent ?? '';
+    //             $childSku = $item->{'(Child) sku'} ?? '';
+
+    //             // Keep the row if either Parent or (Child) sku is not empty
+    //             return !(empty(trim($parent)) && empty(trim($childSku)));
+    //         });
+
+    //         // Process the data to include Shopify inventory values, ProductMaster info, and MacyProduct "M L30"
+    //         $processedData = array_map(function ($item) use ($shopifyData, $skuToProduct, $parentToProduct, $macyProducts) {
+    //             $childSku = $item->{'(Child) sku'} ?? '';
+    //             $parent = $item->Parent ?? '';
+
+    //             // Only update INV and L30 if this is not a PARENT SKU
+    //             if (!empty($childSku) && stripos($childSku, 'PARENT') === false) {
+    //                 if ($shopifyData->has($childSku)) {
+    //                     $item->INV = $shopifyData[$childSku]->inv;
+    //                     $item->L30 = $shopifyData[$childSku]->quantity;
+    //                 } else {
+    //                     $item->INV = 0;
+    //                     $item->L30 = 0;
+    //                 }
+    //             }
+    //             // Attach ProductMaster info by SKU if available
+    //             if (!empty($childSku) && $skuToProduct->has($childSku)) {
+    //                 $item->product_master = $skuToProduct[$childSku];
+    //             } elseif (!empty($parent) && $parentToProduct->has($parent)) {
+    //                 $item->product_master = $parentToProduct[$parent];
+    //             } else {
+    //                 $item->product_master = null;
+    //             }
+
+    //             // Attach MacyProduct "M L30" value if available
+    //             if (!empty($childSku) && $macyProducts->has($childSku)) {
+    //                 $item->{'M L30'} = $macyProducts[$childSku]->m_l30;
+    //                 $item->{'M L60'} = $macyProducts[$childSku]->m_l60;
+    //             } else {
+    //                 $item->{'M L30'} = null;
+    //                 $item->{'M L60'} = null;
+    //             }
+
+    //             return $item;
+    //         }, $filteredData);
+
+    //         // Re-index the array after filtering
+    //         $processedData = array_values($processedData);
+
+    //         // Return the filtered data
+    //         return response()->json([
+    //             'message' => 'Data fetched successfully',
+    //             'data' => $processedData,
+    //             'status' => 200
+    //         ]);
+    //     } else {
+    //         // Handle the error if the request failed
+    //         return response()->json([
+    //             'message' => 'Failed to fetch data from Google Sheet',
+    //             'status' => $response->getStatusCode()
+    //         ], $response->getStatusCode());
+    //     }
+    // }
+
+    public function updateAllMacySkus(Request $request)
+    {
+        try {
+            $percent = $request->input('percent');
+
+            if (!is_numeric($percent) || $percent < 0 || $percent > 100) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Invalid percentage value. Must be between 0 and 100.'
+                ], 400);
+            }
+
+            // Update database
+            MarketplacePercentage::updateOrCreate(
+                ['marketplace' => 'Macys'],
+                ['percentage' => $percent]
+            );
+
+            // Store in cache
+            Cache::put('macys_marketplace_percentage', $percent, now()->addDays(30));
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Percentage updated successfully',
+                'data' => [
+                    'marketplace' => 'Macys',
+                    'percentage' => $percent
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error updating percentage',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Save NR value for a SKU
+    public function saveNrToDatabase(Request $request)
+    {
+        $sku = $request->input('sku');
+        $nr = $request->input('nr');
+
+        if (!$sku || $nr === null) {
+            return response()->json(['error' => 'SKU and nr are required.'], 400);
+        }
+
+        $dataView = MacyDataView::firstOrNew(['sku' => $sku]);
+        $value = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+        if ($nr !== null) {
+            $value["NR"] = $nr === 'NR' ? 'NR' : 'REQ';
+        }
+        $dataView->value = $value;
+        $dataView->save();
+
+        return response()->json(['success' => true, 'data' => $dataView]);
+    }
+
+
+    public function saveSpriceToDatabase(Request $request)
+    {
+        $sku = $request->input('sku');
+        $spriceData = $request->only(['sprice', 'spft_percent', 'sroi_percent']);
+
+        if (!$sku || !$spriceData['sprice']) {
+            return response()->json(['error' => 'SKU and sprice are required.'], 400);
+        }
+
+        $macyDataView = MacyDataView::firstOrNew(['sku' => $sku]);
+        // Decode value column safely
+        $existing = is_array($macyDataView->value)
+            ? $macyDataView->value
+            : (json_decode($macyDataView->value, true) ?: []);
+
+        // Merge new sprice data
+        $merged = array_merge($existing, [
+            'SPRICE' => $spriceData['sprice'],
+            'SPFT' => $spriceData['spft_percent'],
+            'SROI' => $spriceData['sroi_percent'],
+        ]);
+
+        $macyDataView->value = $merged;
+        $macyDataView->save();
+
+        return redirect()->back()->with('success', 'Data fetched successfully.');
+    }
+}
