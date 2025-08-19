@@ -29,14 +29,14 @@
 
             <li class="side-nav-title">Main</li>
 
-            {{-- @if (isset($permissions['dashboard']) && in_array('view', $permissions['dashboard']))
+            @if (isset($permissions['dashboard']) && in_array('view', $permissions['dashboard']))
                 <li class="side-nav-item">
                     <a href="{{ route('any', 'index') }}" class="side-nav-link">
                         <i class="ri-dashboard-3-line"></i>
                         <span> Dashboard </span>
                     </a>
                 </li>
-            @endif --}}
+            @endif
 
             {{-- User --}}
             @php
