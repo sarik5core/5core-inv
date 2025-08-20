@@ -2576,9 +2576,13 @@
                     const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
 
                     // Skip rows based on your conditions
-                    if (inv === 0) return;
-                    if (sess30 < 49) return;
-                    if (cvrPercent >= 7) return; //If the CVR percentage of this row is 7 or higher, skip this row and don’t add it to the table. 
+                   // Skip rows based on your conditions
+                    if (!item.is_parent) {   // 
+                        if (inv <= 0) return;        
+                        if (sess30 < 49) return;
+                        if (cvrPercent >= 7) return;
+                    }
+                //If the CVR percentage of this row is 7 or higher, skip this row and don’t add it to the table. 
 
                  
 

@@ -2372,6 +2372,7 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
+                            console.log(response.data, 'dataaa');
 
                             tableData = response.data.map((item, index) => {
 
