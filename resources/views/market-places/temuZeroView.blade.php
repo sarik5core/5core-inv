@@ -2453,6 +2453,8 @@
                         const $select = $(this);
                         const newValue = $select.val();
                         const sku = $select.data('sku');
+                        console.log(sku,'sdsdd');
+                        
 
                         // Change background color based on selected value
                         if (newValue === 'NR') {

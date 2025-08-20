@@ -76,7 +76,6 @@ class OverallAmazonController extends Controller
 
     public function getViewAmazonData(Request $request)
     {
-
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
             ->orderBy('sku', 'asc')
@@ -90,16 +89,8 @@ class OverallAmazonController extends Controller
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku)
-                $apiDataBySku[$sku] = $item;
-        }
-
         $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
+
         // JungleScout Data
         $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
             ->get()
@@ -136,17 +127,15 @@ class OverallAmazonController extends Controller
 
         $result = [];
 
-
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
 
-            // Skip rows where SKU starts with "PARENT"
+            // Skip parent rows
             if (str_starts_with($sku, 'PARENT ')) {
                 continue;
             }
 
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -154,24 +143,19 @@ class OverallAmazonController extends Controller
             $row['Parent'] = $parent;
             $row['(Child) sku'] = $pm->sku;
 
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
-
             if ($amazonSheet) {
-                $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
-                $row['Sess30'] = $row['Sess30'] ?? $amazonSheet->sessions_l30;
-                $row['price'] = $row['price'] ?? $amazonSheet->price;
-                $row['sessions_l60'] = $row['sessions_l60'] ?? $amazonSheet->sessions_l60;
-                $row['units_ordered_l60'] = $row['units_ordered_l60'] ?? $amazonSheet->units_ordered_l60;
+                $row['A_L30'] = $amazonSheet->units_ordered_l30;
+                $row['Sess30'] = $amazonSheet->sessions_l30;
+                $row['price'] = $amazonSheet->price;
+                $row['sessions_l60'] = $amazonSheet->sessions_l60;
+                $row['units_ordered_l60'] = $amazonSheet->units_ordered_l60;
             }
 
             $row['INV'] = $shopify->inv ?? 0;
             $row['L30'] = $shopify->quantity ?? 0;
             $row['fba'] = $pm->fba;
 
+            // LP & ship cost
             $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
             $lp = 0;
             foreach ($values as $k => $v) {
@@ -187,6 +171,7 @@ class OverallAmazonController extends Controller
 
             $price = isset($row['price']) ? floatval($row['price']) : 0;
             $units_ordered_l30 = isset($row['A_L30']) ? floatval($row['A_L30']) : 0;
+
             $row['Total_pft'] = round((($price * $percentage) - $lp - $ship) * $units_ordered_l30, 2);
             $row['T_Sale_l30'] = round($price * $units_ordered_l30, 2);
             $row['PFT_percentage'] = round($price > 0 ? ((($price * $percentage) - $lp - $ship) / $price) * 100 : 0, 2);
@@ -202,6 +187,7 @@ class OverallAmazonController extends Controller
             $row['LP_productmaster'] = $lp;
             $row['Ship_productmaster'] = $ship;
 
+            // Default values
             $row['NR'] = '';
             $row['FBA'] = null;
             $row['SPRICE'] = null;
@@ -222,7 +208,6 @@ class OverallAmazonController extends Controller
                 }
 
                 if (is_array($raw)) {
-                    // $row['NR'] = filter_var($raw['NR'] ?? false, FILTER_VALIDATE_BOOLEAN);
                     $row['NR'] = $raw['NR'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                     $row['shopify_id'] = $shopify->id ?? null;
@@ -243,6 +228,7 @@ class OverallAmazonController extends Controller
             $result[] = (object) $row;
         }
 
+        // Parent-wise grouping
         $groupedByParent = collect($result)->groupBy('Parent');
         $finalResult = [];
 
@@ -264,7 +250,6 @@ class OverallAmazonController extends Controller
                 'MSRP' => null,
                 'MAP' => null,
                 'is_parent_summary' => true,
-                // Add more fields if needed
             ];
 
             $finalResult[] = (object) $sumRow;

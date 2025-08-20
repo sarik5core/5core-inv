@@ -4424,9 +4424,11 @@
                 const $headers = $table.find('th[data-field]');
                 const $menu = $('#columnToggleMenu');
                 const $dropdownBtn = $('#hideColumnsBtn');
+                const storageKey = "ebayTableHiddenCols";
 
                 $menu.empty();
 
+                // Build menu items from headers
                 $headers.each(function() {
                     const $th = $(this);
                     const field = $th.data('field');
@@ -4435,7 +4437,7 @@
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                   id="toggle-${field}" data-field="${field}" checked>
+                                id="toggle-${field}" data-field="${field}" checked>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
@@ -4443,29 +4445,62 @@
                     $menu.append($item);
                 });
 
+                // Restore from localStorage
+                let hiddenCols = JSON.parse(localStorage.getItem(storageKey) || "[]");
+
+                if (hiddenCols.length > 0) {
+                    hiddenCols.forEach(field => {
+                        const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                        if (colIndex >= 0) {
+                            $table.find('tr').each(function() {
+                                $(this).find('td, th').eq(colIndex).hide();
+                            });
+                            $menu.find(`#toggle-${field}`).prop('checked', false);
+                        }
+                    });
+                }
+
+                // Toggle menu
                 $dropdownBtn.on('click', function(e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
 
+                // Close menu on outside click
                 $(document).on('click', function(e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
                         $menu.removeClass('show');
                     }
                 });
 
+                // Handle checkbox change
                 $menu.on('change', '.column-toggle-checkbox', function() {
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
 
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function() {
-                        $(this).find('td, th').eq(colIndex).toggle(isVisible);
-                    });
+                    if (colIndex >= 0) {
+                        $table.find('tr').each(function() {
+                            $(this).find('td, th').eq(colIndex).toggle(isVisible);
+                        });
+                    }
+
+                    // Update storage
+                    hiddenCols = $menu.find('.column-toggle-checkbox:not(:checked)')
+                                    .map(function() { return $(this).data('field'); })
+                                    .get();
+                    localStorage.setItem(storageKey, JSON.stringify(hiddenCols));
                 });
 
+                // Show all columns
                 $('#showAllColumns').on('click', function() {
-                    $menu.find('.column-toggle-checkbox').prop('checked', true).trigger('change');
+                    $headers.each(function(i) {
+                        $table.find('tr').each(function() {
+                            $(this).find('td, th').eq(i).show();
+                        });
+                    });
+                    $menu.find('.column-toggle-checkbox').prop('checked', true);
+                    localStorage.removeItem(storageKey);
                     $menu.removeClass('show');
                 });
             }

@@ -114,7 +114,7 @@
                                     0
                                 </div>
                             </th>
-                            <th>Action</th>
+                            <!-- <th>Action</th> -->
                         </tr>
                     </thead>
                 </table>
@@ -156,10 +156,11 @@
                                 <td>${idx + 1}</td>
                                 <td><a href="${row.channel_url}" target="_blank"><strong>${row.Channel}</strong></a></td>
                                 <td>${row.Pending ?? 0}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger delete-btn" data-marketplace="${row.Channel}">Delete</button>
-                                </td>
+                                
                             </tr>`;
+                            // <td>
+                            //     <button class="btn btn-sm btn-danger delete-btn" data-marketplace="${row.Channel}">Delete</button>
+                            // </td>
                             totalReq += Number(row.REQ ?? 0);
                             totalListed += Number(row.Listed ?? 0);
                             totalPending += Number(row.Pending ?? 0);

@@ -142,6 +142,12 @@
                 border: none;
             }
         }
+        .wrap-text {
+            max-width: 150px;     
+            word-wrap: break-word;
+            white-space: normal;  
+            font-size: 12px;      
+        }
     </style>
 </head>
 
@@ -152,8 +158,8 @@
         </div>
         <div class="row mb-4 align-items-center">
             <div class="col-md-6">
-                <div class="heading mb-0 text-start" style="font-size: 2rem;">
-                    Proforma Invoice
+                <div class="heading mb-0 text-start" style="font-size: 1.5rem;">
+                    Proforma Invoice / Contract
                 </div>
                 <div class="mt-2">
                     <img src="{{ asset('assets/5core.png') }}" alt="Company Logo" style="height: 60px;">
@@ -176,10 +182,10 @@
             <div class="col-md-6">
                 <h6>From:</h6>
                 <p>
-                    {{ $from['name'] ?? '5 CORE' }}<br>
-                    {{ $from['address'] ?? 'New Delhi, India' }}<br>
-                    Email: {{ $from['email'] ?? 'info@5core.com' }}<br>
-                    Phone: {{ $from['phone'] ?? '+91-1234567890' }}
+                    {{ $from['name'] ?? '5 CORE INC' }}<br>
+                    {!! $from['address'] ?? '1221 W.SANDUSKY AVE,<br>BELLEFONTAINE OH43311, USA' !!}<br>
+                    Email: {{ $from['email'] ?? 'president@5core.com' }}<br>
+                    Phone: {{ $from['phone'] ?? '+1(714)249-0848' }}
                 </p>
             </div>
             <div class="col-md-6 text-end">
@@ -198,12 +204,10 @@
             <thead>
                 <tr>
                     <th>Photo</th>
-                    <th>5 Core SKU</th>
+                    <th>5 Core + Supplier SKU</th>
                     <th>Barcode</th>
-                    <th>Supplier SKU</th>
-                    <th>Tect</th>
-                    <th>NW(LB)</th>
-                    <th>GW /pcs(LB)</th>
+                    <th>Tech</th>
+                    <th>NW + GW (KG)</th>
                     <th>CBM</th>
                     <th>QTY</th>
                     <th>Price</th>
@@ -219,12 +223,10 @@
                     @endphp
                     <tr>
                         <td><img src="/storage/{{ $item->photo }}" width="50px" height="50px" /></td>
-                        <td>{{ $item->sku ?? '' }}</td>
+                        <td>{{ $item->sku ?? '' }} + {{ $item->supplier_sku }}</td>
                         <td><img src="/storage/{{ $item->barcode }}" width="50px" height="50px" /></td>
-                        <td>{{ $item->supplier_sku }}</td>
-                        <td>{{ $item->tech }}</td>
-                        <td>{{ $item->nw }}</td>
-                        <td>{{ $item->gw }}</td>
+                        <td class="wrap-text">{{ $item->tech }}</td>
+                        <td>{{ $item->nw }} / {{ $item->gw }}</td>
                         <td>{{ $item->cbm }}</td>
                         <td>{{ $item->qty }}</td>
                         <td>{{ $item->price }}</td>
@@ -234,7 +236,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="10" class="text-end">Grand Total</td>
+                    <td colspan="8" class="text-end">Grand Total</td>
                     <td>${{ number_format($subtotal, 2) }}</td>
                 </tr>
             </tfoot>
@@ -287,30 +289,34 @@
         @php
             $terms = [
                 'Shipping Port' => ['Tianjin', 'Guangzhou', 'Ningbo'],
-                'Quality' => ['1. We want to have repeat order if all quality and packaging is 100% okay.'],
+                'Quality' => [
+                    '• We want to have repeat order if all quality and packaging is 100% okay.',
+                ],
                 'Time' => [
-                    '1. Delivery after 25 days of deposit.',
-                    '2. No printing any Chinese letters. Only "made in China" on outer box.',
+                    '• Delivery after 25 days of deposit.',
+                    '• No printing any Chinese letters. Only "made in China" on outer box.',
                 ],
                 'Packaging' => [
-                    '1. Customized packing - 2 color logo on product, customized color gift box, customized manual book / inner box 3ply & outer box 5ply.',
-                    '2. Print logo & "www.5CORE.com" & company certification logo & barcode & model/ref number on the individual GIFT boxes.',
-                    '3. Need to put a sticker/print with Barcode and sku on top of polymailer bag/brown inner box.',
-                    '4. Master carton should weigh less than 20LB and max size of 25x25x25 inch (63x63x63 cm).',
-                    '5. Master carton must contain 5 Core Logo, SKU, Quantity, Gross Weight (in Lbs), Dimensions (in Inches), Box No. - xx/xxx.',
-                    '6. SKU should be printed on 5 sides of the outer carton (except bottom). Mention color variation if any.',
-                    '7. Provide extra color and brown gift boxes for repackaging damaged items.',
-                    '8. Add color stickers on each gift and outer carton for color variants.',
-                    '9. Apply cello tape on corners of inner/outer box for secure packaging.',
+                    '• Customized packing - 2 color logo on product, customized color gift box, customized manual book / inner box 3ply & outer box 5ply.',
+                    '• Print logo & "www.5CORE.com" & company certification logo & barcode & model/ref number on the individual GIFT boxes.',
+                    '• Need to put a sticker/print with Barcode and sku on top of polymailer bag/brown inner box.',
+                    '• Master carton should weigh less than 20LB and max size of 25x25x25 inch (63x63x63 cm).',
+                    '• Master carton must contain 5 Core Logo, SKU, Quantity, Gross Weight (in Lbs), Dimensions (in Inches), Box No. - xx/xxx.',
+                    '• SKU should be printed on 5 sides of the outer carton (except bottom). Mention color variation if any.',
+                    '• Provide extra color and brown gift boxes for repackaging damaged items.',
+                    '• Add color stickers on each gift and outer carton for color variants.',
+                    '• Apply cello tape on corners of inner/outer box for secure packaging.',
                 ],
                 'Payment Terms' => [
-                    '1. Delivery after 25 days of 20% deposit, balance before shipping.',
-                    '2. Each item includes 2% additional free goods for damages.',
+                    '• Delivery after 25 days of 20% deposit, balance before shipping.',
+                    '• Each item includes 2% additional free goods for damages.',
                 ],
                 'Replacements' => [
-                    '1. High-quality (8 pics) HD pictures + 1 video + description + specifications with client logo for marketing.',
+                    '• High-quality (8 pics) HD pictures + 1 video + description + specifications with client logo for marketing.',
                 ],
-                'Others' => ['1. Manual book required in English and Spanish with 5CORE logo printed on it.'],
+                'Others' => [
+                    '• Manual book required in English and Spanish with 5CORE logo printed on it.',
+                ],
             ];
         @endphp
 
