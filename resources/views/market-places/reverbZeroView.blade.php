@@ -2044,7 +2044,6 @@
                     success: function(response) {
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
-                                console.log(item,'item');
                                 
                                 // Calculate A Dil% as (A L30 / INV), handle division by zero
                                 const inv = Number(item.inv) || 0;
@@ -2070,8 +2069,7 @@
                                     price: Number(item.price) || 0,
                                     COMP: item.COMP || 0,
                                     min_price: item.scout_data ? item.scout_data.min_price : 0,
-                                    all_products: item.scout_data ? item.scout_data.all_data :
-                                        0,
+                                    all_products: item.scout_data ? item.scout_data.all_data :0,
                                     'PFT_percentage': item['PFT_percentage'] || 0,
                                     TPFT: item.TPFT || 0,
                                     ROI_percentage: item.ROI_percentage || 0,

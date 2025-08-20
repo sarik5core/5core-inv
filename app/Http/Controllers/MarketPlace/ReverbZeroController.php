@@ -199,7 +199,7 @@ class ReverbZeroController extends Controller
         // 3. Fetch DobaDataView for those SKUs
         $dobaDataViews = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
 
-         // 4. Fetch ReverbProduct for those SKUs (only views = 0 ✅)
+         // 4. Fetch ReverbProduct for those SKUs (only views = 0)
         $reverbProducts = ReverbProduct::whereIn('sku', $skus)
             ->where('views', 0)
             ->get()
@@ -219,7 +219,7 @@ class ReverbZeroController extends Controller
             if ($inv > 0 && isset($reverbProducts[$sku])) {
                 // Fetch DobaDataView values
                 $dobaView = $dobaDataViews[$sku] ?? null;
-                $value = $dobaView ? $dobaView->value : [];
+                $value = $dobaView ? $dobaView->values : [];
                 if (is_string($value)) {
                     $value = json_decode($value, true) ?: [];
                 }
