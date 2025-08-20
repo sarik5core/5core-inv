@@ -3910,29 +3910,38 @@
                 const $menu = $('#columnToggleMenu');
                 const $dropdownBtn = $('#hideColumnsBtn');
 
+                // Load saved visibility from localStorage
+                let amazonZeroView = JSON.parse(localStorage.getItem('amazonZeroView')) || {};
+
                 $menu.empty();
 
                 $headers.each(function() {
                     const $th = $(this);
                     const field = $th.data('field');
                     const title = $th.text().trim().replace(' ↓', '');
+                    const isChecked = amazonZeroView.hasOwnProperty(field) ? amazonZeroView[field] : true;
 
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                   id="toggle-${field}" data-field="${field}" checked>
+                                id="toggle-${field}" data-field="${field}" ${isChecked ? 'checked' : ''}>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
 
                     $menu.append($item);
+
+                    // Apply visibility on page load
+                    const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                    $table.find('tr').each(function() {
+                        $(this).find('td, th').eq(colIndex).toggle(isChecked);
+                    });
                 });
 
                 $dropdownBtn.on('click', function(e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
-
 
                 $(document).on('click', function(e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
@@ -3943,6 +3952,10 @@
                 $menu.on('change', '.column-toggle-checkbox', function() {
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
+
+                    // Save state in localStorage
+                    amazonZeroView[field] = isVisible;
+                    localStorage.setItem('amazonZeroView', JSON.stringify(amazonZeroView));
 
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
                     $table.find('tr').each(function() {
@@ -3955,6 +3968,7 @@
                     $menu.removeClass('show');
                 });
             }
+
 
             // Initialize filters
             function initFilters() {

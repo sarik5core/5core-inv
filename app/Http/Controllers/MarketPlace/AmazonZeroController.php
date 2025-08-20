@@ -61,18 +61,7 @@ class AmazonZeroController extends Controller
         });
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        // 3. Fetch API data (Google Sheet)
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        // Index API data by SKU (case-insensitive)
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku)
-                $apiDataBySku[$sku] = $item;
-        }
-
-        // 4. JungleScout Data (by parent)
+        // 3. JungleScout Data (by parent)
         $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
         $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
             ->get()
@@ -80,18 +69,18 @@ class AmazonZeroController extends Controller
                 return strtoupper(trim($item->parent));
             });
 
-        // 5. Marketplace percentage
+        // 4. Marketplace percentage
         $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
             return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
         });
         $percentage = $percentage / 100;
 
-        // 6. Build final data
+        // 5. Build final data
         $result = [];
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
+
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -110,14 +99,6 @@ class AmazonZeroController extends Controller
             $row['A_Z_ActionRequired'] = $value['A_Z_ActionRequired'] ?? '';
             $row['A_Z_ActionTaken'] = $value['A_Z_ActionTaken'] ?? '';
             $row['NRL'] = $value['NR'] ?? 'REQ';
-
-
-            // Merge API data into base row if exists
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
 
             // Add AmazonDatasheet fields if available
             if ($amazonSheet) {
@@ -178,11 +159,11 @@ class AmazonZeroController extends Controller
             $result[] = (object) $row;
         }
 
-        // 7. Apply the AmazonZero-specific filters
+        // 6. Apply the AmazonZero-specific filters
         $result = array_filter($result, function ($item) {
             $childSku = $item->{'(Child) sku'} ?? '';
             $inv = $item->INV ?? 0;
-            $sess30 = $item->Sess30 ?? 1; // Default to 1 so items without Sess30 won't be filtered
+            $sess30 = $item->Sess30 ?? 1;
 
             return
                 stripos($childSku, 'PARENT') === false &&
@@ -206,6 +187,7 @@ class AmazonZeroController extends Controller
             ]
         ]);
     }
+
 
     public function getZeroViewCount()
     {

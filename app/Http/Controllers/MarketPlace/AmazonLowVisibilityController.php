@@ -62,18 +62,7 @@ class AmazonLowVisibilityController extends Controller
         });
         $shopifyData = ShopifySku::whereIn('sku', $skus)->where('inv', '>', 0)->get()->keyBy('sku');
 
-        // 3. Fetch API data (Google Sheet)
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        // Index API data by SKU (case-insensitive)
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku)
-                $apiDataBySku[$sku] = $item;
-        }
-
-        // 4. JungleScout Data (by parent)
+        // 3. JungleScout Data (by parent)
         $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
         $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
             ->get()
@@ -81,18 +70,17 @@ class AmazonLowVisibilityController extends Controller
                 return strtoupper(trim($item->parent));
             });
 
-        // 5. Marketplace percentage
+        // 4. Marketplace percentage
         $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
             return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
         });
         $percentage = $percentage / 100;
 
-        // 6. Build final data
+        // 5. Build final data
         $result = [];
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -113,15 +101,6 @@ class AmazonLowVisibilityController extends Controller
             $row['NRL'] = $value['NR'] ?? '';
             $row['FBA'] = $value['FBA'] ?? '';
 
-
-
-            // Merge API data into base row if exists
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
-
             // Add AmazonDatasheet fields if available
             if ($amazonSheet) {
                 $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
@@ -131,7 +110,7 @@ class AmazonLowVisibilityController extends Controller
                 $row['units_ordered_l60'] = $row['units_ordered_l60'] ?? $amazonSheet->units_ordered_l60;
             }
 
-            // Add Shopify fields if available
+            // Add Shopify fields
             $row['INV'] = $shopify->inv ?? 0;
             $row['L30'] = $shopify->quantity ?? 0;
 
@@ -181,10 +160,10 @@ class AmazonLowVisibilityController extends Controller
             $result[] = (object) $row;
         }
 
-        // 7. Apply the AmazonZero-specific filters
+        // 6. Apply the LowVisibility-specific filters
         $result = array_filter($result, function ($item) {
             $childSku = $item->{'(Child) sku'} ?? '';
-            $sess30 = $item->Sess30 ?? 0; // Default to 0
+            $sess30 = $item->Sess30 ?? 0;
 
             return
                 stripos($childSku, 'PARENT') === false &&
@@ -210,8 +189,7 @@ class AmazonLowVisibilityController extends Controller
     }
 
 
-
-    public function getViewAmazonLowVisibilityDataFba(Request $request)
+    public function getViewAmazonLowVisibilityDataFba()
     {
         // 1. Fetch all ProductMaster rows (base)
         $productMasters = ProductMaster::orderBy('parent', 'asc')
@@ -230,7 +208,7 @@ class AmazonLowVisibilityController extends Controller
             });
 
         // Get only SKUs that have FBA data
-        $fbaSkus = $amazonDataViews->pluck('sku')->toArray();
+        $fbaSkus = $amazonDataViews->pluck('sku')->map(fn($s) => strtoupper($s))->toArray();
 
         // 2. Fetch AmazonDatasheet and ShopifySku for FBA SKUs only
         $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $fbaSkus)
@@ -244,17 +222,7 @@ class AmazonLowVisibilityController extends Controller
             ->get()
             ->keyBy('sku');
 
-        // 3. Fetch API data (Google Sheet)
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        // Index API data by SKU (case-insensitive)
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku && in_array($sku, $fbaSkus)) {
-                $apiDataBySku[$sku] = $item;
-            }
-        }
+        // 3. REMOVED Google Sheet fetch
 
         // 4. JungleScout Data (by parent)
         $parents = $productMasters->whereIn('sku', $fbaSkus)
@@ -288,7 +256,6 @@ class AmazonLowVisibilityController extends Controller
             }
 
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -309,13 +276,7 @@ class AmazonLowVisibilityController extends Controller
             $row['A_Z_ActionTaken'] = $value['A_Z_ActionTaken'] ?? '';
             $row['NRL'] = $value['NR'] ?? '';
 
-            // Rest of the data building remains the same
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
-
+            // Merge AmazonDatasheet data if exists
             if ($amazonSheet) {
                 $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
                 $row['Sess30'] = $row['Sess30'] ?? $amazonSheet->sessions_l30;
@@ -394,6 +355,7 @@ class AmazonLowVisibilityController extends Controller
             ]
         ]);
     }
+
 
     public function updateReasonAction(Request $request)
     {
@@ -492,10 +454,6 @@ class AmazonLowVisibilityController extends Controller
     }
 
 
-
-
-
-
     public function getViewAmazonLowVisibilityDataBoth(Request $request)
     {
         // 1. Fetch all ProductMaster rows (base)
@@ -506,7 +464,7 @@ class AmazonLowVisibilityController extends Controller
 
         $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
 
-        // Fetch AmazonDataView for all SKUs with FBA filter
+        // Fetch AmazonDataView for all SKUs with BOTH filter
         $amazonDataViews = AmazonDataView::whereIn('sku', $skus)
             ->where(DB::raw("JSON_UNQUOTE(JSON_EXTRACT(value, '$.FBA'))"), 'BOTH')
             ->get()
@@ -514,10 +472,10 @@ class AmazonLowVisibilityController extends Controller
                 return strtoupper($item->sku);
             });
 
-        // Get only SKUs that have FBA data
+        // Get only SKUs that have BOTH data
         $fbaSkus = $amazonDataViews->pluck('sku')->toArray();
 
-        // 2. Fetch AmazonDatasheet and ShopifySku for FBA SKUs only
+        // 2. Fetch AmazonDatasheet and ShopifySku for BOTH SKUs only
         $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $fbaSkus)
             ->get()
             ->keyBy(function ($item) {
@@ -529,19 +487,7 @@ class AmazonLowVisibilityController extends Controller
             ->get()
             ->keyBy('sku');
 
-        // 3. Fetch API data (Google Sheet)
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        // Index API data by SKU (case-insensitive)
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku && in_array($sku, $fbaSkus)) {
-                $apiDataBySku[$sku] = $item;
-            }
-        }
-
-        // 4. JungleScout Data (by parent)
+        // 3. JungleScout Data (by parent)
         $parents = $productMasters->whereIn('sku', $fbaSkus)
             ->pluck('parent')
             ->filter()
@@ -556,24 +502,23 @@ class AmazonLowVisibilityController extends Controller
                 return strtoupper(trim($item->parent));
             });
 
-        // 5. Marketplace percentage
+        // 4. Marketplace percentage
         $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
             return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
         });
         $percentage = $percentage / 100;
 
-        // 6. Build final data
+        // 5. Build final data
         $result = [];
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
 
-            // Skip if not an FBA SKU
+            // Skip if not a BOTH SKU
             if (!in_array($sku, $fbaSkus)) {
                 continue;
             }
 
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -585,7 +530,7 @@ class AmazonLowVisibilityController extends Controller
             $row['Parent'] = $parent;
             $row['(Child) sku'] = $pm->sku;
 
-            // --- Add FBA and other data ---
+            // --- Add BOTH and other data ---
             $dataView = $amazonDataViews[$sku];
             $value = $dataView->value ?? [];
             $row['FBA'] = $value['BOTH'] ?? '';
@@ -593,13 +538,6 @@ class AmazonLowVisibilityController extends Controller
             $row['A_Z_ActionRequired'] = $value['A_Z_ActionRequired'] ?? '';
             $row['A_Z_ActionTaken'] = $value['A_Z_ActionTaken'] ?? '';
             $row['NRL'] = $value['NR'] ?? '';
-
-            // Rest of the data building remains the same
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
 
             if ($amazonSheet) {
                 $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
@@ -656,7 +594,7 @@ class AmazonLowVisibilityController extends Controller
             $result[] = (object) $row;
         }
 
-        // Only filter for PARENT (no session filter for FBA view)
+        // Only filter for PARENT (no session filter for BOTH view)
         $result = array_filter($result, function ($item) {
             $childSku = $item->{'(Child) sku'} ?? '';
             return stripos($childSku, 'PARENT') === false;
@@ -665,11 +603,11 @@ class AmazonLowVisibilityController extends Controller
         $result = array_values($result);
 
         return response()->json([
-            'message' => 'FBM data fetched successfully',
+            'message' => 'BOTH data fetched successfully',
             'data' => $result,
             'status' => 200,
             'debug' => [
-                'total_fba_records' => count($result),
+                'total_both_records' => count($result),
                 'jungle_scout_parents' => $jungleScoutData->keys()->take(5),
                 'matched_parents' => collect($result)
                     ->filter(fn($item) => isset($item->scout_data))
@@ -679,4 +617,5 @@ class AmazonLowVisibilityController extends Controller
             ]
         ]);
     }
+
 }
