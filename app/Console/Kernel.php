@@ -28,9 +28,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // Test scheduler to verify it's working
-        $schedule->call(function () {
-            \Log::info('Test scheduler is working at ' . now());
-        })->everyMinute()->name('test-scheduler-log');
+        // $schedule->call(function () {
+        //     \Log::info('Test scheduler is working at ' . now());
+        // })->everyMinute()->name('test-scheduler-log');
 
         // Clear Laravel log after test log
         $schedule->call(function () {
