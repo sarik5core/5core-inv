@@ -278,6 +278,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-ra-checkbox', [ListingAuditMasterController::class, 'updateRaCheckbox']);
 
     //Email Marketing
+    
     Route::get('/email-marketing-master', [EmailMarketingController::class, 'index'])->name('email.marketing');
     Route::get('/whatsapp-marketing-master', [WhatsappMarketingController::class, 'index'])->name('whatsapp.marketing');
     Route::get('/sms-marketing-master', [SmsMarketingController::class, 'index'])->name('sms.marketing');
