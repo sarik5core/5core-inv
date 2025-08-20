@@ -331,7 +331,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Tech</label>
-                                    <input type="text" class="form-control" name="tech[]">
+                                    <textarea class="form-control" name="tech[]"></textarea>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Qty</label>
@@ -542,7 +542,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Tech</label>
-                                <input type="text" class="form-control" name="tech[]" value="${item.tech ?? ''}">
+                                <textarea class="form-control" name="tech[]">${item.tech ?? ''}</textarea>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Qty</label>
@@ -616,7 +616,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Tech</label>
-                        <input type="text" class="form-control" name="tech[]">
+                        <textarea class="form-control" name="tech[]"></textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Qty</label>

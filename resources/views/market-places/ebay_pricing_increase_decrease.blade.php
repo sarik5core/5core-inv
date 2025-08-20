@@ -4441,45 +4441,78 @@
 
                 $menu.empty();
 
-                $headers.each(function() {
+                // Load saved visibility from localStorage
+                let savedVisibility = JSON.parse(localStorage.getItem('columnVisibility')) || {};
+
+                $headers.each(function () {
                     const $th = $(this);
                     const field = $th.data('field');
                     const title = $th.text().trim().replace(' ↓', '');
 
+                    const checked = savedVisibility[field] !== false; // default true
+
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                   id="toggle-${field}" data-field="${field}" checked>
+                                id="toggle-${field}" data-field="${field}" ${checked ? 'checked' : ''}>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
 
                     $menu.append($item);
+
+                    // Apply initial visibility
+                    const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                    $table.find('tr').each(function () {
+                        $(this).find('td, th').eq(colIndex).toggle(checked);
+                    });
                 });
 
-                $dropdownBtn.on('click', function(e) {
+                // Dropdown toggle
+                $dropdownBtn.on('click', function (e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
 
-                $(document).on('click', function(e) {
+                $(document).on('click', function (e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
                         $menu.removeClass('show');
                     }
                 });
 
-                $menu.on('change', '.column-toggle-checkbox', function() {
+                // Handle checkbox change
+                $menu.on('change', '.column-toggle-checkbox', function () {
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
 
+                    // Save to localStorage
+                    savedVisibility[field] = isVisible;
+                    localStorage.setItem('columnVisibility', JSON.stringify(savedVisibility));
+
+                    // Apply visibility
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function() {
+                    $table.find('tr').each(function () {
                         $(this).find('td, th').eq(colIndex).toggle(isVisible);
                     });
                 });
 
-                $('#showAllColumns').on('click', function() {
-                    $menu.find('.column-toggle-checkbox').prop('checked', true).trigger('change');
+                // Show all columns
+                $('#showAllColumns').on('click', function () {
+                    $menu.find('.column-toggle-checkbox').prop('checked', true);
+
+                    $headers.each(function () {
+                        const field = $(this).data('field');
+                        savedVisibility[field] = true;
+
+                        const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                        $table.find('tr').each(function () {
+                            $(this).find('td, th').eq(colIndex).show();
+                        });
+                    });
+
+                    // Save reset state
+                    localStorage.setItem('columnVisibility', JSON.stringify(savedVisibility));
+
                     $menu.removeClass('show');
                 });
             }

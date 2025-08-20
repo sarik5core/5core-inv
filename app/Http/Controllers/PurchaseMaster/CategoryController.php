@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -39,24 +41,38 @@ class CategoryController extends Controller
         }
 
         $inputs = $request->all();
-
         if (!empty($inputs['category_id'])) {
             $category_obj = Category::findOrFail($inputs['category_id']);
         } else {
             $category_obj = new Category;
         }
 
-        $category_obj->name = addslashes($inputs['category_name']);
-        $category_obj->status = isset($inputs['status']) ? $inputs['status'] : 'inactive'; // default if not passed
+        $category_obj->name = $inputs['category_name'];
+        $category_obj->status = isset($inputs['status']) ? $inputs['status'] : 'inactive';
 
-        if ($category_obj->save()) {
-            $message = !empty($inputs['id']) ? 'Successfully updated...' : 'Successfully created...';
-            Session::flash('flash_message', $message);
-        } else {
-            Session::flash('flash_message', 'Something went wrong.');
+        $fields = [];
+        if (!empty($inputs['field_name']) && !empty($inputs['field_label'])) {
+            foreach ($inputs['field_name'] as $key => $name) {
+                $label = $inputs['field_label'][$key] ?? null;
+                $type  = $inputs['field_type'][$key] ?? 'text';
+
+                if (!empty($name) && !empty($label)) {
+                    $fields[] = [
+                        'name'  => $name,
+                        'label' => $label,
+                        'type'  => $type,
+                    ];
+                }
+            }
         }
+        $category_obj->fields = $fields;
+        $category_obj->save();
 
-        return redirect()->back();
+        $message = !empty($inputs['category_id']) 
+            ? 'Successfully updated category.' 
+            : 'Successfully created category.';
+
+        return redirect()->back()->with('status', $message);
     }
 
     public function destroy($id)

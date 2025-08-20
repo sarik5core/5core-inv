@@ -4058,7 +4058,6 @@
                 const $dropdownBtn = $('#hideColumnsBtn');
 
                 // Load hidden columns
-                let hiddenColumns = new Set(JSON.parse(localStorage.getItem('ebayHiddenColumns') || '[]'));
                 $menu.empty();
 
                 $headers.each(function() {
@@ -4108,7 +4107,7 @@
                     localStorage.setItem('ebayHiddenColumns', JSON.stringify([...hiddenColumns]));
                 });
 
-              // Show all columns
+                // Show all columns
                 $('#showAllColumns').on('click', function() {
                     $headers.each(function(index) {
                         $(this).show(); // show TH
