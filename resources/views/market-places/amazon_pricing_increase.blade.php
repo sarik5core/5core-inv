@@ -3,6 +3,8 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <div id="messageArea" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;"></div>
 
+
+
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -30,6 +32,7 @@
             overflow: visible !important;
         }
 
+
         .custom-resizable-table th {
             background-color: #f8f9fa;
             font-weight: 600;
@@ -38,6 +41,7 @@
             top: 0;
             z-index: 10;
         }
+
 
         /* ========== RESIZABLE COLUMNS ========== */
         .resize-handle {
@@ -50,6 +54,8 @@
             cursor: col-resize;
             z-index: 100;
         }
+
+        
 
         .resize-handle:hover,
         .resize-handle.resizing {
@@ -899,6 +905,7 @@
             background-color: #ff00ff;
         }
 
+        
         /*only for scouth view*/
         /* Add this to your CSS */
         /* Scouth Products View Specific Styling */
