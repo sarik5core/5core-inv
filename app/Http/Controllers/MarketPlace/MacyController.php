@@ -88,31 +88,17 @@ class MacyController extends Controller
         $macyProducts = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyDataViews = MacyDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        $sheetResponse = $this->apiController->fetchMacyListingData();
-        $sheetData = [];
-        if ($sheetResponse->getStatusCode() === 200) {
-            $sheetRaw = $sheetResponse->getData();
-            $sheetData = $sheetRaw->data ?? [];
-        }
-
-        $sheetSkuMap = collect($sheetData)
-            ->filter(function ($item) {
-                return !empty($item->{'(Child) sku'} ?? null);
-            })
-            ->keyBy(function ($item) {
-                return $item->{'(Child) sku'};
-            });
-
-        $processedData = $productMasters->map(function ($product) use ($shopifySkus, $macyProducts, $sheetSkuMap, $macyDataViews) {
+        $processedData = $productMasters->map(function ($product) use ($shopifySkus, $macyProducts, $macyDataViews) {
             $sku = $product->sku;
 
+            // 🟢 Shopify + Macy base metrics
             $product->INV = $shopifySkus->has($sku) ? $shopifySkus[$sku]->inv : 0;
             $product->L30 = $shopifySkus->has($sku) ? $shopifySkus[$sku]->quantity : 0;
             $product->m_l30 = $macyProducts->has($sku) ? $macyProducts[$sku]->m_l30 : null;
             $product->m_l60 = $macyProducts->has($sku) ? $macyProducts[$sku]->m_l60 : null;
             $product->price = $macyProducts->has($sku) ? $macyProducts[$sku]->price : null;
-            $product->sheet_data = $sheetSkuMap->has($sku) ? $sheetSkuMap[$sku] : null;
 
+            // 🟢 Default NR/flags
             $product->NR = '';
             $product->SPRICE = null;
             $product->SPFT = null;
@@ -121,10 +107,10 @@ class MacyController extends Controller
             $product->Live = null;
             $product->APlus = null;
 
+            // 🟢 MacyDataView enrichments
             if ($macyDataViews->has($sku)) {
                 $value = $macyDataViews[$sku]->value;
 
-                // Decode if needed
                 if (!is_array($value)) {
                     $value = json_decode($value, true);
                 }
@@ -139,7 +125,6 @@ class MacyController extends Controller
                     $product->APlus = isset($value['APlus']) ? filter_var($value['APlus'], FILTER_VALIDATE_BOOLEAN) : null;
                 }
             }
-
 
             // 🟡 LP and SHIP extraction
             $values = is_array($product->Values)
@@ -171,7 +156,7 @@ class MacyController extends Controller
             $price = floatval($product->price ?? 0);
             $units_ordered_l30 = floatval($product->m_l30 ?? 0);
 
-            // 🟢 Calculations
+            // 🟢 Profitability calculations
             $product->Total_pft = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
             $product->T_Sale_l30 = round($price * $units_ordered_l30, 2);
             $product->PFT_percentage = round(
@@ -191,12 +176,12 @@ class MacyController extends Controller
         })->values();
 
         return response()->json([
-            'message' => 'Data fetched successfully',
+            'message' => 'Macy data fetched successfully (DB only)',
             'product_master_data' => $processedData,
-            'sheet_data' => $sheetData,
             'status' => 200
         ]);
     }
+
 
     // public function getViewMacyData(Request $request)
     // {
