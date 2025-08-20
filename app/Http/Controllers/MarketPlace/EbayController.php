@@ -36,7 +36,7 @@ class EbayController extends Controller
         $itemID = $request["sku"];
         $newPrice = $request["price"];
 
-        $result = UpdateEbaySPriceJob::dispatch($itemID, $newPrice)->delay(now()->addMinutes(3));
+        $result = UpdateEbaySPriceJob::dispatch($itemID, $newPrice);
 
         // $response = $service->reviseFixedPriceItem(
         //     itemId: $itemID,
