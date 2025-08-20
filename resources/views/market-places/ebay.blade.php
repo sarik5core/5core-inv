@@ -2642,7 +2642,7 @@
 
                     // TACOS with color coding and tooltip
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${Math.round(item.Tacos30)}%</span>
+                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${(item.Tacos30 * 100).toFixed(0)}%</span>
                          <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
                             data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
                             data-item='${JSON.stringify(item.raw_data)}'></i>`
