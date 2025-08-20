@@ -6,6 +6,9 @@ use Illuminate\Console\Command;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use App\Models\EbayMetric;
+use App\Models\MarketplacePercentage;
+use App\Models\ProductMaster;
+use App\Services\EbayDataProcessor;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -44,18 +47,41 @@ class FetchEbayReports extends Command
         $listingData = $this->fetchAndParseReport('LMS_ACTIVE_INVENTORY_REPORT', null, $token);
         
         foreach ($listingData as $row) {
+            
             $itemId = $row['item_id'] ?? null;
             if (!$itemId) continue;
         
             $updateData = [
-                'sku' => $row['sku'] ?? '',                
+                'item_id' => $row['item_id'] ?? '',
+                'sku' => $row['sku'] ?? '',
                 'ebay_price' => $row['price'] ?? null,        
                 'report_date' => now()->toDateString(),
             ];
             
-            logger()->info("Upserting data for $itemId", $updateData);
-        
+            // ProductMaster se lp, ship values fetch karo
+            $pm = ProductMaster::where('sku', $row['sku'])->first();
+
+            $values = is_array($pm->Values)
+                ? $pm->Values
+                : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+            $lp   = $values['lp']   ?? $pm->lp   ?? 0;
+            $ship = $values['ship'] ?? $pm->ship ?? 0;
+
+            $percentage = MarketplacePercentage::where("marketplace", "EBay")->value("percentage") ?? 100;
+            $percentage = $percentage / 100;
+
+            try {
+                $processor = new EbayDataProcessor();
+                $processor->calculateAndSave($row, $lp, $ship, $percentage);
+            } catch (\Exception $e) {
+                logger()->error("EbayDataProcessor failed for SKU: {$row['sku']}", ['error' => $e->getMessage()]);
+                continue;
+            }
+
+            // Upsert data
             EbayMetric::updateOrCreate(['item_id' => $itemId], $updateData);
+            logger()->info("Upserting data for $itemId", $updateData);
         }
 
         $existingSkus = EbayMetric::pluck('sku')->filter()->toArray();
