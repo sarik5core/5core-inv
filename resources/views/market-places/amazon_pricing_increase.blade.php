@@ -2568,7 +2568,7 @@
                     return;
                 }
 
-                filteredData.forEach(item => {
+                    filteredData.forEach(item => {
                     console.log(item, 'dfdf');
                     const inv = parseInt(item["INV"]) || 0;
                     const sess30 = parseInt(item["Sess30"]) || 0;
@@ -2578,7 +2578,7 @@
                     // Skip rows based on your conditions
                     if (inv === 0) return;
                     if (sess30 < 49) return;
-                    if (cvrPercent >= 7) return; //If the CVR percentage of this row is 7 or higher, skip this row and don’t add it to the table. 
+                    if (cvrPercent <= 7) return; //If the CVR percentage of this row is 7 or lower, skip this row and don’t add it to the table.
 
                  
 
@@ -2600,7 +2600,6 @@
                     if (item.NR === 'NRA') {
                         $row.addClass('nr-hide');
                     }
-
                     // Helper functions for color coding
                     const getDilColor = (value) => {
                         const percent = parseFloat(value) * 100;

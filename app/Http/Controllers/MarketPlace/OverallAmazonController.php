@@ -44,34 +44,34 @@ class OverallAmazonController extends Controller
             'amazonPercentage' => $percentage
         ]);
     }
-public function updateFbaStatus(Request $request)
-{
-    $sku = $request->input('shopify_id');
-    $fbaStatus = $request->input('fba');
+    public function updateFbaStatus(Request $request)
+    {
+        $sku = $request->input('shopify_id');
+        $fbaStatus = $request->input('fba');
 
-    if (!$sku || !is_numeric($fbaStatus)) {
-        return response()->json(['error' => 'SKU and FBA status are required.'], 400);
+        if (!$sku || !is_numeric($fbaStatus)) {
+            return response()->json(['error' => 'SKU and FBA status are required.'], 400);
+        }
+        $amazonData = DB::table('amazon_data_view')
+            ->where('sku', $sku)
+            ->first();
+
+        if (!$amazonData) {
+            return response()->json(['error' => 'SKU not found.'], 404);
+        }
+        DB::table('amazon_data_view')
+            ->where('sku', $sku)
+            ->update(['fba' => $fbaStatus]);
+        $updatedData = DB::table('amazon_data_view')
+            ->where('sku', $sku)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FBA status updated successfully.',
+            'data' => $updatedData
+        ]);
     }
-    $amazonData = DB::table('amazon_data_view')
-        ->where('sku', $sku)
-        ->first();
-
-    if (!$amazonData) {
-        return response()->json(['error' => 'SKU not found.'], 404);
-    }
-    DB::table('amazon_data_view')
-        ->where('sku', $sku)
-        ->update(['fba' => $fbaStatus]);
-    $updatedData = DB::table('amazon_data_view')
-        ->where('sku', $sku)
-        ->first();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'FBA status updated successfully.',
-        'data' => $updatedData
-    ]);
-}
 
 
     public function getViewAmazonData(Request $request)
@@ -118,7 +118,7 @@ public function updateFbaStatus(Request $request)
                 ];
             });
 
-        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku', 'fba');
 
         $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
             return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
@@ -347,52 +347,52 @@ public function updateFbaStatus(Request $request)
 
 
     public function saveNrToDatabase(Request $request)
-{
-    $sku = $request->input('sku');
-    $nrInput = $request->input('nr');   // Optional
-    $fbaInput = $request->input('fba'); // Optional
-    $spend = $request->input('spend');  // Optional
+    {
+        $sku = $request->input('sku');
+        $nrInput = $request->input('nr');   // Optional
+        $fbaInput = $request->input('fba'); // Optional
+        $spend = $request->input('spend');  // Optional
 
-    if (!$sku) {
-        return response()->json(['error' => 'SKU is required.'], 400);
-    }
-
-    // Fetch or create the record
-    $amazonDataView = \App\Models\AmazonDataView::firstOrNew(['sku' => $sku]);
-
-    // Decode existing value JSON
-    $existing = is_array($amazonDataView->value)
-        ? $amazonDataView->value
-        : (json_decode($amazonDataView->value, true) ?? []);
-
-    // Handle NR
-    if ($nrInput) {
-        $nr = is_array($nrInput) ? $nrInput : json_decode($nrInput, true);
-        if (!is_array($nr) || !isset($nr['NR'])) {
-            return response()->json(['error' => 'Invalid NR format.'], 400);
+        if (!$sku) {
+            return response()->json(['error' => 'SKU is required.'], 400);
         }
-        $existing['NR'] = $nr['NR'];
-    }
 
-    // Handle FBA
-    if ($fbaInput) {
-        $fba = is_array($fbaInput) ? $fbaInput : json_decode($fbaInput, true);
-        if (!is_array($fba) || !isset($fba['FBA'])) {
-            return response()->json(['error' => 'Invalid FBA format.'], 400);
+        // Fetch or create the record
+        $amazonDataView = \App\Models\AmazonDataView::firstOrNew(['sku' => $sku]);
+
+        // Decode existing value JSON
+        $existing = is_array($amazonDataView->value)
+            ? $amazonDataView->value
+            : (json_decode($amazonDataView->value, true) ?? []);
+
+        // Handle NR
+        if ($nrInput) {
+            $nr = is_array($nrInput) ? $nrInput : json_decode($nrInput, true);
+            if (!is_array($nr) || !isset($nr['NR'])) {
+                return response()->json(['error' => 'Invalid NR format.'], 400);
+            }
+            $existing['NR'] = $nr['NR'];
         }
-        $existing['FBA'] = $fba['FBA'];
+
+        // Handle FBA
+        if ($fbaInput) {
+            $fba = is_array($fbaInput) ? $fbaInput : json_decode($fbaInput, true);
+            if (!is_array($fba) || !isset($fba['FBA'])) {
+                return response()->json(['error' => 'Invalid FBA format.'], 400);
+            }
+            $existing['FBA'] = $fba['FBA'];
+        }
+
+        // Handle spend
+        if (!is_null($spend)) {
+            $existing['Spend'] = $spend;
+        }
+
+        $amazonDataView->value = $existing;
+        $amazonDataView->save();
+
+        return response()->json(['success' => true, 'data' => $amazonDataView]);
     }
-
-    // Handle spend
-    if (!is_null($spend)) {
-        $existing['Spend'] = $spend;
-    }
-
-    $amazonDataView->value = $existing;
-    $amazonDataView->save();
-
-    return response()->json(['success' => true, 'data' => $amazonDataView]);
-}
 
 
 
@@ -559,7 +559,7 @@ public function updateFbaStatus(Request $request)
 
         // Decode value column safely
         $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
-        
+
         $changeAmzPrice = UpdateAmazonSPriceJob::dispatch($sID, $sku, $price)->delay(now()->addMinutes(3));
 
         // Merge new sprice data
@@ -647,7 +647,7 @@ public function updateFbaStatus(Request $request)
     public function saveLowProfit(Request $request)
     {
         $count = $request->input('count');
-        
+
         $channel = ChannelMaster::where('channel', 'Amazon')->first();
 
         if (!$channel) {
@@ -688,9 +688,4 @@ public function updateFbaStatus(Request $request)
 
         return response()->json(['success' => true]);
     }
-
-
-
-
-
 }

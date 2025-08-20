@@ -1440,12 +1440,11 @@
                                         </li>
 
                                         <li>
-                                            <a href="{{ route('amazon.pricing.increase') }}">Pricing Increase or
-                                                Decrease</a>
-                                            <a href="{{ route('amazon.pricing.increase') }}">Price Decrease CVR</a>
+                                     
+                                            <a href="{{ route('amazon.pricing.increase') }}">Amz Price Decrease CVR</a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('amazon.pricing.inc') }}">Price Increase CVR</a>
+                                            <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                         </li>
                                         <li>
                                             <a href="{{ route('amazon.acos.index') }}">Amazon ACOS Control</a>
