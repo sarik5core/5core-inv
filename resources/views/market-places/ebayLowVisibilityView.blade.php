@@ -1341,14 +1341,14 @@
                                             </div>
                                         </div>
                                     </th>
-                                    <th data-field="r&a" class="hide-column"
+                                    {{-- <th data-field="r&a" class="hide-column"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 R&A <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th>
+                                    </th> --}}
                                     <th data-field="inv" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1403,7 +1403,7 @@
                                             <div class="metric-total" id="views-total">0</div>
                                         </div>
                                     </th>
-                                    <th>NRL</th>
+                                    <th data-field="nrl">NRL</th>
                                     <th data-field="reason" style="vertical-align: middle; white-space: nowrap;">Reason
                                     </th>
                                     <th data-field="action_required" style="vertical-align: middle; white-space: nowrap;">

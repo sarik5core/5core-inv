@@ -157,6 +157,7 @@ class ToOrderAnalysisController extends Controller
                     'sheet_link'      => $toOrder->sheet_link ?? '',
                     'Rfq Report Link' => $toOrder->rfq_report_link ?? '',
                     'Stage'           => $toOrder->stage ?? '',
+                    'nrl'             => $toOrder->nrl ?? '',
                     'Adv date'        => $toOrder->advance_date ?? '',
                     'order_qty'       => $toOrder->order_qty ?? '',
                     'is_parent'       => stripos($sheetSku, 'PARENT') !== false,
@@ -258,14 +259,16 @@ class ToOrderAnalysisController extends Controller
         $column = $request->input('column');
         $value = $request->input('value');
 
-        if (!in_array($column, ['approved_qty', 'RFQ Form Link', 'Rfq Report Link', 'sheet_link', 'Stage', 'Supplier', 'order_qty', 'Adv date'])) {
+        if (!in_array($column, ['approved_qty','Date of Appr', 'RFQ Form Link', 'Rfq Report Link', 'sheet_link', 'Stage', 'nrl', 'Supplier', 'order_qty', 'Adv date'])) {
             return response()->json(['success' => false, 'message' => 'Invalid column']);
         }
 
         $updateColumn = match ($column) {
+            'Date of Appr'    => 'date_apprvl',
             'RFQ Form Link'   => 'rfq_form_link',
             'Rfq Report Link' => 'rfq_report_link',
             'Stage'           => 'stage',
+            'nrl'             => 'nrl',
             'sheet_link'      => 'sheet_link',
             'Supplier'        => 'supplier_name',
             'Adv date'        => 'advance_date',

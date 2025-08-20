@@ -44,39 +44,38 @@ class OverallAmazonController extends Controller
             'amazonPercentage' => $percentage
         ]);
     }
-public function updateFbaStatus(Request $request)
-{
-    $sku = $request->input('shopify_id');
-    $fbaStatus = $request->input('fba');
+    public function updateFbaStatus(Request $request)
+    {
+        $sku = $request->input('shopify_id');
+        $fbaStatus = $request->input('fba');
 
-    if (!$sku || !is_numeric($fbaStatus)) {
-        return response()->json(['error' => 'SKU and FBA status are required.'], 400);
+        if (!$sku || !is_numeric($fbaStatus)) {
+            return response()->json(['error' => 'SKU and FBA status are required.'], 400);
+        }
+        $amazonData = DB::table('amazon_data_view')
+            ->where('sku', $sku)
+            ->first();
+
+        if (!$amazonData) {
+            return response()->json(['error' => 'SKU not found.'], 404);
+        }
+        DB::table('amazon_data_view')
+            ->where('sku', $sku)
+            ->update(['fba' => $fbaStatus]);
+        $updatedData = DB::table('amazon_data_view')
+            ->where('sku', $sku)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'FBA status updated successfully.',
+            'data' => $updatedData
+        ]);
     }
-    $amazonData = DB::table('amazon_data_view')
-        ->where('sku', $sku)
-        ->first();
-
-    if (!$amazonData) {
-        return response()->json(['error' => 'SKU not found.'], 404);
-    }
-    DB::table('amazon_data_view')
-        ->where('sku', $sku)
-        ->update(['fba' => $fbaStatus]);
-    $updatedData = DB::table('amazon_data_view')
-        ->where('sku', $sku)
-        ->first();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'FBA status updated successfully.',
-        'data' => $updatedData
-    ]);
-}
 
 
     public function getViewAmazonData(Request $request)
     {
-
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
             ->orderBy('sku', 'asc')
@@ -90,16 +89,8 @@ public function updateFbaStatus(Request $request)
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku)
-                $apiDataBySku[$sku] = $item;
-        }
-
         $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
+
         // JungleScout Data
         $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
             ->get()
@@ -127,7 +118,7 @@ public function updateFbaStatus(Request $request)
                 ];
             });
 
-        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku','fba');
+        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku', 'fba');
 
         $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
             return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
@@ -136,17 +127,15 @@ public function updateFbaStatus(Request $request)
 
         $result = [];
 
-
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
 
-            // Skip rows where SKU starts with "PARENT"
+            // Skip parent rows
             if (str_starts_with($sku, 'PARENT ')) {
                 continue;
             }
 
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -154,24 +143,19 @@ public function updateFbaStatus(Request $request)
             $row['Parent'] = $parent;
             $row['(Child) sku'] = $pm->sku;
 
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
-
             if ($amazonSheet) {
-                $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
-                $row['Sess30'] = $row['Sess30'] ?? $amazonSheet->sessions_l30;
-                $row['price'] = $row['price'] ?? $amazonSheet->price;
-                $row['sessions_l60'] = $row['sessions_l60'] ?? $amazonSheet->sessions_l60;
-                $row['units_ordered_l60'] = $row['units_ordered_l60'] ?? $amazonSheet->units_ordered_l60;
+                $row['A_L30'] = $amazonSheet->units_ordered_l30;
+                $row['Sess30'] = $amazonSheet->sessions_l30;
+                $row['price'] = $amazonSheet->price;
+                $row['sessions_l60'] = $amazonSheet->sessions_l60;
+                $row['units_ordered_l60'] = $amazonSheet->units_ordered_l60;
             }
 
             $row['INV'] = $shopify->inv ?? 0;
             $row['L30'] = $shopify->quantity ?? 0;
             $row['fba'] = $pm->fba;
 
+            // LP & ship cost
             $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
             $lp = 0;
             foreach ($values as $k => $v) {
@@ -187,6 +171,7 @@ public function updateFbaStatus(Request $request)
 
             $price = isset($row['price']) ? floatval($row['price']) : 0;
             $units_ordered_l30 = isset($row['A_L30']) ? floatval($row['A_L30']) : 0;
+
             $row['Total_pft'] = round((($price * $percentage) - $lp - $ship) * $units_ordered_l30, 2);
             $row['T_Sale_l30'] = round($price * $units_ordered_l30, 2);
             $row['PFT_percentage'] = round($price > 0 ? ((($price * $percentage) - $lp - $ship) / $price) * 100 : 0, 2);
@@ -202,6 +187,7 @@ public function updateFbaStatus(Request $request)
             $row['LP_productmaster'] = $lp;
             $row['Ship_productmaster'] = $ship;
 
+            // Default values
             $row['NR'] = '';
             $row['FBA'] = null;
             $row['SPRICE'] = null;
@@ -222,7 +208,6 @@ public function updateFbaStatus(Request $request)
                 }
 
                 if (is_array($raw)) {
-                    // $row['NR'] = filter_var($raw['NR'] ?? false, FILTER_VALIDATE_BOOLEAN);
                     $row['NR'] = $raw['NR'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                     $row['shopify_id'] = $shopify->id ?? null;
@@ -243,6 +228,7 @@ public function updateFbaStatus(Request $request)
             $result[] = (object) $row;
         }
 
+        // Parent-wise grouping
         $groupedByParent = collect($result)->groupBy('Parent');
         $finalResult = [];
 
@@ -264,7 +250,6 @@ public function updateFbaStatus(Request $request)
                 'MSRP' => null,
                 'MAP' => null,
                 'is_parent_summary' => true,
-                // Add more fields if needed
             ];
 
             $finalResult[] = (object) $sumRow;
@@ -362,52 +347,52 @@ public function updateFbaStatus(Request $request)
 
 
     public function saveNrToDatabase(Request $request)
-{
-    $sku = $request->input('sku');
-    $nrInput = $request->input('nr');   // Optional
-    $fbaInput = $request->input('fba'); // Optional
-    $spend = $request->input('spend');  // Optional
+    {
+        $sku = $request->input('sku');
+        $nrInput = $request->input('nr');   // Optional
+        $fbaInput = $request->input('fba'); // Optional
+        $spend = $request->input('spend');  // Optional
 
-    if (!$sku) {
-        return response()->json(['error' => 'SKU is required.'], 400);
-    }
-
-    // Fetch or create the record
-    $amazonDataView = \App\Models\AmazonDataView::firstOrNew(['sku' => $sku]);
-
-    // Decode existing value JSON
-    $existing = is_array($amazonDataView->value)
-        ? $amazonDataView->value
-        : (json_decode($amazonDataView->value, true) ?? []);
-
-    // Handle NR
-    if ($nrInput) {
-        $nr = is_array($nrInput) ? $nrInput : json_decode($nrInput, true);
-        if (!is_array($nr) || !isset($nr['NR'])) {
-            return response()->json(['error' => 'Invalid NR format.'], 400);
+        if (!$sku) {
+            return response()->json(['error' => 'SKU is required.'], 400);
         }
-        $existing['NR'] = $nr['NR'];
-    }
 
-    // Handle FBA
-    if ($fbaInput) {
-        $fba = is_array($fbaInput) ? $fbaInput : json_decode($fbaInput, true);
-        if (!is_array($fba) || !isset($fba['FBA'])) {
-            return response()->json(['error' => 'Invalid FBA format.'], 400);
+        // Fetch or create the record
+        $amazonDataView = \App\Models\AmazonDataView::firstOrNew(['sku' => $sku]);
+
+        // Decode existing value JSON
+        $existing = is_array($amazonDataView->value)
+            ? $amazonDataView->value
+            : (json_decode($amazonDataView->value, true) ?? []);
+
+        // Handle NR
+        if ($nrInput) {
+            $nr = is_array($nrInput) ? $nrInput : json_decode($nrInput, true);
+            if (!is_array($nr) || !isset($nr['NR'])) {
+                return response()->json(['error' => 'Invalid NR format.'], 400);
+            }
+            $existing['NR'] = $nr['NR'];
         }
-        $existing['FBA'] = $fba['FBA'];
+
+        // Handle FBA
+        if ($fbaInput) {
+            $fba = is_array($fbaInput) ? $fbaInput : json_decode($fbaInput, true);
+            if (!is_array($fba) || !isset($fba['FBA'])) {
+                return response()->json(['error' => 'Invalid FBA format.'], 400);
+            }
+            $existing['FBA'] = $fba['FBA'];
+        }
+
+        // Handle spend
+        if (!is_null($spend)) {
+            $existing['Spend'] = $spend;
+        }
+
+        $amazonDataView->value = $existing;
+        $amazonDataView->save();
+
+        return response()->json(['success' => true, 'data' => $amazonDataView]);
     }
-
-    // Handle spend
-    if (!is_null($spend)) {
-        $existing['Spend'] = $spend;
-    }
-
-    $amazonDataView->value = $existing;
-    $amazonDataView->save();
-
-    return response()->json(['success' => true, 'data' => $amazonDataView]);
-}
 
 
 
@@ -574,7 +559,7 @@ public function updateFbaStatus(Request $request)
 
         // Decode value column safely
         $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
-        
+
         $changeAmzPrice = UpdateAmazonSPriceJob::dispatch($sID, $sku, $price)->delay(now()->addMinutes(3));
 
         // Merge new sprice data
@@ -662,7 +647,7 @@ public function updateFbaStatus(Request $request)
     public function saveLowProfit(Request $request)
     {
         $count = $request->input('count');
-        
+
         $channel = ChannelMaster::where('channel', 'Amazon')->first();
 
         if (!$channel) {
@@ -703,9 +688,4 @@ public function updateFbaStatus(Request $request)
 
         return response()->json(['success' => true]);
     }
-
-
-
-
-
 }

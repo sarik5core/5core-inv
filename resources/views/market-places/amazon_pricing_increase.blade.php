@@ -1,5 +1,7 @@
-@extends('layouts.vertical', ['title' => 'eBay Zero View', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Amazon', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<div id="messageArea" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;"></div>
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -175,8 +177,10 @@
             position: absolute;
             z-index: 1001;
             top: 100%;
+            /* <-- changed from bottom: 100% */
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateY(8px);
+            /* add a little gap below */
             opacity: 0;
             transition: opacity 0.3s;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -421,7 +425,7 @@
         .custom-modal-dialog {
             position: fixed;
             width: auto;
-            min-width: 600px;
+            min-width: 850px;
             max-width: 90vw;
             margin: 1.75rem auto;
             pointer-events: auto;
@@ -895,37 +899,139 @@
             background-color: #ff00ff;
         }
 
-
-        /*popup modal style end */
-
-        /* Custom Resizable Table */
-        .custom-resizable-table th,
-        .custom-resizable-table td {
-            transition: width 0.2s, min-width 0.2s, max-width 0.2s;
+        /*only for scouth view*/
+        /* Add this to your CSS */
+        /* Scouth Products View Specific Styling */
+        div.custom-modal-content h5.custom-modal-title:contains("Scouth products view Details")+.custom-modal-body {
+            padding: 15px;
+            overflow: auto;
         }
 
-        .truncated-text {
-            transition: all 0.2s;
-            display: inline-block;
-            max-width: 100%;
-            white-space: nowrap;
+        .scouth-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .scouth-header-item {
+            font-weight: bold;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        .scouth-table-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
             overflow: hidden;
-            vertical-align: middle;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        .nr-hide{
+
+        .scouth-table-header {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .scouth-table-row {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+            background: white;
+        }
+
+        .scouth-table-row:last-child {
+            border-bottom: none;
+        }
+
+        .scouth-table-cell {
+            padding: 10px 12px;
+            min-width: 120px;
+            flex: 1;
+            border-right: 1px solid #dee2e6;
+            word-break: break-word;
+        }
+
+        .scouth-table-cell:last-child {
+            border-right: none;
+        }
+
+        .scouth-table-header .scouth-table-cell {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .scouth-table-row:hover {
+            background-color: #f1f1f1;
+        }
+
+        .image-thumbnail {
+            max-width: 100px;
+            max-height: 100px;
+            display: block;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .scouth-product-value a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+
+        .scouth-product-value a:hover {
+            text-decoration: underline;
+        }
+
+        .nr-hide {
             display: none !important;
         }
+
+        /*popup modal style end */
     </style>
 @endsection
 
 @section('content')
-    @include('layouts.shared/page-title', ['page_title' => 'eBay Zero View', 'sub_title' => 'eBay View'])
+    @include('layouts.shared/page-title', ['page_title' => 'Amazon Analysis', 'sub_title' => 'Amazon'])
 
     <div class="row">
         <div class="col-12">
             <div class="card">
+                <div class="card-body d-flex align-items-center" style="gap: 12px;">
+                    <div id="percent-edit-div" class="d-flex align-items-center">
+                        <div class="input-group" style="width: 150px;">
+                            <input type="number" id="updateAllSkusPercent" class="form-control" min="0"
+                                max="100" value="{{ $amazonPercentage }}" step="0.01" title="Percent" disabled />
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <button id="editPercentBtn" class="btn btn-outline-primary ms-2">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                    </div>
+                    <div class="d-inline-flex align-items-center ms-2">
+                        <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
+                            0 SOLD - <span id="zero-sold-count">0</span>
+                        </div>
+                        <div class="badge bg-primary text-white px-3 py-2 me-2"
+                            style="font-size: 1rem; border-radius: 8px;">
+                            SOLD - <span id="sold-count">0</span>
+                        </div>
+                        <div class="badge bg-danger text-white px-3 py-2" style="font-size: 1rem; border-radius: 8px;">
+                            RED MARGIN - <span id="red-margin-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
                 <div class="card-body">
-                    <h4 class="header-title">eBay Zero Analysis</h4>
+                    <h4 class="header-title">Amazon Product Analysis</h4>
 
                     <!-- Custom Dropdown Filters Row -->
                     <div class="d-flex flex-wrap gap-2 mb-3">
@@ -955,68 +1061,50 @@
 
                         <!-- A Dil% Filter -->
                         <div class="dropdown manual-dropdown-container ">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="eDilFilterDropdown">
-                                <span class="status-circle default"></span> E Dil%
+                            <button class="btn btn-light dropdown-toggle" type="button" id="aDilFilterDropdown">
+                                <span class="status-circle default"></span> A Dil%
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="eDilFilterDropdown">
+                            <ul class="dropdown-menu" aria-labelledby="aDilFilterDropdown">
                                 <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
                                         data-color="all">
-                                        <span class="status-circle default"></span> All E Dil</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                        <span class="status-circle default"></span> All A Dil</a></li>
+                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
                                         data-color="red">
                                         <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
                                         data-color="yellow">
                                         <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
                                         data-color="green">
                                         <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
                                         data-color="pink">
                                         <span class="status-circle pink"></span> Pink</a></li>
                             </ul>
                         </div>
 
-                        <!-- A Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container ">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="ovClicksFilterDropdown">
-                                <span class="status-circle default"></span> OV CLICKS L30
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="ovClicksFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All OV CLICKS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green </a></li>
-                            </ul>
-                        </div>
-
                         <!-- PFT % Filter -->
-                        {{-- <div class="dropdown manual-dropdown-container">
+                        <div class="dropdown manual-dropdown-container">
                             <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
                                 <span class="status-circle default"></span> PFT%
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
                                         data-color="all">
                                         <span class="status-circle default"></span> All PFT</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
                                         data-color="red">
                                         <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
                                         data-color="yellow">
                                         <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
                                         data-color="blue">
                                         <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
                                         data-color="green">
                                         <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
                                         data-color="pink">
                                         <span class="status-circle pink"></span> Pink</a></li>
                             </ul>
@@ -1028,19 +1116,19 @@
                                 <span class="status-circle default"></span> ROI
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
                                         data-color="all">
                                         <span class="status-circle default"></span> All ROI</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
                                         data-color="red">
                                         <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
                                         data-color="yellow">
                                         <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
                                         data-color="green">
                                         <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
                                         data-color="pink">
                                         <span class="status-circle pink"></span> Pink</a></li>
                             </ul>
@@ -1076,7 +1164,7 @@
                         <!-- CVR Filter -->
                         <div class="dropdown manual-dropdown-container">
                             <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
-                                <span class="status-circle default"></span> SCVR
+                                <span class="status-circle default"></span> CVR
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
                                 <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
@@ -1092,7 +1180,7 @@
                                         data-color="pink">
                                         <span class="status-circle pink"></span> Pink</a></li>
                             </ul>
-                        </div> --}}
+                        </div>
 
                         <!-- Task Board Button -->
                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
@@ -1238,7 +1326,7 @@
                     </div>
 
                     <!-- play backward forwad  -->
-                    {{-- <div class="btn-group time-navigation-group" role="group" aria-label="Parent navigation">
+                    <div class="btn-group time-navigation-group" role="group" aria-label="Parent navigation">
                         <button id="play-backward" class="btn btn-light rounded-circle" title="Previous parent">
                             <i class="fas fa-step-backward"></i>
                         </button>
@@ -1252,7 +1340,7 @@
                         <button id="play-forward" class="btn btn-light rounded-circle" title="Next parent">
                             <i class="fas fa-step-forward"></i>
                         </button>
-                    </div> --}}
+                    </div>
 
                     <!-- Controls row -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1271,12 +1359,7 @@
                                 <select id="inv-filter" class="form-control form-control-sm">
                                     <option value="all">All</option>
                                     <option value="0">0</option>
-                                    <option value="1-15">1 - 15</option>
-                                    <option value="16-30">16 - 30</option>
-                                    <option value="31-50">31 - 50</option>
-                                    <option value="51-75">51 - 75</option>
-                                    <option value="76-100">76 - 100</option>
-                                    <option value="101+">101+</option>
+                                    <option value="1-100+">1-100+</option>
                                 </select>
                             </div>
                         </div>
@@ -1307,7 +1390,7 @@
                     </div>
 
                     <div class="table-container">
-                        <table class="custom-resizable-table" id="ebay-table">
+                        <table class="custom-resizable-table" id="amazon-table">
                             <thead>
                                 <tr>
                                     <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th>
@@ -1335,14 +1418,14 @@
                                             </div>
                                         </div>
                                     </th>
-                                    {{-- <th data-field="r&a" class="hide-column"
+                                    <th data-field="r&a" class="hide-column"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 R&A <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th> --}}
+                                    </th>
                                     <th data-field="inv" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1370,44 +1453,231 @@
                                             <div class="metric-total" id="ovdil-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="el_30" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="al_30" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                EL 30 <span class="sort-arrow">↓</span>
+                                                AL 30 <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="el30-total">0</div>
+                                            <div class="metric-total" id="al30-total">0</div>
                                         </div>
                                     </th>
-                                    <th data-field="e_dil" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="a_dil" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                E DIL <span class="sort-arrow">↓</span>
+                                                A DIL <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="eDil-total">0%</div>
+                                            <div class="metric-total" id="lDil-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
+                                        NRL
+                                    </th>
+
+                                    <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
+                                        FBA
+                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LISTED <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="listed-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LIVE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="live-total">0</div>
                                         </div>
                                     </th>
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                OV CLICKS L30 <span class="sort-arrow">↓</span>
+                                                VIEWS <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <!-- 0 view div after create task -->
-                                            <div id="zero-view-div"
-                                                style="display:inline-block; background:#dc3545; color:white; border-radius:8px; padding:8px 18px; font-weight:600; font-size:15px;">
-                                                0
+                                            <div class="metric-total" id="views-total">0</div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="price"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                PRICE <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
                                     </th>
-                                    <th data-field="nrl">NRL</th>
-                                    <th data-field="reason" style="vertical-align: middle; white-space: nowrap;">Reason
+                                    <th data-field="comp"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                COMP <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
                                     </th>
-                                    <th data-field="action_required" style="vertical-align: middle; white-space: nowrap;">
-                                        Action Required</th>
-                                    <th data-field="action_taken" style="vertical-align: middle; white-space: nowrap;">
-                                        Action Taken</th>
+                                    <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                GPRFT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                Total Profit <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                AD Spend <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TPFT<span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                Profit After AD <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TPRFT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="profit-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    {{-- <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                Sold Amount <span class="sort-arrow">↓</span>
+                                            </div> 
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="sold-amount-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                PFT Amount <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="profit-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                PFT > Ads <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="profit-total">0%</div>
+                                        </div>
+                                    </th> --}}
+
+                                    <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                ROI <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="roi-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="tacos" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TACOS <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="tacos-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="ad cost/ pc" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                AD COST <br> PER PC<span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="S-PRICE" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                S-PRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="JS-Comp-API" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                JS Comp API <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="js-comp-api">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="JS-Comp-link-Manual"
+                                        style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                JS Comp link Manual <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="js-comp-link-manual">0%</div>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1434,7 +1704,7 @@
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
-                            <div class="loader-text">Loading eBay Zero data...</div>
+                            <div class="loader-text">Loading Amazon data...</div>
                         </div>
                     </div>
                 </div>
@@ -1442,34 +1712,23 @@
         </div>
     </div>
 
-    <!-- Reason/Action Modal -->
-    <div id="reasonActionModal" class="modal fade" tabindex="-1" aria-hidden="true">
+
+    <div class="modal fade" id="spendModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Update Reason / Action</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Update Spend</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="reasonActionForm">
-                        <div class="mb-3">
-                            <label for="modalReason" class="form-label">Reason</label>
-                            <input type="text" class="form-control" id="modalReason" name="reason">
-                        </div>
-                        <div class="mb-3">
-                            <label for="modalActionRequired" class="form-label">Action Required</label>
-                            <input type="text" class="form-control" id="modalActionRequired" name="action_required">
-                        </div>
-                        <div class="mb-3">
-                            <label for="modalActionTaken" class="form-label">Action Taken</label>
-                            <input type="text" class="form-control" id="modalActionTaken" name="action_taken">
-                        </div>
-                        <input type="hidden" id="modalSlNo" name="sl_no">
-                    </form>
+                    <input type="hidden" id="spendSkuInput">
+                    <div class="mb-3">
+                        <label for="spendValueInput" class="form-label">Spend Value</label>
+                        <input type="number" step="0.01" class="form-control" id="spendValueInput">
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveReasonActionBtn">Save</button>
+                    <button type="button" id="saveSpendButton" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </div>
@@ -1503,7 +1762,15 @@
             form.reset();
             const modal = bootstrap.Modal.getInstance(document.getElementById('createTaskModal'));
             modal.hide();
+
+
         });
+
+        function openSpendModal(sku, currentSpend = '') {
+            $('#spendSkuInput').val(sku);
+            $('#spendValueInput').val(currentSpend);
+            $('#spendModal').modal('show');
+        }
     </script>
     <!--for popup modal script-->
     <script>
@@ -1530,7 +1797,7 @@
                     }
 
                     $.ajax({
-                        url: '/update-all-ebay-skus',
+                        url: '/update-all-amazon-skus',
                         type: 'POST',
                         data: {
                             percent: percent,
@@ -1551,9 +1818,8 @@
                 }
             });
 
-
             // Cache system
-            const ebayDataCache = {
+            const amazonOverallDataCache = {
                 cache: {},
 
                 set: function(id, data) {
@@ -1577,7 +1843,7 @@
 
             // Clear cache on page load
             window.addEventListener('load', function() {
-                ebayDataCache.clear();
+                amazonOverallDataCache.clear();
             });
 
             // Current state
@@ -1602,30 +1868,26 @@
 
             // Define status indicator fields for different modal types
             const statusIndicatorFields = {
-                'price view': ['PFT %', 'TPFT', 'ROI%', 'Spft%', 'a+spft', 'a+ROI'],
-                'advertisement view': [
-                    'KwCtrL60', 'KwCtrL30', 'KwCtrL7',
-                    'KwAcosL60', 'KwAcosL30', 'KwAcosL7',
-                    'KwCvrL30', 'KwCvrL7',
-                    'Ub 7', 'Ub yes',
-                    'PmtCtrL30', 'PmtCtrL7',
-                    'PmtAcosL30', 'PmtAcosL7',
-                    'PmtCvrL30', 'PmtCvrL7',
-                    'Pmt%',
-                    'TacosL30'
+                'price view': ['PFT_percentage', 'TPFT', 'ROI_percentage', 'Spft%'],
+                'advertisement view': ['KwAcos60', 'KwAcos30', 'KwCvr60', 'KwCvr30',
+                    'PtAcos60', 'PtAcos30', 'PtCvr60', 'PtCvr30',
+                    'DspAcos60', 'DspAcos30', 'DspCvr60', 'DspCvr30',
+                    'HdAcos60', 'HdAcos30', 'HdCvr60', 'HdCvr30',
+                    'TAcos60', 'TAcos30', 'TCvr60', 'TCvr30'
                 ],
-                'conversion view': ['SCVR', 'KwCvrL60', 'KwCvrL30', 'KwCvrL7', 'PmtCvrL30', 'PmtCvrL7'],
-                'visibility view': ['KwCtrL60', 'KwCtrL30', 'KwCtrL7', 'PmtCtrL30', 'PmtCtrL7']
+                'conversion view': ['SCVR', 'KwCvr60', 'KwCvr30', 'PtCvr60', 'PtCvr30',
+                    'DspCvr60', 'DspCvr30', 'HdCvr60', 'HdCvr30',
+                    'TCvr60', 'TCvr30'
+                ]
             };
 
             // Filter state
             const state = {
                 filters: {
                     'ov_dil': 'all',
-                    'E Dil%': 'all',
-                    'OV CLICKS L30': 'all',
-                    'PFT %': 'all',
-                    'Roi': 'all',
+                    'A Dil%': 'all',
+                    'PFT_percentage': 'all',
+                    'ROI_percentage': 'all',
                     'Tacos30': 'all',
                     'SCVR': 'all',
                     'entryType': 'all'
@@ -2004,14 +2266,6 @@
                 }
             }
 
-            // Update the 0 view count using tableData directly (no Sess30 or views field needed)
-            function updateZeroViewDiv() {
-                // Count all rows in tableData
-                const nrCount = tableData.filter(item => item.NR === 'NR').length;
-                const finalCount = tableData.length - nrCount;
-                $('#zero-view-div').html(`${finalCount}`);
-            }
-
             // Initialize everything
             function initTable() {
                 loadData().then(() => {
@@ -2030,7 +2284,7 @@
                     initModalTriggers();
                     initPlaybackControls();
                     initRAEditHandlers(); // Add this line
-                    updateZeroViewDiv();
+                    initNRSelectChangeHandler2();
                     initNRSelectChangeHandler();
                 });
             }
@@ -2046,6 +2300,17 @@
                         openModal(rawData, 'WMPNM view');
                     } else {
                         console.error("No data found for WMPNM view");
+                    }
+                });
+                $(document).on('click', '.scouth-products-view-trigger', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const rawData = $(this).data('item');
+                    if (rawData) {
+                        openModal(rawData, 'scouth products view');
+                    } else {
+                        console.error("No data found for Scouth Products View");
                     }
                 });
 
@@ -2102,39 +2367,70 @@
             function loadData() {
                 showLoader();
                 return $.ajax({
-                    url: '/ebay/zero/view-data',
+                    url: '/amazon/view-data',
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
+
                             tableData = response.data.map((item, index) => {
+
+                                // Calculate A Dil% as (A L30 / INV), handle division by zero
                                 const inv = Number(item.INV) || 0;
+                                const aL30 = Number(item['A_L30']) || 0;
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
+                                const aDil = inv > 0 ? aL30 / inv : 0;
+                                const valueJson = item.value ? JSON.parse(item.value) : {};
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
+
                                 return {
                                     sl_no: index + 1,
-                                    'Sl': item['Sl'] || index + 1,
+                                    'SL No.': item['SL No.'] || index + 1,
                                     Parent: item.Parent || item.parent || item.parent_asin ||
                                         item.Parent_ASIN || '(No Parent)',
                                     '(Child) sku': item['(Child) sku'] || '',
-                                    'R&A': item['R&A'] !== undefined ? item['R&A'] :
-                                    '', // Get R&A value from server data
-                                    INV: item.INV || 0,
+                                    'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
+                                    INV: inv,
                                     L30: item.L30 || 0,
                                     ov_dil: ovDil,
-                                    'E L30': item['E L30'] || 0,
-                                    'E Dil%': item['E Dil%'] || 0,
-                                    'OV CLICKS L30': item['OV CLICKS L30'] || 0,
-                                    A_Z_Reason: item.A_Z_Reason || '',
-                                    A_Z_ActionRequired: item.A_Z_ActionRequired || '',
-                                    A_Z_ActionTaken: item.A_Z_ActionTaken || '',
+                                    'A L30': aL30,
+                                    units_ordered_l60: item.units_ordered_l60 || 0,
+                                    'A Dil%': aDil,
+                                    Sess30: item.Sess30 || 0,
+                                    price: Number(item.price) || 0,
+                                    COMP: item.COMP || 0,
+                                    min_price: item.scout_data ? item.scout_data.min_price : 0,
+                                    all_products: item.scout_data ? item.scout_data.all_data :
+                                        0,
+                                    'PFT_percentage': item['PFT_percentage'] || 0,
+                                    TPFT: item.TPFT || 0,
+                                    ROI_percentage: item.ROI_percentage || 0,
+                                    Tacos30: item.Tacos30 || 0,
+                                    SCVR: item.SCVR || 0,
+                                    LP: item.LP_productmaster || 0,
+                                    SHIP: item.Ship_productmaster || 0,
+                                    'ad cost/ pc': item['ad cost/ pc'] || '',
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
                                         .toUpperCase().includes("PARENT") : false,
-                                    NR: item.NR || '',
-                                    raw_data: item || {} // Ensure raw_data always exists
+                                    raw_data: item || {},
+                                    NR: item.NR !== undefined ? item.NR : '',
+                                    FBA: item.FBA !== undefined ? item.FBA : null,
+                                    listed: listedVal,
+                                    live: liveVal,
+                                    SPRICE: item.SPRICE || 0,
+                                    SPFT: item.SPFT || 0,
+                                    SROI: item.SROI || 0,
+                                    Spend: item.Spend || 0,
+                                    js_comp_manual_api_link: item.js_comp_manual_api_link || '',
+                                    js_comp_manual_link: item.js_comp_manual_link || '',
                                 };
                             });
 
+                            // console.log('Data loaded successfully:', tableData);
                             filteredData = [...tableData];
 
                         }
@@ -2147,13 +2443,118 @@
                         hideLoader();
                     }
                 });
+
+                tableData = validRows.map((item, index) => {
+                    const inv = Number(item.INV) || 0;
+                    const aL30 = Number(item['A_L30']) || 0;
+                    const l30 = Number(item.L30) || 0;
+                    const ovDil = inv > 0 ? l30 / inv : 0;
+                    const aDil = inv > 0 ? aL30 / inv : 0;
+                    const valueJson = item.value ? JSON.parse(item.value) : {};
+                    const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
+                    const liveVal = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
+
+                    return {
+                        sl_no: index + 1, // Proper serial number after filtering
+                        'SL No.': index + 1,
+                        Parent: item.Parent || item.parent || item.parent_asin ||
+                            item.Parent_ASIN || '(No Parent)',
+                        '(Child) sku': item['(Child) sku'] || '',
+                        'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
+                        INV: inv,
+                        L30: item.L30 || 0,
+                        ov_dil: ovDil,
+                        'A L30': aL30,
+                        units_ordered_l60: item.units_ordered_l60 || 0,
+                        'A Dil%': aDil,
+                        Sess30: item.Sess30 || 0,
+                        price: Number(item.price) || 0,
+                        COMP: item.COMP || 0,
+                        min_price: item.scout_data ? item.scout_data.min_price : 0,
+                        all_products: item.scout_data ? item.scout_data.all_data : 0,
+                        'PFT_percentage': item['PFT_percentage'] || 0,
+                        TPFT: item.TPFT || 0,
+                        ROI_percentage: item.ROI_percentage || 0,
+                        Tacos30: item.Tacos30 || 0,
+                        SCVR: item.SCVR || 0,
+                        LP: item.LP_productmaster || 0,
+                        SHIP: item.Ship_productmaster || 0,
+                        'ad cost/ pc': item['ad cost/ pc'] || '',
+                        is_parent: item['(Child) sku'] ? item['(Child) sku'].toUpperCase().includes(
+                            "PARENT") : false,
+                        raw_data: item || {},
+                        NR: item.NR || '',
+                        Spend: item.Spend || 0,
+                        listed: listedVal,
+                        live: liveVal,
+                        SPRICE: item.SPRICE || 0,
+                        SPFT: item.SPFT || 0,
+                        SROI: item.SROI || 0,
+                        js_comp_manual_api_link: item.js_comp_manual_api_link || '',
+                        js_comp_manual_link: item.js_comp_manual_link || '',
+                    };
+                });
+
+                filteredData = [...tableData];
+            }
+
+            // After tableData is loaded and filteredData is set, update the zero-sold count
+            function updateZeroSoldCount() {
+                let zeroSold = 0;
+                let totalSku = 0;
+                let lowProfitCount = 0;
+
+                filteredData.forEach(item => {
+                    const al30 = parseFloat(item['A L30']) || 0;
+                    const inv = parseFloat(item['INV']) || 0;
+                    const sku = (item['(Child) sku'] || '').toUpperCase();
+                    const pftPercentage = parseFloat(item['PFT_percentage']) || 0;
+
+                    // Only count SKUs that are not parent and have inv > 0 for zeroSold
+                    if (!sku.includes('PARENT') && inv > 0) {
+                        if (al30 === 0) zeroSold++;
+                    }
+                    // For SOLD: count all SKUs that are not parent (regardless of inv)
+                    if (!sku.includes('PARENT')) {
+                        totalSku++;
+
+                        if (pftPercentage < 10) {
+                            lowProfitCount++;
+                        }
+                    }
+                });
+                $('#zero-sold-count').text(zeroSold);
+                $('#sold-count').text(totalSku - zeroSold);
+                $('#red-margin-count').text(lowProfitCount);
+
+                updateRedMarginDataToChannelMaster(lowProfitCount);
+            }
+
+            function updateRedMarginDataToChannelMaster(lowProfitCount) {
+                console.log(lowProfitCount);
+
+                fetch('/overallAmazon/saveLowProfit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            count: lowProfitCount
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Saved low profit count:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error saving low profit count:', error);
+                    });
             }
 
             // Render table with current data
             function renderTable() {
-                const $tbody = $('#ebay-table tbody');
-                const $tableContainer = $('.table-container');
-                const prevScrollTop = $tableContainer.scrollTop();
+                const $tbody = $('#amazon-table tbody');
                 $tbody.empty();
 
                 if (isLoading) {
@@ -2166,18 +2567,37 @@
                     return;
                 }
 
-                // Get current column widths from header
-                const $headers = $('#ebay-table thead th');
-                const reasonCellWidth = $headers.eq(10).outerWidth() || 120;
-                const actionRequiredCellWidth = $headers.eq(11).outerWidth() || 120;
-                const actionTakenCellWidth = $headers.eq(12).outerWidth() || 120;
+                    filteredData.forEach(item => {
+                    console.log(item, 'dfdf');
+                    const inv = parseInt(item["INV"]) || 0;
+                    const sess30 = parseInt(item["Sess30"]) || 0;
+                    const cvr = parseFloat(item.SCVR) || 0; // using SCVR now
+                    const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
 
-                filteredData.forEach(item => {
+                    // Skip rows based on your conditions
+                    if (!item.is_parent) {
+                    if (inv <= 0) return;
+                    if (sess30 < 49) return;
+                    if (cvrPercent <= 7) return; //If the CVR percentage of this row is 7 or lower, skip this row and don’t add it to the table.
+                    }
+                 
+
+                    let rawData = {};
+                    if (typeof item.raw_data === 'string') {
+                        try {
+                            rawData = JSON.parse(item.raw_data || '{}');
+                        } catch (e) {
+                            console.error('Invalid JSON in raw_data for SKU', item['(Child) sku'], e);
+                        }
+                    } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
+                        rawData = item.raw_data;
+                    }
+
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if(item.NR === 'NR'){
+                    if (item.NR === 'NRA') {
                         $row.addClass('nr-hide');
                     }
                     // Helper functions for color coding
@@ -2189,24 +2609,8 @@
                         return 'pink'; // 50 and above
                     };
 
-                    const getEDilColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent < 12.5) return 'red';
-                        if (percent >= 12.5 && percent < 16.66) return 'yellow';
-                        if (percent >= 16.66 && percent < 25) return 'blue';
-                        if (percent >= 25 && percent < 50) return 'green';
-                        return 'pink'; // 50 and above
-                    };
-
-                    const getViewColor = (value) => {
-                        const percent = parseFloat(value);
-
-                        if (percent >= 30) return 'green';
-                        return 'red';
-                    };
-
                     const getPftColor = (value) => {
-                        const percent = parseFloat(value) * 100;
+                        const percent = parseFloat(value);
                         if (percent < 10) return 'red';
                         if (percent >= 10 && percent < 15) return 'yellow';
                         if (percent >= 15 && percent < 20) return 'blue';
@@ -2215,30 +2619,30 @@
                     };
 
                     const getRoiColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent < 50) return 'red';
+                        const percent = parseFloat(value);
+                        if (percent >= 0 && percent < 50) return 'red';
                         if (percent >= 50 && percent < 75) return 'yellow';
-                        if (percent >= 75 && percent <= 125) return 'green';
+                        if (percent >= 75 && percent <= 100) return 'green';
                         return 'pink';
                     };
 
                     const getTacosColor = (value) => {
                         const percent = parseFloat(value) * 100;
-                        if (percent <= 7) return 'pink';
-                        if (percent > 7 && percent <= 14) return 'green';
-                        if (percent > 14 && percent <= 21) return 'yellow';
+                        if (percent <= 5) return 'pink';
+                        if (percent > 5 && percent <= 10) return 'green';
+                        if (percent > 10 && percent <= 15) return 'blue';
+                        if (percent > 15 && percent <= 20) return 'yellow';
                         return 'red';
                     };
 
                     const getCvrColor = (value) => {
                         const percent = parseFloat(value) * 100;
-                        if (percent <= 4) return 'red';
-                        if (percent > 4 && percent <= 7) return 'yellow';
-                        if (percent > 7 && percent <= 10) return 'green';
+                        if (percent <= 7) return 'red';
+                        if (percent > 7 && percent <= 13) return 'green';
                         return 'pink';
                     };
 
-                    $row.append($('<td>').text(item['Sl']));
+                    $row.append($('<td>').text(item['SL No.']));
                     $row.append($('<td>').text(item.Parent));
 
                     // SKU with hover content for links
@@ -2246,9 +2650,9 @@
                     if (item.is_parent) {
                         $skuCell.html(`<strong>${item['(Child) sku']}</strong>`);
                     } else {
-                        const imageUrl = item.raw_data.image || '';
-                        const buyerLink = item.raw_data['B Link'] || '';
-                        const sellerLink = item.raw_data['S Link'] || '';
+                        const imageUrl = item.raw_data.image_path || '';
+                        const buyerLink = item.raw_data['AMZ LINK BL'] || '';
+                        const sellerLink = item.raw_data['AMZ LINK SL'] || '';
 
                         if (buyerLink || sellerLink || imageUrl) {
                             $skuCell.html(`
@@ -2304,104 +2708,500 @@
                     // OV DIL with color coding and WMPNM tooltip
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>
-                         <span class="text-info tooltip-icon wmpnm-view-trigger" 
-                               data-bs-toggle="tooltip" 
-                               data-bs-placement="left" 
-                               title="WMPNM View"
-                               data-item='${JSON.stringify(item.raw_data)}'>W</span>`
+                            <span class="text-info tooltip-icon wmpnm-view-trigger" 
+                            data-bs-toggle="tooltip" 
+                                data-bs-placement="left" 
+                                title="WMPNM View"
+                                data-item='${JSON.stringify(item.raw_data)}'>W</span>`
                     ));
-
-                    // $row.append($('<td>').text(item['E L30']));
 
                     $row.append($('<td>').html(`
                         <div class="sku-tooltip-container">
-                            <span class="sku-text">${item['E L30']}</span>
+                            <span class="sku-text">${item['A L30']}</span>
                             <div class="sku-tooltip">
-                                <div class="sku-link"><strong>L60:</strong> </div>
-                                <div class="sku-link"><strong>L7:</strong></div>
+                                <div class="sku-link"><strong>L60:</strong> ${item['units_ordered_l60']}</div>
                             </div>
                         </div>
                     `));
 
-
                     // A DIL with color coding
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getEDilColor(item['E Dil%'])}">${Math.round(item['E Dil%'] * 100)}%</span>`
+                        `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${(item['A Dil%'] * 100).toFixed(2)}%</span>`
                     ));
 
-                    // OV CLICKS L30 with tooltip icon (no color coding)
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getViewColor(item['OV CLICKS L30'])}">${Math.round(item['OV CLICKS L30'])}</span>
-                         <span class="text-info tooltip-icon ad-view-trigger" 
-                               data-bs-toggle="tooltip" 
-                               data-bs-placement="left" 
-                               title="visibility View"
-                               data-item='${JSON.stringify(item.raw_data)}'>V</span>`
-                    ));
-
-                    // Truncate function for dynamic column width
-                    function truncateWithTooltip(text, cellWidth) {
-                        if (!text) return '';
-                        let minLetters = 10;
-                        let letters = Math.max(minLetters, Math.floor(cellWidth / 12));
-                        const truncated = text.length > letters ? text.substring(0, letters) + '...' : text;
-                        return `<span class="truncated-text" title="${text.replace(/"/g, '&quot;')}">${truncated}</span>`;
-                    }
+                    // --- NR column ---
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR : 'REQ'; // default to REQ
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
+
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NR" ${currentNR === 'NR' ? 'selected' : ''}>NR</option>
-                                <option value="REQ" ${currentNR === 'REQ' ? 'selected' : ''}>REQ</option>
+                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
+                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
+                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
                             </select>
                         `);
 
+
                         // Set background color based on value
-                        if (currentNR === 'NR') {
+                        if (currentNR === 'NRA') {
                             $select.css('background-color', '#dc3545');
                             $select.css('color', '#ffffff');
-                        } else if (currentNR === 'REQ') {
+                        } else if (currentNR === 'RA') {
                             $select.css('background-color', '#28a745');
                             $select.css('color', '#ffffff');
+                        } else if (currentNR === 'LATER') {
+                            $select.css('background-color', '#ffc107');
+                            $select.css('color', '#000000');
                         }
+
+
                         $select.data('sku', item['(Child) sku']);
                         $row.append($('<td>').append($select));
                     }
-                    // Reason column with plus icon and tooltip
-                    $row.append($('<td>').html(`
-                        ${truncateWithTooltip(item.A_Z_Reason, reasonCellWidth)}
-                        <i class="fas fa-plus reason-action-plus" style="cursor:pointer; color:#007bff; margin-left:8px;" 
-                        data-slno="${item['Sl']}" data-type="reason"></i>
-                    `));
 
-                    // Action Required column
-                    $row.append($('<td>').html(`
-                        ${truncateWithTooltip(item.A_Z_ActionRequired, actionRequiredCellWidth)}
-                        <i class="fas fa-plus reason-action-plus" style="cursor:pointer; color:#007bff; margin-left:8px;" 
-                        data-slno="${item['Sl']}" data-type="action_required"></i>
-                    `));
 
-                    // Action Taken column
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        const currentFBA = (item.FBA === 'FBA' || item.FBA === 'FBM' || item.FBA ===
+                                'BOTH') ?
+                            item.FBA :
+                            'FBM'; // default
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm fba-select" style="min-width: 100px;">
+                                <option value="FBA" ${currentFBA === 'FBA' ? 'selected' : ''}>FBA</option>
+                                <option value="FBM" ${currentFBA === 'FBM' ? 'selected' : ''}>FBM</option>
+                                <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                            </select>
+                        `);
+
+                        // Set background color
+                        if (currentFBA === 'FBA') {
+                            // Vibrant Blue
+                            $select.css({
+                                backgroundColor: '#007bff', // Bootstrap Primary Blue
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'FBM') {
+                            // Rich Violet
+                            $select.css({
+                                backgroundColor: '#6f42c1', // Bootstrap Purple
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'BOTH') {
+                            // Bright Teal
+                            $select.css({
+                                backgroundColor: '#20c997', // Bootstrap Teal
+                                color: '#ffffff'
+                            });
+                        }
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+
+                    }
+
+                    //Listed checkbox
+                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                        .Listed === 1 || rawData.Listed === '1';
+                    const $listedCb = $('<input>', {
+                        type: 'checkbox',
+                        class: 'listed-checkbox',
+                        checked: listedVal
+                    }).data('sku', item['(Child) sku']);
+
+                    $row.append($('<td>').append($listedCb));
+
+                    // Live checkbox
+                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                        1 || rawData.Live === '1';
+                    const $liveCb = $('<input>', {
+                        type: 'checkbox',
+                        class: 'live-checkbox',
+                        checked: liveVal
+                    }).data('sku', item['(Child) sku']);
+
+                    $row.append($('<td>').append($liveCb));
+
+
+                    // Sess30 with tooltip icon (no color coding)
+                    $row.append($('<td>').html(
+                        `<span>${Math.round(item.Sess30)}</span>
+                        <span class="text-info tooltip-icon ad-view-trigger" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="left" 
+                            title="visibility View"
+                            data-item='${JSON.stringify(item.raw_data)}'>V</span>`
+                    ));
+
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
+                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+                            data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
+                    //price with tooltip
+                    $row.append($('<td>').html(
+                        `$${(Number(item.price) || 0).toFixed(2)}
+                    <span class="tooltip-container ms-2">
+                        <i class="fas fa-eye text-primary price-view-trigger"
+                        style="cursor:pointer"
+                        data-item='${JSON.stringify(item.raw_data)}'
+                        title="View Price Details"></i>
+                    </span>`
+                    ));
+
+
+                    $row.append($('<td>').html(
+                        `<span>$${item.min_price || 0}</span>
+                        <span class="text-info tooltip-icon scouth-products-view-trigger" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="left" 
+                            title="Scouth Products View"
+                            data-item='${JSON.stringify(item.raw_data)}'>P</span>`
+                    ));
+
+
+
+                    // PFT with color coding
+                    $row.append($('<td>').html(
+                        typeof item['PFT_percentage'] === 'number' && !isNaN(item[
+                            'PFT_percentage']) ?
+                        `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
+                            ${item['PFT_percentage']}%
+                        </span>
+                        <span class="tooltip-container" style="margin-left:8px">
+                            <i class="fas fa-tag text-warning price-view-trigger" 
+                                style="transform:translateY(1px)"
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top-end" 
+                                title="Pricing view"
+                                data-item='${JSON.stringify(item.raw_data)}'></i>
+                        </span>` :
+                        ''
+                    ));
+
+
+                    const sku = String(item["(Child) sku"]).replace(/'/g, "\\'");
+                    const Spend = String(item.Spend ?? '0').replace(/'/g, "\\'");
+                    const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    const spend = parseFloat(item['Spend']) || 0;
+                    const aL30 = Number(item['A L30']) || 0;
+                    const price = Number(item.price) || 0;
+
+                    // Sold Amount
+                    const soldAmount = aL30 * price;
+                    const pftAmt = (soldAmount * rawPft) / 100;
+                    const PFTafterPFT = pftAmt - spend;
+                    const adSpend = Number(item['Ad_Spend']) || 0;
+                    const tacos = spend / soldAmount;
+                    const totalProfit = (aL30 * price) * rawPft;
+
+
+                    // total profit 
+                    $row.append($('<td>').html(
+                        `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
+                    ));
+
+
+                    // spend in advertising     
+                    $row.append($('<td>').html(
+                        `<button class="btn  btn-danger"> $${adSpend.toFixed(2)} </button>`
+                    ));
+
+
+                    // profit after advertising
+                    const profitAfterAd = totalProfit - adSpend;
+
+                    $row.append(
+                        $('<td>').html(
+                            `<span class="badge bg-success">$${profitAfterAd.toFixed(2)}</span>`
+                        )
+                    );
+
+                    // TPFT 
+                    $row.append($('<td>').html(
+                        `<span class="badge bg-info">${((profitAfterAd / (price * aL30)) * 100).toFixed(2)}%</span>`
+                    ));
+
+
+
+
+
+
+
+
+                    // $row.append($('<td>').html(
+                    //     `
+                //     <span class="badge bg-secondary">$${Math.round(parseFloat(Spend))}</span>
+                //     <button class="btn btn-sm btn-outline-secondary ms-2"
+                //         onclick="openSpendModal('${sku}', '${Spend}', this)"
+                //         title="Edit Spend">
+                //         <i class="fas fa-pen"></i>
+                //     </button>
+                //     `
+                    // ));
+
+
+
+
+                    const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+
+                    $row.append($('<td>').html(
+                        typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
+                        `
+                        <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
+                            ${newPftPercentage.toFixed(2)}%
+                        </span>
+                    ` : ''
+                    ));
+
+
+
+                    // // Calculate: newPft = PFT_percentage - Spend
+                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    // const spend = parseFloat(item['Spend']) || 0;
+                    // const newPft = rawPft - spend;
+
+
+
+                    // // Append to the row
+                    // $row.append($('<td>').html(
+                    //     typeof newPft === 'number' && !isNaN(newPft) ?
+                    //     `
+                //     <span class="dil-percent-value ${getPftColor(newPft)}">
+                //         ${Math.round(newPft)}%
+                //     </span>
+                // ` : ''
+                    // ));
+
+
+
+
+                    // // Sold amomt calculation
+                    // const aL30 = Number(item['A L30']) || 0;
+                    // const price = Number(item.price) || 0;
+                    // const soldAmount = aL30 * price;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    // ));
+
+
+
+                    // const pftAmt = (soldAmount * item['PFT_percentage']) / 100;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">${pftAmt.toFixed(6)}</span>`
+                    // ));
+
+
+                    // const PFTafterPFT = pftAmt - spend;
+                    // $row.append($('<td>').html(
+                    //     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //     `
+                //         <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //         ${PFTafterPFT.toFixed(6)}
+                //         </span>
+                //     ` : ''
+                    // ));
+
+
+
+
+
+
+                    // const aL30 = Number(item['A L30']) || 0;
+                    // const price = Number(item.price) || 0;
+                    // const soldAmount = aL30 * price;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    // ));
+
+                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    // const spend = parseFloat(item['Spend']) || 0;
+
+                    // const pftAmt = (soldAmount * rawPft) / 100;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">${pftAmt.toFixed(6)}</span>`
+                    // ));
+
+                    // const PFTafterPFT = pftAmt - spend;
+                    // $row.append($('<td>').html(
+                    //     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //     `
+                //         <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //             ${PFTafterPFT.toFixed(6)}
+                //         </span>
+                //     ` : ''
+                    // ));
+
+                    // // ✅ New PFT % based on actual profit after spend
+                    // const newPft = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+
+                    // $row.append($('<td>').html(
+                    //     typeof newPft === 'number' && !isNaN(newPft) ?
+                    //     `
+                //     <span class="dil-percent-value ${getPftColor(newPft)}">
+                //         ${newPft.toFixed(2)}%
+                //     </span>
+                //     ` : ''
+                    // ));
+
+                    // Raw values
+                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    // const spend = parseFloat(item['Spend']) || 0;
+                    // const aL30 = Number(item['A L30']) || 0;
+                    // const price = Number(item.price) || 0;
+
+                    // // Sold Amount
+                    // const soldAmount = aL30 * price;
+
+
+
+                    //                 $row.append($('<td>').html(
+                    //                     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    //                 ));
+
+                    //                 // PFT Amount
+                    //                 // const pftAmt = (soldAmount * rawPft) / 100;
+
+                    //                 $row.append($('<td>').html(
+                    //                     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">
+                //     ${pftAmt.toFixed(6)}
+                // </span>`
+                    //                 ));
+
+                    //                 // PFT After Spend
+                    //                 // const PFTafterPFT = pftAmt - spend;
+
+                    //                 $row.append($('<td>').html(
+                    //                     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //                     `
+                //     <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //         ${PFTafterPFT.toFixed(6)}
+                //     </span>
+                // ` : ''
+                    //                 ));
+
+                    // ✅ New PFT (%) after spend
+
+
+                    // ROI with color coding
+                    $row.append($('<td>').html(
+                        typeof item.ROI_percentage === 'number' && !isNaN(item.ROI_percentage) ?
+                        `<span class="dil-percent-value ${getRoiColor(item.ROI_percentage)}">${Math.round(item.ROI_percentage)}%</span>` :
+                        ''
+                    ));
+
+                    // TACOS with color coding and tooltip
+                    let tacosValue = (isNaN(tacos) || !isFinite(tacos)) ? 0 : Math.round(tacos * 100);
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${tacosValue}%</span>
+    <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
+        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
+        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
+
+                    // CVR with color coding and tooltip
+
+                    $row.append($('<td>').text(
+                        typeof item['ad cost/ pc'] === 'number' ? item['ad cost/ pc'].toFixed(2) : 0
+                    ));
+
+
+                    // SPRICE + Edit Button (no decimals)
+                    $row.append($('<td>').html(
+                        item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
+                        `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary s_price">$${Math.round(parseFloat(item.SPRICE))}</span>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <!-- Edit Button -->
+                                <button class="btn btn-outline-primary openPricingBtn"
+                                    title="Edit SPRICE"
+                                    data-lp="${item.LP}"
+                                    data-ship="${item.SHIP}"
+                                    data-sku="${item["(Child) sku"]}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+
+                                <!-- View Button -->
+                                <button class="btn btn-outline-secondary openSpModalBtn"
+                                    title="View SPFT & SROI"
+                                    data-spft="${item.SPFT}"
+                                    data-sroi="${item.SROI}">
+                                    <i class="fa fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        ` : ''
+                    ));
                     $row.append($('<td>').html(`
-                        ${truncateWithTooltip(item.A_Z_ActionTaken, actionTakenCellWidth)}
-                        <i class="fas fa-plus reason-action-plus" style="cursor:pointer; color:#007bff; margin-left:8px;" 
-                        data-slno="${item['Sl']}" data-type="action_taken"></i>
-                    `));
+    <div class="text-center">
+        <span class="badge bg-danger editable-link mb-1"
+              data-sku="${item["(Child) sku"]}" 
+              data-type="js_comp_manual_api_link"
+              data-link="${item['js_comp_manual_api_link'] || ''}"
+              title="Double click to add"
+              style="cursor: pointer; background-color: #1a00ff !important;">
+            <i class="fas fa-plus"></i>
+        </span><br/>
+        ${item['js_comp_manual_api_link'] ? `
+                                                        <a href="${item['js_comp_manual_api_link']}" target="_blank" 
+                                                           class="badge bg-success open-link-btn" 
+                                                           title="Open link" 
+                                                           style="text-decoration: none;">
+                                                            <i class="fas fa-link"></i>
+                                                        </a>` : ''
+        }
+    </div>
+`));
+
+                    $row.append($('<td>').html(`
+    <div class="text-center">
+        <span class="badge bg-danger editable-link mb-1"
+              data-sku="${item["(Child) sku"]}" 
+              data-type="js_comp_manual_link"
+              data-link="${item['js_comp_manual_link'] || ''}"
+              title="Double click to add"
+              style="cursor: pointer; background-color: #ff9a00 !important;">
+            <i class="fas fa-plus"></i>
+        </span><br/>
+        ${item['js_comp_manual_link'] ? `
+                                                        <a href="${item['js_comp_manual_link']}" target="_blank" 
+                                                           class="badge bg-success open-link-btn" 
+                                                           title="Open link" 
+                                                           style="text-decoration: none;">
+                                                            <i class="fas fa-link"></i>
+                                                        </a>` : ''
+        }
+    </div>
+`));
+
+
+                    // CVR with color coding and tooltip
 
                     $tbody.append($row);
                 });
+
 
                 updatePaginationInfo();
                 $('#visible-rows').text(`Showing all ${filteredData.length} rows`);
                 // Initialize tooltips
                 initTooltips();
-
-                // Restore scroll position
-                setTimeout(() => {
-                    $tableContainer.scrollTop(prevScrollTop);
-                }, 0);
+                updateZeroSoldCount();
             }
 
             function initRAEditHandlers() {
@@ -2410,7 +3210,7 @@
                     const $icon = $(this);
                     const $checkbox = $icon.siblings('.ra-checkbox');
                     const $row = $checkbox.closest('tr');
-                    const rowData = filteredData.find(item => item['Sl'] == $row.find('td:eq(0)')
+                    const rowData = filteredData.find(item => item['SL No.'] == $row.find('td:eq(0)')
                         .text());
 
                     if ($icon.hasClass('fa-pen')) {
@@ -2453,52 +3253,124 @@
                 });
             }
 
-            function initNRSelectChangeHandler() {
-                $(document).on('change', '.nr-select', function () {
+            function initNRSelectChangeHandler2() {
+                $(document).on('change', '.nr-select', function() {
                     const $select = $(this);
-                    const newValue = $select.val();
-                    const sku = $select.data('sku');
-
-                    // Change background color based on selected value
-                    if (newValue === 'NR') {
+                    const sku = $(this).data('sku');
+                    const nrValue = $(this).val();
+                    if (nrValue === 'NRA') {
                         $select.css('background-color', '#dc3545').css('color', '#ffffff');
                     } else {
                         $select.css('background-color', '#28a745').css('color', '#ffffff');
                     }
-
-                    // Send AJAX
                     $.ajax({
-                        url: '/ebay/save-nr',
+                        url: '/amazon/save-nr',
                         type: 'POST',
                         data: {
                             sku: sku,
-                            nr: newValue,
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                    },
-                        success: function (response) {
-                            showNotification('success', 'NR updated successfully!');
+                            nr: JSON.stringify({
+                                NR: nrValue
+                            }),
+                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+                        },
+                        success: function(res) {
+                            showNotification('success', 'NR updated successfully');
 
-                            // Update tableData and filteredData
+                            // Update tableData and filteredData correctly
                             tableData.forEach(item => {
                                 if (item['(Child) sku'] === sku) {
-                                    item.NR = newValue;
+                                    item.NR = nrValue;
                                 }
                             });
                             filteredData.forEach(item => {
                                 if (item['(Child) sku'] === sku) {
-                                    item.NR = newValue;
+                                    item.NR = nrValue;
                                 }
                             });
-                            
-                            updateZeroViewDiv();
+                            // Recalculate & re-render
+                            calculateTotals();
                             renderTable();
                         },
-                        error: function (xhr) {
-                            showNotification('danger', 'Failed to update NR.');
+                        error: function(err) {
+                            console.error('Error saving NR:', err);
+                            showNotification('danger', 'Failed to update NR');
                         }
                     });
                 });
             }
+
+
+            function initNRSelectChangeHandler() {
+                $(document).on('change', '.fba-select', function() {
+                    const $select = $(this);
+                    const sku = $(this).data('sku');
+                    const fbaValue = $(this).val();
+                    if (fbaValue === 'FBA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
+                    }
+                    $.ajax({
+                        url: '/amazon/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            fba: JSON.stringify({
+                                FBA: fbaValue
+                            }),
+                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+                        },
+                        success: function(res) {
+                            showNotification('success', 'FBA updated successfully');
+
+                            // Update tableData and filteredData correctly
+                            tableData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.FBA = fbaValue;
+                                }
+                            });
+                            filteredData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.FBA = fbaValue;
+                                }
+                            });
+                            // Recalculate & re-render
+                            calculateTotals();
+                            renderTable();
+                        },
+                        error: function(err) {
+                            console.error('Error saving FBA:', err);
+                            showNotification('danger', 'Failed to update FBA');
+                        }
+                    });
+                });
+            }
+            $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
+                const $cb = $(this);
+                const sku = $cb.data('sku');
+                const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
+                const value = $cb.is(':checked') ? 1 : 0;
+
+                $.ajax({
+                    url: '/amazon/update-listed-live',
+                    method: 'POST',
+                    data: {
+                        sku: sku,
+                        field: field,
+                        value: value,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        console.log(`${field} updated for SKU ${sku}`);
+                    },
+                    error: function(err) {
+                        console.error('Update failed', err);
+                        alert('Failed to update. Try again.');
+                        $cb.prop('checked', !value); // revert on error
+                    }
+                });
+            });
+
 
             window.openModal = function(selectedItem, type) {
                 try {
@@ -2520,22 +3392,24 @@
                         itemData = selectedItem;
                     }
 
+
                     if (!itemData || typeof itemData !== 'object') {
                         console.error("Invalid item data:", itemData);
                         showNotification('danger', 'Failed to open details view. Invalid data.');
                         return;
                     }
 
-                    const itemId = itemData['Sl'] || 'unknown';
+                    const itemId = itemData['SL No.'] ? String(itemData['SL No.']) : (itemData['(Child) sku'] ||
+                        `row-${Math.random().toString(36).substr(2, 9)}`);
                     const modalId = `modal-${itemId}-${type.replace(/\s+/g, '-').toLowerCase()}`;
 
                     // Check cache first - use the cached data if available
-                    const cachedData = ebayDataCache.get(itemId);
+                    const cachedData = amazonOverallDataCache.get(itemId);
                     const dataToUse = cachedData || itemData;
 
                     // Store the data in cache if it wasn't already
                     if (!cachedData) {
-                        ebayDataCache.set(itemId, itemData);
+                        amazonOverallDataCache.set(itemId, itemData);
                     }
 
                     // Check if this modal already exists
@@ -2544,6 +3418,15 @@
                         // Just bring it to front if it exists
                         ModalSystem.bringToFront(existingModal);
                         return;
+                    }
+
+
+
+
+
+                    // Special handling for Scouth products view
+                    if (type.toLowerCase() === 'scouth products view') {
+                        return openScouthProductsView(selectedItem, modalId);
                     }
 
                     // Create modal content based on type
@@ -2566,405 +3449,683 @@
                     switch (type.toLowerCase()) {
                         case 'conversion view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'Sess30',
+                                    content: selectedItem['Sess30']
                                 },
                                 {
                                     title: 'SCVR',
                                     content: selectedItem['SCVR']
                                 },
                                 {
-                                    title: 'KwClkL60',
-                                    content: selectedItem['KwClkL60']
+                                    title: 'KwClks60',
+                                    content: selectedItem['KwClks60']
                                 },
                                 {
-                                    title: 'KwClkL30',
-                                    content: selectedItem['KwClkL30']
+                                    title: 'KwClks30',
+                                    content: selectedItem['KwClks30']
                                 },
                                 {
-                                    title: 'KwClkL7',
-                                    content: selectedItem['KwClkL7']
+                                    title: 'KwSld60',
+                                    content: selectedItem['KwSld60']
                                 },
                                 {
-                                    title: 'KwSldL60',
-                                    content: selectedItem['KwSldL60']
+                                    title: 'KwSld30',
+                                    content: selectedItem['KwSld30']
                                 },
                                 {
-                                    title: 'KwSldL30',
-                                    content: selectedItem['KwSldL30']
+                                    title: 'KwCvr60',
+                                    content: selectedItem['KwCvr60']
                                 },
                                 {
-                                    title: 'KwSldL7',
-                                    content: selectedItem['KwSldL7']
+                                    title: 'KwCvr30',
+                                    content: selectedItem['KwCvr30']
                                 },
                                 {
-                                    title: 'KwCvrL60',
-                                    content: selectedItem['KwCvrL60']
+                                    title: 'PtClks60',
+                                    content: selectedItem['PtClks60']
                                 },
                                 {
-                                    title: 'KwCvrL30',
-                                    content: selectedItem['KwCvrL30']
+                                    title: 'PtClks30',
+                                    content: selectedItem['PtClks30']
                                 },
                                 {
-                                    title: 'KwCvrL7',
-                                    content: selectedItem['KwCvrL7']
+                                    title: 'PtSld60',
+                                    content: selectedItem['PtSld60']
                                 },
                                 {
-                                    title: 'PmtClkL30',
-                                    content: selectedItem['PmtClkL30']
+                                    title: 'PtSld30',
+                                    content: selectedItem['PtSld30']
                                 },
                                 {
-                                    title: 'PmtClkL7',
-                                    content: selectedItem['PmtClkL7']
+                                    title: 'PtCvr60',
+                                    content: selectedItem['PtCvr60']
                                 },
                                 {
-                                    title: 'PmtSldL30',
-                                    content: selectedItem['PmtSldL30']
+                                    title: 'PtCvr30',
+                                    content: selectedItem['PtCvr30']
                                 },
                                 {
-                                    title: 'PmtSldL7',
-                                    content: selectedItem['PmtSldL7']
+                                    title: 'DspClks60',
+                                    content: selectedItem['DspClks60']
                                 },
                                 {
-                                    title: 'PmtCvrL30',
-                                    content: selectedItem['PmtCvrL30']
+                                    title: 'DspClks30',
+                                    content: selectedItem['DspClks30']
                                 },
                                 {
-                                    title: 'PmtCvrL7',
-                                    content: selectedItem['PmtCvrL7']
+                                    title: 'DspSld60',
+                                    content: selectedItem['DspSld60']
+                                },
+                                {
+                                    title: 'DspSld30',
+                                    content: selectedItem['DspSld30']
+                                },
+                                {
+                                    title: 'DspCvr60',
+                                    content: selectedItem['DspCvr60']
+                                },
+                                {
+                                    title: 'DspCvr30',
+                                    content: selectedItem['DspCvr30']
+                                },
+                                {
+                                    title: 'HdClks60',
+                                    content: selectedItem['HdClks60']
+                                },
+                                {
+                                    title: 'HdClks30',
+                                    content: selectedItem['HdClks30']
+                                },
+                                {
+                                    title: 'HdSld60',
+                                    content: selectedItem['HdSld60']
+                                },
+                                {
+                                    title: 'HdSld30',
+                                    content: selectedItem['HdSld30']
+                                },
+                                {
+                                    title: 'HdCvr60',
+                                    content: selectedItem['HdCvr60']
+                                },
+                                {
+                                    title: 'HdCvr30',
+                                    content: selectedItem['HdCvr30']
+                                },
+                                {
+                                    title: 'TClks60',
+                                    content: selectedItem['TClks60']
+                                },
+                                {
+                                    title: 'TClks30',
+                                    content: selectedItem['TClks30']
+                                },
+                                {
+                                    title: 'TSld60',
+                                    content: selectedItem['TSld60']
+                                },
+                                {
+                                    title: 'TSld30',
+                                    content: selectedItem['TSld30']
+                                },
+                                {
+                                    title: 'TCvr60',
+                                    content: selectedItem['TCvr60']
+                                },
+                                {
+                                    title: 'TCvr30',
+                                    content: selectedItem['TCvr30']
                                 }
                             ];
                             break;
                         case 'visibility view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'Sess30',
+                                    content: selectedItem['Sess30']
                                 },
                                 {
-                                    title: 'KwImpL60',
-                                    content: selectedItem['KwImpL60']
+                                    title: 'Sessl60',
+                                    content: selectedItem['sessions_l60']
                                 },
                                 {
-                                    title: 'KwImpL30',
-                                    content: selectedItem['KwImpL30']
+                                    title: 'KwImp60',
+                                    content: selectedItem['KwImp60']
                                 },
                                 {
-                                    title: 'KwImpL7',
-                                    content: selectedItem['KwImpL7']
+                                    title: 'KwImp30',
+                                    content: selectedItem['KwImp30']
                                 },
                                 {
-                                    title: 'KwClkL60',
-                                    content: selectedItem['KwClkL60']
+                                    title: 'KwClks60',
+                                    content: selectedItem['KwClks60']
                                 },
                                 {
-                                    title: 'KwClkL30',
-                                    content: selectedItem['KwClkL30']
+                                    title: 'KwClks30',
+                                    content: selectedItem['KwClks30']
                                 },
                                 {
-                                    title: 'KwClkL7',
-                                    content: selectedItem['KwClkL7']
+                                    title: 'KwCtr60',
+                                    content: selectedItem['KwCtr60']
                                 },
                                 {
-                                    title: 'KwCtrL60',
-                                    content: selectedItem['KwCtrL60']
+                                    title: 'KwCtr30',
+                                    content: selectedItem['KwCtr30']
                                 },
                                 {
-                                    title: 'KwCtrL30',
-                                    content: selectedItem['KwCtrL30']
+                                    title: 'PtImp60',
+                                    content: selectedItem['PtImp60']
                                 },
                                 {
-                                    title: 'KwCtrL7',
-                                    content: selectedItem['KwCtrL7']
+                                    title: 'PtImp30',
+                                    content: selectedItem['PtImp30']
                                 },
                                 {
-                                    title: 'PmtImpL30',
-                                    content: selectedItem['PmtImpL30']
+                                    title: 'PtClks60',
+                                    content: selectedItem['PtClks60']
                                 },
                                 {
-                                    title: 'PmtImpL7',
-                                    content: selectedItem['PmtImpL7']
+                                    title: 'PtClks30',
+                                    content: selectedItem['PtClks30']
                                 },
                                 {
-                                    title: 'PmtClkL30',
-                                    content: selectedItem['PmtClkL30']
+                                    title: 'PtCtr60',
+                                    content: selectedItem['PtCtr60']
                                 },
                                 {
-                                    title: 'PmtClkL7',
-                                    content: selectedItem['PmtClkL7']
+                                    title: 'PtCtr30',
+                                    content: selectedItem['PtCtr30']
                                 },
                                 {
-                                    title: 'PmtCtrL30',
-                                    content: selectedItem['PmtCtrL30']
+                                    title: 'DspImp60',
+                                    content: selectedItem['DspImp60']
                                 },
                                 {
-                                    title: 'PmtCtrL7',
-                                    content: selectedItem['PmtCtrL7']
+                                    title: 'DspImp30',
+                                    content: selectedItem['DspImp30']
+                                },
+                                {
+                                    title: 'DspClks60',
+                                    content: selectedItem['DspClks60']
+                                },
+                                {
+                                    title: 'DspClks30',
+                                    content: selectedItem['DspClks30']
+                                },
+                                {
+                                    title: 'DspCtr60',
+                                    content: selectedItem['DspCtr60']
+                                },
+                                {
+                                    title: 'DspCtr30',
+                                    content: selectedItem['DspCtr30']
+                                },
+                                {
+                                    title: 'HdImp60',
+                                    content: selectedItem['HdImp60']
+                                },
+                                {
+                                    title: 'HdImp30',
+                                    content: selectedItem['HdImp30']
+                                },
+                                {
+                                    title: 'HdClks60',
+                                    content: selectedItem['HdClks60']
+                                },
+                                {
+                                    title: 'HdClks30',
+                                    content: selectedItem['HdClks30']
+                                },
+                                {
+                                    title: 'HdCtr60',
+                                    content: selectedItem['HdCtr60']
+                                },
+                                {
+                                    title: 'HdCtr30',
+                                    content: selectedItem['HdCtr30']
+                                },
+                                {
+                                    title: 'TImp60',
+                                    content: selectedItem['TImp60']
+                                },
+                                {
+                                    title: 'TImp30',
+                                    content: selectedItem['TImp30']
+                                },
+                                {
+                                    title: 'TClks60',
+                                    content: selectedItem['TClks60']
+                                },
+                                {
+                                    title: 'TClks30',
+                                    content: selectedItem['TClks30']
+                                },
+                                {
+                                    title: 'TCtr60',
+                                    content: selectedItem['TCtr60']
+                                },
+                                {
+                                    title: 'TCtr30',
+                                    content: selectedItem['TCtr30']
                                 }
                             ];
                             break;
                         case 'price view':
                             fieldsToDisplay = [{
-                                    title: 'eBay LIVE Price',
-                                    content: selectedItem['eBay LIVE Price']
+                                    title: 'MSRP',
+                                    content: selectedItem['MSRP']
                                 },
                                 {
-                                    title: 'eBay Price',
-                                    content: selectedItem['eBay Price']
+                                    title: 'price',
+                                    content: selectedItem['price']
                                 },
                                 {
-                                    title: 'PFT %',
-                                    content: selectedItem['PFT %']
+                                    title: 'PFT_percentage',
+                                    content: selectedItem['PFT_percentage']
                                 },
                                 {
-                                    title: 'ROI%',
-                                    content: selectedItem['ROI%']
+                                    title: 'TPFT',
+                                    content: selectedItem['TPFT']
                                 },
                                 {
-                                    title: 'sprice',
-                                    content: dataToUse['sprice']
+                                    title: 'ROI_percentage',
+                                    content: selectedItem['ROI_percentage']
+                                },
+                                {
+                                    title: 'SPRICE',
+                                    content: dataToUse['SPRICE']
                                 },
                                 {
                                     title: 'Spft%',
-                                    content: dataToUse['Spft%'] !== 0 ?
-                                        Math.round(dataToUse['Spft%'] * 100) : 0
+                                    content: (function() {
+                                        let spftValue = dataToUse['Spft%'];
+                                        spftValue = typeof spftValue === 'string' ? parseFloat(
+                                            spftValue) : spftValue;
+
+                                        if (typeof spftValue !== 'number' || isNaN(spftValue)) {
+                                            return '0 %';
+                                        }
+                                        if (spftValue === 0) {
+                                            return '0 %';
+                                        }
+                                        const absValue = Math.abs(spftValue);
+                                        const formattedValue = (absValue < 100) ?
+                                            (spftValue * 100).toFixed(2) :
+                                            spftValue.toFixed(2);
+
+                                        return formattedValue + ' %';
+                                    })()
                                 },
                                 {
-                                    title: 'ad cost',
-                                    content: selectedItem['ad cost']
-                                },
-                                {
-                                    title: 'a+spft',
-                                    content: selectedItem['a+spft']
-                                },
-                                {
-                                    title: 'a+ROI',
-                                    content: selectedItem['a+ROI']
+                                    title: 'Tannishtha done',
+                                    content: dataToUse['Tannishtha done']
                                 },
                                 {
                                     title: 'LMP 1',
-                                    content: selectedItem['LMP 1']
+                                    content: dataToUse['LMP 1']
                                 },
                                 {
-                                    title: 'link 1',
-                                    content: dataToUse['link 1']
+                                    title: 'LINK 1',
+                                    content: dataToUse['LINK 1']
                                 },
                                 {
-                                    title: 'lmp 2',
-                                    content: dataToUse['lmp 2']
+                                    title: 'LMP 2',
+                                    content: dataToUse['LMP 2']
                                 },
                                 {
-                                    title: 'link 2',
-                                    content: dataToUse['link 2']
+                                    title: 'LINK 2',
+                                    content: dataToUse['LINK 2']
                                 },
                                 {
-                                    title: 'lmp 3',
-                                    content: dataToUse['lmp 3']
+                                    title: 'LMP3',
+                                    content: dataToUse['LMP3']
                                 },
                                 {
-                                    title: 'link 3',
-                                    content: dataToUse['link 3']
+                                    title: 'LINK 3',
+                                    content: dataToUse['LINK 3']
+                                },
+                                {
+                                    title: 'LMP 4',
+                                    content: dataToUse['LMP 4']
+                                },
+                                {
+                                    title: 'LINK 4',
+                                    content: dataToUse['LINK 4']
+                                },
+                                {
+                                    title: 'LMP 5',
+                                    content: dataToUse['LMP 5']
+                                },
+                                {
+                                    title: 'LINK 5',
+                                    content: dataToUse['LINK 5']
                                 }
                             ];
                             break;
                         case 'advertisement view':
-                            fieldsToDisplay = [
-                                // Core TACOS Metrics
-                                {
-                                    title: 'KwImpL60',
-                                    content: selectedItem['KwImpL60']
+                            fieldsToDisplay = [{
+                                    title: 'KwImp60',
+                                    content: selectedItem['KwImp60']
                                 },
                                 {
-                                    title: 'KwImpL30',
-                                    content: selectedItem['KwImpL30']
+                                    title: 'KwImp30',
+                                    content: selectedItem['KwImp30']
                                 },
                                 {
-                                    title: 'KwImpL7',
-                                    content: selectedItem['KwImpL7']
+                                    title: 'KwClks60',
+                                    content: selectedItem['KwClks60']
                                 },
                                 {
-                                    title: 'KwClkL60',
-                                    content: selectedItem['KwClkL60']
+                                    title: 'KwClks30',
+                                    content: selectedItem['KwClks30']
                                 },
                                 {
-                                    title: 'KwClkL30',
-                                    content: selectedItem['KwClkL30']
+                                    title: 'KwCtr60',
+                                    content: selectedItem['KwCtr60']
                                 },
                                 {
-                                    title: 'KwClkL7',
-                                    content: selectedItem['KwClkL7']
+                                    title: 'KwCtr30',
+                                    content: selectedItem['KwCtr30']
                                 },
                                 {
-                                    title: 'KwCtrL60',
-                                    content: selectedItem['KwCtrL60']
+                                    title: 'KwSpnd60',
+                                    content: selectedItem['KwSpnd60']
                                 },
                                 {
-                                    title: 'KwCtrL30',
-                                    content: selectedItem['KwCtrL30']
+                                    title: 'KwSpnd30',
+                                    content: selectedItem['KwSpnd30']
                                 },
                                 {
-                                    title: 'KwCtrL7',
-                                    content: selectedItem['KwCtrL7']
+                                    title: 'KwSls60',
+                                    content: selectedItem['KwSls60']
                                 },
                                 {
-                                    title: 'KwSpndL60',
-                                    content: selectedItem['KwSpndL60']
+                                    title: 'KwSls30',
+                                    content: selectedItem['KwSls30']
                                 },
                                 {
-                                    title: 'KwSpndL30',
-                                    content: selectedItem['KwSpndL30']
+                                    title: 'KwSld60',
+                                    content: selectedItem['KwSld60']
                                 },
                                 {
-                                    title: 'KwSpndL7',
-                                    content: selectedItem['KwSpndL7']
+                                    title: 'KwSld30',
+                                    content: selectedItem['KwSld30']
                                 },
                                 {
-                                    title: 'KwSpndL1',
-                                    content: selectedItem['KwSpndL1']
+                                    title: 'KwAcos60',
+                                    content: selectedItem['KwAcos60']
                                 },
                                 {
-                                    title: 'KwSldL60',
-                                    content: selectedItem['KwSldL60']
+                                    title: 'KwAcos30',
+                                    content: selectedItem['KwAcos30']
                                 },
                                 {
-                                    title: 'KwSldL30',
-                                    content: selectedItem['KwSldL30']
+                                    title: 'KwCvr60',
+                                    content: selectedItem['KwCvr60']
                                 },
                                 {
-                                    title: 'KwSldL7',
-                                    content: selectedItem['KwSldL7']
+                                    title: 'KwCvr30',
+                                    content: selectedItem['KwCvr30']
+                                },
+
+                                {
+                                    title: 'PtImp60',
+                                    content: selectedItem['PtImp60']
                                 },
                                 {
-                                    title: 'KwSlsL60',
-                                    content: selectedItem['KwSlsL60']
+                                    title: 'PtImp30',
+                                    content: selectedItem['PtImp30']
                                 },
                                 {
-                                    title: 'KwSlsL30',
-                                    content: selectedItem['KwSlsL30']
+                                    title: 'PtClks60',
+                                    content: selectedItem['PtClks60']
                                 },
                                 {
-                                    title: 'KwSlsL7',
-                                    content: selectedItem['KwSlsL7']
+                                    title: 'PtClks30',
+                                    content: selectedItem['PtClks30']
                                 },
                                 {
-                                    title: 'KwCpcL60',
-                                    content: selectedItem['KwCpcL60']
+                                    title: 'PtCtr60',
+                                    content: selectedItem['PtCtr60']
                                 },
                                 {
-                                    title: 'KwCpcL30',
-                                    content: selectedItem['KwCpcL30']
+                                    title: 'PtCtr30',
+                                    content: selectedItem['PtCtr30']
                                 },
                                 {
-                                    title: 'KwCpcL7',
-                                    content: selectedItem['KwCpcL7']
+                                    title: 'PtSpnd60',
+                                    content: selectedItem['PtSpnd60']
                                 },
                                 {
-                                    title: 'KwCpcL1',
-                                    content: selectedItem['KwCpcL1']
+                                    title: 'PtSpnd30',
+                                    content: selectedItem['PtSpnd30']
                                 },
                                 {
-                                    title: 'KwAcosL60',
-                                    content: selectedItem['KwAcosL60']
+                                    title: 'PtSls60',
+                                    content: selectedItem['PtSls60']
                                 },
                                 {
-                                    title: 'KwAcosL30',
-                                    content: selectedItem['KwAcosL30']
+                                    title: 'PtSls30',
+                                    content: selectedItem['PtSls30']
                                 },
                                 {
-                                    title: 'KwAcosL7',
-                                    content: selectedItem['KwAcosL7']
+                                    title: 'PtSld60',
+                                    content: selectedItem['PtSld60']
                                 },
                                 {
-                                    title: 'KwCvrL30',
-                                    content: selectedItem['KwCvrL30']
+                                    title: 'PtSld30',
+                                    content: selectedItem['PtSld30']
                                 },
                                 {
-                                    title: 'KwCvrL7',
-                                    content: selectedItem['KwCvrL7']
+                                    title: 'PtAcos60',
+                                    content: selectedItem['PtAcos60']
                                 },
                                 {
-                                    title: 'Ub 7',
-                                    content: selectedItem['Ub 7']
+                                    title: 'PtAcos30',
+                                    content: selectedItem['PtAcos30']
                                 },
                                 {
-                                    title: 'Ub yes',
-                                    content: selectedItem['Ub yes']
+                                    title: 'PtCvr60',
+                                    content: selectedItem['PtCvr60']
                                 },
                                 {
-                                    title: 'PmtImpL30',
-                                    content: selectedItem['PmtImpL30']
+                                    title: 'PtCvr30',
+                                    content: selectedItem['PtCvr30']
+                                },
+
+                                {
+                                    title: 'DspImp60',
+                                    content: selectedItem['DspImp60']
                                 },
                                 {
-                                    title: 'PmtImpL7',
-                                    content: selectedItem['PmtImpL7']
+                                    title: 'DspImp30',
+                                    content: selectedItem['DspImp30']
                                 },
                                 {
-                                    title: 'PmtClkL30',
-                                    content: selectedItem['PmtClkL30']
+                                    title: 'DspClks60',
+                                    content: selectedItem['DspClks60']
                                 },
                                 {
-                                    title: 'PmtClkL7',
-                                    content: selectedItem['PmtClkL7']
+                                    title: 'DspClks30',
+                                    content: selectedItem['DspClks30']
                                 },
                                 {
-                                    title: 'PmtCtrL30',
-                                    content: selectedItem['PmtCtrL30']
+                                    title: 'DspCtr60',
+                                    content: selectedItem['DspCtr60']
                                 },
                                 {
-                                    title: 'PmtCtrL7',
-                                    content: selectedItem['PmtCtrL7']
+                                    title: 'DspCtr30',
+                                    content: selectedItem['DspCtr30']
                                 },
                                 {
-                                    title: 'PmtSpndL30',
-                                    content: selectedItem['PmtSpndL30']
+                                    title: 'DspSpnd60',
+                                    content: selectedItem['DspSpnd60']
                                 },
                                 {
-                                    title: 'PmtSpndL7',
-                                    content: selectedItem['PmtSpndL7']
+                                    title: 'DspSpnd30',
+                                    content: selectedItem['DspSpnd30']
                                 },
                                 {
-                                    title: 'PmtSldL30',
-                                    content: selectedItem['PmtSldL30']
+                                    title: 'DspSls60',
+                                    content: selectedItem['DspSls60']
                                 },
                                 {
-                                    title: 'PmtSldL7',
-                                    content: selectedItem['PmtSldL7']
+                                    title: 'DspSls30',
+                                    content: selectedItem['DspSls30']
                                 },
                                 {
-                                    title: 'PmtSlsL30',
-                                    content: selectedItem['PmtSlsL30']
+                                    title: 'DspSld60',
+                                    content: selectedItem['DspSld60']
                                 },
                                 {
-                                    title: 'PmtSlsL7',
-                                    content: selectedItem['PmtSlsL7']
+                                    title: 'DspSld30',
+                                    content: selectedItem['DspSld30']
                                 },
                                 {
-                                    title: 'PmtAcosL30',
-                                    content: selectedItem['PmtAcosL30']
+                                    title: 'DspAcos60',
+                                    content: selectedItem['DspAcos60']
                                 },
                                 {
-                                    title: 'PmtAcosL7',
-                                    content: selectedItem['PmtAcosL7']
+                                    title: 'DspAcos30',
+                                    content: selectedItem['DspAcos30']
                                 },
                                 {
-                                    title: 'PmtCvrL30',
-                                    content: selectedItem['PmtCvrL30']
+                                    title: 'DspCvr60',
+                                    content: selectedItem['DspCvr60']
                                 },
                                 {
-                                    title: 'PmtCvrL7',
-                                    content: selectedItem['PmtCvrL7']
+                                    title: 'DspCvr30',
+                                    content: selectedItem['DspCvr30']
+                                },
+
+                                {
+                                    title: 'HdImp60',
+                                    content: selectedItem['HdImp60']
                                 },
                                 {
-                                    title: 'Pmt%',
-                                    content: selectedItem['Pmt%']
+                                    title: 'HdImp30',
+                                    content: selectedItem['HdImp30']
                                 },
                                 {
-                                    title: 'TSpendL30',
-                                    content: selectedItem['TSpendL30']
+                                    title: 'HdClks60',
+                                    content: selectedItem['HdClks60']
                                 },
                                 {
-                                    title: 'TacosL30',
-                                    content: selectedItem['TacosL30']
+                                    title: 'HdClks30',
+                                    content: selectedItem['HdClks30']
                                 },
+                                {
+                                    title: 'HdCtr60',
+                                    content: selectedItem['HdCtr60']
+                                },
+                                {
+                                    title: 'HdCtr30',
+                                    content: selectedItem['HdCtr30']
+                                },
+                                {
+                                    title: 'HdSpnd60',
+                                    content: selectedItem['HdSpnd60']
+                                },
+                                {
+                                    title: 'HdSpnd30',
+                                    content: selectedItem['HdSpnd30']
+                                },
+                                {
+                                    title: 'HdSls60',
+                                    content: selectedItem['HdSls60']
+                                },
+                                {
+                                    title: 'HdSls30',
+                                    content: selectedItem['HdSls30']
+                                },
+                                {
+                                    title: 'HdSld60',
+                                    content: selectedItem['HdSld60']
+                                },
+                                {
+                                    title: 'HdSld30',
+                                    content: selectedItem['HdSld30']
+                                },
+                                {
+                                    title: 'HdAcos60',
+                                    content: selectedItem['HdAcos60']
+                                },
+                                {
+                                    title: 'HdAcos30',
+                                    content: selectedItem['HdAcos30']
+                                },
+                                {
+                                    title: 'HdCvr60',
+                                    content: selectedItem['HdCvr60']
+                                },
+                                {
+                                    title: 'HdCvr30',
+                                    content: selectedItem['HdCvr30']
+                                },
+
+                                {
+                                    title: 'TImp60',
+                                    content: selectedItem['TImp60']
+                                },
+                                {
+                                    title: 'TImp30',
+                                    content: selectedItem['TImp30']
+                                },
+                                {
+                                    title: 'TClks60',
+                                    content: selectedItem['TClks60']
+                                },
+                                {
+                                    title: 'TClks30',
+                                    content: selectedItem['TClks30']
+                                },
+                                {
+                                    title: 'TCtr60',
+                                    content: selectedItem['TCtr60']
+                                },
+                                {
+                                    title: 'TCtr30',
+                                    content: selectedItem['TCtr30']
+                                },
+                                {
+                                    title: 'TSpnd60',
+                                    content: selectedItem['TSpnd60']
+                                },
+                                {
+                                    title: 'TSpnd30',
+                                    content: selectedItem['TSpnd30']
+                                },
+                                {
+                                    title: 'TSls60',
+                                    content: selectedItem['TSls60']
+                                },
+                                {
+                                    title: 'TSls30',
+                                    content: selectedItem['TSls30']
+                                },
+                                {
+                                    title: 'TSld60',
+                                    content: selectedItem['TSld60']
+                                },
+                                {
+                                    title: 'TSld30',
+                                    content: selectedItem['TSld30']
+                                },
+                                {
+                                    title: 'TAcos60',
+                                    content: selectedItem['TAcos60']
+                                },
+                                {
+                                    title: 'TAcos30',
+                                    content: selectedItem['TAcos30']
+                                },
+                                {
+                                    title: 'TCvr60',
+                                    content: selectedItem['TCvr60']
+                                },
+                                {
+                                    title: 'TCvr30',
+                                    content: selectedItem['TCvr30']
+                                }
                             ];
                             break;
                         case 'wmpnm view':
@@ -3019,8 +4180,8 @@
                                             content: dataToUse['SEO  (KW RICH) ISSUE'],
                                             isCheckbox: true
                                         }, {
-                                            title: 'TITLE ISSUE',
-                                            content: dataToUse['TITLE ISSUE'],
+                                            title: 'TITLE ISSUEAD ISSUE',
+                                            content: dataToUse['TITLE ISSUEAD ISSUE'],
                                             isCheckbox: true
                                         },
                                         {
@@ -3242,125 +4403,240 @@
                 }
             };
 
+            // New function to handle Scouth products view specifically
+            function openScouthProductsView(data, modalId) {
+                if (!data.scout_data || !data.scout_data.all_data) {
+                    const modal = ModalSystem.createModal(
+                        modalId,
+                        'Scouth Products View Details',
+                        '<div class="alert alert-warning">No scout data available</div>'
+                    );
+                    ModalSystem.showModal(modalId);
+                    return;
+                }
+
+                // Sort products by price (lowest first)
+                const sortedProducts = [...data.scout_data.all_data].sort((a, b) => {
+                    const priceA = parseFloat(a.price) || Infinity;
+                    const priceB = parseFloat(b.price) || Infinity;
+                    return priceA - priceB;
+                });
+
+                // Create header with Parent and SKU
+                const header = document.createElement('div');
+                header.className = 'scouth-header';
+                header.innerHTML = `
+                    <div class="scouth-header-item">
+                        <div class="scouth-product-label">Parent</div>
+                        <div class="scouth-product-value">${data.Parent || 'N/A'}</div>
+                    </div>
+                    <div class="scouth-header-item">
+                        <div class="scouth-product-label">SKU</div>
+                        <div class="scouth-product-value">${data['(Child) sku'] || 'N/A'}</div>
+                    </div>
+                `;
+
+                // Create table wrapper
+                const tableWrapper = document.createElement('div');
+                tableWrapper.className = 'scouth-table-wrapper';
+                tableWrapper.style.height = '425px';
+                tableWrapper.style.overflowY = 'auto';
+
+                // Create table header
+                const tableHeader = document.createElement('div');
+                tableHeader.className = 'scouth-table-header';
+                tableHeader.style.position = 'sticky';
+                tableHeader.style.top = '0';
+                tableHeader.style.backgroundColor = '#fff';
+                tableHeader.style.zIndex = '10';
+                tableHeader.innerHTML = `
+                    <div class="scouth-table-cell">ID</div>
+                    <div class="scouth-table-cell">Price</div>
+                    <div class="scouth-table-cell">Category</div>
+                    <div class="scouth-table-cell">Dimensions</div>
+                    <div class="scouth-table-cell">Image</div>
+                    <div class="scouth-table-cell">Quality Score</div>
+                    <div class="scouth-table-cell">Parent ASIN</div>
+                    <div class="scouth-table-cell">Product Rank</div>
+                    <div class="scouth-table-cell">Rating</div>
+                    <div class="scouth-table-cell">Reviews</div>
+                    <div class="scouth-table-cell">Weight</div>
+                `;
+
+                // Create table body
+                const tableBody = document.createElement('div');
+                tableBody.className = 'scouth-table-body';
+
+                // Add CSS for image thumbnails
+                const style = document.createElement('style');
+                style.textContent = `
+                    .scouth-image-link {
+                        display: inline-block;
+                    }
+                    .scouth-image-thumbnail {
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        cursor: pointer;
+                        border: 2px solid #ddd;
+                        transition: transform 0.2s;
+                    }
+                    .scouth-image-thumbnail:hover {
+                        transform: scale(1.1);
+                        border-color: #aaa;
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // Add product rows
+                sortedProducts.forEach(product => {
+                    const row = document.createElement('div');
+                    row.className = 'scouth-table-row';
+
+                    let imageCellContent = 'N/A';
+                    if (product.image_url) {
+                        const link = document.createElement('a');
+                        link.className = 'scouth-image-link';
+                        link.href = product.image_url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+
+                        const thumbnail = document.createElement('img');
+                        thumbnail.className = 'scouth-image-thumbnail';
+                        thumbnail.src = product.image_url;
+                        thumbnail.alt = 'Product image';
+
+                        link.appendChild(thumbnail);
+                        imageCellContent = link.outerHTML;
+                    }
+
+                    row.innerHTML = `
+                        <div class="scouth-table-cell">${product.id || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.price ? '$' + parseFloat(product.price).toFixed(2) : 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.category || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.dimensions || 'N/A'}</div>
+                        <div class="scouth-table-cell">${imageCellContent}</div>
+                        <div class="scouth-table-cell">${product.listing_quality_score || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.parent_asin || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.product_rank || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.rating || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.reviews || 'N/A'}</div>
+                        <div class="scouth-table-cell">${product.weight || 'N/A'}</div>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Assemble table
+                tableWrapper.appendChild(tableHeader);
+                tableWrapper.appendChild(tableBody);
+
+                // Create main container
+                const mainContainer = document.createElement('div');
+                mainContainer.appendChild(header);
+                mainContainer.appendChild(tableWrapper);
+
+                // Create modal
+                const modal = ModalSystem.createModal(
+                    modalId,
+                    'Scouth Products View Details (Sorted by Lowest Price)',
+                    mainContainer.outerHTML
+                );
+
+                // Show the modal
+                ModalSystem.showModal(modalId);
+            }
+
             // Helper function to create a field card
             function createFieldCard(field, data, type, itemId) {
-                const hyperlinkFields = ['link 1', 'link 2', 'link 3'];
+                const hyperlinkFields = ['LINK 1', 'LINK 2', 'LINK 3', 'LINK 4', 'LINK 5'];
 
-                const editableFields = ['sprice', 'LMP 1', 'link 1', 'lmp 2', 'link 2', 'lmp 3', 'link 3',
-                    'HIDE', 'LISTED', 'LIVE / ACTIVE', 'VISIBILITY ISSUE', 'INV SYNCED',
-                    'RIGHT CATEGORY', 'INCOMPLETE LISTING', 'BUYBOX ISSUE', 'SEO  (KW RICH) ISSUE',
-                    'TITLE ISSUEAD ISSUE', 'AD ISSUE', 'BP ISSUE', 'DESCR ISSUE', 'SPECS ISSUE',
-                    'IMG ISSUE', 'CATEGORY ISSUE', 'MAIN IMAGE ISSUE', 'PRICE ISSUE',
-                    'REVIEW ISSUE', 'WRONG KW IN LISTING', 'CVR ISSUE', 'REV ISSUE',
-                    'IMAGE ISSUE', 'VID ISSUE', 'USP HIGHLIGHT ISSUE', 'SPECS ISSUES',
-                    'MISMATCH ISSUE', 'NOTES', 'ACTION', 'TITLE ISSUE'
-                ];
-
-                const percentageFields = ['KwCtrL60', 'KwCtrL30', 'KwCtrL7', 'PFT %', 'ROI%',
-                    'a+spft', 'a+ROI', 'SCVR', 'KwCvrL60', 'KwCvrL30', 'KwCvrL7',
-                    'PmtCvrL30', 'PmtCvrL7', 'KwCtrL60', 'KwCtrL30', 'KwCtrL7', 'PmtCtrL30',
-                    'PmtCtrL7', 'KwAcosL60', 'KwAcosL30', 'KwAcosL7', 'KwCvrL30', 'KwCvrL7',
-                    'Ub 7',
-                    'Ub yes',
-                    'PmtCtrL30', 'PmtCtrL7', 'PmtAcosL30', 'PmtAcosL7', 'PmtCvrL30',
-                    'PmtCvrL7',
-                    'Pmt%', 'TacosL30'
+                const percentageFields = ['KwCtr60', 'KwCtr30', 'PtCtr60', 'PtCtr30', 'DspCtr60',
+                    'DspCtr30',
+                    'HdCtr60', 'HdCtr30', 'SCVR', 'KwCvr60', 'KwCvr30', 'PtCvr60', 'PtCvr30',
+                    'DspCvr60', 'DspCvr30', 'HdCvr60', 'HdCvr30', 'TCvr60', 'TCvr30',
+                    'KwAcos60', 'KwAcos30', 'PtAcos60', 'PtAcos30', 'DspAcos60', 'DspAcos30',
+                    'HdAcos60', 'HdAcos30', 'TCtr60', 'TCtr30', 'TAcos60', 'TAcos30',
+                    'Tacos60', 'Tacos30', 'PFT_percentage', 'TPFT', 'ROI_percentage'
                 ];
 
                 const getIndicatorColor = (fieldTitle, fieldValue) => {
-                    const value = (fieldValue * 100).toFixed(2) || 0;
+                    // Handle both string percentages (like "15%") and raw numbers
+                    let value;
+                    if (typeof fieldValue === 'string' && fieldValue.includes('%')) {
+                        value = parseFloat(fieldValue.replace('%', ''));
+                    } else {
+                        value = parseFloat(fieldValue);
+                    }
 
-                    if (type === 'price view') {
-                        if (['PFT %', 'Spft%'].includes(fieldTitle)) {
+                    // Handle NaN cases (invalid numbers)
+                    if (isNaN(value)) {
+                        return 'gray';
+                    }
+
+                    // Price view specific colors
+                    if (type.toLowerCase() === 'price view') {
+                        if (['PFT_percentage', 'TPFT'].includes(fieldTitle)) {
                             if (value < 10) return 'red';
                             if (value >= 10 && value < 15) return 'yellow';
                             if (value >= 15 && value < 20) return 'blue';
                             if (value >= 20 && value < 40) return 'green';
-                            if (value >= 40) return 'pink';
+                            return 'pink'; // 40 and above
                         }
-
-                        if (fieldTitle === 'ROI%') {
-                            if (value < 50) return 'red';
-                            if (value >= 50 && value < 75) return 'yellow';
-                            if (value >= 75 && value < 125) return 'green';
-                            if (value >= 125) return 'pink';
+                        if (fieldTitle === 'ROI_percentage') {
+                            if (value <= 50) return 'red';
+                            if (value > 50 && value <= 75) return 'yellow';
+                            if (value > 75 && value <= 100) return 'green';
+                            return 'pink'; // Above 100
                         }
-
-                        if (['a+spft', 'a+ROI'].includes(fieldTitle)) {
-                            return 'gray'; // Missing in sheet
+                        if (fieldTitle === 'Spft%') {
+                            // Convert to percentage for easier comparison
+                            const percentValue = Math.abs(value) < 100 ? value * 100 : value;
+                            if (percentValue < 0) return 'red'; // Negative values (loss)
+                            if (percentValue < 10) return 'red'; // Less than 10%
+                            if (percentValue < 15) return 'yellow'; // 10-14.99%
+                            if (percentValue < 20) return 'blue'; // 15-19.99%
+                            if (percentValue < 40) return 'green'; // 20-39.99%
+                            return 'pink'; // 40% and above
                         }
-
-                        return 'gray';
                     }
 
-                    if (type === 'visibility view') {
-                        if (['KwCtrL60', 'KwCtrL30', 'KwCtrL7', 'PmtCtrL30', 'PmtCtrL7'].includes(fieldTitle)) {
-                            return 'gray'; // Marked as missing
-                        }
-
-                        return 'gray';
-                    }
-
-                    if (type === 'advertisement view') {
-                        if (['KwAcosL60', 'KwAcosL30', 'KwAcosL7', 'TacosL30'].includes(fieldTitle)) {
-                            if (value == 0 || value == 100) return 'red';
-                            if (value > 0 && value <= 7) return 'pink';
+                    // Advertisement view specific colors
+                    if (type.toLowerCase() === 'advertisement view') {
+                        if (['KwAcos60', 'KwAcos30', 'PtAcos60', 'PtAcos30', 'DspAcos60',
+                                'DspAcos30', 'TAcos60', 'TAcos30'
+                            ].includes(fieldTitle)) {
+                            if (value === 0) return 'red';
+                            if (value > 0.01 && value <= 7) return 'pink';
                             if (value > 7 && value <= 14) return 'green';
-                            if (value > 14 && value <= 21) return 'yellow';
-                            if (value > 21) return 'red';
+                            if (value > 14 && value <= 21) return 'blue';
+                            if (value > 21 && value <= 28) return 'yellow';
+                            if (value > 28) return 'red';
                         }
-
-                        if (['KwCvrL30', 'KwCvrL7'].includes(fieldTitle)) {
-                            if (value < 7) return 'red';
-                            if (value > 7 && value <= 13) return 'green';
-                            if (value > 13) return 'pink';
-                        }
-
-                        if (['Ub 7', 'Ub yes'].includes(fieldTitle)) {
-                            if (value < 50) return 'red';
-                            if (value >= 50 && value <= 90) return 'green';
-                            if (value > 90) return 'pink';
-                        }
-
-                        if (['PmtAcosL30', 'PmtAcosL7'].includes(fieldTitle)) {
-                            if (value == 0) return 'red';
-                            if (value > 0 && value <= 10) return 'pink';
-                            if (value > 10 && value <= 20) return 'green';
-                            if (value > 20) return 'red';
-                        }
-
-                        if (fieldTitle === 'PmtCvrL30') {
-                            if (value < 7) return 'red';
-                            if (value > 7 && value < 13) return 'green';
-                            if (value >= 13) return 'pink';
-                        }
-
-                        if (fieldTitle === 'PmtCvrL7') {
-                            if (value < 7) return 'red';
-                            if (value > 7 && value < 14) return 'green';
-                            if (value >= 14) return 'pink';
-                        }
-
-                        if (['KwCtrL60', 'KwCtrL30', 'KwCtrL7', 'PmtCtrL30', 'PmtCtrL7', 'Pmt%'].includes(
-                                fieldTitle)) {
-                            return 'gray'; // Missing in sheet
-                        }
-
-                        return 'gray';
-                    }
-
-                    if (type === 'conversion view') {
-                        if (['Scvr', 'KwCvr60', 'KwCvr30', 'PtCvr60', 'PtCvr30', 'DspCvr60', 'DspCvr30',
-                                'HdCvr60',
-                                'HdCvr30', 'TCvr60', 'TCvr30'
+                        if (['KwCvr60', 'KwCvr30', 'PtCvr60', 'DspCvr60', 'PtCvr30',
+                                'DspCvr30', 'HdAcos60', 'HdAcos30', 'HdCvr60', 'HdCvr30',
+                                'TCvr60', 'TCvr30'
                             ].includes(fieldTitle)) {
                             if (value <= 7) return 'red';
                             if (value > 7 && value <= 13) return 'green';
-                            if (value > 13) return 'pink';
+                            return fieldTitle.includes('PtCvr') || fieldTitle.includes('DspCvr') ||
+                                fieldTitle.includes('HdCvr') || fieldTitle.includes('TCvr') ? 'pink' : 'gray';
                         }
-                        return 'gray';
                     }
 
+                    // Conversion view specific colors
+                    if (type.toLowerCase() === 'conversion view') {
+                        if (['Scvr', 'KwCvr60', 'KwCvr30', 'PtCvr60', 'PtCvr30',
+                                'DspCvr60', 'DspCvr30', 'HdCvr60', 'HdCvr30',
+                                'TCvr60', 'TCvr30'
+                            ].includes(fieldTitle)) {
+                            if (value <= 7) return 'red';
+                            if (value > 7 && value <= 13) return 'green';
+                            return 'pink';
+                        }
+                    }
+
+                    // Default color for all other cases
                     return 'gray';
                 };
 
@@ -3398,19 +4674,23 @@
                 fieldInput.value = field.title;
                 card.appendChild(fieldInput);
 
-                if (percentageFields.includes(field.title) && typeof content ===
-                    'number') {
-                    content = `${(content * 100).toFixed(2)}%`;
+                if (percentageFields.includes(field.title) && typeof content === 'number') {
+                    // Skip multiplication for PFT_percentage and ROI_percentage
+                    if (!['PFT_percentage', 'ROI_percentage'].includes(field.title)) {
+                        content = `${(content * 100).toFixed(2)}%`;
+                    } else {
+                        content = `${content.toFixed(2)}%`;
+                    }
                 }
 
                 // Add edit icon if field is editable
-                if (editableFields.includes(field.title)) {
-                    const editIcon = document.createElement('div');
-                    editIcon.className = 'position-absolute top-0 end-0 p-2 edit-icon';
-                    editIcon.style.cssText = 'cursor:pointer; z-index: 1;';
-                    editIcon.innerHTML = '<i class="fas fa-pen text-primary"></i>';
-                    card.appendChild(editIcon);
-                }
+                // if (editableFields.includes(field.title)) {
+                //     const editIcon = document.createElement('div');
+                //     editIcon.className = 'position-absolute top-0 end-0 p-2 edit-icon';
+                //     editIcon.style.cssText = 'cursor:pointer; z-index: 1;';
+                //     editIcon.innerHTML = '<i class="fas fa-pen text-primary"></i>';
+                //     card.appendChild(editIcon);
+                // }
 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
@@ -3473,81 +4753,77 @@
                 const modalElement = document.getElementById(modalId);
                 if (!modalElement) return;
 
-                $(modalElement).off('click', '.edit-icon, .save-icon');
+                // Get editable fields from the same array used in createFieldCard
+                const editableFields = [
+                    'SPRICE', 'Tannishtha done', 'LMP 1', 'LINK 1', 'LMP 2', 'LINK 2',
+                    'LMP3', 'LINK 3', 'LMP 4', 'LINK 4', 'LMP 5', 'LINK 5',
+                    'HIDE', 'LISTED', 'LIVE / ACTIVE', 'VISIBILITY ISSUE', 'INV SYNCED',
+                    'RIGHT CATEGORY', 'INCOMPLETE LISTING', 'BUYBOX ISSUE', 'SEO  (KW RICH) ISSUE',
+                    'TITLE ISSUEAD ISSUE', 'AD ISSUE', 'BP ISSUE', 'DESCR ISSUE', 'SPECS ISSUE',
+                    'IMG ISSUE', 'CATEGORY ISSUE', 'MAIN IMAGE ISSUE', 'PRICE ISSUE',
+                    'REVIEW ISSUE', 'WRONG KW IN LISTING', 'CVR ISSUE', 'REV ISSUE',
+                    'IMAGE ISSUE', 'VID ISSUE', 'USP HIGHLIGHT ISSUE', 'SPECS ISSUES',
+                    'MISMATCH ISSUE', 'NOTES', 'ACTION', 'TITLE ISSUE'
+                ];
 
-                $(modalElement).on('click', '.edit-icon', function(e) {
-                    e.stopPropagation();
+                // Remove all edit/save icons
+                $(modalElement).find('.edit-icon, .save-icon').remove();
 
-                    const icon = $(this);
-                    const card = icon.closest('.card');
-                    const contentElement = card.find('.editable-content');
-                    const checkbox = contentElement.find('.form-check-input');
-                    const title = card.find('.card-title').text().trim();
+                // Enable only editable fields
+                $(modalElement).find('.card').each(function() {
+                    const $card = $(this);
+                    const title = $card.find('.card-title').text().trim();
+                    if (!editableFields.includes(title)) return;
 
-                    // If it's a checkbox field, enable it and change to save icon
-                    if (checkbox.length > 0) {
-                        checkbox.prop('disabled', false);
-                        icon.html('<i class="fas fa-check text-success"></i>')
-                            .removeClass('edit-icon')
-                            .addClass('save-icon');
-                        return;
+                    const $content = $card.find('.editable-content');
+                    const $checkbox = $content.find('.form-check-input');
+                    const isHyperlink = $content.data('is-hyperlink');
+
+                    if ($checkbox.length) {
+                        $checkbox.prop('disabled', false);
+                    } else {
+                        let originalContent = $content.text().trim();
+                        if (isHyperlink && $content.find('a').length) {
+                            originalContent = $content.find('a').attr('href');
+                            $content.html(originalContent);
+                        }
+                        $content
+                            .attr('contenteditable', 'true')
+                            .addClass('border border-primary')
+                            .data('original-content', originalContent);
                     }
-
-                    const isHyperlink = contentElement.data('is-hyperlink');
-                    const slNo = card.find('.hidden-sl-no').val();
-
-                    if (currentEditingElement && currentEditingElement.is(contentElement)) {
-                        return;
-                    }
-
-                    if (isEditMode && currentEditingElement) {
-                        exitEditMode(currentEditingElement);
-                    }
-
-                    let originalContent = contentElement.text().trim();
-                    if (isHyperlink && contentElement.find('a').length) {
-                        originalContent = contentElement.find('a').attr('href');
-                    }
-
-                    contentElement.data('original-content', originalContent)
-                        .html(originalContent)
-                        .attr('contenteditable', 'true')
-                        .addClass('border border-primary')
-                        .focus();
-
-                    isEditMode = true;
-                    currentEditingElement = contentElement;
-
-                    icon.html('<i class="fas fa-check text-success"></i>')
-                        .removeClass('edit-icon')
-                        .addClass('save-icon');
                 });
 
-                // Save handler
-                $(modalElement).on('click', '.save-icon', function(e) {
-                    e.stopPropagation();
-                    const icon = $(this);
-                    const card = icon.closest('.card');
-                    const contentElement = card.find('.editable-content');
-                    const checkbox = contentElement.find('.form-check-input');
-                    const title = card.find('.card-title').text().trim();
-                    const slNo = card.find('.hidden-sl-no').val();
-                    const isHyperlink = contentElement.data('is-hyperlink');
-
-                    // Get the updated value
-                    let updatedValue;
-                    if (checkbox.length > 0) {
-                        updatedValue = checkbox.prop('checked') ? "true" : "false";
-                        checkbox.prop('disabled', true);
-                    } else {
-                        updatedValue = contentElement.text().trim();
-                        if (isHyperlink && contentElement.find('a').length) {
-                            updatedValue = contentElement.find('a').attr('href');
-                        }
+                // Save on Enter for text fields
+                $(modalElement).off('keydown', '.editable-content[contenteditable="true"]');
+                $(modalElement).on('keydown', '.editable-content[contenteditable="true"]', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const $content = $(this);
+                        const $card = $content.closest('.card');
+                        const title = $card.find('.card-title').text().trim();
+                        const slNo = $card.find('.hidden-sl-no').val();
+                        const isHyperlink = $content.data('is-hyperlink');
+                        let updatedValue = $content.text().trim();
+                        if (isHyperlink) updatedValue = updatedValue;
+                        saveChanges($content, title, slNo, isHyperlink, updatedValue, false);
                     }
+                });
 
-                    saveChanges(contentElement, title, slNo, isHyperlink, updatedValue, checkbox.length >
-                        0);
+                // Save on Enter for checkboxes
+                $(modalElement).off('keydown', '.form-check-input');
+                $(modalElement).on('keydown', '.form-check-input', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const $checkbox = $(this);
+                        const $card = $checkbox.closest('.card');
+                        const $content = $card.find('.editable-content');
+                        const title = $card.find('.card-title').text().trim();
+                        const slNo = $card.find('.hidden-sl-no').val();
+                        const isHyperlink = $content.data('is-hyperlink');
+                        let updatedValue = $checkbox.prop('checked') ? "true" : "false";
+                        saveChanges($content, title, slNo, isHyperlink, updatedValue, true);
+                    }
                 });
             }
 
@@ -3591,13 +4867,17 @@
                 const itemId = card.find('.hidden-sl-no').val() || slNo;
                 const saveIcon = card.find('.save-icon') || card.find('.edit-icon');
 
-                // Prepare data for API call
+                // Prepare data for API call (only for the original field)
                 const data = {
                     slNo: parseInt(itemId),
                     updates: {
                         [title]: updatedValue
                     }
                 };
+
+                // Exclude 'SPRICE', 'Spft%', 'SROI%' from /api/update-amazon-column
+                const excludedFields = ['SPRICE', 'Spft%', 'SROI%'];
+                const isExcluded = excludedFields.includes(title);
 
                 // Show loading indicator
                 if (saveIcon) {
@@ -3606,29 +4886,28 @@
 
                 // 1. First update the cache immediately
                 const cacheUpdateValue = isCheckbox ? (updatedValue === "true") : updatedValue;
-                ebayDataCache.updateField(itemId, title, cacheUpdateValue);
+                amazonOverallDataCache.updateField(itemId, title, cacheUpdateValue);
 
                 // 2. Update the filteredData array to reflect the change
-                const index = filteredData.findIndex(item => item['Sl'] == itemId);
+                const index = filteredData.findIndex(item => item['SL No.'] == itemId);
                 if (index !== -1) {
                     filteredData[index][title] = cacheUpdateValue;
 
-                    // If this is an SPRICE update, calculate and update Spft% in cache
-                    if (title === 'sprice' && filteredData[index].raw_data) {
+                    // If this is an SPRICE update, calculate and update Spft% in cache using new formula
+                    if (title === 'SPRICE' && filteredData[index].raw_data) {
                         const item = filteredData[index];
-                        const AMZ = parseFloat(item.AMZ) || 0;
-                        const SH = parseFloat(item.raw_data.SH) || 0;
+                        const price = parseFloat(item.price) || 0;
+                        const SHIP = parseFloat(item.raw_data.SHIP) || 0;
                         const LP = parseFloat(item.raw_data.LP) || 0;
                         const SPRICE = parseFloat(updatedValue) || 0;
 
-                        // Calculate Spft% using formula: (SPRICE * AMZ - SHIP - LP) / SPRICE
+                        // Calculate Spft% using new formula: (SPRICE * 0.71 - SHIP - LP) / SPRICE
                         let Spft = 0;
                         if (SPRICE !== 0) {
-                            Spft = (SPRICE * 0.77 - LP - SH) / SPRICE;
+                            Spft = (SPRICE * 0.80 - SHIP - LP) / SPRICE;
                         }
 
-                        // Update Spft% in cache and local data
-                        ebayDataCache.updateField(itemId, 'Spft%', Spft);
+                        amazonOverallDataCache.updateField(itemId, 'Spft%', Spft);
                         filteredData[index]['Spft%'] = Spft;
                         filteredData[index].raw_data['Spft%'] = Spft;
                     }
@@ -3663,7 +4942,7 @@
                 }
 
                 // 4. If we updated SPRICE, update the Spft% card in the modal if it's open
-                if (title === 'sprice') {
+                if (title === 'SPRICE') {
                     const modalId = `modal-${itemId}-price-view`;
                     const modalElement = document.getElementById(modalId);
                     if (modalElement) {
@@ -3674,17 +4953,25 @@
                             if (cardTitle && cardTitle.textContent.trim() === 'Spft%') {
                                 const contentElement = card.querySelector('.card-text');
                                 if (contentElement) {
-                                    // Format Spft% for display
-                                    const SpftValue = filteredData[index]['Spft%'] || 0;
+                                    // Get the latest Spft% value from filteredData or fallback to cache
+                                    let SpftValue = 0;
+                                    if (filteredData[index] && typeof filteredData[index]['Spft%'] !==
+                                        'undefined') {
+                                        SpftValue = filteredData[index]['Spft%'] || 0;
+                                    } else {
+                                        // fallback: try cache
+                                        const cached = amazonOverallDataCache.get(itemId);
+                                        if (cached && typeof cached['Spft%'] !== 'undefined') {
+                                            SpftValue = cached['Spft%'] || 0;
+                                        }
+                                    }
                                     const absValue = Math.abs(SpftValue);
                                     let displayValue;
-
                                     if (absValue < 100) {
                                         displayValue = (SpftValue * 100).toFixed(2);
                                     } else {
                                         displayValue = SpftValue.toFixed(2);
                                     }
-
                                     contentElement.textContent = displayValue + ' %';
                                 }
                                 break;
@@ -3693,11 +4980,11 @@
                     }
                 }
 
-                // 5. Send the update to the server
+                // 5. Send the update to the server ONLY for the original field
                 $.ajax({
                     method: 'POST',
                     url: window.location.origin + (window.location.pathname.includes('/public') ?
-                        '/public' : '') + '/api/update-ebay-column',
+                        '/public' : '') + '/api/update-amazon-column',
                     data: JSON.stringify(data),
                     contentType: 'application/json',
                     headers: {
@@ -3740,32 +5027,31 @@
                         const originalValue = contentElement.data('original-value');
 
                         // Revert cache
-                        ebayDataCache.updateField(itemId, title, originalValue);
+                        amazonOverallDataCache.updateField(itemId, title, originalValue);
 
                         // Revert filteredData
                         if (index !== -1) {
                             filteredData[index][title] = originalValue;
+                            if (title === 'R&A' && filteredData[index].raw_data) {
+                                filteredData[index].raw_data[title] = originalValue;
+                            }
 
                             // If this was an SPRICE update, revert Spft% as well
-                            if (title === 'sprice') {
-                                // Recalculate original Spft%
+                            if (title === 'SPRICE') {
+                                // We don't have original Spft% value, so we'll need to recalculate it
                                 const item = filteredData[index];
-                                const SH = parseFloat(item.raw_data.SH) || 0;
+                                const SHIP = parseFloat(item.raw_data.SHIP) || 0;
                                 const LP = parseFloat(item.raw_data.LP) || 0;
                                 const SPRICE = parseFloat(originalValue) || 0;
 
                                 let Spft = 0;
                                 if (SPRICE !== 0) {
-                                    Spft = (SPRICE * 0.77 - LP - SH) / SPRICE;
+                                    Spft = (SPRICE * 0.80 - SHIP - LP) / SPRICE;
                                 }
 
-                                ebayDataCache.updateField(itemId, 'Spft%', Spft);
+                                amazonOverallDataCache.updateField(itemId, 'Spft%', Spft);
                                 filteredData[index]['Spft%'] = Spft;
                                 filteredData[index].raw_data['Spft%'] = Spft;
-                            }
-
-                            if (title === 'R&A' && filteredData[index].raw_data) {
-                                filteredData[index].raw_data[title] = originalValue;
                             }
                         }
 
@@ -3831,7 +5117,7 @@
 
             // Make columns resizable
             function initResizableColumns() {
-                const $table = $('#ebay-table');
+                const $table = $('#amazon-table');
                 const $headers = $table.find('th');
                 let startX, startWidth, columnIndex;
 
@@ -3853,42 +5139,16 @@
                     $('body').css('user-select', 'none');
                 });
 
-                let resizeDebounceTimer = null;
-
                 $(document).on('mousemove', function(e) {
                     if (!isResizing) return;
 
                     const $resizer = $('.resize-handle.resizing');
                     if ($resizer.length) {
                         const $th = $resizer.parent();
-                        const columnIndex = $th.index();
                         const newWidth = startWidth + (e.pageX - startX);
                         $th.css('width', newWidth + 'px');
                         $th.css('min-width', newWidth + 'px');
                         $th.css('max-width', newWidth + 'px');
-
-                        // Debounced update for truncated text
-                        if ([10, 11, 12].includes(columnIndex)) {
-                            clearTimeout(resizeDebounceTimer);
-                            resizeDebounceTimer = setTimeout(() => {
-                                const $table = $('#amazonZero-table');
-                                $table.find('tbody tr').each(function() {
-                                    const $cell = $(this).find('td').eq(columnIndex);
-                                    const $span = $cell.find('.truncated-text');
-                                    if ($span.length) {
-                                        const fullText = $span.attr('title') || $span
-                                            .text();
-                                        let minLetters = 10;
-                                        let letters = Math.max(minLetters, Math.floor(
-                                            newWidth / 12));
-                                        const truncated = fullText.length > letters ?
-                                            fullText.substring(0, letters) + '...' :
-                                            fullText;
-                                        $span.text(truncated);
-                                    }
-                                });
-                            }, 50); // 50ms debounce
-                        }
                     }
                 });
 
@@ -3899,33 +5159,6 @@
                     $('.resize-handle').removeClass('resizing');
                     $('body').css('user-select', '');
                     isResizing = false;
-                    $('.resize-handle').removeClass('resizing');
-                    $('body').css('user-select', '');
-                    isResizing = false;
-
-                    // Get the new width of the resized column
-                    const $table = $('#amazonZero-table');
-                    const $headers = $table.find('th');
-                    const newWidth = $headers.eq(columnIndex).outerWidth() || 120;
-
-                    // Only update truncated text for Reason, Action Required, Action Taken columns
-                    // Adjust columnIndex if needed (here: 10, 11, 12)
-                    if ([10, 11, 12].includes(columnIndex)) {
-                        $table.find('tbody tr').each(function() {
-                            const $cell = $(this).find('td').eq(columnIndex);
-                            const $span = $cell.find('.truncated-text');
-                            if ($span.length) {
-                                // Get full text from title attribute
-                                const fullText = $span.attr('title') || $span.text();
-                                // Update truncated text
-                                let minLetters = 10;
-                                let letters = Math.max(minLetters, Math.floor(newWidth / 12));
-                                const truncated = fullText.length > letters ? fullText.substring(0,
-                                    letters) + '...' : fullText;
-                                $span.text(truncated);
-                            }
-                        });
-                    }
                 });
             }
 
@@ -4026,38 +5259,12 @@
             }
 
             // Initialize column toggle functionality
-            function loadHiddenColumns() {
-                const stored = localStorage.getItem('ebayHiddenColumns');
-                return stored ? new Set(JSON.parse(stored)) : new Set();
-            }
-
-            let hiddenColumns = loadHiddenColumns();
-
-            function applyColumnVisibility() {
-                const $table = $('#ebay-table');
-                const $headers = $table.find('th[data-field]');
-
-                $headers.each(function(index) {
-                    const field = $(this).data('field');
-                    const isHidden = hiddenColumns.has(field);
-
-                    $table.find('tr').each(function() {
-                        $(this).find('td, th').eq(index).toggle(!isHidden);
-                    });
-
-                    // Update checkbox state in menu if it exists
-                    const $checkbox = $(`#toggle-${field}`);
-                    if ($checkbox.length) $checkbox.prop('checked', !isHidden);
-                });
-            }
-
             function initColumnToggle() {
-                const $table = $('#ebay-table');
+                const $table = $('#amazon-table');
                 const $headers = $table.find('th[data-field]');
                 const $menu = $('#columnToggleMenu');
                 const $dropdownBtn = $('#hideColumnsBtn');
 
-                // Load hidden columns
                 $menu.empty();
 
                 $headers.each(function() {
@@ -4068,30 +5275,26 @@
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                id="toggle-${field}" data-field="${field}">
+                                   id="toggle-${field}" data-field="${field}" checked>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
+
                     $menu.append($item);
                 });
 
-                // Apply hidden columns **after checkboxes exist**
-                applyColumnVisibility();
-
-                // Dropdown toggle
-                $dropdownBtn.off('click').on('click', function(e) {
+                $dropdownBtn.on('click', function(e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
 
-                // Close menu if clicked outside
-                $(document).off('click.columnToggle').on('click.columnToggle', function(e) {
+
+                $(document).on('click', function(e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
                         $menu.removeClass('show');
                     }
                 });
 
-                // Checkbox toggle
                 $menu.on('change', '.column-toggle-checkbox', function() {
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
@@ -4100,31 +5303,13 @@
                     $table.find('tr').each(function() {
                         $(this).find('td, th').eq(colIndex).toggle(isVisible);
                     });
-
-                    if (!isVisible) hiddenColumns.add(field);
-                    else hiddenColumns.delete(field);
-
-                    localStorage.setItem('ebayHiddenColumns', JSON.stringify([...hiddenColumns]));
                 });
 
-                // Show all columns
                 $('#showAllColumns').on('click', function() {
-                    $headers.each(function(index) {
-                        $(this).show(); // show TH
-                    });
-                    $('#ebay-table tr').each(function() {
-                        $(this).find('td').each(function() {
-                            $(this).show(); // show all TDs
-                        });
-                    });
-                    // Update checkboxes
-                    $menu.find('.column-toggle-checkbox').prop('checked', true);
-                    // Clear hiddenColumns and save
-                    hiddenColumns.clear();
-                    localStorage.setItem('ebayHiddenColumns', JSON.stringify([...hiddenColumns]));
+                    $menu.find('.column-toggle-checkbox').prop('checked', true).trigger('change');
+                    $menu.removeClass('show');
                 });
             }
-
 
             // Initialize filters
             function initFilters() {
@@ -4162,9 +5347,9 @@
                 applyColumnFilters();
             });
 
-            // Apply column filters
+
             function applyColumnFilters() {
-                // Reset filteredData to all data first
+                // Default: show all rows
                 filteredData = [...tableData];
 
                 // Apply row type filter first
@@ -4175,23 +5360,18 @@
                     filteredData = filteredData.filter(item => !item.is_parent);
                 }
 
-                // --- INV filter ---
+                // Apply INV filter
                 const invFilter = $('#inv-filter').val();
                 if (invFilter && invFilter !== 'all') {
                     filteredData = filteredData.filter(item => {
                         const inv = Number(item.INV) || 0;
                         if (invFilter === '0') return inv === 0;
-                        if (invFilter === '1-15') return inv >= 1 && inv <= 15;
-                        if (invFilter === '16-30') return inv >= 16 && inv <= 30;
-                        if (invFilter === '31-50') return inv >= 31 && inv <= 50;
-                        if (invFilter === '51-75') return inv >= 51 && inv <= 75;
-                        if (invFilter === '76-100') return inv >= 76 && inv <= 100;
-                        if (invFilter === '101+') return inv > 100;
+                        if (invFilter === '1-100+') return inv >= 1;
                         return true;
                     });
                 }
 
-                // Then apply other filters as before
+                // Apply other filters
                 Object.entries(state.filters).forEach(([column, filterValue]) => {
                     if (filterValue === 'all') return;
 
@@ -4212,6 +5392,7 @@
                 calculateTotals();
             }
 
+
             // Get color for column based on value
             function getColorForColumn(column, rowData) {
                 if (!rowData || rowData[column] === undefined || rowData[column] === null || rowData[column] ===
@@ -4219,45 +5400,42 @@
                     return '';
                 }
 
-                // For OV CLICKS L30, use the raw value (not percentage)
-                if (column === 'OV CLICKS L30') {
-                    const value = parseInt(rowData[column]) || 0;
-                    return value >= 30 ? 'green' : 'red';
+                // Only multiply by 100 for columns that are stored as decimals
+                let value = parseFloat(rowData[column]);
+                if (['ov_dil', 'A Dil%', 'Tacos30', 'SCVR'].includes(column)) {
+                    value = value * 100;
                 }
 
-                const value = parseFloat(rowData[column]) * 100;
-
                 // Special cases for numeric columns that must be valid numbers
-                const numericColumns = ['PFT %', 'Roi', 'Tacos30', 'SCVR']; // Add other numeric columns as needed
+                const numericColumns = ['PFT_percentage', 'ROI_percentage', 'Tacos30', 'SCVR'];
                 if (numericColumns.includes(column) && isNaN(value)) {
                     return '';
                 }
 
-
                 const colorRules = {
                     'ov_dil': {
+                        ranges: [16.66, 25, 50], // Key change here
+                        colors: ['red', 'yellow', 'green', 'pink']
+                    },
+                    'A Dil%': {
                         ranges: [16.66, 25, 50],
                         colors: ['red', 'yellow', 'green', 'pink']
                     },
-                    'E Dil%': {
-                        ranges: [12.5, 16.66, 25, 50],
-                        colors: ['red', 'yellow', 'blue', 'green', 'pink']
-                    },
-                    'PFT %': {
+                    'PFT_percentage': {
                         ranges: [10, 15, 20, 40],
                         colors: ['red', 'yellow', 'blue', 'green', 'pink']
                     },
-                    'Roi': {
-                        ranges: [50, 75, 125],
+                    'ROI_percentage': {
+                        ranges: [50, 75, 100],
                         colors: ['red', 'yellow', 'green', 'pink']
                     },
                     'Tacos30': {
-                        ranges: [7, 14, 21],
-                        colors: ['pink', 'green', 'yellow', 'red']
+                        ranges: [5, 10, 15, 20],
+                        colors: ['pink', 'green', 'blue', 'yellow', 'red']
                     },
                     'SCVR': {
-                        ranges: [4, 7, 10],
-                        colors: ['red', 'yellow', 'green', 'pink']
+                        ranges: [7, 13],
+                        colors: ['red', 'green', 'pink']
                     }
                 };
 
@@ -4290,57 +5468,112 @@
                         el30Total: 0,
                         eDilTotal: 0,
                         viewsTotal: 0,
-                        profitSum: 0, // <-- new
-                        salesL30Sum: 0, // <-- new
+                        pftSum: 0,
                         roiSum: 0,
                         tacosTotal: 0,
                         scvrSum: 0,
-                        rowCount: 0
+                        rowCount: 0,
+                        totalPftSum: 0,
+                        totalSalesL30Sum: 0,
+                        totalCogsSum: 0,
+                        listedCount: 0,
+                        liveCount: 0
                     };
 
                     filteredData.forEach(item => {
-                        const profit = parseFloat(item.Profit) || 0;
-                        const salesL30 = parseFloat(item['Sales L30']) || 0;
-                        // Only add if both values are > 0
-                        if (profit > 0 && salesL30 > 0) {
-                            metrics.profitSum += profit;
-                            metrics.salesL30Sum += salesL30;
+
+                        let rawData = {};
+                        if (typeof item.raw_data === 'string') {
+                            try {
+                                rawData = JSON.parse(item.raw_data || '{}');
+                            } catch (e) {
+                                console.error(`Invalid JSON in raw_data for SKU ${item['(Child) sku']}`, e);
+                            }
+                        } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
+                            rawData = item.raw_data;
                         }
+
+                        // Count listed checkboxes
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
+                            rawData.Listed === '1') {
+                            metrics.listedCount++;
+                        }
+
+                        // Count Live checkboxes
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
+                            rawData.Live === '1') {
+                            metrics.liveCount++;
+                        }
+
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
-                        metrics.el30Total += parseFloat(item['E L30']) || 0;
-                        metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
-                        metrics.roiSum += parseFloat(item.Roi) || 0;
+                        metrics.el30Total += parseFloat(item['A L30']) || 0;
+                        metrics.eDilTotal += parseFloat(item['A Dil%']) || 0;
+                        let views = parseFloat(item.Sess30) || 0;
+                        if (item.NR !== 'NRA') {
+                            metrics.viewsTotal += views;
+                        }
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
+                        metrics.pftSum += parseFloat(item['PFT_percentage']) || 0;
+                        metrics.roiSum += parseFloat(item.ROI_percentage) || 0;
                         metrics.scvrSum += parseFloat(item.SCVR) || 0;
                         metrics.rowCount++;
+
+                        // Only sum for child rows (not parent rows)
+                        if (
+                            item['(Child) sku'] &&
+                            typeof item['(Child) sku'] === 'string' &&
+                            !item['(Child) sku'].toUpperCase().includes('PARENT')
+                        ) {
+                            const totalPft = parseFloat(item.raw_data['Total_pft']) || 0;
+                            const t_sale_l30 = parseFloat(item.raw_data['T_Sale_l30']) || 0;
+                            const cogs = parseFloat(item.raw_data['T_COGS']) || 0;
+
+                            metrics.totalPftSum += totalPft;
+                            metrics.totalSalesL30Sum += t_sale_l30;
+                            metrics.totalCogsSum += cogs;
+                        }
                     });
 
-                    // Calculate percentages
                     metrics.ovDilTotal = metrics.invTotal > 0 ?
                         (metrics.ovL30Total / metrics.invTotal) * 100 : 0;
-                    metrics.eDilTotal = metrics.ovL30Total > 0 ? (metrics.el30Total / metrics.ovL30Total) * 100 : 0;
+
+                    // --- A Dil% metric: (sum of A L30) / (sum of INV) * 100 ---
+                    let aDilTotalDisplay = '0%';
+                    if (metrics.invTotal > 0) {
+                        aDilTotalDisplay = Math.round((metrics.el30Total / metrics.invTotal) * 100) + '%';
+                    }
 
                     const divisor = metrics.rowCount || 1;
 
-                    // Update metric displays with correct calculations
+                    // Update metric displays
                     $('#inv-total').text(metrics.invTotal.toLocaleString());
                     $('#ovl30-total').text(metrics.ovL30Total.toLocaleString());
+                    $('#listed-total').text(metrics.listedCount.toLocaleString());
+                    $('#live-total').text(metrics.liveCount.toLocaleString());
                     $('#ovdil-total').text(Math.round(metrics.ovDilTotal) + '%');
-                    $('#el30-total').text(metrics.el30Total.toLocaleString());
-                    $('#eDil-total').text(Math.round(metrics.eDilTotal) + '%');
+                    $('#al30-total').text(metrics.el30Total.toLocaleString());
+                    $('#lDil-total').text(aDilTotalDisplay);
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
 
-                    // Calculate and display averages
-                    let pftTotal = 0;
-                    if (metrics.salesL30Sum > 0) {
-                        pftTotal = (metrics.profitSum / metrics.salesL30Sum) * 100;
-                    }
 
-                    $('#pft-total').text(pftTotal.toFixed(2) + '%');
-                    $('#roi-total').text(Math.round((metrics.roiSum / divisor) * 100) + '%');
-                    $('#tacos-total').text(Math.round((metrics.tacosTotal / divisor) * 100) + '%');
-                    $('#cvr-total').text(Math.round((metrics.scvrSum / divisor) * 100) + '%');
+
+                    // --- Custom PFT TOTAL calculation  ---
+                    let pftTotalDisplay = '0%';
+                    if (metrics.totalSalesL30Sum > 0) {
+                        pftTotalDisplay = Math.round(metrics.totalPftSum / metrics.totalSalesL30Sum * 100) + '%';
+                    }
+                    $('#pft-total').text(pftTotalDisplay);
+
+                    // --- ROI TOTAL calculation ---
+                    let roiTotalDisplay = '0%';
+                    if (metrics.totalCogsSum > 0) {
+                        roiTotalDisplay = Math.round(metrics.totalPftSum / metrics.totalCogsSum * 100) + '%';
+                    }
+                    $('#roi-total').text(roiTotalDisplay);
+
+                    $('#tacos-total').text(Math.round(metrics.tacosTotal / divisor * 100) + '%');
+                    $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
 
                 } catch (error) {
                     console.error('Error in calculateTotals:', error);
@@ -4351,9 +5584,11 @@
             function resetMetricsToZero() {
                 $('#inv-total').text('0');
                 $('#ovl30-total').text('0');
+                $('#listed-total').text('0');
+                $('#live-total').text('0');
                 $('#ovdil-total').text('0%');
-                $('#el30-total').text('0');
-                $('#eDil-total').text('0%');
+                $('#al30-total').text('0');
+                $('#lDil-total').text('0%');
                 $('#views-total').text('0');
                 $('#pft-total').text('0%');
                 $('#roi-total').text('0%');
@@ -4641,6 +5876,42 @@
                 calculateTotals();
             }
 
+
+
+            if (!document.getElementById('pricingModal')) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                $('body').append(`
+        <div class="modal fade" id="pricingModal" tabindex="-1" aria-labelledby="pricingModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content p-3">
+                    <div class="modal-header">
+                        <h5 class="modal-title">SPRICE Calculator</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="pricingForm">
+                            <input type="hidden" id="skuInput" name="sku">
+                            <div class="mb-2">
+                                <label>SPRICE ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="sprPriceInput" name="sprice">
+                            </div>
+                            <div class="mb-2">
+                                <label>SPFT%</label>
+                                <input type="text" class="form-control" id="spftPercentInput" name="spft_percent" readonly>
+                            </div>
+                            <div class="mb-2">
+                                <label>SROI%</label>
+                                <input type="text" class="form-control" id="sroiPercentInput" name="sroi_percent" readonly>
+                            </div>
+                            <button name="submit" type="button" id="savePricingBtn" class="btn btn-primary">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+            }
             // Initialize manual dropdowns
             function initManualDropdowns() {
                 // Toggle dropdown when any filter button is clicked
@@ -4741,71 +6012,461 @@
                 $('#data-loader').fadeOut();
             }
 
-            // Handle plus icon click to open modal
-            $(document).on('click', '.reason-action-plus', function() {
-                const slNo = $(this).data('slno');
-                const row = filteredData.find(item => item['Sl'] == slNo);
+            $(document).on('click', '.openPricingBtn', function() {
+                const LP = parseFloat($(this).data('lp')) || 0;
+                const SHIP = parseFloat($(this).data('ship')) || 0;
+                const SKU = $(this).data('sku') || '';
 
-                // Fill modal fields with current values using the correct keys
-                $('#modalReason').val(row.A_Z_Reason || '');
-                $('#modalActionRequired').val(row.A_Z_ActionRequired || '');
-                $('#modalActionTaken').val(row.A_Z_ActionTaken || '');
-                $('#modalSlNo').val(slNo);
+                $('#skuInput').val(SKU);
 
-                // Show modal
-                $('#reasonActionModal').modal('show');
-            });
+                const $sprInput = $('#sprPriceInput');
+                const $spftInput = $('#spftPercentInput');
+                const $sroiInput = $('#sroiPercentInput');
 
-            // Save button in modal
-            $('#saveReasonActionBtn').on('click', function() {
-                const slNo = $('#modalSlNo').val();
-                const reason = $('#modalReason').val();
-                const actionRequired = $('#modalActionRequired').val();
-                const actionTaken = $('#modalActionTaken').val();
+                // Reset values
+                $sprInput.val('');
+                $spftInput.val('');
+                $sroiInput.val('');
 
-                // Find the SKU for this row
-                const row = filteredData.find(item => item['Sl'] == slNo);
-                const sku = row ? row['(Child) sku'] : null;
+                $sprInput.off('input').on('input', function() {
+                    const SPRICE = parseFloat(this.value) || 0;
 
-                // Update data in filteredData and tableData
-                [filteredData, tableData].forEach(arr => {
-                    const row = arr.find(item => item['Sl'] == slNo);
-                    if (row) {
-                        row.A_Z_Reason = reason;
-                        row.A_Z_ActionRequired = actionRequired;
-                        row.A_Z_ActionTaken = actionTaken;
+                    if (SPRICE > 0) {
+                        const SPFT = ((SPRICE * 0.80) - LP - SHIP) / SPRICE;
+                        const SROI = ((SPRICE * 0.80) - LP - SHIP) / LP;
+
+                        $spftInput.val((SPFT * 100).toFixed(2) + '%');
+                        $sroiInput.val(isFinite(SROI) ? (SROI * 100).toFixed(2) + '%' : '∞');
+                    } else {
+                        $spftInput.val('');
+                        $sroiInput.val('');
                     }
                 });
 
-                // Save to backend via AJAX
-                if (sku) {
+                $('#pricingModal').modal('show');
+            });
+
+
+            $(document).on('click', '#savePricingBtn', function() {
+                const sku = $('#skuInput').val()?.trim();
+                const spriceVal = $('#sprPriceInput').val();
+                const spft = parseFloat($('#spftPercentInput').val()?.replace('%', '')) || 0;
+                const sroi = parseFloat($('#sroiPercentInput').val()?.replace('%', '')) || 0;
+
+                const sprice = spriceVal !== '' ? parseFloat(spriceVal) : null;
+
+                if (!sku || !sprice) {
+                    alert('SKU and SPRICE are required.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/amazon/save-sprice',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        sprice: sprice,
+                        spft_percent: spft,
+                        sroi_percent: sroi
+                    },
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $('#savePricingBtn').html(
+                            '<i class="fa fa-spinner fa-spin"></i> Saving...');
+                    },
+                    success: function(response) {
+                        showNotification('success', 'Data updated successfully...');
+                        $('#pricingModal').modal('hide');
+                        tableData.forEach(item => {
+                            if (item['(Child) sku'] === sku) {
+                                item.SPRICE = sprice;
+                                item.SPFT = spft;
+                                item.SROI = sroi;
+                            }
+                        });
+
+                        filteredData.forEach(item => {
+                            if (item['(Child) sku'] === sku) {
+                                item.SPRICE = sprice;
+                                item.SPFT = spft;
+                                item.SROI = sroi;
+                            }
+                        });
+                        renderTable();
+                    },
+                    error: function(xhr) {
+                        alert('Error saving SPRICE.');
+                        console.error(xhr.responseText);
+                    },
+                    complete: function() {
+                        $('#savePricingBtn').html('Save');
+                    }
+                });
+            });
+
+            $(document).ready(function() {
+                const CLICK_DELAY = 300;
+
+                $(document).on('click', '#savePricingBtn', function(e) {
+                    e.preventDefault();
+
+                    const $btn = $(this);
+
+                    // Avoid multiple clicks
+                    if ($btn.data('clicked')) return;
+
+                    $btn.data('clicked', true); // prevent re-clicking
+
+                    const timer = setTimeout(() => {
+                        $btn.data('clicked', false); // reset click state
+
+                        const sku = $('#skuInput').val()?.trim();
+                        const spriceVal = $('#sprPriceInput').val();
+                        const spft = parseFloat($('#spftPercentInput').val()?.replace('%',
+                            '')) || 0;
+                        const sroi = parseFloat($('#sroiPercentInput').val()?.replace('%',
+                            '')) || 0;
+                        const sprice = spriceVal !== '' ? parseFloat(spriceVal) : null;
+
+                        if (!sku || !sprice) {
+                            alert('SKU and SPRICE are required.');
+                            return;
+                        }
+
+
+                        $.ajax({
+                            url: '/amazon/save-sprice',
+                            type: 'POST',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr(
+                                    'content'),
+                                sku: sku,
+                                sprice: sprice,
+                                spft_percent: spft,
+                                sroi_percent: sroi
+                            },
+                            dataType: 'json',
+                            beforeSend: function() {
+                                $('#savePricingBtn').html(
+                                    '<i class="fa fa-spinner fa-spin"></i> Saving...'
+                                );
+                            },
+                            success: function(response) {
+                                showNotification('success',
+                                    'Data updated successfully...');
+                                $('#pricingModal').modal('hide');
+                                tableData.forEach(item => {
+                                    if (item['(Child) sku'] === sku) {
+                                        item.SPRICE = sprice;
+                                        item.SPFT = spft;
+                                        item.SROI = sroi;
+                                    }
+                                });
+
+                                filteredData.forEach(item => {
+                                    if (item['(Child) sku'] === sku) {
+                                        item.SPRICE = sprice;
+                                        item.SPFT = spft;
+                                        item.SROI = sroi;
+                                    }
+                                });
+                                renderTable();
+                            },
+                            error: function(xhr) {
+                                alert('Error saving SPRICE.');
+                                console.error(xhr.responseText);
+                            },
+                            complete: function() {
+                                $('#savePricingBtn').html('Save');
+                            }
+                        });
+
+                    }, CLICK_DELAY);
+
+                    $btn.data('singleClickTimer', timer);
+                });
+
+
+                // Handle click for saving manual links
+                $(document).on('click', '.editable-link', function() {
+                    const sku = $(this).data('sku');
+                    const type = $(this).data('type');
+
+                    const currentValue = prompt(`Enter new value for ${type}:`);
+                    if (currentValue === null || currentValue.trim() === '') return;
+
                     $.ajax({
-                        url: '/ebay-zero/reason-action/update',
-                        method: 'POST',
+                        url: '/amazon/save-manual-link', // change if needed
+                        type: 'POST',
                         data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
                             sku: sku,
-                            reason: reason,
-                            action_required: actionRequired,
-                            action_taken: actionTaken,
-                            _token: $('meta[name="csrf-token"]').attr('content')
+                            type: type,
+                            value: currentValue.trim()
                         },
                         success: function(response) {
-                            showNotification('success', 'Reason/Action updated successfully!');
+                            showNotification('success', `${type} updated successfully`);
+
+                            // Update in tableData
+                            tableData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item[type] = currentValue.trim();
+                                }
+                            });
+
+                            // Update in filteredData
+                            filteredData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item[type] = currentValue.trim();
+                                }
+                            });
+
                             renderTable();
-                            $('#reasonActionModal').modal('hide');
                         },
                         error: function(xhr) {
-                            showNotification('danger', 'Failed to update Reason/Action.');
+                            alert('Error updating link.');
+                            console.error(xhr.responseText);
                         }
                     });
-                } else {
-                    renderTable();
-                    $('#reasonActionModal').modal('hide');
-                }
+                });
+
             });
+
 
             // Initialize everything
             initTable();
         });
     </script>
+
+    <script>
+        $(document).on('click', '.openSpModalBtn', function() {
+            const spft = $(this).data('spft');
+            const sroi = $(this).data('sroi');
+
+            $('#modalSpftVal').text(isNaN(spft) ? '--' : Math.round(parseFloat(spft)));
+            $('#modalSroiVal').text(isNaN(sroi) ? '--' : Math.round(parseFloat(sroi)));
+
+            $('#spModal').modal('show');
+        });
+    </script>
+    <div class="modal fade" id="spModal" tabindex="-1" role="dialog" aria-labelledby="spModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="spModalLabel">SPFT & SROI Details</h5>
+                    <button type="button" class="close btn btn-sm" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>SPFT:</strong> <span id="modalSpftVal">--</span>%</p>
+                    <p><strong>SROI:</strong> <span id="modalSroiVal">--</span>%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#saveSpendButton').on('click', function() {
+            const sku = $('#spendSkuInput').val();
+            const spend = parseFloat($('#spendValueInput').val()) || 0;
+
+            $.ajax({
+                url: '/amazon/save-nr',
+                type: 'POST',
+                data: {
+                    sku: sku,
+                    spend: spend,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    $('#saveSpendButton').html('<i class="fa fa-spinner fa-spin"></i> Saving...');
+                },
+                success: function(res) {
+                    $('#spendModal').modal('hide');
+                    showSimpleAlert('success', '✅ Spend updated successfully!');
+
+                    console.log("SKU to update:", sku);
+                    console.log("Before update tableData match:", tableData.filter(item => item[
+                        '(Child) sku'] === sku));
+
+                    tableData.forEach(item => {
+                        if (item['(Child) sku'] === sku) {
+                            item.SPEND = spend; // Ensure correct field name here
+                        }
+                    });
+
+                    filteredData.forEach(item => {
+                        if (item['(Child) sku'] === sku) {
+                            item.SPEND = spend;
+                        }
+                    });
+
+                    console.log("After update tableData match:", tableData.filter(item => item[
+                        '(Child) sku'] === sku));
+
+                    renderTable();
+                },
+                error: function(err) {
+                    console.error('Error saving Spend:', err);
+                    showSimpleAlert('danger', '❌ Failed to update Spend!');
+                },
+                complete: function() {
+                    $('#saveSpendButton').html('Save');
+                }
+            });
+        });
+
+        function showSimpleAlert(type, message) {
+            const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+            $('#messageArea').html(alertHtml);
+
+            // Auto-close after 3 seconds
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 3000);
+        }
+    </script>
+    <!-- Font Awesome for icons -->
+
+    <script>
+        $(document).on('click', '.price-view-trigger', function() {
+            const rawData = $(this).data('item'); // JSON object
+            const $tbody = $('#priceViewTable tbody');
+            $tbody.empty();
+
+            // Fields to display
+            const fieldsToDisplay = [{
+                    title: 'MSRP',
+                    content: rawData['MSRP']
+                },
+                {
+                    title: 'Price',
+                    content: rawData['price']
+                },
+                {
+                    title: 'PFT_percentage',
+                    content: rawData['PFT_percentage']
+                },
+                {
+                    title: 'TPFT',
+                    content: rawData['TPFT']
+                },
+                {
+                    title: 'ROI_percentage',
+                    content: rawData['ROI_percentage']
+                },
+                {
+                    title: 'SPRICE',
+                    content: rawData['SPRICE']
+                },
+                {
+                    title: 'Spft%',
+                    content: rawData['Spft%']
+                },
+                {
+                    title: 'Tannishtha done',
+                    content: rawData['Tannishtha done']
+                },
+                {
+                    title: 'LMP 1',
+                    content: rawData['LMP 1']
+                },
+                {
+                    title: 'LINK 1',
+                    content: rawData['LINK 1']
+                },
+                {
+                    title: 'LMP 2',
+                    content: rawData['LMP 2']
+                },
+                {
+                    title: 'LINK 2',
+                    content: rawData['LINK 2']
+                },
+                {
+                    title: 'LMP3',
+                    content: rawData['LMP3']
+                },
+                {
+                    title: 'LINK 3',
+                    content: rawData['LINK 3']
+                },
+                {
+                    title: 'LMP 4',
+                    content: rawData['LMP 4']
+                },
+                {
+                    title: 'LINK 4',
+                    content: rawData['LINK 4']
+                },
+                {
+                    title: 'LMP 5',
+                    content: rawData['LMP 5']
+                },
+                {
+                    title: 'LINK 5',
+                    content: rawData['LINK 5']
+                },
+            ];
+
+            // Append rows to table
+            fieldsToDisplay.forEach(field => {
+                let displayContent = field.content ?? '';
+
+                // Handle LINK fields
+                if (field.title.startsWith('LINK')) {
+                    if (displayContent) {
+                        displayContent =
+                            `<a href="${displayContent}" target="_blank"><i class="fa fa-link"></i></a>`;
+                    } else {
+                        displayContent = `<i class="fa fa-times text-danger"></i>`;
+                    }
+                }
+
+                $tbody.append(`
+            <tr>
+                <td>${field.title}</td>
+                <td>${displayContent}</td>
+            </tr>
+        `);
+            });
+
+            // Show modal
+            $('#priceViewModal').modal('show');
+        });
+    </script>
+
+    <!-- Modal -->
+    <div class="modal fade" id="priceViewModal" tabindex="-1" aria-labelledby="priceViewModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="priceViewModalLabel">Price Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-striped" id="priceViewTable">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic rows go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

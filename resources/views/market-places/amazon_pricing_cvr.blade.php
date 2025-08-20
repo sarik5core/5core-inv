@@ -1,6 +1,7 @@
 @extends('layouts.vertical', ['title' => 'Amazon', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<div id="messageArea" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;"></div>
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -984,9 +985,11 @@
         .scouth-product-value a:hover {
             text-decoration: underline;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
+
         /*popup modal style end */
     </style>
 @endsection
@@ -1007,6 +1010,18 @@
                         <button id="editPercentBtn" class="btn btn-outline-primary ms-2">
                             <i class="fa fa-pen"></i>
                         </button>
+                    </div>
+                    <div class="d-inline-flex align-items-center ms-2">
+                        <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
+                            0 SOLD - <span id="zero-sold-count">0</span>
+                        </div>
+                        <div class="badge bg-primary text-white px-3 py-2 me-2"
+                            style="font-size: 1rem; border-radius: 8px;">
+                            SOLD - <span id="sold-count">0</span>
+                        </div>
+                        <div class="badge bg-danger text-white px-3 py-2" style="font-size: 1rem; border-radius: 8px;">
+                            RED MARGIN - <span id="red-margin-count">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1456,8 +1471,30 @@
                                             <div class="metric-total" id="lDil-total">0%</div>
                                         </div>
                                     </th>
+
                                     <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
                                         NRL
+                                    </th>
+
+                                    <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
+                                        FBA
+                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LISTED <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="listed-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LIVE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="live-total">0</div>
+                                        </div>
                                     </th>
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -1468,6 +1505,7 @@
                                             <div class="metric-total" id="views-total">0</div>
                                         </div>
                                     </th>
+
 
                                     <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -1486,17 +1524,102 @@
                                             </div>
                                         </div>
                                     </th>
-
+                                    <th data-field="comp"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                COMP <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
-                                                PFT <span class="sort-arrow">↓</span>
+                                                GPRFT <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
+                                    <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                Total Profit <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
 
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                AD Spend <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TPFT<span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                Profit After AD <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TPRFT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="profit-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    {{-- <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                Sold Amount <span class="sort-arrow">↓</span>
+                                            </div> 
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="sold-amount-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                PFT Amount <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="profit-total">0%</div>
+                                        </div>
+                                    </th>
+
+                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                PFT > Ads <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="profit-total">0%</div>
+                                        </div>
+                                    </th> --}}
 
                                     <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1507,7 +1630,23 @@
                                             <div class="metric-total" id="roi-total">0%</div>
                                         </div>
                                     </th>
+                                    <th data-field="tacos" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TACOS <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="tacos-total">0%</div>
+                                        </div>
+                                    </th>
 
+                                    <th data-field="ad cost/ pc" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                AD COST <br> PER PC<span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
 
                                     <th data-field="S-PRICE" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1519,7 +1658,7 @@
                                         </div>
                                     </th>
 
-                                    <th data-field="S-PROFIT" style="vertical-align: middle; white-space: nowrap;">
+                                    {{-- <th data-field="S-PROFIT" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
                                                 S-PROFIT <span class="sort-arrow">↓</span>
@@ -1537,10 +1676,7 @@
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
-                                    </th>
-
-
-
+                                    </th> --}}
 
                                 </tr>
                             </thead>
@@ -1575,6 +1711,28 @@
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade" id="spendModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Spend</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="spendSkuInput">
+                    <div class="mb-3">
+                        <label for="spendValueInput" class="form-label">Spend Value</label>
+                        <input type="number" step="0.01" class="form-control" id="spendValueInput">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="saveSpendButton" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -1604,7 +1762,15 @@
             form.reset();
             const modal = bootstrap.Modal.getInstance(document.getElementById('createTaskModal'));
             modal.hide();
+
+
         });
+
+        function openSpendModal(sku, currentSpend = '') {
+            $('#spendSkuInput').val(sku);
+            $('#spendValueInput').val(currentSpend);
+            $('#spendModal').modal('show');
+        }
     </script>
     <!--for popup modal script-->
     <script>
@@ -2118,7 +2284,8 @@
                     initModalTriggers();
                     initPlaybackControls();
                     initRAEditHandlers(); // Add this line
-                    initNREditHandlers();
+                    initNRSelectChangeHandler2();
+                    initNRSelectChangeHandler();
                 });
             }
 
@@ -2205,17 +2372,25 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            // Map all data directly (no filter)
+                            console.log(response.data, 'dataaa');
+
                             tableData = response.data.map((item, index) => {
+
+                                // Calculate A Dil% as (A L30 / INV), handle division by zero
                                 const inv = Number(item.INV) || 0;
                                 const aL30 = Number(item['A_L30']) || 0;
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
                                 const aDil = inv > 0 ? aL30 / inv : 0;
+                                const valueJson = item.value ? JSON.parse(item.value) : {};
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
 
                                 return {
                                     sl_no: index + 1,
-                                    'SL No.': index + 1,
+                                    'SL No.': item['SL No.'] || index + 1,
                                     Parent: item.Parent || item.parent || item.parent_asin ||
                                         item.Parent_ASIN || '(No Parent)',
                                     '(Child) sku': item['(Child) sku'] || '',
@@ -2244,13 +2419,19 @@
                                         .toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
                                     NR: item.NR !== undefined ? item.NR : '',
+                                    FBA: item.FBA !== undefined ? item.FBA : null,
+                                    listed: listedVal,
+                                    live: liveVal,
                                     SPRICE: item.SPRICE || 0,
                                     SPFT: item.SPFT || 0,
                                     SROI: item.SROI || 0,
+                                    Spend: item.Spend || 0,
                                 };
                             });
 
+                            // console.log('Data loaded successfully:', tableData);
                             filteredData = [...tableData];
+
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2262,13 +2443,15 @@
                     }
                 });
 
-                // 2. Then map the valid rows and assign correct serial number
                 tableData = validRows.map((item, index) => {
                     const inv = Number(item.INV) || 0;
                     const aL30 = Number(item['A_L30']) || 0;
                     const l30 = Number(item.L30) || 0;
                     const ovDil = inv > 0 ? l30 / inv : 0;
                     const aDil = inv > 0 ? aL30 / inv : 0;
+                    const valueJson = item.value ? JSON.parse(item.value) : {};
+                    const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
+                    const liveVal = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
 
                     return {
                         sl_no: index + 1, // Proper serial number after filtering
@@ -2300,6 +2483,9 @@
                             "PARENT") : false,
                         raw_data: item || {},
                         NR: item.NR || '',
+                        Spend: item.Spend || 0,
+                        listed: listedVal,
+                        live: liveVal,
                         SPRICE: item.SPRICE || 0,
                         SPFT: item.SPFT || 0,
                         SROI: item.SROI || 0,
@@ -2309,6 +2495,59 @@
                 filteredData = [...tableData];
             }
 
+            // After tableData is loaded and filteredData is set, update the zero-sold count
+            function updateZeroSoldCount() {
+                let zeroSold = 0;
+                let totalSku = 0;
+                let lowProfitCount = 0;
+
+                filteredData.forEach(item => {
+                    const al30 = parseFloat(item['A L30']) || 0;
+                    const inv = parseFloat(item['INV']) || 0;
+                    const sku = (item['(Child) sku'] || '').toUpperCase();
+                    const pftPercentage = parseFloat(item['PFT_percentage']) || 0;
+
+                    // Only count SKUs that are not parent and have inv > 0 for zeroSold
+                    if (!sku.includes('PARENT') && inv > 0) {
+                        if (al30 === 0) zeroSold++;
+                    }
+                    // For SOLD: count all SKUs that are not parent (regardless of inv)
+                    if (!sku.includes('PARENT')) {
+                        totalSku++;
+
+                        if (pftPercentage < 10) {
+                            lowProfitCount++;
+                        }
+                    }
+                });
+                $('#zero-sold-count').text(zeroSold);
+                $('#sold-count').text(totalSku - zeroSold);
+                $('#red-margin-count').text(lowProfitCount);
+
+                updateRedMarginDataToChannelMaster(lowProfitCount);
+            }
+
+            function updateRedMarginDataToChannelMaster(lowProfitCount) {
+                console.log(lowProfitCount);
+
+                fetch('/overallAmazon/saveLowProfit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            count: lowProfitCount
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Saved low profit count:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error saving low profit count:', error);
+                    });
+            }
 
             // Render table with current data
             function renderTable() {
@@ -2326,18 +2565,24 @@
                 }
 
                 filteredData.forEach(item => {
-                    // const inv = parseInt(item["INV"]) || 0;
-                    // const sess30 = parseInt(item["Sess30"]) || 0;
+                    console.log(item, 'dfdf');
 
-                    // // Skip the row where both INV and Sess30 are 0
-                    // if (inv === 0 || sess30 === 0) {
-                    //     return;
-                    // }
+                    let rawData = {};
+                    if (typeof item.raw_data === 'string') {
+                        try {
+                            rawData = JSON.parse(item.raw_data || '{}');
+                        } catch (e) {
+                            console.error('Invalid JSON in raw_data for SKU', item['(Child) sku'], e);
+                        }
+                    } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
+                        rawData = item.raw_data;
+                    }
+
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
-                    }   
-                    if(item.NR === 'NR'){
+                    }
+                    if (item.NR === 'NRA') {
                         $row.addClass('nr-hide');
                     }
 
@@ -2456,7 +2701,6 @@
                                 data-item='${JSON.stringify(item.raw_data)}'>W</span>`
                     ));
 
-
                     $row.append($('<td>').html(`
                         <div class="sku-tooltip-container">
                             <span class="sku-text">${item['A L30']}</span>
@@ -2475,41 +2719,116 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR :
-                        'REQ'; // default to REQ
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
+
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NR" ${currentNR === 'NR' ? 'selected' : ''}>NR</option>
-                                <option value="REQ" ${currentNR === 'REQ' ? 'selected' : ''}>REQ</option>
+                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
+                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
+                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
                             </select>
                         `);
 
+
                         // Set background color based on value
-                        if (currentNR === 'NR') {
+                        if (currentNR === 'NRA') {
                             $select.css('background-color', '#dc3545');
                             $select.css('color', '#ffffff');
-                        } else if (currentNR === 'REQ') {
+                        } else if (currentNR === 'RA') {
                             $select.css('background-color', '#28a745');
                             $select.css('color', '#ffffff');
+                        } else if (currentNR === 'LATER') {
+                            $select.css('background-color', '#ffc107');
+                            $select.css('color', '#000000');
                         }
+
+
                         $select.data('sku', item['(Child) sku']);
                         $row.append($('<td>').append($select));
                     }
 
+
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        const currentFBA = (item.FBA === 'FBA' || item.FBA === 'FBM' || item.FBA ===
+                                'BOTH') ?
+                            item.FBA :
+                            'FBM'; // default
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm fba-select" style="min-width: 100px;">
+                                <option value="FBA" ${currentFBA === 'FBA' ? 'selected' : ''}>FBA</option>
+                                <option value="FBM" ${currentFBA === 'FBM' ? 'selected' : ''}>FBM</option>
+                                <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                            </select>
+                        `);
+
+                        // Set background color
+                        if (currentFBA === 'FBA') {
+                            // Vibrant Blue
+                            $select.css({
+                                backgroundColor: '#007bff', // Bootstrap Primary Blue
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'FBM') {
+                            // Rich Violet
+                            $select.css({
+                                backgroundColor: '#6f42c1', // Bootstrap Purple
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'BOTH') {
+                            // Bright Teal
+                            $select.css({
+                                backgroundColor: '#20c997', // Bootstrap Teal
+                                color: '#ffffff'
+                            });
+                        }
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+
+                    }
+
+                    //Listed checkbox
+                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                        .Listed === 1 || rawData.Listed === '1';
+                    const $listedCb = $('<input>', {
+                        type: 'checkbox',
+                        class: 'listed-checkbox',
+                        checked: listedVal
+                    }).data('sku', item['(Child) sku']);
+
+                    $row.append($('<td>').append($listedCb));
+
+                    // Live checkbox
+                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                        1 || rawData.Live === '1';
+                    const $liveCb = $('<input>', {
+                        type: 'checkbox',
+                        class: 'live-checkbox',
+                        checked: liveVal
+                    }).data('sku', item['(Child) sku']);
+
+                    $row.append($('<td>').append($liveCb));
+
+
                     // Sess30 with tooltip icon (no color coding)
                     $row.append($('<td>').html(
                         `<span>${Math.round(item.Sess30)}</span>
-                         <span class="text-info tooltip-icon ad-view-trigger" 
-                               data-bs-toggle="tooltip" 
-                               data-bs-placement="left" 
-                               title="visibility View"
-                               data-item='${JSON.stringify(item.raw_data)}'>V</span>`
+                        <span class="text-info tooltip-icon ad-view-trigger" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="left" 
+                            title="visibility View"
+                            data-item='${JSON.stringify(item.raw_data)}'>V</span>`
                     ));
 
 
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
-                         <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
                             data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
                             data-item='${JSON.stringify(item.raw_data)}'></i>`
                     ));
@@ -2517,30 +2836,250 @@
                     //price with tooltip
                     $row.append($('<td>').html(
                         `$${(Number(item.price) || 0).toFixed(2)}
-                        <span class="tooltip-container" style="margin-left:8px">
-                            <i class="fas fa-tag text-warning price-view-trigger" 
-                            style="transform:translateY(1px)"
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="top-end" 
-                            title="Pricing view"
-                            data-item='${JSON.stringify(item.raw_data)}'"></i>
-                            </span>`
+                    <span class="tooltip-container ms-2">
+                        <i class="fas fa-eye text-primary price-view-trigger"
+                        style="cursor:pointer"
+                        data-item='${JSON.stringify(item.raw_data)}'
+                        title="View Price Details"></i>
+                    </span>`
                     ));
+
+
+                    $row.append($('<td>').html(
+                        `<span>$${item.min_price || 0}</span>
+                        <span class="text-info tooltip-icon scouth-products-view-trigger" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="left" 
+                            title="Scouth Products View"
+                            data-item='${JSON.stringify(item.raw_data)}'>P</span>`
+                    ));
+
 
 
                     // PFT with color coding
-
                     $row.append($('<td>').html(
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
                             'PFT_percentage']) ?
-                        `
-    <span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
-        ${Math.round(item['PFT_percentage'])}%
-    </span>
-    ` : ''
+                        `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
+                            ${item['PFT_percentage']}%
+                        </span>
+                        <span class="tooltip-container" style="margin-left:8px">
+                            <i class="fas fa-tag text-warning price-view-trigger" 
+                                style="transform:translateY(1px)"
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top-end" 
+                                title="Pricing view"
+                                data-item='${JSON.stringify(item.raw_data)}'></i>
+                        </span>` :
+                        ''
                     ));
 
 
+                    const sku = String(item["(Child) sku"]).replace(/'/g, "\\'");
+                    const Spend = String(item.Spend ?? '0').replace(/'/g, "\\'");
+                    const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    const spend = parseFloat(item['Spend']) || 0;
+                    const aL30 = Number(item['A L30']) || 0;
+                    const price = Number(item.price) || 0;
+
+                    // Sold Amount
+                    const soldAmount = aL30 * price;
+                    const pftAmt = (soldAmount * rawPft) / 100;
+                    const PFTafterPFT = pftAmt - spend;
+                    const adSpend = Number(item['Ad_Spend']) || 0;
+                    const tacos = spend / soldAmount;
+                    const totalProfit = (aL30 * price) * rawPft;
+
+
+                    // total profit 
+                    $row.append($('<td>').html(
+                        `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
+                    ));
+
+
+                    // spend in advertising     
+                    $row.append($('<td>').html(
+                        `<button class="btn  btn-danger"> $${adSpend.toFixed(2)} </button>`
+                    ));
+
+
+                    // profit after advertising
+                    const profitAfterAd = totalProfit - adSpend;
+
+                    $row.append(
+                        $('<td>').html(
+                            `<span class="badge bg-success">$${profitAfterAd.toFixed(2)}</span>`
+                        )
+                    );
+
+                    // TPFT 
+                    $row.append($('<td>').html(
+                        `<span class="badge bg-info">${((profitAfterAd / (price * aL30)) * 100).toFixed(2)}%</span>`
+                    ));
+
+
+
+
+
+
+
+
+                    // $row.append($('<td>').html(
+                    //     `
+                //     <span class="badge bg-secondary">$${Math.round(parseFloat(Spend))}</span>
+                //     <button class="btn btn-sm btn-outline-secondary ms-2"
+                //         onclick="openSpendModal('${sku}', '${Spend}', this)"
+                //         title="Edit Spend">
+                //         <i class="fas fa-pen"></i>
+                //     </button>
+                //     `
+                    // ));
+
+
+
+
+                    const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+
+                    $row.append($('<td>').html(
+                        typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
+                        `
+                        <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
+                            ${newPftPercentage.toFixed(2)}%
+                        </span>
+                    ` : ''
+                    ));
+
+
+
+                    // // Calculate: newPft = PFT_percentage - Spend
+                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    // const spend = parseFloat(item['Spend']) || 0;
+                    // const newPft = rawPft - spend;
+
+
+
+                    // // Append to the row
+                    // $row.append($('<td>').html(
+                    //     typeof newPft === 'number' && !isNaN(newPft) ?
+                    //     `
+                //     <span class="dil-percent-value ${getPftColor(newPft)}">
+                //         ${Math.round(newPft)}%
+                //     </span>
+                // ` : ''
+                    // ));
+
+
+
+
+                    // // Sold amomt calculation
+                    // const aL30 = Number(item['A L30']) || 0;
+                    // const price = Number(item.price) || 0;
+                    // const soldAmount = aL30 * price;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    // ));
+
+
+
+                    // const pftAmt = (soldAmount * item['PFT_percentage']) / 100;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">${pftAmt.toFixed(6)}</span>`
+                    // ));
+
+
+                    // const PFTafterPFT = pftAmt - spend;
+                    // $row.append($('<td>').html(
+                    //     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //     `
+                //         <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //         ${PFTafterPFT.toFixed(6)}
+                //         </span>
+                //     ` : ''
+                    // ));
+
+
+
+
+
+
+                    // const aL30 = Number(item['A L30']) || 0;
+                    // const price = Number(item.price) || 0;
+                    // const soldAmount = aL30 * price;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    // ));
+
+                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    // const spend = parseFloat(item['Spend']) || 0;
+
+                    // const pftAmt = (soldAmount * rawPft) / 100;
+
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">${pftAmt.toFixed(6)}</span>`
+                    // ));
+
+                    // const PFTafterPFT = pftAmt - spend;
+                    // $row.append($('<td>').html(
+                    //     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //     `
+                //         <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //             ${PFTafterPFT.toFixed(6)}
+                //         </span>
+                //     ` : ''
+                    // ));
+
+                    // // ✅ New PFT % based on actual profit after spend
+                    // const newPft = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+
+                    // $row.append($('<td>').html(
+                    //     typeof newPft === 'number' && !isNaN(newPft) ?
+                    //     `
+                //     <span class="dil-percent-value ${getPftColor(newPft)}">
+                //         ${newPft.toFixed(2)}%
+                //     </span>
+                //     ` : ''
+                    // ));
+
+                    // Raw values
+                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
+                    // const spend = parseFloat(item['Spend']) || 0;
+                    // const aL30 = Number(item['A L30']) || 0;
+                    // const price = Number(item.price) || 0;
+
+                    // // Sold Amount
+                    // const soldAmount = aL30 * price;
+
+
+
+                    //                 $row.append($('<td>').html(
+                    //                     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    //                 ));
+
+                    //                 // PFT Amount
+                    //                 // const pftAmt = (soldAmount * rawPft) / 100;
+
+                    //                 $row.append($('<td>').html(
+                    //                     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">
+                //     ${pftAmt.toFixed(6)}
+                // </span>`
+                    //                 ));
+
+                    //                 // PFT After Spend
+                    //                 // const PFTafterPFT = pftAmt - spend;
+
+                    //                 $row.append($('<td>').html(
+                    //                     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //                     `
+                //     <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //         ${PFTafterPFT.toFixed(6)}
+                //     </span>
+                // ` : ''
+                    //                 ));
+
+                    // ✅ New PFT (%) after spend
 
 
                     // ROI with color coding
@@ -2550,47 +3089,65 @@
                         ''
                     ));
 
+                    // TACOS with color coding and tooltip
+                    let tacosValue = (isNaN(tacos) || !isFinite(tacos)) ? 0 : Math.round(tacos * 100);
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${tacosValue}%</span>
+    <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
+        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
+        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
+
+                    // CVR with color coding and tooltip
+
+                    $row.append($('<td>').text(
+                        typeof item['ad cost/ pc'] === 'number' ? item['ad cost/ pc'].toFixed(2) : 0
+                    ));
 
 
                     // SPRICE + Edit Button (no decimals)
                     $row.append($('<td>').html(
                         item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
                         `
-                        <span class="badge bg-primary s_price">$${Math.round(parseFloat(item.SPRICE))}</span>
-                        <button class="btn btn-sm btn-outline-primary ms-2 openPricingBtn"
-                            title="Edit SPRICE"
-                            data-lp="${item.LP}"
-                            data-ship="${item.SHIP}"
-                            data-sku="${item["(Child) sku"]}">
-                            <i class="fa fa-edit"></i>
-                        </button>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary s_price">$${Math.round(parseFloat(item.SPRICE))}</span>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <!-- Edit Button -->
+                                <button class="btn btn-outline-primary openPricingBtn"
+                                    title="Edit SPRICE"
+                                    data-lp="${item.LP}"
+                                    data-ship="${item.SHIP}"
+                                    data-sku="${item["(Child) sku"]}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+
+                                <!-- View Button -->
+                                <button class="btn btn-outline-secondary openSpModalBtn"
+                                    title="View SPFT & SROI"
+                                    data-spft="${item.SPFT}"
+                                    data-sroi="${item.SROI}">
+                                    <i class="fa fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
                         ` : ''
                     ));
 
-                    // SPFT (% without decimals)
-                    $row.append($('<td>').html(
-                        item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
-                        `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
-                        ''
-                    ));
+                    // // SPFT Column (optional to show badge in table)
+                    // $row.append($('<td>').html(
+                    //     item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
+                    //     `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
+                    //     ''
+                    // ));
 
-                    // SROI (% without decimals)
-                    $row.append($('<td>').html(
-                        item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
-                        `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
-                        ''
-                    ));
-
-
-
-
-
-
-
-
-                    // CVR with color coding and tooltip
-
-
+                    // // SROI Column (optional to show badge in table)
+                    // $row.append($('<td>').html(
+                    //     item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
+                    //     `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
+                    //     ''
+                    // ));
 
 
                     $tbody.append($row);
@@ -2600,6 +3157,7 @@
                 $('#visible-rows').text(`Showing all ${filteredData.length} rows`);
                 // Initialize tooltips
                 initTooltips();
+                updateZeroSoldCount();
             }
 
             function initRAEditHandlers() {
@@ -2651,133 +3209,124 @@
                 });
             }
 
-            function initNREditHandlers() {
-                $(document).off('click', '.nr-edit-container .nr-edit-icon, .nr-edit-container .fa-save');
-                $(document).on('click', '.nr-edit-container .nr-edit-icon, .nr-edit-container .fa-save', function(
-                    e) {
-                    e.stopPropagation();
-                    const $icon = $(this);
-                    const $checkbox = $icon.siblings('.nr-checkbox');
-                    const $row = $checkbox.closest('tr');
-                    const rowData = filteredData.find(item => item['SL No.'] == $row.find('td:eq(0)')
-                        .text());
-                    const sku = rowData ? rowData['(Child) sku'] : null;
-
-                    if ($icon.hasClass('fa-pen')) {
-                        // Enter edit mode
-                        $checkbox.prop('disabled', false)
-                            .data('original-value', $checkbox.is(':checked'));
-                        $icon.removeClass('fa-pen text-primary')
-                            .addClass('fa-save text-success')
-                            .attr('title', 'Save Changes');
-                    } else if ($icon.hasClass('fa-save')) {
-                        // Save
-                        const updatedValue = $checkbox.is(':checked') ? "true" : "false";
-                        $icon.removeClass('fa-save text-success')
-                            .addClass('fa-spinner fa-spin text-primary')
-                            .attr('title', 'Saving...');
-
-                        // --- Save to database via AJAX ---
-                        $.ajax({
-                            url: '/amazon/save-nr',
-                            type: 'POST',
-                            data: {
-                                sku: sku,
-                                nr: JSON.stringify({
-                                    NR: updatedValue
-                                }),
-                                _token: $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function(response) {
-                                showNotification('success', 'NR updated successfully!');
-                                $checkbox.prop('disabled', true);
-                                $icon.removeClass('fa-spinner fa-spin text-primary')
-                                    .addClass('fa-pen text-primary')
-                                    .attr('title', 'Edit NR');
-                            },
-                            error: function(xhr) {
-                                showNotification('danger', 'Failed to update NR.');
-                                $checkbox.prop('checked', $checkbox.data('original-value'))
-                                    .prop('disabled', true);
-                                $icon.removeClass('fa-spinner fa-spin text-primary')
-                                    .addClass('fa-pen text-primary')
-                                    .attr('title', 'Edit NR');
-                            }
-                        });
+            function initNRSelectChangeHandler2() {
+                $(document).on('change', '.nr-select', function() {
+                    const $select = $(this);
+                    const sku = $(this).data('sku');
+                    const nrValue = $(this).val();
+                    if (nrValue === 'NRA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
                     }
-                });
+                    $.ajax({
+                        url: '/amazon/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            nr: JSON.stringify({
+                                NR: nrValue
+                            }),
+                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+                        },
+                        success: function(res) {
+                            showNotification('success', 'NR updated successfully');
 
-                // Allow clicking the checkbox directly to enter edit mode (like R&A)
-                $(document).off('click', '.nr-checkbox:disabled');
-                $(document).on('click', '.nr-checkbox:disabled', function(e) {
-                    e.stopPropagation();
-                    $(this).siblings('.nr-edit-icon').trigger('click');
+                            // Update tableData and filteredData correctly
+                            tableData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.NR = nrValue;
+                                }
+                            });
+                            filteredData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.NR = nrValue;
+                                }
+                            });
+                            // Recalculate & re-render
+                            calculateTotals();
+                            renderTable();
+                        },
+                        error: function(err) {
+                            console.error('Error saving NR:', err);
+                            showNotification('danger', 'Failed to update NR');
+                        }
+                    });
                 });
             }
 
-            function initNREditHandlers() {
-                $(document).off('click', '.nr-edit-container .nr-edit-icon, .nr-edit-container .fa-save');
-                $(document).on('click', '.nr-edit-container .nr-edit-icon, .nr-edit-container .fa-save', function(
-                    e) {
-                    e.stopPropagation();
-                    const $icon = $(this);
-                    const $checkbox = $icon.siblings('.nr-checkbox');
-                    const $row = $checkbox.closest('tr');
-                    const rowData = filteredData.find(item => item['SL No.'] == $row.find('td:eq(0)')
-                        .text());
-                    const sku = rowData ? rowData['(Child) sku'] : null;
 
-                    if ($icon.hasClass('fa-pen')) {
-                        // Enter edit mode
-                        $checkbox.prop('disabled', false)
-                            .data('original-value', $checkbox.is(':checked'));
-                        $icon.removeClass('fa-pen text-primary')
-                            .addClass('fa-save text-success')
-                            .attr('title', 'Save Changes');
-                    } else if ($icon.hasClass('fa-save')) {
-                        // Save
-                        const updatedValue = $checkbox.is(':checked') ? "true" : "false";
-                        $icon.removeClass('fa-save text-success')
-                            .addClass('fa-spinner fa-spin text-primary')
-                            .attr('title', 'Saving...');
-
-                        // --- Save to database via AJAX ---
-                        $.ajax({
-                            url: '/amazon/save-nr',
-                            type: 'POST',
-                            data: {
-                                sku: sku,
-                                nr: JSON.stringify({
-                                    NR: updatedValue
-                                }),
-                                _token: $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function(response) {
-                                showNotification('success', 'NR updated successfully!');
-                                $checkbox.prop('disabled', true);
-                                $icon.removeClass('fa-spinner fa-spin text-primary')
-                                    .addClass('fa-pen text-primary')
-                                    .attr('title', 'Edit NR');
-                            },
-                            error: function(xhr) {
-                                showNotification('danger', 'Failed to update NR.');
-                                $checkbox.prop('checked', $checkbox.data('original-value'))
-                                    .prop('disabled', true);
-                                $icon.removeClass('fa-spinner fa-spin text-primary')
-                                    .addClass('fa-pen text-primary')
-                                    .attr('title', 'Edit NR');
-                            }
-                        });
+            function initNRSelectChangeHandler() {
+                $(document).on('change', '.fba-select', function() {
+                    const $select = $(this);
+                    const sku = $(this).data('sku');
+                    const fbaValue = $(this).val();
+                    if (fbaValue === 'FBA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
                     }
-                });
+                    $.ajax({
+                        url: '/amazon/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            fba: JSON.stringify({
+                                FBA: fbaValue
+                            }),
+                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+                        },
+                        success: function(res) {
+                            showNotification('success', 'FBA updated successfully');
 
-                // Allow clicking the checkbox directly to enter edit mode (like R&A)
-                $(document).off('click', '.nr-checkbox:disabled');
-                $(document).on('click', '.nr-checkbox:disabled', function(e) {
-                    e.stopPropagation();
-                    $(this).siblings('.nr-edit-icon').trigger('click');
+                            // Update tableData and filteredData correctly
+                            tableData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.FBA = fbaValue;
+                                }
+                            });
+                            filteredData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.FBA = fbaValue;
+                                }
+                            });
+                            // Recalculate & re-render
+                            calculateTotals();
+                            renderTable();
+                        },
+                        error: function(err) {
+                            console.error('Error saving FBA:', err);
+                            showNotification('danger', 'Failed to update FBA');
+                        }
+                    });
                 });
             }
+            $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
+                const $cb = $(this);
+                const sku = $cb.data('sku');
+                const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
+                const value = $cb.is(':checked') ? 1 : 0;
+
+                $.ajax({
+                    url: '/amazon/update-listed-live',
+                    method: 'POST',
+                    data: {
+                        sku: sku,
+                        field: field,
+                        value: value,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        console.log(`${field} updated for SKU ${sku}`);
+                    },
+                    error: function(err) {
+                        console.error('Update failed', err);
+                        alert('Failed to update. Try again.');
+                        $cb.prop('checked', !value); // revert on error
+                    }
+                });
+            });
+
 
             window.openModal = function(selectedItem, type) {
                 try {
@@ -2806,7 +3355,8 @@
                         return;
                     }
 
-                    const itemId = itemData['SL No.'] || `row-${Math.random().toString(36).substr(2, 9)}`;
+                    const itemId = itemData['SL No.'] ? String(itemData['SL No.']) : (itemData['(Child) sku'] ||
+                        `row-${Math.random().toString(36).substr(2, 9)}`);
                     const modalId = `modal-${itemId}-${type.replace(/\s+/g, '-').toLowerCase()}`;
 
                     // Check cache first - use the cached data if available
@@ -2825,6 +3375,10 @@
                         ModalSystem.bringToFront(existingModal);
                         return;
                     }
+
+
+
+
 
                     // Special handling for Scouth products view
                     if (type.toLowerCase() === 'scouth products view') {
@@ -3139,19 +3693,16 @@
                                 {
                                     title: 'Spft%',
                                     content: (function() {
-                                        const spftValue = dataToUse['Spft%'];
+                                        let spftValue = dataToUse['Spft%'];
+                                        spftValue = typeof spftValue === 'string' ? parseFloat(
+                                            spftValue) : spftValue;
 
-                                        // Check if value exists and is a valid number
                                         if (typeof spftValue !== 'number' || isNaN(spftValue)) {
-                                            return '0 %'; // Fallback for invalid data
+                                            return '0 %';
                                         }
-
-                                        // Handle zero case
                                         if (spftValue === 0) {
                                             return '0 %';
                                         }
-
-                                        // Format the number (ensure it's a number before using .toFixed)
                                         const absValue = Math.abs(spftValue);
                                         const formattedValue = (absValue < 100) ?
                                             (spftValue * 100).toFixed(2) :
@@ -4280,6 +4831,10 @@
                     }
                 };
 
+                // Exclude 'SPRICE', 'Spft%', 'SROI%' from /api/update-amazon-column
+                const excludedFields = ['SPRICE', 'Spft%', 'SROI%'];
+                const isExcluded = excludedFields.includes(title);
+
                 // Show loading indicator
                 if (saveIcon) {
                     saveIcon.html('<i class="fas fa-spinner fa-spin text-primary"></i>');
@@ -4302,14 +4857,12 @@
                         const LP = parseFloat(item.raw_data.LP) || 0;
                         const SPRICE = parseFloat(updatedValue) || 0;
 
-                        // Calculate Spft% using new formula: (SPRICE * price - SHIP - LP) / SPRICE
+                        // Calculate Spft% using new formula: (SPRICE * 0.71 - SHIP - LP) / SPRICE
                         let Spft = 0;
                         if (SPRICE !== 0) {
-                            Spft = (SPRICE * 0.71 - SHIP - LP) / SPRICE;
-
+                            Spft = (SPRICE * 0.80 - SHIP - LP) / SPRICE;
                         }
 
-                        // Update Spft% in cache and local data
                         amazonOverallDataCache.updateField(itemId, 'Spft%', Spft);
                         filteredData[index]['Spft%'] = Spft;
                         filteredData[index].raw_data['Spft%'] = Spft;
@@ -4356,17 +4909,25 @@
                             if (cardTitle && cardTitle.textContent.trim() === 'Spft%') {
                                 const contentElement = card.querySelector('.card-text');
                                 if (contentElement) {
-                                    // Format Spft% for display
-                                    const SpftValue = filteredData[index]['Spft%'] || 0;
+                                    // Get the latest Spft% value from filteredData or fallback to cache
+                                    let SpftValue = 0;
+                                    if (filteredData[index] && typeof filteredData[index]['Spft%'] !==
+                                        'undefined') {
+                                        SpftValue = filteredData[index]['Spft%'] || 0;
+                                    } else {
+                                        // fallback: try cache
+                                        const cached = amazonOverallDataCache.get(itemId);
+                                        if (cached && typeof cached['Spft%'] !== 'undefined') {
+                                            SpftValue = cached['Spft%'] || 0;
+                                        }
+                                    }
                                     const absValue = Math.abs(SpftValue);
                                     let displayValue;
-
                                     if (absValue < 100) {
                                         displayValue = (SpftValue * 100).toFixed(2);
                                     } else {
                                         displayValue = SpftValue.toFixed(2);
                                     }
-
                                     contentElement.textContent = displayValue + ' %';
                                 }
                                 break;
@@ -4441,7 +5002,7 @@
 
                                 let Spft = 0;
                                 if (SPRICE !== 0) {
-                                    Spft = (SPRICE * price - SHIP - LP) / SPRICE;
+                                    Spft = (SPRICE * 0.80 - SHIP - LP) / SPRICE;
                                 }
 
                                 amazonOverallDataCache.updateField(itemId, 'Spft%', Spft);
@@ -4870,17 +5431,42 @@
                         rowCount: 0,
                         totalPftSum: 0,
                         totalSalesL30Sum: 0,
-                        totalCogsSum: 0
+                        totalCogsSum: 0,
+                        listedCount: 0,
+                        liveCount: 0
                     };
 
                     filteredData.forEach(item => {
+
+                        let rawData = {};
+                        if (typeof item.raw_data === 'string') {
+                            try {
+                                rawData = JSON.parse(item.raw_data || '{}');
+                            } catch (e) {
+                                console.error(`Invalid JSON in raw_data for SKU ${item['(Child) sku']}`, e);
+                            }
+                        } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
+                            rawData = item.raw_data;
+                        }
+
+                        // Count listed checkboxes
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
+                            rawData.Listed === '1') {
+                            metrics.listedCount++;
+                        }
+
+                        // Count Live checkboxes
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
+                            rawData.Live === '1') {
+                            metrics.liveCount++;
+                        }
+
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['A L30']) || 0;
                         metrics.eDilTotal += parseFloat(item['A Dil%']) || 0;
-                        metrics.viewsTotal += parseFloat(item.Sess30) || 0;
                         let views = parseFloat(item.Sess30) || 0;
-                        if (item.NR !== 'NR') {
+                        if (item.NR !== 'NRA') {
                             metrics.viewsTotal += views;
                         }
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
@@ -4919,12 +5505,16 @@
                     // Update metric displays
                     $('#inv-total').text(metrics.invTotal.toLocaleString());
                     $('#ovl30-total').text(metrics.ovL30Total.toLocaleString());
+                    $('#listed-total').text(metrics.listedCount.toLocaleString());
+                    $('#live-total').text(metrics.liveCount.toLocaleString());
                     $('#ovdil-total').text(Math.round(metrics.ovDilTotal) + '%');
                     $('#al30-total').text(metrics.el30Total.toLocaleString());
                     $('#lDil-total').text(aDilTotalDisplay);
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
 
-                    // --- Custom PFT TOTAL calculation ---
+
+
+                    // --- Custom PFT TOTAL calculation  ---
                     let pftTotalDisplay = '0%';
                     if (metrics.totalSalesL30Sum > 0) {
                         pftTotalDisplay = Math.round(metrics.totalPftSum / metrics.totalSalesL30Sum * 100) + '%';
@@ -4950,6 +5540,8 @@
             function resetMetricsToZero() {
                 $('#inv-total').text('0');
                 $('#ovl30-total').text('0');
+                $('#listed-total').text('0');
+                $('#live-total').text('0');
                 $('#ovdil-total').text('0%');
                 $('#al30-total').text('0');
                 $('#lDil-total').text('0%');
@@ -5241,10 +5833,11 @@
             }
 
 
-            if (!document.getElementById('pricingModal')) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    $('body').append(`
+            if (!document.getElementById('pricingModal')) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                $('body').append(`
         <div class="modal fade" id="pricingModal" tabindex="-1" aria-labelledby="pricingModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content p-3">
@@ -5274,8 +5867,7 @@
             </div>
         </div>
     `);
-}
-
+            }
             // Initialize manual dropdowns
             function initManualDropdowns() {
                 // Toggle dropdown when any filter button is clicked
@@ -5349,48 +5941,6 @@
                 });
             }
 
-            $(document).on('change', '.nr-select', function () {
-                const $select = $(this);
-                const sku = $(this).data('sku');
-                const nrValue = $(this).val();
-                if (nrValue === 'NR') {
-                    $select.css('background-color', '#dc3545').css('color', '#ffffff');
-                } else {
-                    $select.css('background-color', '#28a745').css('color', '#ffffff');
-                }
-                $.ajax({
-                    url: '/amazon/save-nr', 
-                    type: 'POST',
-                    data: {
-                        sku: sku,
-                        nr: JSON.stringify({ NR: nrValue }),
-                        _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
-                    },
-                    success: function (res) {
-                        showNotification('success', 'NR updated successfully');
-
-                        // ✅ Update tableData and filteredData correctly
-                        tableData.forEach(item => {
-                            if (item['(Child) sku'] === sku) {
-                                item.NR = nrValue;
-                            }
-                        });
-                        filteredData.forEach(item => {
-                            if (item['(Child) sku'] === sku) {
-                                item.NR = nrValue;
-                            }
-                        });
-                        // ✅ Recalculate & re-render
-                        calculateTotals();
-                        renderTable();
-                    },
-                    error: function (err) {
-                        console.error('Error saving NR:', err);
-                        showNotification('danger', 'Failed to update NR');
-                    }
-                });
-            });  
-
             // Show notification
             function showNotification(type, message) {
                 const notification = $(`
@@ -5438,8 +5988,8 @@
                     const SPRICE = parseFloat(this.value) || 0;
 
                     if (SPRICE > 0) {
-                        const SPFT = ((SPRICE * 0.72) - LP - SHIP) / SPRICE;
-                        const SROI = ((SPRICE * 0.72) - LP - SHIP) / LP;
+                        const SPFT = ((SPRICE * 0.80) - LP - SHIP) / SPRICE;
+                        const SROI = ((SPRICE * 0.80) - LP - SHIP) / LP;
 
                         $spftInput.val((SPFT * 100).toFixed(2) + '%');
                         $sroiInput.val(isFinite(SROI) ? (SROI * 100).toFixed(2) + '%' : '∞');
@@ -5478,7 +6028,8 @@
                     },
                     dataType: 'json',
                     beforeSend: function() {
-                        $('#savePricingBtn').html('<i class="fa fa-spinner fa-spin"></i> Saving...');
+                        $('#savePricingBtn').html(
+                            '<i class="fa fa-spinner fa-spin"></i> Saving...');
                     },
                     success: function(response) {
                         showNotification('success', 'Data updated successfully...');
@@ -5513,4 +6064,181 @@
             initTable();
         });
     </script>
+
+    <script>
+        $(document).on('click', '.openSpModalBtn', function() {
+            const spft = $(this).data('spft');
+            const sroi = $(this).data('sroi');
+
+            $('#modalSpftVal').text(isNaN(spft) ? '--' : Math.round(parseFloat(spft)));
+            $('#modalSroiVal').text(isNaN(sroi) ? '--' : Math.round(parseFloat(sroi)));
+
+            $('#spModal').modal('show');
+        });
+    </script>
+    <div class="modal fade" id="spModal" tabindex="-1" role="dialog" aria-labelledby="spModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="spModalLabel">SPFT & SROI Details</h5>
+                    <button type="button" class="close btn btn-sm" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>SPFT:</strong> <span id="modalSpftVal">--</span>%</p>
+                    <p><strong>SROI:</strong> <span id="modalSroiVal">--</span>%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#saveSpendButton').on('click', function() {
+            const sku = $('#spendSkuInput').val();
+            const spend = parseFloat($('#spendValueInput').val()) || 0;
+
+            $.ajax({
+                url: '/amazon/save-nr',
+                type: 'POST',
+                data: {
+                    sku: sku,
+                    spend: spend,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                beforeSend: function() {
+                    $('#saveSpendButton').html('<i class="fa fa-spinner fa-spin"></i> Saving...');
+                },
+                success: function(res) {
+                    $('#spendModal').modal('hide');
+                    showSimpleAlert('success', '✅ Spend updated successfully!');
+
+                    console.log("SKU to update:", sku);
+                    console.log("Before update tableData match:", tableData.filter(item => item[
+                        '(Child) sku'] === sku));
+
+                    tableData.forEach(item => {
+                        if (item['(Child) sku'] === sku) {
+                            item.SPEND = spend; // Ensure correct field name here
+                        }
+                    });
+
+                    filteredData.forEach(item => {
+                        if (item['(Child) sku'] === sku) {
+                            item.SPEND = spend;
+                        }
+                    });
+
+                    console.log("After update tableData match:", tableData.filter(item => item[
+                        '(Child) sku'] === sku));
+
+                    renderTable();
+                },
+                error: function(err) {
+                    console.error('Error saving Spend:', err);
+                    showSimpleAlert('danger', '❌ Failed to update Spend!');
+                },
+                complete: function() {
+                    $('#saveSpendButton').html('Save');
+                }
+            });
+        });
+
+        function showSimpleAlert(type, message) {
+            const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+            $('#messageArea').html(alertHtml);
+
+            // Auto-close after 3 seconds
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 3000);
+        }
+    </script>
+<!-- Font Awesome for icons -->
+
+<script>
+$(document).on('click', '.price-view-trigger', function() {
+    const rawData = $(this).data('item'); // JSON object
+    const $tbody = $('#priceViewTable tbody');
+    $tbody.empty();
+
+    // Fields to display
+    const fieldsToDisplay = [
+        { title: 'MSRP', content: rawData['MSRP'] },
+        { title: 'Price', content: rawData['price'] },
+        { title: 'PFT_percentage', content: rawData['PFT_percentage'] },
+        { title: 'TPFT', content: rawData['TPFT'] },
+        { title: 'ROI_percentage', content: rawData['ROI_percentage'] },
+        { title: 'SPRICE', content: rawData['SPRICE'] },
+        { title: 'Spft%', content: rawData['Spft%'] },
+        { title: 'Tannishtha done', content: rawData['Tannishtha done'] },
+        { title: 'LMP 1', content: rawData['LMP 1'] },
+        { title: 'LINK 1', content: rawData['LINK 1'] },
+        { title: 'LMP 2', content: rawData['LMP 2'] },
+        { title: 'LINK 2', content: rawData['LINK 2'] },
+        { title: 'LMP3', content: rawData['LMP3'] },
+        { title: 'LINK 3', content: rawData['LINK 3'] },
+        { title: 'LMP 4', content: rawData['LMP 4'] },
+        { title: 'LINK 4', content: rawData['LINK 4'] },
+        { title: 'LMP 5', content: rawData['LMP 5'] },
+        { title: 'LINK 5', content: rawData['LINK 5'] },
+    ];
+
+    // Append rows to table
+    fieldsToDisplay.forEach(field => {
+        let displayContent = field.content ?? '';
+
+        // Handle LINK fields
+        if (field.title.startsWith('LINK')) {
+            if (displayContent) {
+                displayContent = `<a href="${displayContent}" target="_blank"><i class="fa fa-link"></i></a>`;
+            } else {
+                displayContent = `<i class="fa fa-times text-danger"></i>`;
+            }
+        }
+
+        $tbody.append(`
+            <tr>
+                <td>${field.title}</td>
+                <td>${displayContent}</td>
+            </tr>
+        `);
+    });
+
+    // Show modal
+    $('#priceViewModal').modal('show');
+});
+</script>
+
+<!-- Modal -->
+<div class="modal fade" id="priceViewModal" tabindex="-1" aria-labelledby="priceViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="priceViewModalLabel">Price Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped" id="priceViewTable">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic rows go here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection

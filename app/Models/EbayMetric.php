@@ -15,5 +15,10 @@ class EbayMetric extends Model
         'ebay_l30',
         'ebay_l60',
         'ebay_price',
+        'total_pft',
+        't_sale_l30',
+        'pft_percentage',
+        'roi_percentage',
+        't_cogs',
     ];
 }
