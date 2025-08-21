@@ -14,19 +14,22 @@ use PhpOffice\PhpSpreadsheet\Cell\AdvancedValueBinder;
 
 class LedgerMasterController extends Controller
 {
-    public function advanceAndPayments(){
+    public function advanceAndPayments()
+    {
         $voNumber = $this->generateVoucherNumber();
         $suppliers = Supplier::where('type', 'Supplier')->get();
-        $purchaseOrders = PurchaseOrder::select('id', 'po_number','total_amount', 'advance_amount')->get();
-        return view('purchase-master.ledger-master.advance-payments', compact('suppliers','purchaseOrders','voNumber'));
+        $purchaseOrders = PurchaseOrder::select('id', 'po_number', 'total_amount', 'advance_amount')->get();
+        return view('purchase-master.ledger-master.advance-payments', compact('suppliers', 'purchaseOrders', 'voNumber'));
     }
 
-    public function supplierLedger(){
+    public function supplierLedger()
+    {
         $suppliers = Supplier::where('type', 'Supplier')->get();
         return view('purchase-master.ledger-master.supplier-ledger', compact('suppliers'));
     }
 
-    public function supplierStore(Request $request){
+    public function supplierStore(Request $request)
+    {
         $validated = $request->validate([
             'supplier' => 'required|integer|exists:suppliers,id',
             'pm_image' => 'nullable|image|max:2048',
@@ -55,13 +58,13 @@ class LedgerMasterController extends Controller
 
     public function fetchSupplierLedgerData(Request $request)
     {
-        $ledgers = SupplierLedger::with('supplier:id,name')->orderBy('id', 'desc')->get();
+        $ledgers = SupplierLedger::orderBy('id', 'desc')->get();
 
         $data = $ledgers->map(function ($ledger) {
             return [
                 'id' => $ledger->id,
-                'supplier_name' => $ledger->supplier->name ?? '',
-                'pm_image' => $ledger->pm_image ? asset('storage/' . $ledger->pm_image) : '',
+                'supplier_id' => $ledger->supplier_id ?? '',
+                'pm_image' => $ledger->pm_image ?? '',
                 'purchase_link' => $ledger->purchase_link,
                 'dr' => $ledger->dr,
                 'cr' => $ledger->cr,
@@ -69,16 +72,63 @@ class LedgerMasterController extends Controller
             ];
         });
 
-        return response()->json($data);
+        $suppliers = Supplier::select('id', 'name')->orderBy('name')->get();
+
+        return response()->json([
+            'ledgers' => $data,
+            'suppliers' => $suppliers
+        ]);
     }
+
+    public function updateSupplierLedger(Request $request)
+    {
+        $ledger = SupplierLedger::findOrFail($request->id);
+
+        if ($request->hasFile('file')) {
+            if ($ledger->{$request->field}) {
+                $oldPath = $ledger->{$request->field};
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            $path = $request->file('file')->store('supplier_ledgers', 'public');
+
+            $ledger->{$request->field} = $path;
+            $ledger->save();
+
+            return response()->json([
+                'success' => true,
+                'url' => asset('storage/' . $path)
+            ]);
+        }
+
+        if ($request->filled('field')) {
+            $ledger->{$request->field} = $request->value;
+            $ledger->save();
+
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false]);
+    }
+
+    public function deleteSupplierLedger(Request $request)
+    {
+        $ids = $request->ids;
+        SupplierLedger::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => 'Deleted successfully.']);
+    }
+
 
     public function getSupplierBalance(Request $request)
     {
         $supplierId = $request->input('supplier_id');
 
         $balance = SupplierLedger::where('supplier_id', $supplierId)
-                    ->orderBy('id', 'desc')
-                    ->value('balance');
+            ->orderBy('id', 'desc')
+            ->value('balance');
 
         return response()->json([
             'balance' => $balance ?? 0
@@ -127,8 +177,8 @@ class LedgerMasterController extends Controller
             'image',
             'remarks'
         )
-        ->with(['supplier:id,name', 'purchaseContract:id,po_number'])
-        ->get();
+            ->with(['supplier:id,name', 'purchaseContract:id,po_number'])
+            ->get();
 
         $payments = $payments->map(function ($payment) {
             $amount = $payment->amount ?? 0;
@@ -160,7 +210,7 @@ class LedgerMasterController extends Controller
 
     function generateVoucherNumber()
     {
-        $datePart = Carbon::now()->format('dmy'); 
+        $datePart = Carbon::now()->format('dmy');
         $prefix = 'VO-' . $datePart;
 
         $latestOrder = AdvancePayment::select('vo_number')
@@ -177,6 +227,4 @@ class LedgerMasterController extends Controller
         }
         return "$prefix-$newSerial";
     }
-
-
 }
