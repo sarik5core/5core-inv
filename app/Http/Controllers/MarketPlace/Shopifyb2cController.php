@@ -41,9 +41,6 @@ class Shopifyb2cController extends Controller
     }
 
 
-
-
-
     public function shopifyPricingCvr(Request $request)
     {
         $mode = $request->query('mode');
