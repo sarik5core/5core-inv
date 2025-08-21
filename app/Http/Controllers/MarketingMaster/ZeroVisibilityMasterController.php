@@ -615,7 +615,7 @@ class ZeroVisibilityMasterController extends Controller
             'walmart'     => app(WalmartZeroController::class)->getZeroViewCount(),
             'aliexpress'  => app(AliexpressZeroController::class)->getZeroViewCount(),
             'tiktok shop' => app(TiktokShopZeroController::class)->getZeroViewCount(),
-            'shein'       => app(SheinZeroController::class)->getZeroViewCount(),
+            // 'shein'       => app(SheinZeroController::class)->getZeroViewCount(),
         ];
 
         // Preload and decode all data views once
@@ -632,7 +632,7 @@ class ZeroVisibilityMasterController extends Controller
             'walmart'     => WalmartDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
             'aliexpress'  => AliexpressDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
             'tiktok shop' => TiktokShopDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'shein'       => SheinDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+            // 'shein'       => SheinDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
         ];
 
         // Precompute counts for each channel
