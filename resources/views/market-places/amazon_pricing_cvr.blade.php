@@ -1001,16 +1001,33 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body d-flex align-items-center" style="gap: 12px;">
+
+                    <!-- Percentage Edit -->
                     <div id="percent-edit-div" class="d-flex align-items-center">
                         <div class="input-group" style="width: 150px;">
                             <input type="number" id="updateAllSkusPercent" class="form-control" min="0"
-                                max="100" value="{{ $amazonPercentage }}" step="0.01" title="Percent" disabled />
+                                max="100" value="{{ $amazonPercentage }}" step="0.01" placeholder="Percent"
+                                disabled />
                             <span class="input-group-text">%</span>
                         </div>
                         <button id="editPercentBtn" class="btn btn-outline-primary ms-2">
                             <i class="fa fa-pen"></i>
                         </button>
                     </div>
+
+                    <!-- 🔹 Ads Percentage Edit -->
+                    <div id="ads-edit-div" class="d-flex align-items-center ms-4">
+                        <div class="input-group" style="width: 120px;">
+                            <input type="number" id="updateAllSkusAds" class="form-control" min="0" max="1000"
+                                value="{{ $amazonAdUpdates }}" step="0.01" placeholder="Ads Percentage" disabled />
+                            <span class="input-group-text"></span>
+                        </div>
+                        <button id="editAdsBtn" class="btn btn-outline-primary ms-2">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                    </div>
+
+                    <!-- Badges -->
                     <div class="d-inline-flex align-items-center ms-2">
                         <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
                             0 SOLD - <span id="zero-sold-count">0</span>
@@ -1023,10 +1040,12 @@
                             RED MARGIN - <span id="red-margin-count">0</span>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -1776,47 +1795,102 @@
     <script>
         document.body.style.zoom = "80%";
         $(document).ready(function() {
+            // Percentage update
             $('#editPercentBtn').on('click', function() {
                 var $input = $('#updateAllSkusPercent');
                 var $icon = $(this).find('i');
-                var originalValue = $input.val(); // Store original value
+                var originalValue = $input.val();
 
                 if ($icon.hasClass('fa-pen')) {
-                    // Enable editing
                     $input.prop('disabled', false).focus();
                     $icon.removeClass('fa-pen').addClass('fa-check');
                 } else {
-                    // Submit and disable editing
                     var percent = parseFloat($input.val());
 
-                    // Validate input
                     if (isNaN(percent) || percent < 0 || percent > 100) {
                         showNotification('danger', 'Invalid percentage value. Must be between 0 and 100.');
-                        $input.val(originalValue); // Restore original value
+                        $input.val(originalValue);
                         return;
                     }
 
+                    // Percentage
                     $.ajax({
                         url: '/update-all-amazon-skus',
                         type: 'POST',
                         data: {
-                            percent: percent,
+                            type: 'percentage',
+                            value: percent,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function(response) {
-                            showNotification('success', 'Percentage updated successfully!');
-                            $input.prop('disabled', true);
-                            $icon.removeClass('fa-check').addClass('fa-pen');
+                            if (response.status === 200) {
+                                showNotification('success', 'Percentage updated successfully!');
+                                $input.prop('disabled', true);
+                                $icon.removeClass('fa-check').addClass('fa-pen');
+                                // Update the input value with the new value from server
+                                $input.val(response.data.percentage);
+                                // Reload the data table if needed
+                                loadData();
+                            }
                         },
-                        error: function(xhr) {
+                        error: function() {
                             showNotification('danger', 'Error updating percentage.');
-                            $input.val(originalValue); // Restore original value
+                            $input.val(originalValue);
                             $input.prop('disabled', true);
                             $icon.removeClass('fa-check').addClass('fa-pen');
                         }
                     });
                 }
             });
+
+            // Ad Updates update
+            $('#editAdsBtn').on('click', function() {
+                var $input = $('#updateAllSkusAds');
+                var $icon = $(this).find('i');
+                var originalValue = $input.val();
+
+                if ($icon.hasClass('fa-pen')) {
+                    $input.prop('disabled', false).focus();
+                    $icon.removeClass('fa-pen').addClass('fa-check');
+                } else {
+                    var adUpdates = parseFloat($input.val());
+
+                    if (isNaN(adUpdates) || adUpdates < 0 || adUpdates > 1000) {
+                        showNotification('danger', 'Invalid ad updates value. Must be between 0 and 1000.');
+                        $input.val(originalValue);
+                        return;
+                    }
+
+                    // Ad Updates
+                    $.ajax({
+                        url: '/update-all-amazon-skus',
+                        type: 'POST',
+                        data: {
+                            type: 'ad_updates',
+                            value: adUpdates,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            if (response.status === 200) {
+                                showNotification('success', 'Ad Updates updated successfully!');
+                                $input.prop('disabled', true);
+                                $icon.removeClass('fa-check').addClass('fa-pen');
+                                // Update the input value with the new value from server
+                                $input.val(response.data.ad_updates);
+                                // Reload the data table if needed
+                                loadData();
+                            }
+                        },
+                        error: function() {
+                            showNotification('danger', 'Error updating Ad Updates.');
+                            $input.val(originalValue);
+                            $input.prop('disabled', true);
+                            $icon.removeClass('fa-check').addClass('fa-pen');
+                        }
+                    });
+                }
+            });
+
 
             // Cache system
             const amazonOverallDataCache = {
@@ -2565,7 +2639,7 @@
                 }
 
                 filteredData.forEach(item => {
-                    console.log(item, 'dfdf');
+
 
                     let rawData = {};
                     if (typeof item.raw_data === 'string') {
@@ -6160,85 +6234,139 @@
             }, 3000);
         }
     </script>
-<!-- Font Awesome for icons -->
+    <!-- Font Awesome for icons -->
 
-<script>
-$(document).on('click', '.price-view-trigger', function() {
-    const rawData = $(this).data('item'); // JSON object
-    const $tbody = $('#priceViewTable tbody');
-    $tbody.empty();
+    <script>
+        $(document).on('click', '.price-view-trigger', function() {
+            const rawData = $(this).data('item'); // JSON object
+            const $tbody = $('#priceViewTable tbody');
+            $tbody.empty();
 
-    // Fields to display
-    const fieldsToDisplay = [
-        { title: 'MSRP', content: rawData['MSRP'] },
-        { title: 'Price', content: rawData['price'] },
-        { title: 'PFT_percentage', content: rawData['PFT_percentage'] },
-        { title: 'TPFT', content: rawData['TPFT'] },
-        { title: 'ROI_percentage', content: rawData['ROI_percentage'] },
-        { title: 'SPRICE', content: rawData['SPRICE'] },
-        { title: 'Spft%', content: rawData['Spft%'] },
-        { title: 'Tannishtha done', content: rawData['Tannishtha done'] },
-        { title: 'LMP 1', content: rawData['LMP 1'] },
-        { title: 'LINK 1', content: rawData['LINK 1'] },
-        { title: 'LMP 2', content: rawData['LMP 2'] },
-        { title: 'LINK 2', content: rawData['LINK 2'] },
-        { title: 'LMP3', content: rawData['LMP3'] },
-        { title: 'LINK 3', content: rawData['LINK 3'] },
-        { title: 'LMP 4', content: rawData['LMP 4'] },
-        { title: 'LINK 4', content: rawData['LINK 4'] },
-        { title: 'LMP 5', content: rawData['LMP 5'] },
-        { title: 'LINK 5', content: rawData['LINK 5'] },
-    ];
+            // Fields to display
+            const fieldsToDisplay = [{
+                    title: 'MSRP',
+                    content: rawData['MSRP']
+                },
+                {
+                    title: 'Price',
+                    content: rawData['price']
+                },
+                {
+                    title: 'PFT_percentage',
+                    content: rawData['PFT_percentage']
+                },
+                {
+                    title: 'TPFT',
+                    content: rawData['TPFT']
+                },
+                {
+                    title: 'ROI_percentage',
+                    content: rawData['ROI_percentage']
+                },
+                {
+                    title: 'SPRICE',
+                    content: rawData['SPRICE']
+                },
+                {
+                    title: 'Spft%',
+                    content: rawData['Spft%']
+                },
+                {
+                    title: 'Tannishtha done',
+                    content: rawData['Tannishtha done']
+                },
+                {
+                    title: 'LMP 1',
+                    content: rawData['LMP 1']
+                },
+                {
+                    title: 'LINK 1',
+                    content: rawData['LINK 1']
+                },
+                {
+                    title: 'LMP 2',
+                    content: rawData['LMP 2']
+                },
+                {
+                    title: 'LINK 2',
+                    content: rawData['LINK 2']
+                },
+                {
+                    title: 'LMP3',
+                    content: rawData['LMP3']
+                },
+                {
+                    title: 'LINK 3',
+                    content: rawData['LINK 3']
+                },
+                {
+                    title: 'LMP 4',
+                    content: rawData['LMP 4']
+                },
+                {
+                    title: 'LINK 4',
+                    content: rawData['LINK 4']
+                },
+                {
+                    title: 'LMP 5',
+                    content: rawData['LMP 5']
+                },
+                {
+                    title: 'LINK 5',
+                    content: rawData['LINK 5']
+                },
+            ];
 
-    // Append rows to table
-    fieldsToDisplay.forEach(field => {
-        let displayContent = field.content ?? '';
+            // Append rows to table
+            fieldsToDisplay.forEach(field => {
+                let displayContent = field.content ?? '';
 
-        // Handle LINK fields
-        if (field.title.startsWith('LINK')) {
-            if (displayContent) {
-                displayContent = `<a href="${displayContent}" target="_blank"><i class="fa fa-link"></i></a>`;
-            } else {
-                displayContent = `<i class="fa fa-times text-danger"></i>`;
-            }
-        }
+                // Handle LINK fields
+                if (field.title.startsWith('LINK')) {
+                    if (displayContent) {
+                        displayContent =
+                            `<a href="${displayContent}" target="_blank"><i class="fa fa-link"></i></a>`;
+                    } else {
+                        displayContent = `<i class="fa fa-times text-danger"></i>`;
+                    }
+                }
 
-        $tbody.append(`
+                $tbody.append(`
             <tr>
                 <td>${field.title}</td>
                 <td>${displayContent}</td>
             </tr>
         `);
-    });
+            });
 
-    // Show modal
-    $('#priceViewModal').modal('show');
-});
-</script>
+            // Show modal
+            $('#priceViewModal').modal('show');
+        });
+    </script>
 
-<!-- Modal -->
-<div class="modal fade" id="priceViewModal" tabindex="-1" aria-labelledby="priceViewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="priceViewModalLabel">Price Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered table-striped" id="priceViewTable">
-                    <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Dynamic rows go here -->
-                    </tbody>
-                </table>
+    <!-- Modal -->
+    <div class="modal fade" id="priceViewModal" tabindex="-1" aria-labelledby="priceViewModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="priceViewModalLabel">Price Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-striped" id="priceViewTable">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic rows go here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
 @endsection

@@ -569,6 +569,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-all-wayfair-skus', [WayfairController::class, 'updateAllWayfairSkus']);
     Route::post('/update-all-reverb-skus', [ReverbController::class, 'updateAllReverbSkus']);
     Route::post('/update-all-temu-skus', [TemuController::class, 'updateAllTemuSkus']);
+    Route::post('/update-amazon-price', action: [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceChange');
 
     //ajax routes
     Route::get('/amazon/all-data', [OverallAmazonController::class, 'getAllData'])->name('amazon.allData');
@@ -733,8 +734,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::any('/update-ebay-sku-pricing', [EbayController::class, 'updateEbayPricing'])->name('ebay.priceUpdate');
     Route::any('/update-ebay2-sku-pricing', [EbayTwoController::class, 'updateEbayPricing'])->name('ebay2.priceUpdate');
-Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'test'])->name('amazon.priceUpdate');
-Route::get('/check-amazon-auth', [OverallAmazonController::class, 'checkAmazonAuth']);
+    Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
+    Route::get('/check-amazon-auth', [OverallAmazonController::class, 'checkAmazonAuth']);
 
     Route::post('/update-fba-status-ebay', [EbayController::class, 'updateFbaStatusEbay'])
         ->name('update.fba.status-ebay');
@@ -749,6 +750,7 @@ Route::get('/check-amazon-auth', [OverallAmazonController::class, 'checkAmazonAu
     Route::get('/ebay2-low-visibility-view', action: [Ebay2LowVisibilityController::class, 'ebay2LowVisibility'])->name('ebay2.low.visibility.view');
     Route::get('/ebay3-low-visibility-view', action: [Ebay3LowVisibilityController::class, 'ebay3LowVisibility'])->name('ebay3.low.visibility.view');
 
+    
     //Listing Audit Macy
     Route::get('/listing-macys', [ListingMacysController::class, 'listingMacys'])->name('listing.macys');
     Route::get('/listing_macys/view-data', [ListingMacysController::class, 'getViewListingMacysData']);

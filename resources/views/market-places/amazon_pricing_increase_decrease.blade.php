@@ -2569,7 +2569,7 @@
                 }
 
                 filteredData.forEach(item => {
-                    console.log(item, 'dfdf');
+                    
                     const inv = parseInt(item["INV"]) || 0;
                     const sess30 = parseInt(item["Sess30"]) || 0;
                     const cvr = parseFloat(item.SCVR) || 0; // using SCVR now

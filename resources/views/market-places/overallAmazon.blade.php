@@ -1001,16 +1001,33 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body d-flex align-items-center" style="gap: 12px;">
+
+                    <!-- Percentage Edit -->
                     <div id="percent-edit-div" class="d-flex align-items-center">
                         <div class="input-group" style="width: 150px;">
                             <input type="number" id="updateAllSkusPercent" class="form-control" min="0"
-                                max="100" value="{{ $amazonPercentage }}" step="0.01" title="Percent" disabled />
+                                max="100" value="{{ $amazonPercentage }}" step="0.01" placeholder="Percent"
+                                disabled />
                             <span class="input-group-text">%</span>
                         </div>
                         <button id="editPercentBtn" class="btn btn-outline-primary ms-2">
                             <i class="fa fa-pen"></i>
                         </button>
                     </div>
+
+                    <!-- 🔹 Ads Percentage Edit -->
+                    <div id="ads-edit-div" class="d-flex align-items-center ms-4">
+                        <div class="input-group" style="width: 120px;">
+                            <input type="number" id="updateAllSkusAds" class="form-control" min="0" max="1000"
+                                value="{{ $amazonAdUpdates }}" step="0.01" placeholder="Ads Percentage" disabled />
+                            <span class="input-group-text"></span>
+                        </div>
+                        <button id="editAdsBtn" class="btn btn-outline-primary ms-2">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                    </div>
+
+                    <!-- Badges -->
                     <div class="d-inline-flex align-items-center ms-2">
                         <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
                             0 SOLD - <span id="zero-sold-count">0</span>
@@ -1023,10 +1040,12 @@
                             RED MARGIN - <span id="red-margin-count">0</span>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -1505,6 +1524,17 @@
                                             <div class="metric-total" id="views-total">0</div>
                                         </div>
                                     </th>
+
+
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th data-field="price"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -1530,24 +1560,45 @@
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
-                                    {{-- <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                TPFT <span class="sort-arrow">↓</span>
+                                                Total Profit <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th> --}}
+                                    </th>
 
                                     <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
-                                                Spend <span class="sort-arrow">↓</span>
+                                                AD Spend <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="Tpft-total">0%</div>
                                         </div>
                                     </th>
 
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                TPFT<span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                Profit After AD <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        </div>
+                                    </th>
 
                                     <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1607,15 +1658,7 @@
                                             <div class="metric-total" id="tacos-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                CVR <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="cvr-total">0%</div>
-                                        </div>
-                                    </th>
+
                                     <th data-field="ad cost/ pc" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -1752,47 +1795,102 @@
     <script>
         document.body.style.zoom = "80%";
         $(document).ready(function() {
+            // Percentage update
             $('#editPercentBtn').on('click', function() {
                 var $input = $('#updateAllSkusPercent');
                 var $icon = $(this).find('i');
-                var originalValue = $input.val(); // Store original value
+                var originalValue = $input.val();
 
                 if ($icon.hasClass('fa-pen')) {
-                    // Enable editing
                     $input.prop('disabled', false).focus();
                     $icon.removeClass('fa-pen').addClass('fa-check');
                 } else {
-                    // Submit and disable editing
                     var percent = parseFloat($input.val());
 
-                    // Validate input
                     if (isNaN(percent) || percent < 0 || percent > 100) {
                         showNotification('danger', 'Invalid percentage value. Must be between 0 and 100.');
-                        $input.val(originalValue); // Restore original value
+                        $input.val(originalValue);
                         return;
                     }
 
+                    // Percentage
                     $.ajax({
                         url: '/update-all-amazon-skus',
                         type: 'POST',
                         data: {
-                            percent: percent,
+                            type: 'percentage',
+                            value: percent,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
                         success: function(response) {
-                            showNotification('success', 'Percentage updated successfully!');
-                            $input.prop('disabled', true);
-                            $icon.removeClass('fa-check').addClass('fa-pen');
+                            if (response.status === 200) {
+                                showNotification('success', 'Percentage updated successfully!');
+                                $input.prop('disabled', true);
+                                $icon.removeClass('fa-check').addClass('fa-pen');
+                                // Update the input value with the new value from server
+                                $input.val(response.data.percentage);
+                                // Reload the data table if needed
+                                loadData();
+                            }
                         },
-                        error: function(xhr) {
+                        error: function() {
                             showNotification('danger', 'Error updating percentage.');
-                            $input.val(originalValue); // Restore original value
+                            $input.val(originalValue);
                             $input.prop('disabled', true);
                             $icon.removeClass('fa-check').addClass('fa-pen');
                         }
                     });
                 }
             });
+
+            // Ad Updates update
+            $('#editAdsBtn').on('click', function() {
+                var $input = $('#updateAllSkusAds');
+                var $icon = $(this).find('i');
+                var originalValue = $input.val();
+
+                if ($icon.hasClass('fa-pen')) {
+                    $input.prop('disabled', false).focus();
+                    $icon.removeClass('fa-pen').addClass('fa-check');
+                } else {
+                    var adUpdates = parseFloat($input.val());
+
+                    if (isNaN(adUpdates) || adUpdates < 0 || adUpdates > 1000) {
+                        showNotification('danger', 'Invalid ad updates value. Must be between 0 and 1000.');
+                        $input.val(originalValue);
+                        return;
+                    }
+
+                    // Ad Updates
+                    $.ajax({
+                        url: '/update-all-amazon-skus',
+                        type: 'POST',
+                        data: {
+                            type: 'ad_updates',
+                            value: adUpdates,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            if (response.status === 200) {
+                                showNotification('success', 'Ad Updates updated successfully!');
+                                $input.prop('disabled', true);
+                                $icon.removeClass('fa-check').addClass('fa-pen');
+                                // Update the input value with the new value from server
+                                $input.val(response.data.ad_updates);
+                                // Reload the data table if needed
+                                loadData();
+                            }
+                        },
+                        error: function() {
+                            showNotification('danger', 'Error updating Ad Updates.');
+                            $input.val(originalValue);
+                            $input.prop('disabled', true);
+                            $icon.removeClass('fa-check').addClass('fa-pen');
+                        }
+                    });
+                }
+            });
+
 
             // Cache system
             const amazonOverallDataCache = {
@@ -2541,7 +2639,7 @@
                 }
 
                 filteredData.forEach(item => {
-                    console.log(item, 'dfdf');
+
 
                     let rawData = {};
                     if (typeof item.raw_data === 'string') {
@@ -2801,18 +2899,25 @@
                             data-item='${JSON.stringify(item.raw_data)}'>V</span>`
                     ));
 
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
+                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+                            data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
                     //price with tooltip
                     $row.append($('<td>').html(
                         `$${(Number(item.price) || 0).toFixed(2)}
-                        <span class="tooltip-container" style="margin-left:8px">
-                            <i class="fas fa-tag text-warning price-view-trigger" 
-                            style="transform:translateY(1px)"
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="top-end" 
-                            title="Pricing view"
-                            data-item='${JSON.stringify(item.raw_data)}'"></i>
-                            </span>`
+                    <span class="tooltip-container ms-2">
+                        <i class="fas fa-eye text-primary price-view-trigger"
+                        style="cursor:pointer"
+                        data-item='${JSON.stringify(item.raw_data)}'
+                        title="View Price Details"></i>
+                    </span>`
                     ));
+
 
                     $row.append($('<td>').html(
                         `<span>$${item.min_price || 0}</span>
@@ -2844,11 +2949,6 @@
                     ));
 
 
-
-
-
-
-
                     const sku = String(item["(Child) sku"]).replace(/'/g, "\\'");
                     const Spend = String(item.Spend ?? '0').replace(/'/g, "\\'");
                     const rawPft = parseFloat(item['PFT_percentage']) || 0;
@@ -2860,21 +2960,54 @@
                     const soldAmount = aL30 * price;
                     const pftAmt = (soldAmount * rawPft) / 100;
                     const PFTafterPFT = pftAmt - spend;
-
+                    const adSpend = Number(item['Ad_Spend']) || 0;
                     const tacos = spend / soldAmount;
+                    const totalProfit = (aL30 * price) * rawPft;
 
 
-
+                    // total profit 
                     $row.append($('<td>').html(
-                        `
-                        <span class="badge bg-secondary">$${Math.round(parseFloat(Spend))}</span>
-                        <button class="btn btn-sm btn-outline-secondary ms-2"
-                            onclick="openSpendModal('${sku}', '${Spend}', this)"
-                            title="Edit Spend">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                        `
+                        `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
                     ));
+
+
+                    // spend in advertising     
+                    $row.append($('<td>').html(
+                        `<button class="btn  btn-danger"> $${adSpend.toFixed(2)} </button>`
+                    ));
+
+
+                    // profit after advertising
+                    const profitAfterAd = totalProfit - adSpend;
+
+                    $row.append(
+                        $('<td>').html(
+                            `<span class="badge bg-success">$${profitAfterAd.toFixed(2)}</span>`
+                        )
+                    );
+
+                    // TPFT 
+                    $row.append($('<td>').html(
+                        `<span class="badge bg-info">${((profitAfterAd / (price * aL30)) * 100).toFixed(2)}%</span>`
+                    ));
+
+
+
+
+
+
+
+
+                    // $row.append($('<td>').html(
+                    //     `
+                //     <span class="badge bg-secondary">$${Math.round(parseFloat(Spend))}</span>
+                //     <button class="btn btn-sm btn-outline-secondary ms-2"
+                //         onclick="openSpendModal('${sku}', '${Spend}', this)"
+                //         title="Edit Spend">
+                //         <i class="fas fa-pen"></i>
+                //     </button>
+                //     `
+                    // ));
 
 
 
@@ -2884,10 +3017,10 @@
                     $row.append($('<td>').html(
                         typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
                         `
-        <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
-            ${newPftPercentage.toFixed(2)}%
-        </span>
-    ` : ''
+                        <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
+                            ${newPftPercentage.toFixed(2)}%
+                        </span>
+                    ` : ''
                     ));
 
 
@@ -2995,30 +3128,30 @@
 
 
 
-    //                 $row.append($('<td>').html(
-    //                     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
-    //                 ));
+                    //                 $row.append($('<td>').html(
+                    //                     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
+                    //                 ));
 
-    //                 // PFT Amount
-    //                 // const pftAmt = (soldAmount * rawPft) / 100;
+                    //                 // PFT Amount
+                    //                 // const pftAmt = (soldAmount * rawPft) / 100;
 
-    //                 $row.append($('<td>').html(
-    //                     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">
-    //     ${pftAmt.toFixed(6)}
-    // </span>`
-    //                 ));
+                    //                 $row.append($('<td>').html(
+                    //                     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">
+                //     ${pftAmt.toFixed(6)}
+                // </span>`
+                    //                 ));
 
-    //                 // PFT After Spend
-    //                 // const PFTafterPFT = pftAmt - spend;
+                    //                 // PFT After Spend
+                    //                 // const PFTafterPFT = pftAmt - spend;
 
-    //                 $row.append($('<td>').html(
-    //                     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
-    //                     `
-    //     <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
-    //         ${PFTafterPFT.toFixed(6)}
-    //     </span>
-    // ` : ''
-    //                 ));
+                    //                 $row.append($('<td>').html(
+                    //                     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
+                    //                     `
+                //     <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
+                //         ${PFTafterPFT.toFixed(6)}
+                //     </span>
+                // ` : ''
+                    //                 ));
 
                     // ✅ New PFT (%) after spend
 
@@ -3042,12 +3175,6 @@
 
 
                     // CVR with color coding and tooltip
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
-                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
-                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
-                            data-item='${JSON.stringify(item.raw_data)}'></i>`
-                    ));
 
                     $row.append($('<td>').text(
                         typeof item['ad cost/ pc'] === 'number' ? item['ad cost/ pc'].toFixed(2) : 0
@@ -5168,38 +5295,29 @@
                 const $menu = $('#columnToggleMenu');
                 const $dropdownBtn = $('#hideColumnsBtn');
 
-                // Load saved visibility from localStorage
-                let overallAmazon = JSON.parse(localStorage.getItem('overallAmazon')) || {};
-
                 $menu.empty();
 
                 $headers.each(function() {
                     const $th = $(this);
                     const field = $th.data('field');
                     const title = $th.text().trim().replace(' ↓', '');
-                    const isChecked = overallAmazon.hasOwnProperty(field) ? overallAmazon[field] : true;
 
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                id="toggle-${field}" data-field="${field}" ${isChecked ? 'checked' : ''}>
+                                   id="toggle-${field}" data-field="${field}" checked>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
 
                     $menu.append($item);
-
-                    // Apply visibility on page load
-                    const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function() {
-                        $(this).find('td, th').eq(colIndex).toggle(isChecked);
-                    });
                 });
 
                 $dropdownBtn.on('click', function(e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
+
 
                 $(document).on('click', function(e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
@@ -5211,10 +5329,6 @@
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
 
-                    // Save state in localStorage
-                    overallAmazon[field] = isVisible;
-                    localStorage.setItem('overallAmazon', JSON.stringify(overallAmazon));
-
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
                     $table.find('tr').each(function() {
                         $(this).find('td, th').eq(colIndex).toggle(isVisible);
@@ -5225,8 +5339,7 @@
                     $menu.find('.column-toggle-checkbox').prop('checked', true).trigger('change');
                     $menu.removeClass('show');
                 });
-}
-
+            }
 
             // Initialize filters
             function initFilters() {
@@ -6121,4 +6234,139 @@
             }, 3000);
         }
     </script>
+    <!-- Font Awesome for icons -->
+
+    <script>
+        $(document).on('click', '.price-view-trigger', function() {
+            const rawData = $(this).data('item'); // JSON object
+            const $tbody = $('#priceViewTable tbody');
+            $tbody.empty();
+
+            // Fields to display
+            const fieldsToDisplay = [{
+                    title: 'MSRP',
+                    content: rawData['MSRP']
+                },
+                {
+                    title: 'Price',
+                    content: rawData['price']
+                },
+                {
+                    title: 'PFT_percentage',
+                    content: rawData['PFT_percentage']
+                },
+                {
+                    title: 'TPFT',
+                    content: rawData['TPFT']
+                },
+                {
+                    title: 'ROI_percentage',
+                    content: rawData['ROI_percentage']
+                },
+                {
+                    title: 'SPRICE',
+                    content: rawData['SPRICE']
+                },
+                {
+                    title: 'Spft%',
+                    content: rawData['Spft%']
+                },
+                {
+                    title: 'Tannishtha done',
+                    content: rawData['Tannishtha done']
+                },
+                {
+                    title: 'LMP 1',
+                    content: rawData['LMP 1']
+                },
+                {
+                    title: 'LINK 1',
+                    content: rawData['LINK 1']
+                },
+                {
+                    title: 'LMP 2',
+                    content: rawData['LMP 2']
+                },
+                {
+                    title: 'LINK 2',
+                    content: rawData['LINK 2']
+                },
+                {
+                    title: 'LMP3',
+                    content: rawData['LMP3']
+                },
+                {
+                    title: 'LINK 3',
+                    content: rawData['LINK 3']
+                },
+                {
+                    title: 'LMP 4',
+                    content: rawData['LMP 4']
+                },
+                {
+                    title: 'LINK 4',
+                    content: rawData['LINK 4']
+                },
+                {
+                    title: 'LMP 5',
+                    content: rawData['LMP 5']
+                },
+                {
+                    title: 'LINK 5',
+                    content: rawData['LINK 5']
+                },
+            ];
+
+            // Append rows to table
+            fieldsToDisplay.forEach(field => {
+                let displayContent = field.content ?? '';
+
+                // Handle LINK fields
+                if (field.title.startsWith('LINK')) {
+                    if (displayContent) {
+                        displayContent =
+                            `<a href="${displayContent}" target="_blank"><i class="fa fa-link"></i></a>`;
+                    } else {
+                        displayContent = `<i class="fa fa-times text-danger"></i>`;
+                    }
+                }
+
+                $tbody.append(`
+            <tr>
+                <td>${field.title}</td>
+                <td>${displayContent}</td>
+            </tr>
+        `);
+            });
+
+            // Show modal
+            $('#priceViewModal').modal('show');
+        });
+    </script>
+
+    <!-- Modal -->
+    <div class="modal fade" id="priceViewModal" tabindex="-1" aria-labelledby="priceViewModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="priceViewModalLabel">Price Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-striped" id="priceViewTable">
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic rows go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
