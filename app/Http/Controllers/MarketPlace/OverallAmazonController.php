@@ -409,19 +409,13 @@ class OverallAmazonController extends Controller
 
         $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
 
-        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-            return strtoupper($item->sku);
-        });
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)
+            ->get()
+            ->keyBy(function ($item) {
+                return strtoupper($item->sku);
+            });
 
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku)
-                $apiDataBySku[$sku] = $item;
-        }
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
         $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
@@ -439,7 +433,6 @@ class OverallAmazonController extends Controller
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
             $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
@@ -447,18 +440,12 @@ class OverallAmazonController extends Controller
             $row['Parent'] = $parent;
             $row['(Child) sku'] = $pm->sku;
 
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
-
             if ($amazonSheet) {
-                $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
-                $row['Sess30'] = $row['Sess30'] ?? $amazonSheet->sessions_l30;
-                $row['price'] = $row['price'] ?? $amazonSheet->price;
-                $row['sessions_l60'] = $row['sessions_l60'] ?? $amazonSheet->sessions_l60;
-                $row['units_ordered_l60'] = $row['units_ordered_l60'] ?? $amazonSheet->units_ordered_l60;
+                $row['A_L30'] = $amazonSheet->units_ordered_l30;
+                $row['Sess30'] = $amazonSheet->sessions_l30;
+                $row['price'] = $amazonSheet->price;
+                $row['sessions_l60'] = $amazonSheet->sessions_l60;
+                $row['units_ordered_l60'] = $amazonSheet->units_ordered_l60;
             }
 
             $row['INV'] = $shopify->inv ?? 0;
@@ -518,7 +505,6 @@ class OverallAmazonController extends Controller
                 }
             }
 
-
             $row['image_path'] = $shopify->image_src ?? ($values['image_path'] ?? null);
 
             $inv = floatval($row['INV'] ?? 0);
@@ -530,7 +516,6 @@ class OverallAmazonController extends Controller
                 }
             }
 
-
             $result[] = (object) $row;
         }
 
@@ -539,9 +524,9 @@ class OverallAmazonController extends Controller
             'demo' => $demo,
             'amazonPercentage' => $percentage * 100,
             'products' => $result
-
         ]);
     }
+
 
     public function saveSpriceToDatabase(Request $request)
     {
