@@ -267,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <option value="">Select</option>
                 <option value="NYC" ${value==='NYC'?'selected':''}>NYC</option>
                 <option value="LA" ${value==='LA'?'selected':''}>LA</option>
-                <option value="PRINCE RUPERT" ${value==='PRINCE RUPERT'?'selected':''}>PRINCE RUPERT</option></select>`;
+                <option value="PRINCE RUPERT" ${value==='PRINCE RUPERT'?'selected':''}>PRINCE RUPERT</option>
+                <option value="NORFOLK" ${value==='NORFOLK'?'selected':''}>NORFOLK</option></select>`;
             } },
             { title: "ETA Date<br>Ohio", field: "eta_date_ohio", formatter: function(cell) {
                 const value = cell.getValue();

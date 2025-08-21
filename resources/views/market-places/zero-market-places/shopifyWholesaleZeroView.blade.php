@@ -2405,28 +2405,28 @@
                 });
             }
 
-            $(document).on('change', '.nr-select', function() {
-                const sku = $(this).data('sku');
-                const nrValue = $(this).val();
-                console.log(nrValue, 'nrrr');
+            // $(document).on('change', '.nr-select', function() {
+            //     const sku = $(this).data('sku');
+            //     const nrValue = $(this).val();
+            //     console.log(nrValue, 'nrrr');
 
-                $.ajax({
-                    url: "{{ route('zero.shopifywholesale.save-nr') }}",
-                    type: 'POST',
-                    data: {
-                        sku: sku,
-                        nr: nrValue,
-                        _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
-                    },
-                    success: function(res) {
-                        showNotification('success', 'NR updated successfully');
-                    },
-                    error: function(err) {
-                        console.error('Error saving NR:', err);
-                        showNotification('danger', 'Failed to update NR');
-                    }
-                });
-            });
+            //     $.ajax({
+            //         url: "{{ route('zero.shopifywholesale.save-nr') }}",
+            //         type: 'POST',
+            //         data: {
+            //             sku: sku,
+            //             nr: nrValue,
+            //             _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+            //         },
+            //         success: function(res) {
+            //             showNotification('success', 'NR updated successfully');
+            //         },
+            //         error: function(err) {
+            //             console.error('Error saving NR:', err);
+            //             showNotification('danger', 'Failed to update NR');
+            //         }
+            //     });
+            // });
 
 
             function initNREditHandlers() {
@@ -2442,18 +2442,16 @@
                     }
 
                     $.ajax({
-                        // url: '/amazon/save-nr',
+                        url: '/shopifywholesale/save-nr',
                         type: 'POST',
                         data: {
                             sku: sku,
-                            nr: JSON.stringify({
-                                NR: nrValue
-                            }),
+                            nr: nrValue,
                             _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
                         },
                         success: function(res) {
                             showNotification('success', 'NR updated successfully');
-                            // ✅ Update tableData and filteredData correctly
+                            // Update tableData and filteredData correctly
                             tableData.forEach(item => {
                                 if (item['sku'] === sku) {
                                     item.NR = nrValue;
@@ -2464,7 +2462,7 @@
                                     item.NR = nrValue;
                                 }
                             });
-                            // ✅ Recalculate & re-render
+                            // Recalculate & re-render
                             updateZeroViewDiv();
                             renderTable();
                         },

@@ -278,7 +278,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-ra-checkbox', [ListingAuditMasterController::class, 'updateRaCheckbox']);
 
     //Email Marketing
-    
+
     Route::get('/email-marketing-master', [EmailMarketingController::class, 'index'])->name('email.marketing');
     Route::get('/whatsapp-marketing-master', [WhatsappMarketingController::class, 'index'])->name('whatsapp.marketing');
     Route::get('/sms-marketing-master', [SmsMarketingController::class, 'index'])->name('sms.marketing');
@@ -526,11 +526,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ledger-master/advance-and-payments/', 'advanceAndPayments')->name('ledger.advance.payments');
         Route::get('/ledger-master/supplier-ledger/', 'supplierLedger')->name('supplier.ledger');
         Route::post('/ledger-master/supplier-ledger-save', 'supplierStore')->name('supplier.ledger.save');
+        Route::post('/supplier-ledger/update', 'updateSupplierLedger')->name('supplier.ledger.update');
         Route::get('/supplier-ledger/get-balance', 'getSupplierBalance')->name('supplier.ledger.get-balance');
         Route::get('/supplier-ledger/list', 'fetchSupplierLedgerData');
         Route::post('/advance-payments/save', 'saveAdvancePayments')->name('advance.payments.save');
         Route::get('/advance-and-payments/data', 'getAdvancePaymentsData');
         Route::post('/advance-payments/delete', 'deleteAdvancePayments');
+        Route::post('/supplier-ledger/delete', 'deleteSupplierLedger');
     });
 
 
@@ -695,7 +697,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing-walmart', [ListingWalmartController::class, 'listingWalmart'])->name('listing.walmart');
     Route::get('/listing_walmart/view-data', [ListingWalmartController::class, 'getViewListingWalmartData']);
     Route::post('/listing_walmart/save-status', [ListingWalmartController::class, 'saveStatus']);
-     Route::post('/listing_walmart/import', [ListingWalmartController::class, 'import'])->name('listing_walmart.import');
+    Route::post('/listing_walmart/import', [ListingWalmartController::class, 'import'])->name('listing_walmart.import');
     Route::get('/listing_walmart/export', [ListingWalmartController::class, 'export'])->name('listing_walmart.export');
 
     Route::get('walmartAnalysis', action: [WalmartControllerMarket::class, 'overallWalmart']);
@@ -821,7 +823,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/temu-pricing-dsc', [TemuController::class, 'temuPricingCVRdsc'])->name('temu.pricing.dsc');
 
     Route::post('/temu/save-sprice', [TemuController::class, 'saveSpriceToDatabase'])->name('temu.save-sprice');
-Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
+    Route::post('/temu/save-ship', [TemuController::class, 'saveShipToDatabase']);
 
     Route::get('/temu-zero-view', [TemuZeroController::class, 'temuZeroView'])->name('temu.zero.view');
     Route::get('/temu-low-visiblity-view', [TemuLowVisibilityController::class, 'temuLowVisibilityView'])->name('temu.low.visibility.view');

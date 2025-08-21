@@ -36,31 +36,20 @@ class FetchEbayReports extends Command
     public function handle()
     {
         $token = $this->generateEbayToken();
-
         if (!$token) {
             $this->error('Failed to generate token.');
             return;
         }
 
         $dateRanges = $this->getDateRanges();
-
         $listingData = $this->fetchAndParseReport('LMS_ACTIVE_INVENTORY_REPORT', null, $token);
-        
+
         foreach ($listingData as $row) {
-            
             $itemId = $row['item_id'] ?? null;
             if (!$itemId) continue;
-        
-            $updateData = [
-                'item_id' => $row['item_id'] ?? '',
-                'sku' => $row['sku'] ?? '',
-                'ebay_price' => $row['price'] ?? null,        
-                'report_date' => now()->toDateString(),
-            ];
-            
+
             // ProductMaster se lp, ship values fetch karo
             $pm = ProductMaster::where('sku', $row['sku'])->first();
-
             $values = is_array($pm->Values)
                 ? $pm->Values
                 : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
@@ -71,31 +60,42 @@ class FetchEbayReports extends Command
             $percentage = MarketplacePercentage::where("marketplace", "EBay")->value("percentage") ?? 100;
             $percentage = $percentage / 100;
 
+            // 🔹 Upsert EbayMetric pehle
+            $metric = EbayMetric::updateOrCreate(
+                ['item_id' => $itemId],
+                [
+                    'sku'         => $row['sku'] ?? '',
+                    'ebay_price'  => $row['price'] ?? null,
+                    'report_date' => now()->toDateString(),
+                ]
+            );
+
             try {
+                // 🔹 Ab model pass kar rahe hain (array nahi)
                 $processor = new EbayDataProcessor();
-                $processor->calculateAndSave($row, $lp, $ship, $percentage);
+                $processor->calculateAndSave($metric, $lp, $ship, $percentage);
             } catch (\Exception $e) {
-                logger()->error("EbayDataProcessor failed for SKU: {$row['sku']}", ['error' => $e->getMessage()]);
+                logger()->error("EbayDataProcessor failed for SKU: {$row['sku']}", [
+                    'error' => $e->getMessage()
+                ]);
                 continue;
             }
-
-            // Upsert data
-            EbayMetric::updateOrCreate(['item_id' => $itemId], $updateData);
-            logger()->info("Upserting data for $itemId", $updateData);
         }
 
+        // 🔹 Orders se L30 & L60 quantities update karo
         $existingSkus = EbayMetric::pluck('sku')->filter()->toArray();
         $l30Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l30']['start'], $dateRanges['l30']['end'], $existingSkus);
         $l60Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l60']['start'], $dateRanges['l60']['end'], $existingSkus);
-        
+
         foreach ($existingSkus as $sku) {
             $record = EbayMetric::where('sku', $sku)->first();
             if (!$record) continue;
-            
+
             $record->ebay_l30 = $l30Qty[$sku] ?? 0;
             $record->ebay_l60 = $l60Qty[$sku] ?? 0;
             $record->save();
         }
+
         $this->info('eBay metrics fetched and stored successfully.');
     }
 

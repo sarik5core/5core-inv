@@ -133,7 +133,7 @@ class ShopifyWholesaleZeroController extends Controller
             $values["SROI"] = $request->input("sroi_percent");
         }
 
-        $reverbDataView->value = json_encode($values, JSON_UNESCAPED_UNICODE);
+        $reverbDataView->value = $values;
         $reverbDataView->save();
 
         return response()->json(["success" => true, "data" => $reverbDataView]);
