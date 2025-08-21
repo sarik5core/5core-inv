@@ -562,7 +562,7 @@
 
 
         <!-- Table Container -->
-        <div class="table-container" id="channelTableWrapper">
+        <div class="table-container" id="channelTableWrapper"  style="display: none;">
             <!-- <div class="table-responsive" style="max-height: 500px; overflow: auto;"> -->
             <table class="table table-hover table-striped w-100" id="channelTable">
                 <thead class="table sticky-top bg-white">
@@ -1067,13 +1067,29 @@
                                 'temu': '/temu-zero-view',
                                 'macys': '/macys-zero-view',
                                 'wayfair': '/Wayfair-zero-view',
-                                // 'reverb': '/reverb',
+                                'reverb': '/reverb/zero/view',
                                 'shopify b2c': '/shopifyB2C-zero-view',
                                 'doba': '/zero-doba',
                                 'walmart': '/zero-walmart',
                                 'aliexpress': '/zero-aliexpress',
                                 'tiktok shop': '/zero-tiktokshop',
                                 'shein': '/zero-shein',
+                                'faire': '/zero-faire',
+                                'mercari w ship': '/zero-mercariwship',
+                                'fb marketplace': '/zero-fbmarketplace',
+                                'business 5core': '/zero-business5core',
+                                'pls': '/zero-pls',
+                                'auto ds': '/zero-autods',
+                                'mercari w/o ship': '/zero-mercariwoship',
+                                'tiendamia': '/zero-tiendamia',
+                                'syncee': '/zero-syncee',
+                                'fb shop': '/zero-fbshop',
+                                'instagram shop': '/zero-instagramshop',
+                                'yamibuy': '/zero-yamibuy',
+                                'dhgate': '/zero-dhgate',
+                                'bestbuy usa': '/zero-bestbuyusa',
+                                'sw gear exchange': '/zero-swgearexchange',
+                                'shopify wholesale/ds': '/zero-shopifywholesale',
                             };
 
                             const routeUrl = routeMap[channelName];
@@ -1154,6 +1170,19 @@
                         cell.innerHTML = i + 1;
                     });
 
+                     // Calculate totals for Live Pending & Zero Visibility SKU Count
+                    let livePendingTotal = api.column(3, { search: 'applied' }).data()
+                        .reduce((a, b) => (parseInt(a) || 0) + (parseInt(b) || 0), 0);
+
+                    let zeroVisibilityTotal = api.column(4, { search: 'applied' }).data()
+                        .reduce((a, b) => (parseInt(a) || 0) + (parseInt(b) || 0), 0);
+
+                    // Insert totals into header cells (the blank red boxes)
+                    let livePendingHeader = api.column(3).header();
+                    let zeroVisibilityHeader = api.column(4).header();
+
+                    jq(livePendingHeader).html('Live Pending<br><span style="color:white; font-weight:bold;">' + livePendingTotal + '</span>');
+                    jq(zeroVisibilityHeader).html('Zero Visibility SKU Count<br><span style="color:white; font-weight:bold;">' + zeroVisibilityTotal + '</span>');
                 },
                 responsive: true,
                 language: {
