@@ -122,7 +122,7 @@ class EbayController extends Controller
             "ebayPercentage" => $percentage,
         ]);
     }
-     public function ebayPricingIncrease(Request $request)
+    public function ebayPricingIncrease(Request $request)
     {
         $mode = $request->query("mode");
         $demo = $request->query("demo");
@@ -226,7 +226,7 @@ class EbayController extends Controller
             $range = strtoupper($report->report_range);
 
             $adMetricsBySku[$sku][$range]['GENERAL_SPENT'] =
-                ($adMetricsBySku[$sku][$range]['GENERAL_SPENT'] ?? 0) 
+                ($adMetricsBySku[$sku][$range]['GENERAL_SPENT'] ?? 0)
                 + $this->extractNumber($report->ad_fees);
 
             $adMetricsBySku[$sku][$range]['Imp'] =
@@ -250,9 +250,8 @@ class EbayController extends Controller
             $range = strtoupper($report->report_range);
 
             $adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] =
-                ($adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] ?? 0) 
+                ($adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] ?? 0)
                 + $this->extractNumber($report->cpc_ad_fees_payout_currency);
-
         }
 
         // 5. Get marketplace percentage
@@ -528,12 +527,14 @@ class EbayController extends Controller
 
     public function saveSpriceToDatabase(Request $request)
     {
+        // LOG::info('Saving Shopify pricing data', $request->all());
         $sku = $request->input('sku');
         $spriceData = $request->only(['sprice', 'spft_percent', 'sroi_percent']);
 
         if (!$sku || !$spriceData['sprice']) {
             return response()->json(['error' => 'SKU and sprice are required.'], 400);
         }
+
 
         $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
 
@@ -554,6 +555,7 @@ class EbayController extends Controller
 
         return response()->json(['message' => 'Data saved successfully.']);
     }
+
 
 
     public function updateListedLive(Request $request)
@@ -588,7 +590,7 @@ class EbayController extends Controller
     public function saveLowProfit(Request $request)
     {
         $count = $request->input('count');
-        
+
         $channel = ChannelMaster::where('channel', 'eBay')->first();
 
         if (!$channel) {
