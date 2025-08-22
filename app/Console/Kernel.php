@@ -11,6 +11,7 @@ use App\Console\Commands\LogClear;
 use App\Console\Commands\SyncTemuSheet;
 use App\Http\Controllers\ApiController;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -29,7 +30,7 @@ class Kernel extends ConsoleKernel
     {
         // Test scheduler to verify it's working
         $schedule->call(function () {
-            \Log::info('Test scheduler is working at ' . now());
+            Log::info('Test scheduler is working at ' . now());
         })->everyMinute()->name('test-scheduler-log');
 
         // Clear Laravel log after test log
