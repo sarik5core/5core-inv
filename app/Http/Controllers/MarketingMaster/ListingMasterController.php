@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use App\Models\Neweegb2cDataView;
+use Illuminate\Support\Facades\Log;
 
 class ListingMasterController extends Controller
 {
@@ -210,7 +211,7 @@ class ListingMasterController extends Controller
                     $totalSkuCount += $skuCount;
                 }
             } catch (\Exception $e) {
-                \Log::error("Error fetching {$marketplace} data: " . $e->getMessage());
+                Log::error("Error fetching {$marketplace} data: " . $e->getMessage());
             }
 
             $finalData[] = [
