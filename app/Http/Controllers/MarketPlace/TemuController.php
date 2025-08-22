@@ -377,4 +377,7 @@ class TemuController extends Controller
             'percentage' => $percentage
         ]);
     }
+
+    
+
 }

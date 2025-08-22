@@ -752,7 +752,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/ebay2-low-visibility-view', action: [Ebay2LowVisibilityController::class, 'ebay2LowVisibility'])->name('ebay2.low.visibility.view');
     Route::get('/ebay3-low-visibility-view', action: [Ebay3LowVisibilityController::class, 'ebay3LowVisibility'])->name('ebay3.low.visibility.view');
 
-    
+
     //Listing Audit Macy
     Route::get('/listing-macys', [ListingMacysController::class, 'listingMacys'])->name('listing.macys');
     Route::get('/listing_macys/view-data', [ListingMacysController::class, 'getViewListingMacysData']);
@@ -1520,5 +1520,4 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     // Route::post('/import-amazon-listing-status', [ListingAmazonController::class, 'importAmazonListingStatus'])->name('import.amazon.listing.status');
-
-});
+    });
