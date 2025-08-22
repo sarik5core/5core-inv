@@ -1416,6 +1416,10 @@
                                     <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
                                         NRL
                                     </th>
+
+                                    <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
+                                        FBA 
+                                    </th>
                                     <th data-field="FBA SKU" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -2129,6 +2133,7 @@
                     initPlaybackControls();
                     initRAEditHandlers(); // Add this line
                     initNRSelectChangeHandler();
+                    initNRSelectChangeHandler2();
 
                 });
             }
@@ -2181,7 +2186,6 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
-                        console.log(response.data);
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
                                 const inv = Number(item.INV) || 0;
@@ -2220,11 +2224,10 @@
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
                                         .toUpperCase().includes("PARENT") : false,
                                     NR: item.NRL || '',
+                                    FBA: item.FBA || '',
                                     raw_data: item || {} // Ensure raw_data always exists
                                 };
                             });
-
-                            console.log('tableData:', tableData);
                             filteredData = [...tableData];
                         }
                     },
@@ -2261,7 +2264,7 @@
                     if(item.NR === 'NR'){
                         $row.addClass('nr-hide');
                     }
-
+                    
                     // Updated color coding functions
                     const getDilColor = (value) => {
                         const percent = parseFloat(value) * 100;
@@ -2392,6 +2395,51 @@
                         $select.data('sku', item['(Child) sku']);
                         $row.append($('<td>').append($select));
                     }
+
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        const currentFBA = (item.FBA === 'FBA' || item.FBA === 'FBM' || item.FBA ===
+                                'BOTH') ?
+                            item.FBA :
+                            'FBA'; // default
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm fba-select" style="min-width: 100px;">
+                                <option value="FBA" ${currentFBA === 'FBA' ? 'selected' : ''}>FBA</option>
+                                <option value="FBM" ${currentFBA === 'FBM' ? 'selected' : ''}>FBM</option>
+                               
+                            </select>
+                        `);
+                        //  <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                        // Set background color
+                        if (currentFBA === 'FBA') {
+                            // Vibrant Blue
+                            $select.css({
+                                backgroundColor: '#007bff', // Bootstrap Primary Blue
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'FBM') {
+                            // Rich Violet
+                            $select.css({
+                                backgroundColor: '#6f42c1', // Bootstrap Purple
+                                color: '#ffffff'
+                            });
+                        }
+                        //  else if (currentFBA === 'BOTH') {
+                        //     // Bright Teal
+                        //     $select.css({
+                        //         backgroundColor: '#20c997', // Bootstrap Teal
+                        //         color: '#ffffff'
+                        //     });
+                        // }
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+
+                    }
+
 
                     $row.append($('<td>').text(item['FBA SKU']));
 
@@ -2532,6 +2580,7 @@
                     const $select = $(this);
                     const sku = $(this).data('sku');
                     const nrValue = $(this).val();
+                    
                     if (nrValue === 'NR') {
                         $select.css('background-color', '#dc3545').css('color', '#ffffff');
                     } else {
@@ -2569,6 +2618,53 @@
                         }
                     });
                 });  
+            }
+
+
+            function initNRSelectChangeHandler2() {
+                $(document).on('change', '.fba-select', function() {
+                    const $select = $(this);
+                    const sku = $(this).data('sku');
+                    const fbaValue = $(this).val();
+                    if (fbaValue === 'FBA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
+                    }
+                    $.ajax({
+                        url: '/amazon/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            fba: JSON.stringify({
+                                FBA: fbaValue
+                            }),
+                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+                        },
+                        success: function(res) {
+                            showNotification('success', 'FBA updated successfully');
+
+                            // Update tableData and filteredData correctly
+                            tableData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.FBA = fbaValue;
+                                }
+                            });
+                            filteredData.forEach(item => {
+                                if (item['(Child) sku'] === sku) {
+                                    item.FBA = fbaValue;
+                                }
+                            });
+                            // Recalculate & re-render
+                            calculateTotals();
+                            renderTable();
+                        },
+                        error: function(err) {
+                            console.error('Error saving FBA:', err);
+                            showNotification('danger', 'Failed to update FBA');
+                        }
+                    });
+                });
             }
 
             window.openModal = function(selectedItem, type) {
@@ -3763,6 +3859,7 @@
                 const $fbaskuResults = $('#fbaskuSearchResults');
 
                 // Send FBA dropdown
+
                 const $sendfbaSearch = $('#sendfbaSearch');
                 const $sendfbaResults = $('#sendfbaSearchResults');
 
