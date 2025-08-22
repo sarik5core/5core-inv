@@ -1402,9 +1402,7 @@
                                         </div>
                                     </th>
 
-
-
-                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
+                                       <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 SPRICE<span class="sort-arrow">↓</span>
@@ -1429,6 +1427,9 @@
                                             </div>
                                         </div>
                                     </th>
+
+
+
 
                                     <!--<th data-field="ttl_prf" style="vertical-align: middle; white-space: nowrap;">-->
                                     <!--    <div class="d-flex flex-column align-items-center">-->
@@ -1610,6 +1611,7 @@
 
 
 
+                                 
 
                                     <th data-field="temu_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -2484,44 +2486,6 @@
                     }
 
 
-
-                    // Sale Price with edit icon (skip edit for parent)
-                    // S-Price
-                    $row.append($('<td>').attr('id', `sprice-${item.SKU}`).html(
-                        item.is_parent ?
-                        `--` :
-                        (
-                            (item.sprice !== null && !isNaN(item.sprice)) ?
-                            `<span class="badge bg-primary">
-                    $${Math.round(item.sprice)}
-                    </span>
-                    <i class="fa fa-edit text-primary ms-2" style="cursor:pointer;" 
-                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>` :
-                            `<i class="fa fa-edit text-primary" style="cursor:pointer;" 
-                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>`
-                        )
-                    ));
-
-                    // S-Profit Percent
-                    $row.append($('<td>').attr('id', `spft-${item.SKU}`).html(
-                        item.is_parent ?
-                        '--' :
-                        (!isNaN(item.sprofit_percent) && item.sprofit_percent !== null ?
-                            `<span class="badge bg-success">${Math.round(item.sprofit_percent)}%</span>` :
-                            `--`)
-                    ));
-
-                    // S-ROI Percent
-                    $row.append($('<td>').attr('id', `sroi-${item.SKU}`).html(
-                        item.is_parent ?
-                        '--' :
-                        (!isNaN(item.sroi_percent) && item.sroi_percent !== null ?
-                            `<span class="badge bg-info">${Math.round(item.sroi_percent)}%</span>` :
-                            `--`)
-                    ));
-
-
-
                     const amzPrice = item.amz_price !== null ? '$' + parseFloat(item.amz_price).toFixed(2) :
                         '0';
                     const amzBuyerLink = item.amz_buy_link || '';
@@ -2613,9 +2577,46 @@
 
 
 
+                    // Sale Price with edit icon (skip edit for parent)
+                    // S-Price
+                    $row.append($('<td>').attr('id', `sprice-${item.SKU}`).html(
+                        item.is_parent ?
+                        `--` :
+                        (
+                            (item.sprice !== null && !isNaN(item.sprice)) ?
+                            `<span class="badge bg-primary">
+                    $${Math.round(item.sprice)}
+                    </span>
+                    <i class="fa fa-edit text-primary ms-2" style="cursor:pointer;" 
+                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>` :
+                            `<i class="fa fa-edit text-primary" style="cursor:pointer;" 
+                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>`
+                        )
+                    ));
+
+                    // S-Profit Percent
+                    $row.append($('<td>').attr('id', `spft-${item.SKU}`).html(
+                        item.is_parent ?
+                        '--' :
+                        (!isNaN(item.sprofit_percent) && item.sprofit_percent !== null ?
+                            `<span class="badge bg-success">${Math.round(item.sprofit_percent)}%</span>` :
+                            `--`)
+                    ));
+
+                    // S-ROI Percent
+                    $row.append($('<td>').attr('id', `sroi-${item.SKU}`).html(
+                        item.is_parent ?
+                        '--' :
+                        (!isNaN(item.sroi_percent) && item.sroi_percent !== null ?
+                            `<span class="badge bg-info">${Math.round(item.sroi_percent)}%</span>` :
+                            `--`)
+                    ));
+
+
+
                     // Site-wise profit per unit × L30 = total profit per site
                     const amzProfit = ((amzPriceVal * 0.71) - LP - SHIP) * amzL30Val;
-                    const ebayProfit = ((ebayPriceVal * 0.74) - LP - SHIP) * ebayL30Val;
+                    const ebayProfit = ((ebayPriceVal * 0.77) - LP - SHIP) * ebayL30Val;
                     const shopifyProfit = ((shopifyPriceVal * 0.75) - LP - SHIP) * shopifyL30Val;
                     const macyProfit = ((macyPriceVal * 0.77) - LP - SHIP) * macyL30Val;
                     const reverbProfit = ((reverbPriceVal * 0.84) - LP - SHIP) * reverbL30Val;
@@ -2721,6 +2722,7 @@
                     };
 
 
+                    
                     // Append with span styling
                     $row.append(
                         $('<td>').html(
@@ -2740,6 +2742,7 @@
                     );
 
 
+                    
 
 
 
@@ -3176,7 +3179,6 @@
                         `<span class="dil-percent-value ${getshopifyRoiColor(item.doba_roi)}">${Math.round(item.doba_roi * 100)}%</span>` :
                         ''
                     ));
-
 
 
 
