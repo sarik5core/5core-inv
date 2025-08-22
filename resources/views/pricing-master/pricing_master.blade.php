@@ -1425,31 +1425,6 @@
                                         </div>
                                     </th>
 
-                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SPRICE<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SPROFIT<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SROI<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
 
 
 
@@ -1603,6 +1578,35 @@
                                             </div>
                                         </div>
                                     </th>
+
+
+
+                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                SPRICE<span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                SPROFIT<span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+
+
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                SROI<span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+
 
                                     <th data-field="temu_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -2267,89 +2271,89 @@
                     ${
                         !item.is_parent
                             ? `<i class="fa fa-eye text-primary ms-2"  style="cursor: pointer;" data-inv="${item.INV || 0}" 
-                                                                                        data-l30='${JSON.stringify({
-                                                                                            Amazon: {
-                                                                                                price: item.amz_price,
-                                                                                                l30: item.amz_l30,
-                                                                                                pft: item.amz_pft,
-                                                                                                roi: item.amz_roi
-                                                                                            },
-                                                                                            eBay: {
-                                                                                                price: item.ebay_price,
-                                                                                                l30: item.ebay_l30,
-                                                                                                pft: item.ebay_pft,
-                                                                                                roi: item.ebay_roi
-                                                                                            },
-                                                                                            Shopify: {
-                                                                                                price: item.shopifyb2c_price,
-                                                                                                l30: item.shopifyb2c_l30,
-                                                                                                pft: item.shopifyb2c_pft,
-                                                                                                roi: item.shopifyb2c_roi
-                                                                                            },
-                                                                                            Macy: {
-                                                                                                price: item.macy_price,
-                                                                                                l30: item.macy_l30,
-                                                                                                pft: item.macy_pft,
-                                                                                                roi: item.macy_roi
-                                                                                            },
-                                                                                            Newegg: {
-                                                                                                price: item.neweegb2c_price,
-                                                                                                l30: item.neweegb2c_l30,
-                                                                                                pft: item.neweegb2c_pft,
-                                                                                                roi: item.neweegb2c_roi
-                                                                                            },
-                                                                                            Reverb: {
-                                                                                                price: item.reverb_price,
-                                                                                                l30: item.reverb_l30,
-                                                                                                pft: item.reverb_pft,
-                                                                                                roi: item.reverb_roi
-                                                                                            }
-                                                                                            ,
-                                                                                            doba: {
-                                                                                                price: item.doba_price,
-                                                                                                l30: item.doba_l30,
-                                                                                                pft: item.doba_pft,
-                                                                                                roi: item.doba_roi
-                                                                                            }
-                                                                                            ,
-                                                                                            temu: {
-                                                                                                price: item.temu_price,
-                                                                                                l30: item.temu_l30,
-                                                                                                pft: item.temu_pft,
-                                                                                                roi: item.temu_roi
-                                                                                            }
-                                                                                            ,
-                                                                                            wayfair: {
-                                                                                                price: item.wayfair_price,
-                                                                                                l30: item.wayfair_l30,
-                                                                                                pft: item.wayfair_pft,
-                                                                                                roi: item.wayfair_roi
-                                                                                            }
-                                                                                            ,
-                                                                                            ebay3: {
-                                                                                                price: item.ebay3_price,
-                                                                                                l30: item.ebay3_l30,
-                                                                                                pft: item.ebay3_pft,
-                                                                                                roi: item.ebay3_roi
-                                                                                            }
-                                                                                            ,
-                                                                                            ebay2: {
-                                                                                                price: item.ebay2_price,
-                                                                                                l30: item.ebay2_l30,
-                                                                                                pft: item.ebay2_pft,
-                                                                                                roi: item.ebay2_roi
-                                                                                            }
-                                                                                            ,
-                                                                                            walmart: {
-                                                                                                price: item.walmart_price,
-                                                                                                l30: item.walmart_l30,
-                                                                                                pft: item.walmart_pft,
-                                                                                                roi: item.walmart_roi
-                                                                                            }
+                                                                                            data-l30='${JSON.stringify({
+                                                                                                Amazon: {
+                                                                                                    price: item.amz_price,
+                                                                                                    l30: item.amz_l30,
+                                                                                                    pft: item.amz_pft,
+                                                                                                    roi: item.amz_roi
+                                                                                                },
+                                                                                                eBay: {
+                                                                                                    price: item.ebay_price,
+                                                                                                    l30: item.ebay_l30,
+                                                                                                    pft: item.ebay_pft,
+                                                                                                    roi: item.ebay_roi
+                                                                                                },
+                                                                                                Shopify: {
+                                                                                                    price: item.shopifyb2c_price,
+                                                                                                    l30: item.shopifyb2c_l30,
+                                                                                                    pft: item.shopifyb2c_pft,
+                                                                                                    roi: item.shopifyb2c_roi
+                                                                                                },
+                                                                                                Macy: {
+                                                                                                    price: item.macy_price,
+                                                                                                    l30: item.macy_l30,
+                                                                                                    pft: item.macy_pft,
+                                                                                                    roi: item.macy_roi
+                                                                                                },
+                                                                                                Newegg: {
+                                                                                                    price: item.neweegb2c_price,
+                                                                                                    l30: item.neweegb2c_l30,
+                                                                                                    pft: item.neweegb2c_pft,
+                                                                                                    roi: item.neweegb2c_roi
+                                                                                                },
+                                                                                                Reverb: {
+                                                                                                    price: item.reverb_price,
+                                                                                                    l30: item.reverb_l30,
+                                                                                                    pft: item.reverb_pft,
+                                                                                                    roi: item.reverb_roi
+                                                                                                }
+                                                                                                ,
+                                                                                                doba: {
+                                                                                                    price: item.doba_price,
+                                                                                                    l30: item.doba_l30,
+                                                                                                    pft: item.doba_pft,
+                                                                                                    roi: item.doba_roi
+                                                                                                }
+                                                                                                ,
+                                                                                                temu: {
+                                                                                                    price: item.temu_price,
+                                                                                                    l30: item.temu_l30,
+                                                                                                    pft: item.temu_pft,
+                                                                                                    roi: item.temu_roi
+                                                                                                }
+                                                                                                ,
+                                                                                                wayfair: {
+                                                                                                    price: item.wayfair_price,
+                                                                                                    l30: item.wayfair_l30,
+                                                                                                    pft: item.wayfair_pft,
+                                                                                                    roi: item.wayfair_roi
+                                                                                                }
+                                                                                                ,
+                                                                                                ebay3: {
+                                                                                                    price: item.ebay3_price,
+                                                                                                    l30: item.ebay3_l30,
+                                                                                                    pft: item.ebay3_pft,
+                                                                                                    roi: item.ebay3_roi
+                                                                                                }
+                                                                                                ,
+                                                                                                ebay2: {
+                                                                                                    price: item.ebay2_price,
+                                                                                                    l30: item.ebay2_l30,
+                                                                                                    pft: item.ebay2_pft,
+                                                                                                    roi: item.ebay2_roi
+                                                                                                }
+                                                                                                ,
+                                                                                                walmart: {
+                                                                                                    price: item.walmart_price,
+                                                                                                    l30: item.walmart_l30,
+                                                                                                    pft: item.walmart_pft,
+                                                                                                    roi: item.walmart_roi
+                                                                                                }
 
-                                                                                        })}'
-                                                                                        onclick="showL30Modal(this)">
-                                                                                        </i>`
+                                                                                            })}'
+                                                                                            onclick="showL30Modal(this)">
+                                                                                            </i>`
                                                 : ''
                                         }
                                     `));
@@ -2359,86 +2363,86 @@
 
                     $row.append($('<td>').html(`
                                         ${item.is_parent ? '--' : `
-                                                                                <button class="btn btn-outline-success btn-sm" 
-                                                                                        style="padding: 2px 6px;" 
-                                                                                        data-analysis='${JSON.stringify({
-                                                                                            Amazon: {
-                                                                                                price: item.amz_price,
-                                                                                                l30: item.amz_l30,
-                                                                                                pft: item.amz_pft,
-                                                                                                roi: item.amz_roi
-                                                                                            },
-                                                                                            eBay: {
-                                                                                                price: item.ebay_price,
-                                                                                                l30: item.ebay_l30,
-                                                                                                pft: item.ebay_pft,
-                                                                                                roi: item.ebay_roi
-                                                                                            },
-                                                                                            Shopify: {
-                                                                                                price: item.shopifyb2c_price,
-                                                                                                l30: item.shopifyb2c_l30,
-                                                                                                pft: item.shopifyb2c_pft,
-                                                                                                roi: item.shopifyb2c_roi
-                                                                                            },
-                                                                                            Macy: {
-                                                                                                price: item.macy_price,
-                                                                                                l30: item.macy_l30,
-                                                                                                pft: item.macy_pft,
-                                                                                                roi: item.macy_roi
-                                                                                            },
-                                                                                            Newegg: {
-                                                                                                price: item.neweegb2c_price,
-                                                                                                l30: item.neweegb2c_l30,
-                                                                                                pft: item.neweegb2c_pft,
-                                                                                                roi: item.neweegb2c_roi
-                                                                                            },
-                                                                                            Reverb: {
-                                                                                                price: item.reverb_price,
-                                                                                                l30: item.reverb_l30,
-                                                                                                pft: item.reverb_pft,
-                                                                                                roi: item.reverb_roi
-                                                                                            },
-                                                                                            Doba: {
-                                                                                                price: item.doba_price,
-                                                                                                l30: item.doba_l30,
-                                                                                                pft: item.doba_pft,
-                                                                                                roi: item.doba_roi
-                                                                                            },
-                                                                                            Temu: {
-                                                                                                price: item.temu_price,
-                                                                                                l30: item.temu_l30,
-                                                                                                pft: item.temu_pft,
-                                                                                                roi: item.temu_roi
-                                                                                            }
-                                                                                            , Wayfair: {
-                                                                                                price: item.wayfair_price,
-                                                                                                l30: item.wayfair_l30,
-                                                                                                pft: item.wayfair_pft,
-                                                                                                roi: item.wayfair_roi
-                                                                                            },
-                                                                                            ebay3: {
-                                                                                                price: item.ebay3_price,
-                                                                                                l30: item.ebay3_l30,
-                                                                                                pft: item.ebay3_pft,
-                                                                                                roi: item.ebay3_roi
-                                                                                            }
-                                                                                            , ebay2: {
-                                                                                                price: item.ebay2_price,
-                                                                                                l30: item.ebay2_l30,
-                                                                                                pft: item.ebay2_pft,
-                                                                                                roi: item.ebay2_roi
-                                                                                            },
-                                                                                            walmart: {
-                                                                                                price: item.walmart_price,
-                                                                                                l30: item.walmart_l30,
-                                                                                                pft: item.walmart_pft,
-                                                                                                roi: item.walmart_roi
-                                                                                            }
-                                                                                        })}'
-                                                                                        onclick="openSiteAnalysisModal(this)">
-                                                                                    <i class="fa fa-bar-chart"></i>
-                                                                                </button>
-                                                                            `}
+                                                                                    <button class="btn btn-outline-success btn-sm" 
+                                                                                            style="padding: 2px 6px;" 
+                                                                                            data-analysis='${JSON.stringify({
+                                                                                                Amazon: {
+                                                                                                    price: item.amz_price,
+                                                                                                    l30: item.amz_l30,
+                                                                                                    pft: item.amz_pft,
+                                                                                                    roi: item.amz_roi
+                                                                                                },
+                                                                                                eBay: {
+                                                                                                    price: item.ebay_price,
+                                                                                                    l30: item.ebay_l30,
+                                                                                                    pft: item.ebay_pft,
+                                                                                                    roi: item.ebay_roi
+                                                                                                },
+                                                                                                Shopify: {
+                                                                                                    price: item.shopifyb2c_price,
+                                                                                                    l30: item.shopifyb2c_l30,
+                                                                                                    pft: item.shopifyb2c_pft,
+                                                                                                    roi: item.shopifyb2c_roi
+                                                                                                },
+                                                                                                Macy: {
+                                                                                                    price: item.macy_price,
+                                                                                                    l30: item.macy_l30,
+                                                                                                    pft: item.macy_pft,
+                                                                                                    roi: item.macy_roi
+                                                                                                },
+                                                                                                Newegg: {
+                                                                                                    price: item.neweegb2c_price,
+                                                                                                    l30: item.neweegb2c_l30,
+                                                                                                    pft: item.neweegb2c_pft,
+                                                                                                    roi: item.neweegb2c_roi
+                                                                                                },
+                                                                                                Reverb: {
+                                                                                                    price: item.reverb_price,
+                                                                                                    l30: item.reverb_l30,
+                                                                                                    pft: item.reverb_pft,
+                                                                                                    roi: item.reverb_roi
+                                                                                                },
+                                                                                                Doba: {
+                                                                                                    price: item.doba_price,
+                                                                                                    l30: item.doba_l30,
+                                                                                                    pft: item.doba_pft,
+                                                                                                    roi: item.doba_roi
+                                                                                                },
+                                                                                                Temu: {
+                                                                                                    price: item.temu_price,
+                                                                                                    l30: item.temu_l30,
+                                                                                                    pft: item.temu_pft,
+                                                                                                    roi: item.temu_roi
+                                                                                                }
+                                                                                                , Wayfair: {
+                                                                                                    price: item.wayfair_price,
+                                                                                                    l30: item.wayfair_l30,
+                                                                                                    pft: item.wayfair_pft,
+                                                                                                    roi: item.wayfair_roi
+                                                                                                },
+                                                                                                ebay3: {
+                                                                                                    price: item.ebay3_price,
+                                                                                                    l30: item.ebay3_l30,
+                                                                                                    pft: item.ebay3_pft,
+                                                                                                    roi: item.ebay3_roi
+                                                                                                }
+                                                                                                , ebay2: {
+                                                                                                    price: item.ebay2_price,
+                                                                                                    l30: item.ebay2_l30,
+                                                                                                    pft: item.ebay2_pft,
+                                                                                                    roi: item.ebay2_roi
+                                                                                                },
+                                                                                                walmart: {
+                                                                                                    price: item.walmart_price,
+                                                                                                    l30: item.walmart_l30,
+                                                                                                    pft: item.walmart_pft,
+                                                                                                    roi: item.walmart_roi
+                                                                                                }
+                                                                                            })}'
+                                                                                            onclick="openSiteAnalysisModal(this)">
+                                                                                        <i class="fa fa-bar-chart"></i>
+                                                                                    </button>
+                                                                                `}
                                     `));
 
 
@@ -2568,24 +2572,24 @@
 
 
 
-                   // Site-wise profit per unit × L30 = total profit per site
-                const amzProfit = ((amzPriceVal * 0.71) - LP - SHIP) * amzL30Val;
-                const ebayProfit = ((ebayPriceVal * 0.77) - LP - SHIP) * ebayL30Val;
-                const shopifyProfit = ((shopifyPriceVal * 0.75) - LP - SHIP) * shopifyL30Val;
-                const macyProfit = ((macyPriceVal * 0.77) - LP - SHIP) * macyL30Val;
-                const reverbProfit = ((reverbPriceVal * 0.84) - LP - SHIP) * reverbL30Val;
-                const dobaProfit = ((dobaPriceVal * 0.95) - LP - SHIP) * dobaL30Val;
-                const neweggProfit = ((neweggPriceVal * 0.72) - LP - SHIP) * neweggL30Val;
-                const temuProfit = ((temuPriceVal * 0.95) - LP - SHIP) * temuL30Val;
-                const wayfairProfit = ((wayfairPriceVal * 0.90) - LP - SHIP) * wayfairL30Val;
-                const ebay3Profit = ((ebay3PriceVal * 0.76) - LP - SHIP) * ebay3L30Val;
-                const ebay2Profit = ((ebay2PriceVal * 0.88) - LP - SHIP) * ebay2L30Val;
-                const walmartProfit = ((walmartPriceVal * 0.70) - LP - SHIP) * walmartL30Val;
+                    // Site-wise profit per unit × L30 = total profit per site
+                    const amzProfit = ((amzPriceVal * 0.71) - LP - SHIP) * amzL30Val;
+                    const ebayProfit = ((ebayPriceVal * 0.77) - LP - SHIP) * ebayL30Val;
+                    const shopifyProfit = ((shopifyPriceVal * 0.75) - LP - SHIP) * shopifyL30Val;
+                    const macyProfit = ((macyPriceVal * 0.77) - LP - SHIP) * macyL30Val;
+                    const reverbProfit = ((reverbPriceVal * 0.84) - LP - SHIP) * reverbL30Val;
+                    const dobaProfit = ((dobaPriceVal * 0.95) - LP - SHIP) * dobaL30Val;
+                    const neweggProfit = ((neweggPriceVal * 0.72) - LP - SHIP) * neweggL30Val;
+                    const temuProfit = ((temuPriceVal * 0.95) - LP - SHIP) * temuL30Val;
+                    const wayfairProfit = ((wayfairPriceVal * 0.90) - LP - SHIP) * wayfairL30Val;
+                    const ebay3Profit = ((ebay3PriceVal * 0.76) - LP - SHIP) * ebay3L30Val;
+                    const ebay2Profit = ((ebay2PriceVal * 0.88) - LP - SHIP) * ebay2L30Val;
+                    const walmartProfit = ((walmartPriceVal * 0.70) - LP - SHIP) * walmartL30Val;
 
-                // ✅ Now correct totalProfit (includes L30 × per-unit profit)
-                const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                    dobaProfit + neweggProfit + temuProfit + wayfairProfit + ebay3Profit +
-                    ebay2Profit + walmartProfit;
+                    // ✅ Now correct totalProfit (includes L30 × per-unit profit)
+                    const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
+                        dobaProfit + neweggProfit + temuProfit + wayfairProfit + ebay3Profit +
+                        ebay2Profit + walmartProfit;
 
 
                     // $row.append($('<td>').html(`<strong>${totalProfit.toFixed(2)}</strong>`));
@@ -2604,8 +2608,8 @@
                         (ebay2PriceVal * ebay2L30Val) + // ✅ Add eBay2
                         (walmartPriceVal * walmartL30Val); // ✅ Add Walmart
 
-           const avgPftPercent = totalRevenueUsedForPft > 0 ?
-    ((totalProfit / totalRevenueUsedForPft) * 100).toFixed(2) : '0.00';
+                    const avgPftPercent = totalRevenueUsedForPft > 0 ?
+                        ((totalProfit / totalRevenueUsedForPft) * 100).toFixed(2) : '0.00';
 
                     // Profit background color logic
                     let pftBgColor = 'pink'; // default color
@@ -2699,8 +2703,8 @@
 
 
                     const totalL30ForROI = totalL30;
-               const avgRoiPercent = (totalL30ForROI > 0 && (LP + SHIP) > 0) ?
-    (((totalProfit / totalL30ForROI) / (LP + SHIP)) * 100).toFixed(2) : '0.00';
+                    const avgRoiPercent = (totalL30ForROI > 0 && (LP + SHIP) > 0) ?
+                        (((totalProfit / totalL30ForROI) / (LP + SHIP)) * 100).toFixed(2) : '0.00';
 
 
                     // ROI background color logic
@@ -2784,44 +2788,6 @@
             `
                         )
                     );
-
-
-
-                    // Sale Price with edit icon (skip edit for parent)
-                    // S-Price
-                    $row.append($('<td>').attr('id', `sprice-${item.SKU}`).html(
-                        item.is_parent ?
-                        `--` :
-                        (
-                            (item.sprice !== null && !isNaN(item.sprice)) ?
-                            `<span class="badge bg-primary">
-                    $${Math.round(item.sprice)}
-                    </span>
-                    <i class="fa fa-edit text-primary ms-2" style="cursor:pointer;" 
-                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>` :
-                            `<i class="fa fa-edit text-primary" style="cursor:pointer;" 
-                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>`
-                        )
-                    ));
-
-                    // S-Profit Percent
-                    $row.append($('<td>').attr('id', `spft-${item.SKU}`).html(
-                        item.is_parent ?
-                        '--' :
-                        (!isNaN(item.sprofit_percent) && item.sprofit_percent !== null ?
-                            `<span class="badge bg-success">${Math.round(item.sprofit_percent)}%</span>` :
-                            `--`)
-                    ));
-
-                    // S-ROI Percent
-                    $row.append($('<td>').attr('id', `sroi-${item.SKU}`).html(
-                        item.is_parent ?
-                        '--' :
-                        (!isNaN(item.sroi_percent) && item.sroi_percent !== null ?
-                            `<span class="badge bg-info">${Math.round(item.sroi_percent)}%</span>` :
-                            `--`)
-                    ));
-
 
 
 
@@ -3169,6 +3135,47 @@
                         `<span class="dil-percent-value ${getshopifyRoiColor(item.doba_roi)}">${Math.round(item.doba_roi * 100)}%</span>` :
                         ''
                     ));
+
+
+
+                    // Sale Price with edit icon (skip edit for parent)
+                    // S-Price
+                    $row.append($('<td>').attr('id', `sprice-${item.SKU}`).html(
+                        item.is_parent ?
+                        `--` :
+                        (
+                            (item.sprice !== null && !isNaN(item.sprice)) ?
+                            `<span class="badge bg-primary">
+                    $${Math.round(item.sprice)}
+                    </span>
+                    <i class="fa fa-edit text-primary ms-2" style="cursor:pointer;" 
+                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>` :
+                            `<i class="fa fa-edit text-primary" style="cursor:pointer;" 
+                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>`
+                        )
+                    ));
+
+                    // S-Profit Percent
+                    $row.append($('<td>').attr('id', `spft-${item.SKU}`).html(
+                        item.is_parent ?
+                        '--' :
+                        (!isNaN(item.sprofit_percent) && item.sprofit_percent !== null ?
+                            `<span class="badge bg-success">${Math.round(item.sprofit_percent)}%</span>` :
+                            `--`)
+                    ));
+
+                    // S-ROI Percent
+                    $row.append($('<td>').attr('id', `sroi-${item.SKU}`).html(
+                        item.is_parent ?
+                        '--' :
+                        (!isNaN(item.sroi_percent) && item.sroi_percent !== null ?
+                            `<span class="badge bg-info">${Math.round(item.sroi_percent)}%</span>` :
+                            `--`)
+                    ));
+
+
+
+
 
                     // Temu Metrics
                     const temuPrice = item.temu_price !== null ? '$' + parseFloat(item.temu_price).toFixed(
