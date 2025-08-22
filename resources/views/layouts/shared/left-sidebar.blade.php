@@ -1696,7 +1696,7 @@
                                 </div>
                             </li>
 
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarneweggb2c" aria-expanded="false"
                                     aria-controls="sidebarneweggb2c">
                                     <span> Newegg B2C </span>
@@ -1757,7 +1757,7 @@
 
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
 
                             <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarwayfair" aria-expanded="false"
@@ -2364,8 +2364,9 @@
                                     </ul>
                                 </div>
                             </li>
+
                             <!-- Auto DS -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarAutoDS" aria-expanded="false"
                                     aria-controls="sidebarAutoDS">
                                     <span>Auto DS</span>
@@ -2384,7 +2385,8 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
+
                             <!-- Mercari w/o Ship -->
                             <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarMercariWoShip" aria-expanded="false"
@@ -2408,8 +2410,9 @@
                                     </ul>
                                 </div>
                             </li>
+
                             <!-- Poshmark -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarPoshmark" aria-expanded="false"
                                     aria-controls="sidebarPoshmark">
                                     <span>Poshmark</span>
@@ -2428,7 +2431,8 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
+
                             <!-- Tiendamia -->
                             <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarTiendamia" aria-expanded="false"
@@ -2473,8 +2477,9 @@
                                     </ul>
                                 </div>
                             </li>
+
                             <!-- Spocket -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarSpocket" aria-expanded="false"
                                     aria-controls="sidebarSpocket">
                                     <span>Spocket</span>
@@ -2490,9 +2495,10 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
+
                             <!-- Zendrop -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarZendrop" aria-expanded="false"
                                     aria-controls="sidebarZendrop">
                                     <span>Zendrop</span>
@@ -2509,9 +2515,10 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
+
                             <!-- Syncee -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarSyncee" aria-expanded="false"
                                     aria-controls="sidebarSyncee">
                                     <span>Syncee</span>
@@ -2528,9 +2535,10 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
+
                             <!-- Offerup -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarOfferup" aria-expanded="false"
                                     aria-controls="sidebarOfferup">
                                     <span>Offerup</span>
@@ -2547,9 +2555,9 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
                             <!-- Newegg B2B -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarNeweggB2B" aria-expanded="false"
                                     aria-controls="sidebarNeweggB2B">
                                     <span>Newegg B2B</span>
@@ -2568,9 +2576,9 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
                             <!-- Appscenic -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarAppscenic" aria-expanded="false"
                                     aria-controls="sidebarAppscenic">
                                     <span>Appscenic</span>
@@ -2588,7 +2596,8 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
+
                             <!-- FB Shop -->
                             <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarFBShop" aria-expanded="false"
@@ -2634,7 +2643,7 @@
                                 </div>
                             </li>
                             <!-- Yamibuy -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarYamibuy" aria-expanded="false"
                                     aria-controls="sidebarYamibuy">
                                     <span>Yamibuy</span>
@@ -2651,7 +2660,7 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
                             <!-- DHGate -->
                             <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarDHGate" aria-expanded="false"
@@ -2692,7 +2701,7 @@
                                 </div>
                             </li>
                             <!-- SW Gear Exchange -->
-                            <li class="side-nav-item">
+                            <!-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarSWGearExchange" aria-expanded="false"
                                     aria-controls="sidebarSWGearExchange">
                                     <span>SW Gear Exchange</span>
@@ -2711,7 +2720,7 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> -->
                         </ul>
                     </div>
                 </li>

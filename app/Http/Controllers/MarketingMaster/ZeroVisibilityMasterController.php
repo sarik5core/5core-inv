@@ -6,42 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\MarketPlace\AmazonZeroController;
 use App\Http\Controllers\MarketPlace\EbayZeroController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingAliexpressController;
 use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingAmazonController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingAppscenicController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingAutoDSController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingBestbuyUSAController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingBusiness5CoreController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingDHGateController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingDobaController;
 use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingEbayController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingEbayThreeController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingEbayTwoController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingFaireController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingFBMarketplaceController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingFBShopController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingInstagramShopController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingMacysController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingMercariWoShipController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingMercariWShipController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingNeweggB2BController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingNeweggB2CController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingOfferupController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingPoshmarkController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingReverbController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingSheinController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingShopifyB2CController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingShopifyWholesaleController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingSpocketController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingSWGearExchangeController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingSynceeController;
 use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingTemuController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingTiendamiaController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingTiktokShopController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingWalmartController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingWayfairController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingYamibuyController;
-use App\Http\Controllers\MarketPlace\ListingMarketPlace\ListingZendropController;
 use App\Http\Controllers\MarketPlace\MacyZeroController;
 use App\Http\Controllers\MarketPlace\Neweggb2cZeroController;
 use App\Http\Controllers\MarketPlace\Shopifyb2cZeroController;
@@ -648,7 +615,7 @@ class ZeroVisibilityMasterController extends Controller
             'walmart'     => app(WalmartZeroController::class)->getZeroViewCount(),
             'aliexpress'  => app(AliexpressZeroController::class)->getZeroViewCount(),
             'tiktok shop' => app(TiktokShopZeroController::class)->getZeroViewCount(),
-            'shein'       => app(SheinZeroController::class)->getZeroViewCount(),
+            // 'shein'       => app(SheinZeroController::class)->getZeroViewCount(),
         ];
 
         // Preload and decode all data views once
@@ -665,7 +632,7 @@ class ZeroVisibilityMasterController extends Controller
             'walmart'     => WalmartDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
             'aliexpress'  => AliexpressDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
             'tiktok shop' => TiktokShopDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'shein'       => SheinDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+            // 'shein'       => SheinDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
         ];
 
         // Precompute counts for each channel

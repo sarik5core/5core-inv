@@ -2108,6 +2108,7 @@
                     success: function(response) {
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
+                                
                                 const inv = Number(item.INV) || 0;
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
@@ -2122,7 +2123,7 @@
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
                                     ov_dil: ovDil,
-                                    'E L30': item['E L30'] || 0,
+                                    'E L30': item['eBay L30'] || 0,
                                     'E Dil%': item['E Dil%'] || 0,
                                     'OV CLICKS L30': item['OV CLICKS L30'] || 0,
                                     A_Z_Reason: item.A_Z_Reason || '',
