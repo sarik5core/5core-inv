@@ -1,7 +1,5 @@
 @extends('layouts.vertical', ['title' => 'eBay', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<div id="messageArea" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;"></div>
-
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -896,8 +894,7 @@
         option[value="Q-Task"] {
             background-color: #ff00ff;
         }
-
-        .nr-hide {
+        .nr-hide{
             display: none !important;
         }
 
@@ -921,18 +918,6 @@
                         <button id="editPercentBtn" class="btn btn-outline-primary ms-2">
                             <i class="fa fa-pen"></i>
                         </button>
-                    </div>
-                    <div class="d-inline-flex align-items-center ms-2">
-                        <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
-                            0 SOLD - <span id="zero-sold-count">0</span>
-                        </div>
-                        <div class="badge bg-primary text-white px-3 py-2 me-2"
-                            style="font-size: 1rem; border-radius: 8px;">
-                            SOLD - <span id="sold-count">0</span>
-                        </div>
-                        <div class="badge bg-danger text-white px-3 py-2" style="font-size: 1rem; border-radius: 8px;">
-                            RED MARGIN - <span id="red-margin-count">0</span>
-                        </div>
                     </div>
                     <div id="" class="d-flex align-items-right">
                         <button id="hideSkuBtn" class="btn btn-outline-danger ms-2">
@@ -1407,6 +1392,14 @@
                                             </div>
                                         </div>
                                     </th>
+                                    <th data-field="r&a" class="hide-column"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                R&A <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th data-field="inv" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1452,30 +1445,8 @@
                                             <div class="metric-total" id="eDil-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="NRL">NRL</th>
-
-                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LISTED <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="listed-total">0</div>
-                                        </div>
-                                    </th>
-
-                                    <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LIVE <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="live-total">0</div>
-                                        </div>
-                                    </th>
-
+                                    <th>NRL</th>
                                     <th>Hide</th>
-
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1485,19 +1456,21 @@
                                             <div class="metric-total" id="views-total">0</div>
                                         </div>
                                     </th>
+
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                SCVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th data-field="price"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 PRICE <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sprice"
-                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SPRICE <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
                                     </th>
@@ -1510,6 +1483,7 @@
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
+
                                     <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1519,25 +1493,6 @@
                                             <div class="metric-total" id="roi-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="tacos" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                TACOS <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="tacos-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                SCVR <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="cvr-total">0%</div>
-                                        </div>
-                                    </th>
-
                                     <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1565,6 +1520,69 @@
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
+
+
+
+                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LMP 1 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                Link 1 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LMP 2 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                Link 2 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LMP 3 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                Link 3 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+
+
+
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -1602,45 +1620,7 @@
 
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $(document).on('dblclick', '.sPriceText', function() {
-                const $text = $(this);
-                const $input = $text.siblings('.sPriceInput');
-
-                $text.hide();
-                $input.show().focus();
-            });
-
-            $(document).on('blur', '.sPriceInput', function() {
-                const $input = $(this);
-                const newValue = $input.val();
-                const $text = $input.siblings('.sPriceText');
-
-                $text.text(newValue).show();
-                $input.hide();
-            });
-            $(document).on("change", ".sPriceInput", function() {
-                var sku = $(this).data('sku');
-                var val = $(this).val();
-
-
-                $.ajax({
-                    url: "/update-ebay-sku-pricing",
-                    type: "POST",
-                    data: {
-                        "_token": "{{ csrf_token() }}",
-                        "sku": sku,
-                        "price": val,
-                    },
-                    success: function(info) {
-                        alert("Request Sent to Ebay, Pls Wait to Reflect Everywhere");
-                    }
-                });
-
-            });
-        });
-    </script>
+    <!--for popup modal script-->
     <script>
         flatpickr("#duration", {
             enableTime: true,
@@ -2039,6 +2019,9 @@
                 isNavigationActive = true;
                 currentParentIndex = 0;
 
+                // Show R&A column
+                $('th[data-field="r&a"], td:nth-child(4)').removeClass('hide-column');
+
                 showCurrentParent();
 
                 // Update button visibility
@@ -2054,6 +2037,8 @@
                 isNavigationActive = false;
                 currentParentIndex = -1;
 
+                // Hide R&A column
+                $('th[data-field="r&a"], td:nth-child(4)').addClass('hide-column');
 
                 // Update button visibility and reset color
                 $('#play-pause').hide();
@@ -2066,10 +2051,10 @@
                 currentPage = 1;
                 renderTable();
                 calculateTotals();
-
-                // Reapply column visibility
-                applyColumnVisibility();
             }
+
+
+
 
             function nextParent() {
                 if (!isNavigationActive) return;
@@ -2097,8 +2082,6 @@
                 currentPage = 1;
                 renderTable();
                 calculateTotals();
-                // Reapply column visibility
-                applyColumnVisibility();
                 updateButtonStates();
                 checkParentRAStatus(); // Add this line
             }
@@ -2169,6 +2152,8 @@
             // Initialize everything
             function initTable() {
                 loadData().then(() => {
+                    // Hide R&A column initially
+                    $('th[data-field="r&a"], td:nth-child(4)').addClass('hide-column');
                     renderTable();
                     initResizableColumns();
                     initSorting();
@@ -2260,23 +2245,22 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            tableData = response.data.map((item, index) => {
+                            // ✅ No filtering — show all rows
+                            const validData = response.data;
+
+                            // ✅ Assign sl_no and map rows
+                            tableData = validData.map((item, index) => {
                                 const inv = Number(item.INV) || 0;
+                                const aL30 = Number(item['A_L30']) || 0;
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
-                                const valueJson = item.value ? JSON.parse(item.value) : {};
-                                const listedVal = valueJson.Listed !== undefined ? parseInt(
-                                    valueJson.Listed) : 0;
-                                const liveVal = valueJson.Live !== undefined ? parseInt(
-                                    valueJson.Live) : 0;
 
-
-                                // Calculate SCVR as eBay L30 / OV CLICKS L30
                                 let scvr = 0;
                                 if (Number(item['OV CLICKS L30']) > 0) {
-                                    scvr = Number(item['eBay L30']) / Number(item[
+                                    scvr = Number(item['E L30']) / Number(item[
                                         'OV CLICKS L30']);
                                 }
+
                                 return {
                                     sl_no: index + 1,
                                     'Sl': item['Sl'] || index + 1,
@@ -2284,10 +2268,11 @@
                                         item.Parent_ASIN || '(No Parent)',
                                     '(Child) sku': item['(Child) sku'] || '',
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
-                                    INV: item.INV || 0,
-                                    L30: item.L30 || 0,
+                                    INV: inv,
+                                    L30: l30,
                                     ov_dil: ovDil,
-                                    'eBay L30': item['eBay L30'] || 0,
+
+                                    'E L30': item['E L30'] || 0,
                                     'E Dil%': item['E Dil%'] || 0,
                                     'OV CLICKS L30': item['OV CLICKS L30'] || 0,
                                     'eBay Price': item['eBay Price'] || 0,
@@ -2296,15 +2281,18 @@
                                         item['PFT'] || 0,
                                     'Sales L30': item['Sales L30'] || item['sales_l30'] || item[
                                         'L30'] || 0,
+
+                                    LP: item.LP_productmaster || 0,
+                                    SH: item.Ship_productmaster || 0,
+
                                     Roi: item['ROI%'] || 0,
                                     Tacos30: item.TacosL30 || 0,
-                                    SCVR: scvr, // <-- use calculated value
+
+                                    SCVR: scvr,
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
                                         .toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
                                     NR: item.NR || '',
-                                    listed: listedVal,
-                                    live: liveVal,
                                     Hide: item.Hide !== undefined ? item.Hide : '',
                                     SPRICE: (item.SPRICE !== null && !isNaN(parseFloat(item
                                         .SPRICE))) ? parseFloat(item.SPRICE) : 0,
@@ -2312,15 +2300,24 @@
                                         .SPFT))) ? parseFloat(item.SPFT) : 0,
                                     SROI: (item.SROI !== null && !isNaN(parseFloat(item
                                         .SROI))) ? parseFloat(item.SROI) : 0,
-                                    LP: item.LP_productmaster || 0,
-                                    SHIP: item.Ship_productmaster || 0,
+
+                                    LMP1: item.LMPP1 || 0,
+                                    Tacos30: item.link1 || 0,
+
+                                    'LMP 1': item['LMP 1'] || 0,
+                                    'lmp 2': item['lmp 2'] || 0,
+                                    'lmp 3': item['lmp 3'] || 0,
+                                    'link 1': item['link 1'] || 0,
+                                    'link 2': item['link 2'] || 0,
+                                    'link 3': item['link 3'] || 0,
+
                                 };
                             });
 
-
+                            console.log('All Data Loaded:', tableData);
                             filteredData = [...tableData];
-
                         }
+
                     },
                     error: function(xhr, status, error) {
                         console.error('Error loading data:', error);
@@ -2330,59 +2327,6 @@
                         hideLoader();
                     }
                 });
-            }
-
-            // Add this function to update 0 SOLD and SOLD counts
-            function updateSoldCounts() {
-                let zeroSold = 0;
-                let totalSku = 0;
-                let lowProfitCount = 0;
-
-                filteredData.forEach(item => {
-                    if (!item.is_parent) {
-                        const l30 = parseFloat(item['eBay L30']) || 0;
-                        const inv = parseFloat(item.INV) || 0;
-                        const pftDecimal = parseFloat(item['PFT %']) || 0;
-                        const pftPercentage = pftDecimal * 100;
-
-
-                        if (l30 === 0 && inv > 0) zeroSold++;
-
-                        totalSku++;
-
-                        if (pftPercentage < 10) {
-                            lowProfitCount++;
-                        }
-                    }
-                });
-
-                $('#zero-sold-count').text(zeroSold);
-                $('#sold-count').text(totalSku - zeroSold);
-                $('#red-margin-count').text(lowProfitCount);
-
-                updateRedMarginDataToChannelMaster(lowProfitCount);
-            }
-
-            function updateRedMarginDataToChannelMaster(lowProfitCount) {
-                console.log(lowProfitCount);
-
-                fetch('/ebay/saveLowProfit', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            count: lowProfitCount
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Saved low profit count:', data);
-                    })
-                    .catch(error => {
-                        console.error('Error saving low profit count:', error);
-                    });
             }
 
 
@@ -2402,26 +2346,24 @@
                     return;
                 }
 
+
+
+                // Render table rows 
+
                 filteredData.forEach(item => {
+
+                    // if (item['INV'] === 0 || item['OV CLICKS L30'] === 0) {
+                    //     return;
+                    // }
+
+
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if (item.NR === 'NRA') {
+                    if (item.NR === 'NR') {
                         $row.addClass('nr-hide');
                     }
-
-                    let rawData = {};
-                    if (typeof item.raw_data === 'string') {
-                        try {
-                            rawData = JSON.parse(item.raw_data || '{}');
-                        } catch (e) {
-                            console.error('Invalid JSON in raw_data for SKU', item['(Child) sku'], e);
-                        }
-                    } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
-                        rawData = item.raw_data;
-                    }
-
                     // Helper functions for color coding
                     const getDilColor = (value) => {
                         const percent = parseFloat(value) * 100;
@@ -2553,65 +2495,40 @@
                                data-item='${JSON.stringify(item.raw_data)}'>W</span>`
                     ));
 
-                    $row.append($('<td>').text(item['eBay L30']));
+                    $row.append($('<td>').text(item['E L30']));
 
                     // A DIL with color coding
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getEDilColor(item['E Dil%'])}">${Math.round(item['E Dil%'] * 100)}%</span>`
                     ));
+
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
-                            item.NR : 'RA';
-
+                        const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR : 'REQ'; // default to REQ
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
-                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
-                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
+                                <option value="NR" ${currentNR === 'NR' ? 'selected' : ''}>NR</option>
+                                <option value="REQ" ${currentNR === 'REQ' ? 'selected' : ''}>REQ</option>
                             </select>
                         `);
 
                         // Set background color based on value
-                        if (currentNR === 'NRA') {
+                        if (currentNR === 'NR') {
                             $select.css('background-color', '#dc3545');
                             $select.css('color', '#ffffff');
-                        } else if (currentNR === 'RA') {
+                        } else if (currentNR === 'REQ') {
                             $select.css('background-color', '#28a745');
                             $select.css('color', '#ffffff');
                         }
-
                         $select.data('sku', item['(Child) sku']);
                         $row.append($('<td>').append($select));
                     }
 
-                    //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
-                        .Listed === 1 || rawData.Listed === '1';
-                    const $listedCb = $('<input>', {
-                        type: 'checkbox',
-                        class: 'listed-checkbox',
-                        checked: listedVal
-                    }).data('sku', item['(Child) sku']);
-
-                    $row.append($('<td>').append($listedCb));
-
-                    // Live checkbox
-                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
-                        1 || rawData.Live === '1';
-                    const $liveCb = $('<input>', {
-                        type: 'checkbox',
-                        class: 'live-checkbox',
-                        checked: liveVal
-                    }).data('sku', item['(Child) sku']);
-
-                    $row.append($('<td>').append($liveCb));
-
-
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
+
                         // Hide
                         const $hideContainer = $(
                             '<div class="hide-edit-container d-flex align-items-center"></div>');
@@ -2636,6 +2553,18 @@
                                data-item='${JSON.stringify(item.raw_data)}'>V</span>`
                     ));
 
+
+                    let scvrValue = 0;
+                    if (Number(item['OV CLICKS L30']) > 0) {
+                        scvrValue = (Number(item['E L30']) / Number(item['OV CLICKS L30'])) * 100;
+                    }
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(scvrValue/100)}">${Math.round(scvrValue)}%</span>
+                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+                            data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
                     //price with tooltip
                     // Replace the existing price section with this:
                     $row.append($('<td>').html(
@@ -2650,36 +2579,24 @@
                             </span>`
                     ));
 
-                    $row.append($('<td>').html(
-                        `<div style="display:flex;align-items:center">
-                            <span class="sPriceText" data-sku="${item.raw_data['Item ID']}" style="min-width:100px; display:inline-block;">
-                                ` + item['eBay Price'] + `
-                            </span>
-                            <input 
-                                value="` + item['eBay Price'] + `" 
-                                data-sku="` + item.raw_data['Item ID'] + `" 
-                                style="min-width:100px; display:none;" 
-                                type="number" 
-                                class="sPriceInput form-control"
-                            >
-                            <span class="tooltip-container" style="margin-left:8px">
-                                <i class="fas fa-tag text-warning price-view-trigger" 
-                                   style="transform:translateY(1px)"
-                                   data-bs-toggle="tooltip" 
-                                   data-bs-placement="top-end" 
-                                   title="Pricing view"
-                                   data-item='${JSON.stringify(item.raw_data)}'></i>
-                            </span>
-                        </div>`
-                    ));
-
-
                     // PFT with color coding
+
+
+
+
+
+                    // ✅ PFT % Column (without eye button)
                     $row.append($('<td>').html(
                         typeof item['PFT %'] === 'number' && !isNaN(item['PFT %']) ?
-                        `<span class="dil-percent-value ${getPftColor(item['PFT %'])}">${Math.round(item['PFT %'] * 100)}%</span>` :
-                        ''
+                        `
+                                <span class="dil-percent-value ${getPftColor(item['PFT %'])}">
+                                    ${Math.round(item['PFT %'] * 100)}%
+                                </span>
+                                ` : ''
                     ));
+
+
+
 
                     // ROI with color coding
                     $row.append($('<td>').html(
@@ -2688,50 +2605,25 @@
                         ''
                     ));
 
-                    // TACOS with color coding and tooltip
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${(item.Tacos30 * 100).toFixed(0)}%</span>
-                         <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
-                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
-                            data-item='${JSON.stringify(item.raw_data)}'></i>`
-                    ));
 
-                    // CVR with color coding and tooltip
-                    let scvrValue = 0;
-                    if (Number(item['OV CLICKS L30']) > 0) {
-                        scvrValue = (Number(item['eBay L30']) / Number(item['OV CLICKS L30'])) * 100;
-                    }
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getCvrColor(scvrValue/100)}">${Math.round(scvrValue)}%</span>
-                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
-                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
-                            data-item='${JSON.stringify(item.raw_data)}'></i>`
-                    ));
-
-
-
-                    // SPRICE + Edit Button (no decimals)
-                    $row.append($('<td>').html(
+                    // ✅ SPRICE Column (rounded to whole number)
+                    $row.append($('<td>').attr('id', `sprice-${item["(Child) sku"]}`).html(
                         item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
                         `
-    <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-primary s_price" style="font-size: 16px; padding: 6px 10px;">
-            $${parseFloat(item.SPRICE).toFixed(2)}
-        </span>
-        <div class="btn-group btn-group-sm" role="group">
-            <!-- Edit Button -->
-            <button class="btn btn-outline-primary openPricingBtn"
-                title="Edit SPRICE"
-                data-lp="${item.LP}"
-                data-ship="${item.SHIP}"
-                data-sku="${item["(Child) sku"]}">
-                <i class="fa fa-edit"></i>
-            </button>
-        </div>
-    </div>
-    ` : ''
+                        <span class="badge bg-primary">$${Math.round(parseFloat(item.SPRICE))}</span>
+                        <button class="btn btn-sm btn-outline-primary ms-2" title="Edit SPRICE"
+                            onclick='openPricingModal(${JSON.stringify({
+                                LP: item.LP,
+                                SH: item.SH,
+                                SKU: item["(Child) sku"],
+                                SPRICE: item.SPRICE,
+                                sprofit_percent: item.sprofit_percent,
+                                sroi_percent: item.sroi_percent
+                            })})'>
+                            <i class="fa fa-edit"></i>
+                        </button>
+                    ` : '0'
                     ));
-
 
                     // ✅ SPFT (rounded to whole number %)
                     $row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
@@ -2749,6 +2641,75 @@
 
 
 
+                    // LMP1 with tooltip
+                    $row.append($('<td>').html(
+                        typeof item['LMP 1'] === 'number' && !isNaN(item['LMP 1']) ?
+                        `
+                                <span class="dil-percent-value ${getPftColor(item['LMP 1'])}">
+                                 ${Math.round(item['LMP 1'])}
+                                </span>
+                                ` : ''
+                    ));
+
+                    $row.append($('<td>').html(
+                        item['link 1'] ? `
+        <a href="${item['link 1']}" target="_blank" title="Open Link">
+            <i class="fa fa-link"></i>
+        </a>
+    ` : `
+        <span style="color: red; font-weight: bold;">✘</span>
+    `
+                    ));
+
+
+                    $row.append($('<td>').html(
+                        typeof item['lmp 2'] === 'number' && !isNaN(item['lmp 2']) ?
+                        `
+                                <span class="dil-percent-value ${getPftColor(item['lmp 2'])}">
+                                 ${Math.round(item['lmp 2'])}
+                                </span>
+                                ` : ''
+                    ));
+
+
+                    $row.append($('<td>').html(
+                        item['link 2'] ? `
+        <a href="${item['link 2']}" target="_blank" title="Open Link">
+            <i class="fa fa-link"></i>
+        </a>
+    ` : `
+        <span style="color: red; font-weight: bold;">✘</span>
+    `
+                    ));
+
+
+
+                    $row.append($('<td>').html(
+                        typeof item['lmp 3'] === 'number' && !isNaN(item['lmp 3']) ?
+                        `
+                                <span class="dil-percent-value ${getPftColor(item['lmp 3'])}">
+                                 ${Math.round(item['lmp 3'])}
+                                </span>
+                                ` : ''
+                    ));
+
+
+
+                    $row.append($('<td>').html(
+                        item['link 3'] ? `
+        <a href="${item['link 3']}" target="_blank" title="Open Link">
+            <i class="fa fa-link"></i>
+        </a>
+    ` : `
+        <span style="color: red; font-weight: bold;">✘</span>
+    `
+                    ));
+
+
+
+                    // CVR with color coding and tooltip
+
+
                     $tbody.append($row);
                 });
 
@@ -2756,7 +2717,6 @@
                 $('#visible-rows').text(`Showing all ${filteredData.length} rows`);
                 // Initialize tooltips
                 initTooltips();
-                updateSoldCounts();
             }
 
             function initRAEditHandlers() {
@@ -2909,15 +2869,15 @@
                     $(this).closest('.hide-edit-container').find('.hide-edit-icon').trigger('click');
                 });
             }
-
+            
             function initNRSelectChangeHandler() {
-                $(document).on('change', '.nr-select', function() {
+                $(document).on('change', '.nr-select', function () {
                     const $select = $(this);
                     const newValue = $select.val();
                     const sku = $select.data('sku');
 
                     // Change background color based on selected value
-                    if (newValue === 'NRA') {
+                    if (newValue === 'NR') {
                         $select.css('background-color', '#dc3545').css('color', '#ffffff');
                     } else {
                         $select.css('background-color', '#28a745').css('color', '#ffffff');
@@ -2932,7 +2892,7 @@
                             nr: newValue,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
-                        success: function(response) {
+                        success: function (response) {
                             showNotification('success', 'NR updated successfully!');
 
                             // Update tableData and filteredData
@@ -2949,40 +2909,12 @@
                             calculateTotals();
                             renderTable();
                         },
-                        error: function(xhr) {
+                        error: function (xhr) {
                             showNotification('danger', 'Failed to update NR.');
                         }
                     });
                 });
             }
-
-
-            $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
-                const $cb = $(this);
-                const sku = $cb.data('sku');
-                const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
-                const value = $cb.is(':checked') ? 1 : 0;
-
-                $.ajax({
-                    url: '/ebay/update-listed-live',
-                    method: 'POST',
-                    data: {
-                        sku: sku,
-                        field: field,
-                        value: value,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(res) {
-                        console.log(`${field} updated for SKU ${sku}`);
-                    },
-                    error: function(err) {
-                        console.error('Update failed', err);
-                        alert('Failed to update. Try again.');
-                        $cb.prop('checked', !value); // revert on error
-                    }
-                });
-            });
-
 
             window.openModal = function(selectedItem, type) {
                 try {
@@ -3056,7 +2988,7 @@
                                 {
                                     title: 'SCVR',
                                     content: (Number(selectedItem['OV CLICKS L30']) > 0) ?
-                                        ((Number(selectedItem['eBay L30']) / Number(selectedItem[
+                                        ((Number(selectedItem['E L30']) / Number(selectedItem[
                                             'OV CLICKS L30'])) * 100).toFixed(2) + '%' : '0%'
                                 },
                                 {
@@ -3740,7 +3672,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="pricingForm" method="POST" >
+                                <form id="pricingForm" method="POST" action="{{ url('/ebay/save-sprice') }}">
                                     @csrf
                                     <input type="hidden" id="skuInput" name="sku">
 
@@ -3756,7 +3688,7 @@
                                         <label>SROI%</label>
                                         <input type="text" class="form-control" id="sroiPercentInput" name="sroi_percent" readonly>
                                     </div>
-<button type="button" id="savePricingBtn" class="btn btn-primary">Save</button>
+                                    <button name="submit" type="submit" class="btn btn-primary">Save</button>
                                 </form>
 
                             </div>
@@ -3769,6 +3701,16 @@
             // Helper function to create a field card
             function createFieldCard(field, data, type, itemId) {
                 const hyperlinkFields = ['link 1', 'link 2', 'link 3'];
+
+                const editableFields = ['sprice', 'LMP 1', 'link 1', 'lmp 2', 'link 2', 'lmp 3', 'link 3',
+                    'HIDE', 'LISTED', 'LIVE / ACTIVE', 'VISIBILITY ISSUE', 'INV SYNCED',
+                    'RIGHT CATEGORY', 'INCOMPLETE LISTING', 'BUYBOX ISSUE', 'SEO  (KW RICH) ISSUE',
+                    'TITLE ISSUEAD ISSUE', 'AD ISSUE', 'BP ISSUE', 'DESCR ISSUE', 'SPECS ISSUE',
+                    'IMG ISSUE', 'CATEGORY ISSUE', 'MAIN IMAGE ISSUE', 'PRICE ISSUE',
+                    'REVIEW ISSUE', 'WRONG KW IN LISTING', 'CVR ISSUE', 'REV ISSUE',
+                    'IMAGE ISSUE', 'VID ISSUE', 'USP HIGHLIGHT ISSUE', 'SPECS ISSUES',
+                    'MISMATCH ISSUE', 'NOTES', 'ACTION', 'TITLE ISSUE'
+                ];
 
                 const percentageFields = ['KwCtrL60', 'KwCtrL30', 'KwCtrL7', 'PFT %', 'ROI%',
                     'a+spft', 'a+ROI', 'SCVR', 'KwCvrL60', 'KwCvrL30', 'KwCvrL7',
@@ -3918,13 +3860,13 @@
                 }
 
                 // Add edit icon if field is editable
-                // if (editableFields.includes(field.title)) {
-                //     const editIcon = document.createElement('div');
-                //     editIcon.className = 'position-absolute top-0 end-0 p-2 edit-icon';
-                //     editIcon.style.cssText = 'cursor:pointer; z-index: 1;';
-                //     editIcon.innerHTML = '<i class="fas fa-pen text-primary"></i>';
-                //     card.appendChild(editIcon);
-                // }
+                if (editableFields.includes(field.title)) {
+                    const editIcon = document.createElement('div');
+                    editIcon.className = 'position-absolute top-0 end-0 p-2 edit-icon';
+                    editIcon.style.cssText = 'cursor:pointer; z-index: 1;';
+                    editIcon.innerHTML = '<i class="fas fa-pen text-primary"></i>';
+                    card.appendChild(editIcon);
+                }
 
                 const cardBody = document.createElement('div');
                 cardBody.className = 'card-body';
@@ -3987,76 +3929,81 @@
                 const modalElement = document.getElementById(modalId);
                 if (!modalElement) return;
 
-                // Get editable fields from the same array used in createFieldCard
-                const editableFields = ['eBay Price', 'sprice', 'LMP 1', 'link 1', 'lmp 2', 'link 2', 'lmp 3',
-                    'link 3',
-                    'HIDE', 'LISTED', 'LIVE / ACTIVE', 'VISIBILITY ISSUE', 'INV SYNCED',
-                    'RIGHT CATEGORY', 'INCOMPLETE LISTING', 'BUYBOX ISSUE', 'SEO  (KW RICH) ISSUE',
-                    'TITLE ISSUEAD ISSUE', 'AD ISSUE', 'BP ISSUE', 'DESCR ISSUE', 'SPECS ISSUE',
-                    'IMG ISSUE', 'CATEGORY ISSUE', 'MAIN IMAGE ISSUE', 'PRICE ISSUE',
-                    'REVIEW ISSUE', 'WRONG KW IN LISTING', 'CVR ISSUE', 'REV ISSUE',
-                    'IMAGE ISSUE', 'VID ISSUE', 'USP HIGHLIGHT ISSUE', 'SPECS ISSUES',
-                    'MISMATCH ISSUE', 'NOTES', 'ACTION', 'TITLE ISSUE'
-                ];
+                $(modalElement).off('click', '.edit-icon, .save-icon');
 
-                // Remove all edit/save icons
-                $(modalElement).find('.edit-icon, .save-icon').remove();
+                $(modalElement).on('click', '.edit-icon', function(e) {
+                    e.stopPropagation();
 
-                // Enable only editable fields
-                $(modalElement).find('.card').each(function() {
-                    const $card = $(this);
-                    const title = $card.find('.card-title').text().trim();
-                    if (!editableFields.includes(title)) return;
+                    const icon = $(this);
+                    const card = icon.closest('.card');
+                    const contentElement = card.find('.editable-content');
+                    const checkbox = contentElement.find('.form-check-input');
+                    const title = card.find('.card-title').text().trim();
 
-                    const $content = $card.find('.editable-content');
-                    const $checkbox = $content.find('.form-check-input');
-                    const isHyperlink = $content.data('is-hyperlink');
+                    // If it's a checkbox field, enable it and change to save icon
+                    if (checkbox.length > 0) {
+                        checkbox.prop('disabled', false);
+                        icon.html('<i class="fas fa-check text-success"></i>')
+                            .removeClass('edit-icon')
+                            .addClass('save-icon');
+                        return;
+                    }
 
-                    if ($checkbox.length) {
-                        $checkbox.prop('disabled', false);
+                    const isHyperlink = contentElement.data('is-hyperlink');
+                    const slNo = card.find('.hidden-sl-no').val();
+
+                    if (currentEditingElement && currentEditingElement.is(contentElement)) {
+                        return;
+                    }
+
+                    if (isEditMode && currentEditingElement) {
+                        exitEditMode(currentEditingElement);
+                    }
+
+                    let originalContent = contentElement.text().trim();
+                    if (isHyperlink && contentElement.find('a').length) {
+                        originalContent = contentElement.find('a').attr('href');
+                    }
+
+                    contentElement.data('original-content', originalContent)
+                        .html(originalContent)
+                        .attr('contenteditable', 'true')
+                        .addClass('border border-primary')
+                        .focus();
+
+                    isEditMode = true;
+                    currentEditingElement = contentElement;
+
+                    icon.html('<i class="fas fa-check text-success"></i>')
+                        .removeClass('edit-icon')
+                        .addClass('save-icon');
+                });
+
+                // Save handler
+                $(modalElement).on('click', '.save-icon', function(e) {
+                    e.stopPropagation();
+                    const icon = $(this);
+                    const card = icon.closest('.card');
+                    const contentElement = card.find('.editable-content');
+                    const checkbox = contentElement.find('.form-check-input');
+                    const title = card.find('.card-title').text().trim();
+                    const slNo = card.find('.hidden-sl-no').val();
+                    const isHyperlink = contentElement.data('is-hyperlink');
+
+                    // Get the updated value
+                    let updatedValue;
+                    if (checkbox.length > 0) {
+                        updatedValue = checkbox.prop('checked') ? "true" : "false";
+                        checkbox.prop('disabled', true);
                     } else {
-                        let originalContent = $content.text().trim();
-                        if (isHyperlink && $content.find('a').length) {
-                            originalContent = $content.find('a').attr('href');
-                            $content.html(originalContent);
+                        updatedValue = contentElement.text().trim();
+                        if (isHyperlink && contentElement.find('a').length) {
+                            updatedValue = contentElement.find('a').attr('href');
                         }
-                        $content
-                            .attr('contenteditable', 'true')
-                            .addClass('border border-primary')
-                            .data('original-content', originalContent);
                     }
-                });
 
-                // Save on Enter for text fields
-                $(modalElement).off('keydown', '.editable-content[contenteditable="true"]');
-                $(modalElement).on('keydown', '.editable-content[contenteditable="true"]', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const $content = $(this);
-                        const $card = $content.closest('.card');
-                        const title = $card.find('.card-title').text().trim();
-                        const slNo = $card.find('.hidden-sl-no').val();
-                        const isHyperlink = $content.data('is-hyperlink');
-                        let updatedValue = $content.text().trim();
-                        if (isHyperlink) updatedValue = updatedValue;
-                        saveChanges($content, title, slNo, isHyperlink, updatedValue, false);
-                    }
-                });
-
-                // Save on Enter for checkboxes
-                $(modalElement).off('keydown', '.form-check-input');
-                $(modalElement).on('keydown', '.form-check-input', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const $checkbox = $(this);
-                        const $card = $checkbox.closest('.card');
-                        const $content = $card.find('.editable-content');
-                        const title = $card.find('.card-title').text().trim();
-                        const slNo = $card.find('.hidden-sl-no').val();
-                        const isHyperlink = $content.data('is-hyperlink');
-                        let updatedValue = $checkbox.prop('checked') ? "true" : "false";
-                        saveChanges($content, title, slNo, isHyperlink, updatedValue, true);
-                    }
+                    saveChanges(contentElement, title, slNo, isHyperlink, updatedValue, checkbox.length >
+                        0);
                 });
             }
 
@@ -4095,6 +4042,12 @@
                 currentEditingElement = null;
             }
 
+
+
+
+
+
+
             function saveChanges(contentElement, title, slNo, isHyperlink, updatedValue, isCheckbox, rowElement) {
                 const card = contentElement.closest('.card') || contentElement.closest('tr');
                 const itemId = card.find('.hidden-sl-no').val() || slNo;
@@ -4130,10 +4083,10 @@
                         const LP = parseFloat(item.raw_data.LP) || 0;
                         const SPRICE = parseFloat(updatedValue) || 0;
 
-                        // Calculate Spft% using formula: (SPRICE * 0.77 - LP - SH) / SPRICE
+                        // Calculate Spft% using formula: (SPRICE * AMZ - SHIP - LP) / SPRICE
                         let Spft = 0;
                         if (SPRICE !== 0) {
-                            Spft = (SPRICE * 0.74 - LP - SH) / SPRICE;
+                            Spft = (SPRICE * 0.77 - LP - SH) / SPRICE;
                         }
 
                         // Update Spft% in cache and local data
@@ -4203,57 +4156,24 @@
                 }
 
                 // 5. Send the update to the server
-                // If eBay Price, use a separate route
-                let ajaxUrl = '/api/update-ebay-column';
-                let ajaxData = JSON.stringify(data);
-                let ajaxContentType = 'application/json';
-
-                if (title === 'eBay Price') {
-                    // Find eBay_item_id from filteredData or cache
-                    let ebayItemId = null;
-                    const found = filteredData.find(item => String(item['Sl']) == String(itemId));
-                    if (found && found['eBay_item_id']) {
-                        ebayItemId = found['eBay_item_id'];
-                    }
-                    if (!ebayItemId && ebayViewDataCache.get(itemId) && ebayViewDataCache.get(itemId)[
-                            'eBay_item_id']) {
-                        ebayItemId = ebayViewDataCache.get(itemId)['eBay_item_id'];
-                    }
-
-                    if (!ebayItemId) {
-                        showNotification('danger', 'eBay Item ID is not available for this SKU.');
-                        if (saveIcon) {
-                            saveIcon.html('<i class="fas fa-pen text-primary"></i>')
-                                .removeClass('save-icon')
-                                .addClass('edit-icon');
-                        }
-                        return; // Do not proceed with AJAX
-                    }
-
-                    // Direct POST to the correct route
-                    ajaxUrl = '/ebay-product-price-update';
-                    ajaxData = JSON.stringify({
-                        item_id: ebayItemId,
-                        price: updatedValue
-                    });
-                    ajaxContentType = 'application/json';
-                }
-
                 $.ajax({
                     method: 'POST',
-                    url: ajaxUrl,
-                    data: ajaxData,
-                    contentType: ajaxContentType,
+                    url: window.location.origin + (window.location.pathname.includes('/public') ?
+                        '/public' : '') + '/api/update-ebay-column',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
+                        // Update was already done in cache, just show success
                         if (saveIcon) {
                             saveIcon.html('<i class="fas fa-pen text-primary"></i>')
                                 .removeClass('save-icon')
                                 .addClass('edit-icon');
                         }
 
+                        // Make the field uneditable again
                         if (!rowElement) {
                             if (isCheckbox) {
                                 contentElement.find('.form-check-input').prop('disabled', true);
@@ -4265,19 +4185,10 @@
 
                         showNotification('success', `${title} Updated Successfully`);
 
+                        // If this was an R&A update from the table, ensure UI is consistent
                         if (rowElement) {
                             checkParentRAStatus();
                             renderTable();
-                        }
-
-                        // --- Update eBay Price in all data and re-render table ---
-                        if (title === 'eBay Price') {
-                            // After successful update, reload the table data
-                            loadData().then(() => {
-                                renderTable();
-                                showNotification('success', `${title} Updated Successfully`);
-                            });
-                            return; // Prevent further UI updates in this handler
                         }
                     },
                     error: function(xhr, status, error) {
@@ -4299,6 +4210,7 @@
 
                             // If this was an SPRICE update, revert Spft% as well
                             if (title === 'sprice') {
+                                // Recalculate original Spft%
                                 const item = filteredData[index];
                                 const SH = parseFloat(item.raw_data.SH) || 0;
                                 const LP = parseFloat(item.raw_data.LP) || 0;
@@ -4306,7 +4218,7 @@
 
                                 let Spft = 0;
                                 if (SPRICE !== 0) {
-                                    Spft = (SPRICE * 0.74 - LP - SH) / SPRICE;
+                                    Spft = (SPRICE * 0.77 - LP - SH) / SPRICE;
                                 }
 
                                 ebayViewDataCache.updateField(itemId, 'Spft%', Spft);
@@ -4349,6 +4261,7 @@
                                 .addClass('edit-icon');
                         }
 
+                        // Make sure field is uneditable after error
                         if (!rowElement && !isCheckbox) {
                             contentElement.attr('contenteditable', 'false')
                                 .removeClass('border border-primary');
@@ -4486,16 +4399,13 @@
                     renderTable();
                 });
 
-                // Similar modifications for other pagination buttons...
-                // But since we're showing all rows, you might want to disable pagination completely
+
             }
 
             function updatePaginationInfo() {
-                // Since we're showing all rows, you can either:
-                // Option 1: Hide pagination completely
+
                 $('.pagination-controls').hide();
 
-                // Option 2: Show "Showing all rows" message
                 $('#page-info').text('Showing all rows');
                 $('#first-page, #prev-page, #next-page, #last-page').prop('disabled', true);
             }
@@ -4522,30 +4432,7 @@
                 });
             }
 
-            // Load hidden columns from localStorage
-            function loadHiddenColumns() {
-                const stored = localStorage.getItem('hiddenColumns');
-                return stored ? new Set(JSON.parse(stored)) : new Set();
-            }
-
-            let hiddenColumns = loadHiddenColumns();
-
-            function applyColumnVisibility() {
-                const $table = $('#ebay-table');
-                const $headers = $table.find('th[data-field]');
-
-                $headers.each(function(index) {
-                    const field = $(this).data('field');
-                    const isHidden = hiddenColumns.has(field);
-                    $table.find('tr').each(function() {
-                        $(this).find('td, th').eq(index).toggle(!isHidden);
-                    });
-
-                    // Update checkbox state in menu
-                    $(`#toggle-${field}`).prop('checked', !isHidden);
-                });
-            }
-
+            // Initialize column toggle functionality
             function initColumnToggle() {
                 const $table = $('#ebay-table');
                 const $headers = $table.find('th[data-field]');
@@ -4554,71 +4441,81 @@
 
                 $menu.empty();
 
-                $headers.each(function() {
+                // Load saved visibility from localStorage
+                let savedVisibility = JSON.parse(localStorage.getItem('columnVisibility')) || {};
+
+                $headers.each(function () {
                     const $th = $(this);
                     const field = $th.data('field');
                     const title = $th.text().trim().replace(' ↓', '');
 
+                    const checked = savedVisibility[field] !== false; // default true
+
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                id="toggle-${field}" data-field="${field}">
+                                id="toggle-${field}" data-field="${field}" ${checked ? 'checked' : ''}>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
+
                     $menu.append($item);
+
+                    // Apply initial visibility
+                    const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                    $table.find('tr').each(function () {
+                        $(this).find('td, th').eq(colIndex).toggle(checked);
+                    });
                 });
 
-                // Apply hidden columns after table is rendered
-                applyColumnVisibility();
-
                 // Dropdown toggle
-                $dropdownBtn.off('click').on('click', function(e) {
+                $dropdownBtn.on('click', function (e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
 
-                // Close menu if clicked outside
-                $(document).off('click.columnToggle').on('click.columnToggle', function(e) {
+                $(document).on('click', function (e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
                         $menu.removeClass('show');
                     }
                 });
 
-                $menu.on('change', '.column-toggle-checkbox', function() {
+                // Handle checkbox change
+                $menu.on('change', '.column-toggle-checkbox', function () {
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
 
+                    // Save to localStorage
+                    savedVisibility[field] = isVisible;
+                    localStorage.setItem('columnVisibility', JSON.stringify(savedVisibility));
+
+                    // Apply visibility
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function() {
+                    $table.find('tr').each(function () {
                         $(this).find('td, th').eq(colIndex).toggle(isVisible);
                     });
-
-                    // Save hidden columns
-                    if (!isVisible) hiddenColumns.add(field);
-                    else hiddenColumns.delete(field);
-
-                    localStorage.setItem('hiddenColumns', JSON.stringify([...hiddenColumns]));
                 });
 
-                $('#showAllColumns').on('click', function() {
-                    $headers.each(function(index) {
-                        $(this).show(); // show TH
-                    });
-                    $('#ebay-table tr').each(function() {
-                        $(this).find('td').each(function() {
-                            $(this).show(); // show all TDs
+                // Show all columns
+                $('#showAllColumns').on('click', function () {
+                    $menu.find('.column-toggle-checkbox').prop('checked', true);
+
+                    $headers.each(function () {
+                        const field = $(this).data('field');
+                        savedVisibility[field] = true;
+
+                        const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                        $table.find('tr').each(function () {
+                            $(this).find('td, th').eq(colIndex).show();
                         });
                     });
-                    // Update checkboxes
-                    $menu.find('.column-toggle-checkbox').prop('checked', true);
-                    // Clear hiddenColumns and save
-                    hiddenColumns.clear();
-                    localStorage.setItem('hiddenColumns', JSON.stringify([...hiddenColumns]));
+
+                    // Save reset state
+                    localStorage.setItem('columnVisibility', JSON.stringify(savedVisibility));
+
+                    $menu.removeClass('show');
                 });
-
             }
-
 
 
             // Initialize filters
@@ -4695,7 +4592,7 @@
                 const el30Filter = $('#el30-filter').val();
                 if (el30Filter && el30Filter !== 'all') {
                     filteredData = filteredData.filter(item => {
-                        const el30 = Number(item['eBay L30']) || 0;
+                        const el30 = Number(item['E L30']) || 0;
                         if (el30Filter === '0') return el30 === 0;
                         if (el30Filter === '1-100+') return el30 >= 1;
                         return true;
@@ -4740,7 +4637,7 @@
                 if (column === 'SCVR') {
                     let scvr = 0;
                     if (Number(rowData['OV CLICKS L30']) > 0) {
-                        scvr = Number(rowData['eBay L30']) / Number(rowData['OV CLICKS L30']);
+                        scvr = Number(rowData['E L30']) / Number(rowData['OV CLICKS L30']);
                     }
                     const value = scvr * 100;
                     if (value <= 4) return 'red';
@@ -4819,36 +4716,10 @@
                         roiSum: 0,
                         tacosTotal: 0,
                         scvrSum: 0,
-                        rowCount: 0,
-                        listedCount: 0,
-                        liveCount: 0
+                        rowCount: 0
                     };
 
                     filteredData.forEach(item => {
-
-                        let rawData = {};
-                        if (typeof item.raw_data === 'string') {
-                            try {
-                                rawData = JSON.parse(item.raw_data || '{}');
-                            } catch (e) {
-                                console.error(`Invalid JSON in raw_data for SKU ${item['(Child) sku']}`, e);
-                            }
-                        } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
-                            rawData = item.raw_data;
-                        }
-
-                        // Count listed checkboxes
-                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
-                            rawData.Listed === '1') {
-                            metrics.listedCount++;
-                        }
-
-                        // Count Live checkboxes
-                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
-                            rawData.Live === '1') {
-                            metrics.liveCount++;
-                        }
-
                         const profit = parseFloat(item.Profit) || 0;
                         const salesL30 = parseFloat(item['Sales L30']) || 0;
                         // Only add if both values are > 0
@@ -4858,16 +4729,12 @@
                         }
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
-                        metrics.el30Total += parseFloat(item['eBay L30']) || 0;
+                        metrics.el30Total += parseFloat(item['E L30']) || 0;
                         metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
-                        let views = parseFloat(item['OV CLICKS L30']) || 0;
-                        if (item.NR !== 'NRA') {
-                            metrics.viewsTotal += views;
-                        }
                         metrics.roiSum += parseFloat(item.Roi) || 0;
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
                         metrics.scvrSum += (Number(item['OV CLICKS L30']) > 0) ?
-                            (Number(item['eBay L30']) / Number(item['OV CLICKS L30'])) :
+                            (Number(item['E L30']) / Number(item['OV CLICKS L30'])) :
                             0;
                         metrics.rowCount++;
                     });
@@ -4886,8 +4753,6 @@
                     $('#el30-total').text(metrics.el30Total.toLocaleString());
                     $('#eDil-total').text(Math.round(metrics.eDilTotal) + '%');
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
-                    $('#listed-total').text(metrics.listedCount.toLocaleString());
-                    $('#live-total').text(metrics.liveCount.toLocaleString());
 
                     // Calculate and display averages
                     let pftTotal = 0;
@@ -4917,8 +4782,6 @@
                 $('#roi-total').text('0%');
                 $('#tacos-total').text('0%');
                 $('#cvr-total').text('0%');
-                $('#listed-total').text('0');
-                $('#live-total').text('0');
             }
 
             // Initialize enhanced dropdowns
@@ -5275,7 +5138,22 @@
             }
 
             // Show notification
+            function showNotification(type, message) {
+                const notification = $(`
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `);
 
+                $('body').append(notification);
+
+                setTimeout(() => {
+                    notification.find('.alert').alert('close');
+                }, 3000);
+            }
 
             // Loader functions
             function showLoader() {
@@ -5285,10 +5163,6 @@
             function hideLoader() {
                 $('#data-loader').fadeOut();
             }
-
-
-
-
 
             // Show the custom modal
             function showHideSkuModal() {
@@ -5462,118 +5336,98 @@
                 });
             });
 
-            $(document).on('click', '.openPricingBtn', function() {
-                const LP = parseFloat($(this).data('lp')) || 0;
-                const SHIP = parseFloat($(this).data('ship')) || 0;
-                const SKU = $(this).data('sku') || '';
-
-                $('#skuInput').val(SKU);
-
-                const $sprInput = $('#sprPriceInput');
-                const $spftInput = $('#spftPercentInput');
-                const $sroiInput = $('#sroiPercentInput');
-
-                // Reset values
-                $sprInput.val('');
-                $spftInput.val('');
-                $sroiInput.val('');
-
-                $sprInput.off('input').on('input', function() {
-                    const SPRICE = parseFloat(this.value) || 0;
-
-                    if (SPRICE > 0) {
-                        const SPFT = ((SPRICE * 0.74) - LP - SHIP) / SPRICE;
-                        const SROI = ((SPRICE * 0.74) - LP - SHIP) / LP;
-
-                        $spftInput.val((SPFT * 100).toFixed(2) + '%');
-                        $sroiInput.val(isFinite(SROI) ? (SROI * 100).toFixed(2) + '%' : '∞');
-                    } else {
-                        $spftInput.val('');
-                        $sroiInput.val('');
-                    }
-                });
-
-                $('#pricingModal').modal('show');
-            });
-
-            $(document).on('click', '#savePricingBtn', function() {
-                const sku = $('#skuInput').val()?.trim();
-                const spriceVal = $('#sprPriceInput').val();
-                const spft = parseFloat($('#spftPercentInput').val()?.replace('%', '')) || 0;
-                const sroi = parseFloat($('#sroiPercentInput').val()?.replace('%', '')) || 0;
-
-                const sprice = spriceVal !== '' ? parseFloat(spriceVal) : null;
-
-                if (!sku || !sprice) {
-                    alert('SKU and SPRICE are required.');
-                    return;
-                }
-
-                $.ajax({
-                    url: '/ebay/save-sprice',
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        sku: sku,
-                        sprice: sprice,
-                        spft_percent: spft,
-                        sroi_percent: sroi
-                    },
-                    dataType: 'json',
-                    beforeSend: function() {
-                        $('#savePricingBtn').html(
-                            '<i class="fa fa-spinner fa-spin"></i> Saving...');
-                    },
-                    success: function(response) {
-                        showNotification('success', 'Data updated successfully...');
-                        $('#pricingModal').modal('hide');
-                        tableData.forEach(item => {
-                            if (item['(Child) sku'] === sku) {
-                                item.SPRICE = sprice;
-                                item.SPFT = spft;
-                                item.SROI = sroi;
-                            }
-                        });
-
-                        filteredData.forEach(item => {
-                            if (item['(Child) sku'] === sku) {
-                                item.SPRICE = sprice;
-                                item.SPFT = spft;
-                                item.SROI = sroi;
-                            }
-                        });
-                        renderTable();
-                    },
-                    error: function(xhr) {
-                        alert('Error saving SPRICE.');
-                        console.error(xhr.responseText);
-                    },
-                    complete: function() {
-                        $('#savePricingBtn').html('Save');
-                    }
-                });
-            });
-
-            function showNotification(type, message) {
-                const notification = $(`
-                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                            ${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                `);
-
-                $('body').append(notification);
-
-                setTimeout(() => {
-                    notification.find('.alert').alert('close');
-                }, 3000);
-            }
             // Initialize everything
             initTable();
             // Make the static Hide SKU modal draggable using the existing logic
             ModalSystem.makeDraggable(document.getElementById('customHideSkuModal'));
+        });
+    </script>
+
+    <script>
+        function openPricingModal({
+            LP = 0,
+            SH = 0,
+            SKU = ''
+        }) {
+            // 🟢 This sets the SKU hidden input correctly
+            $('#skuInput').val(SKU);
+
+            const $sprInput = $('#sprPriceInput');
+            const $spftInput = $('#spftPercentInput');
+            const $sroiInput = $('#sroiPercentInput');
+
+            // Reset values
+            $sprInput.val('');
+            $spftInput.val('');
+            $sroiInput.val('');
+
+            // Parse numbers
+            LP = parseFloat(LP) || 0;
+            SH = parseFloat(SH) || 0;
+
+            // Input calculation
+            $sprInput.off('input').on('input', function() {
+                const SPRICE = parseFloat(this.value) || 0;
+
+                if (SPRICE > 0) {
+                    const SPFT = ((SPRICE * 0.72) - LP - SH) / SPRICE;
+                    const SROI = ((SPRICE * 0.72) - LP - SH) / LP;
+
+                    $spftInput.val((SPFT * 100).toFixed(2) + '%');
+                    $sroiInput.val(isFinite(SROI) ? (SROI * 100).toFixed(2) + '%' : '∞');
+                } else {
+                    $spftInput.val('');
+                    $sroiInput.val('');
+                }
+            });
+
+            $('#pricingModal').modal('show');
+        }
+    </script>
+    <script>
+        $('#pricingForm').on('submit', function(e) {
+            e.preventDefault(); // prevent default form submission
+
+            const sku = $('#skuInput').val()?.trim();
+            const spriceVal = $('#sprPriceInput').val();
+            const spft = parseFloat($('#spftPercentInput').val()?.replace('%', '')) || 0;
+            const sroi = parseFloat($('#sroiPercentInput').val()?.replace('%', '')) || 0;
+
+            const sprice = spriceVal !== '' ? parseFloat(spriceVal) : null;
+
+
+            if (!sku || !sprice) {
+                alert('SKU and SPRICE are required.');
+                return;
+            }
+
+            $.ajax({
+                url: '/ebay/save-sprice',
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    sku: sku,
+                    sprice: sprice,
+                    sprofit_percent: spft,
+                    sroi_percent: sroi
+                },
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#pricingForm button[type="submit"]').html(
+                        '<i class="fa fa-spinner fa-spin"></i> Saving...');
+                },
+                success: function(response) {
+                    alert('SPRICE saved successfully!');
+                    $('#pricingModal').modal('hide');
+                },
+                error: function(xhr) {
+                    alert('Error saving SPRICE.');
+                    console.error(xhr.responseText);
+                },
+                complete: function() {
+                    $('#pricingForm button[type="submit"]').html('Save');
+                }
+            });
         });
     </script>
 @endsection
