@@ -744,7 +744,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/ebay-pricing-cvr', [EbayController::class, 'ebayPricingCVR'])->name('ebay.pricing.cvr');
 
 
-    Route::get('/ebay-pricing-increase-decrease', [EbayController::class, 'ebayPricingIncreaseDecrease'])->name('ebay.pricing.increase.decrease');
+    Route::get('/ebay-pricing-decrease', [EbayController::class, 'ebayPricingIncreaseDecrease'])->name('ebay.pricing.decrease');
     Route::get('/ebay-pricing-increase', action: [EbayController::class, 'ebayPricingIncrease'])->name('ebay.pricing.inc');
 
     Route::get('/ebay-zero-view', action: [EbayZeroController::class, 'ebayZero'])->name('ebay.zero.view');

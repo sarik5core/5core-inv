@@ -1440,8 +1440,9 @@
                                         </li>
 
                                         <li>
-                                     
-                                            <a href="{{ route('amazon.pricing.increase') }}">Amz Price Decrease CVR</a>
+
+                                            <a href="{{ route('amazon.pricing.increase') }}">Amz Price Decrease
+                                                CVR</a>
                                         </li>
                                         <li>
                                             <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
@@ -1471,25 +1472,7 @@
                                         </li>
                                         {{-- Add EXtra For Amazon Pricing --}}
 
-                                        <li>
-                                            <a href="{{ route('amazon.pricing.cvr') }}">Amazon Extra A</a>
-                                        </li>
 
-                                        <li>
-                                            <a href="{{ route('amazon.pricing.cvr') }}">Amazon Extra B</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('amazon.pricing.cvr') }}">Amazon Extra C</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('amazon.pricing.cvr') }}">Amazon Extra D</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('amazon.pricing.cvr') }}">Amazon Extra E</a>
-                                        </li>
 
                                     </ul>
                                 </div>
@@ -1537,6 +1520,7 @@
                                             </li>
                                         @endif
 
+
                                         @if (isset($permissions['listing_ebay']) && in_array('view', $permissions['listing_ebay']))
                                             <li>
                                                 <a href="{{ route('listing.ebay') }}">Listing eBay</a>
@@ -1553,34 +1537,18 @@
                                         </li>
 
                                         <li>
-                                            <a href="{{ url('ebay-pricing-increase-decrease') }}">Pricing Increase or
-                                                Decrease</a>
+                                            <a href="{{ url('ebay-pricing-decrease') }}">Ebay Pricing
+                                                Decrease </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ url('ebay-pricing-increase') }}">Ebay Pricing
+                                                Increase </a>
                                         </li>
                                         <li>
                                             <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
                                         </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-increase') }}">Price Increase CVR</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-increase-decrease') }}">Price Decrease
-                                                CVR</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-cvr') }}">Ebay Extra - A</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-cvr') }}">Ebay Extra - B</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-cvr') }}">Ebay Extra - C</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-cvr') }}">Ebay Extra - D</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('ebay-pricing-cvr') }}">Ebay Extra - E</a>
-                                        </li>
+
+
                                     </ul>
                                 </div>
                             </li>
@@ -1654,26 +1622,7 @@
                                                 Pricing - Increase/Decrease</a>
                                         </li>
 
-                                        <li>
-                                            <a href="{{ url('shopify-pricing-cvr') }}">
-                                                Shopify Extra - A</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('shopify-pricing-cvr') }}">
-                                                Shopify Extra - B</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('shopify-pricing-cvr') }}">
-                                                Shopify Extra - C</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('shopify-pricing-cvr') }}">
-                                                Shopify Extra - D</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('shopify-pricing-cvr') }}">
-                                                Shopify Extra - E</a>
-                                        </li>
+
                                     </ul>
                                 </div>
                             </li>
@@ -1741,25 +1690,7 @@
                                             <a href="{{ url('macy-pricing-increase-decrease') }}">Pricing - Increase
                                                 / Decrease</a>
 
-                                        <li>
-                                            <a href="{{ url('macy-pricing-cvr') }}">Macy's - Extra A</a>
-                                        </li>
 
-                                        <li>
-                                            <a href="{{ url('macy-pricing-cvr') }}">Macy's - Extra B</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ url('macy-pricing-cvr') }}">Macy's - Extra C</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ url('macy-pricing-cvr') }}">Macy's - Extra D</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ url('macy-pricing-cvr') }}">Macy's - Extra E</a>
-                                        </li>
 
                                     </ul>
                                 </div>
@@ -1823,26 +1754,7 @@
                                             </li>
                                         @endif
 
-                                        <li>
-                                            <a href="{{ route('neweggB2C') }}">Newegg Extra - A</a>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('neweggB2C') }}">Newegg Extra
-                                                - B</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('neweggB2C') }}">Newegg Extra
-                                                - C</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('neweggB2C') }}">Newegg Extra
-                                                - D</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ route('neweggB2C') }}">Newegg Extra
-                                                - E</a>
-                                        </li>
+
                                     </ul>
                                 </div>
                             </li> -->
@@ -1904,30 +1816,6 @@
                                         @endif
 
 
-                                        <li>
-                                            <a href="{{ route('Wayfair') }}">Wayfair
-                                                Extra A</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('Wayfair') }}">Wayfair
-                                                Extra B</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('Wayfair') }}">Wayfair
-                                                Extra C</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('Wayfair') }}">Wayfair
-                                                Extra D</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="{{ route('Wayfair') }}">Wayfair
-                                                Extra E</a>
-                                        </li>
                                     </ul>
                                 </div>
                             </li>
@@ -1987,25 +1875,7 @@
                                             </li>
                                         @endif
 
-                                        <li>
-                                            <a href="{{ url('reverb-pricing-cvr') }}">Reverb Pricing CVR</a>
-                                        </li>
 
-                                        <li>
-                                            <a href="{{ url('reverb-pricing-cvr') }}">Reverb Extra A</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('reverb-pricing-cvr') }}">Reverb Extra B</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('reverb-pricing-cvr') }}">Reverb Extra C</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('reverb-pricing-cvr') }}">Reverb Extra D</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('reverb-pricing-cvr') }}">Reverb Extra E</a>
-                                        </li>
                                     </ul>
                                 </div>
                             </li>
@@ -2130,21 +2000,7 @@
                                             <a href="{{ url('doba-pricing-cvr') }}">Doba Pricing - CVR</a>
                                         </li>
 
-                                        <li>
-                                            <a href="{{ url('doba-pricing-cvr') }}">Doba Extra - A</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('doba-pricing-cvr') }}">Doba Extra - B</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('doba-pricing-cvr') }}">Doba Extra - C</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('doba-pricing-cvr') }}">Doba Extra - D</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ url('doba-pricing-cvr') }}">Doba Extra - E</a>
-                                        </li>
+
                                     </ul>
                                 </div>
                             </li>
