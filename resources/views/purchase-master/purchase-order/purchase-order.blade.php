@@ -293,7 +293,7 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Advance Amount <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="advance_amount" placeholder="enter supplier advance amount">
+                            <input type="number" class="form-control" name="advance_amount" placeholder="enter supplier advance amount" step="any">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">PO Date <span class="text-danger">*</span></label>
@@ -335,7 +335,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Qty</label>
-                                    <input type="number" class="form-control" name="qty[]" min="0">
+                                    <input type="number" class="form-control" name="qty[]" step="any">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Currency</label>
@@ -346,7 +346,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Price</label>
-                                    <input type="number" class="form-control" name="price[]" step="any" min="0">
+                                    <input type="number" class="form-control" name="price[]" step="any">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">Price Type</label>
@@ -357,15 +357,15 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">NW /per pcs (KG)</label>
-                                    <input type="number" class="form-control" name="nw[]" step="any" min="0">
+                                    <input type="number" class="form-control" name="nw[]" step="any">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">GW /per pcs (KG)</label>
-                                    <input type="number" class="form-control" name="gw[]" step="any" min="0">
+                                    <input type="number" class="form-control" name="gw[]" step="any">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label fw-semibold">CBM</label>
-                                    <input type="number" class="form-control" name="cbm[]" step="any" min="0">
+                                    <input type="number" class="form-control" name="cbm[]" step="any">
                                 </div>
                             </div>
                         </div>
@@ -422,7 +422,7 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Advance Amount</label>
-                            <input type="number" class="form-control" name="advance_amount">
+                            <input type="number" class="form-control" name="advance_amount" step="any">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">PO Date</label>
@@ -495,17 +495,15 @@
                 form.action = `/purchase-orders/${order.id}`;
 
                 form.querySelector("[name='po_number']").value = order.po_number ?? "";
-
+                
                 // Supplier
                 let supplierSelect = form.querySelector("[name='supplier']");
                 if (supplierSelect) {
-                    supplierSelect.querySelectorAll('option').forEach(opt => {
-                        opt.selected = (opt.value === String(order.supplier_id ?? ""));
+                    Array.from(supplierSelect.options).forEach(opt => {
+                        opt.selected = (String(opt.value) === String(order.supplier_id));
                     });
                 }
 
-                console.log("Supplier ID from order:", order);
-console.log("Options in select:", [...supplierSelect.options].map(o => o.value));
 
                 // Advance Amount
                 form.querySelector("[name='advance_amount']").value = order.advance_amount ?? 0;
@@ -549,7 +547,7 @@ console.log("Options in select:", [...supplierSelect.options].map(o => o.value))
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Qty</label>
-                                <input type="number" class="form-control" name="qty[]" value="${item.qty ?? 0}">
+                                <input type="number" class="form-control" name="qty[]" value="${item.qty ?? 0}" step="any">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Currency</label>
@@ -560,7 +558,7 @@ console.log("Options in select:", [...supplierSelect.options].map(o => o.value))
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Price</label>
-                                <input type="number" class="form-control" name="price[]" value="${item.price ?? 0}">
+                                <input type="number" class="form-control" name="price[]" value="${item.price ?? 0}" step="any">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Price Type</label>
@@ -571,15 +569,15 @@ console.log("Options in select:", [...supplierSelect.options].map(o => o.value))
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">NW /per pcs (KG)</label>
-                                <input type="number" class="form-control" name="nw[]" value="${item.nw ?? 0}">
+                                <input type="number" class="form-control" name="nw[]" value="${item.nw ?? 0}" step="any">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">GW /per pcs (KG)</label>
-                                <input type="number" class="form-control" name="gw[]" value="${item.gw ?? 0}">
+                                <input type="number" class="form-control" name="gw[]" value="${item.gw ?? 0}" step="any">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">CBM</label>
-                                <input type="number" class="form-control" name="cbm[]" value="${item.cbm ?? 0}">
+                                <input type="number" class="form-control" name="cbm[]" value="${item.cbm ?? 0}" step="any">
                             </div>
                         </div>
                     `);
@@ -623,7 +621,7 @@ console.log("Options in select:", [...supplierSelect.options].map(o => o.value))
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Qty</label>
-                        <input type="number" class="form-control" name="qty[]" value="0">
+                        <input type="number" class="form-control" name="qty[]" value="0" step="any">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Currency</label>
@@ -634,7 +632,7 @@ console.log("Options in select:", [...supplierSelect.options].map(o => o.value))
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Price</label>
-                        <input type="number" class="form-control" name="price[]" value="0">
+                        <input type="number" class="form-control" name="price[]" value="0" step="any">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Price Type</label>
@@ -645,15 +643,15 @@ console.log("Options in select:", [...supplierSelect.options].map(o => o.value))
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">NW /per pcs (KG)</label>
-                        <input type="number" class="form-control" name="nw[]" value="0">
+                        <input type="number" class="form-control" name="nw[]" value="0" step="any">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">GW /per pcs (KG)</label>
-                        <input type="number" class="form-control" name="gw[]" value="0">
+                        <input type="number" class="form-control" name="gw[]" value="0" step="any">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">CBM</label>
-                        <input type="number" class="form-control" name="cbm[]" value="0">
+                        <input type="number" class="form-control" name="cbm[]" value="0" step="any">
                     </div>
                 </div>
             `);
