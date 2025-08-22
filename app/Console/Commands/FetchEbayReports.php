@@ -50,17 +50,24 @@ class FetchEbayReports extends Command
 
             // ProductMaster se lp, ship values fetch karo
             $pm = ProductMaster::where('sku', $row['sku'])->first();
-            $values = is_array($pm->Values)
-                ? $pm->Values
-                : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
 
-            $lp   = $values['lp']   ?? $pm->lp   ?? 0;
-            $ship = $values['ship'] ?? $pm->ship ?? 0;
+            // agar ProductMaster record nahi mila
+            if (!$pm) {
+                logger()->warning("ProductMaster not found for SKU: {$row['sku']}");
+                $lp = 0;
+                $ship = 0;
+            } else {
+                $values = is_array($pm->Values)
+                    ? $pm->Values
+                    : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+                $lp   = $values['lp']   ?? $pm->lp   ?? 0;
+                $ship = $values['ship'] ?? $pm->ship ?? 0;
+            }
 
             $percentage = MarketplacePercentage::where("marketplace", "EBay")->value("percentage") ?? 100;
             $percentage = $percentage / 100;
 
-            // 🔹 Upsert EbayMetric pehle
             $metric = EbayMetric::updateOrCreate(
                 ['item_id' => $itemId],
                 [
@@ -71,7 +78,6 @@ class FetchEbayReports extends Command
             );
 
             try {
-                // 🔹 Ab model pass kar rahe hain (array nahi)
                 $processor = new EbayDataProcessor();
                 $processor->calculateAndSave($metric, $lp, $ship, $percentage);
             } catch (\Exception $e) {
@@ -81,6 +87,7 @@ class FetchEbayReports extends Command
                 continue;
             }
         }
+
 
         // 🔹 Orders se L30 & L60 quantities update karo
         $existingSkus = EbayMetric::pluck('sku')->filter()->toArray();

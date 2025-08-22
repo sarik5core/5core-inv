@@ -356,11 +356,11 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-semibold">NW (LB)</label>
+                                    <label class="form-label fw-semibold">NW /per pcs (KG)</label>
                                     <input type="number" class="form-control" name="nw[]" step="any" min="0">
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label fw-semibold">GW /per pcs (LB)</label>
+                                    <label class="form-label fw-semibold">GW /per pcs (KG)</label>
                                     <input type="number" class="form-control" name="gw[]" step="any" min="0">
                                 </div>
                                 <div class="col-md-3">
@@ -490,8 +490,6 @@
                 let order = JSON.parse(btn.getAttribute("data-order"));
                 let items = JSON.parse(btn.getAttribute("data-items"));
                 
-                console.log(order);
-
                 //Set form action dynamically
                 let form = document.getElementById("editPurchaseOrderForm");
                 form.action = `/purchase-orders/${order.id}`;
@@ -500,9 +498,14 @@
 
                 // Supplier
                 let supplierSelect = form.querySelector("[name='supplier']");
-                supplierSelect.querySelectorAll('option').forEach(opt => {
-                    opt.selected = (opt.value == order.supplier_id);
-                });
+                if (supplierSelect) {
+                    supplierSelect.querySelectorAll('option').forEach(opt => {
+                        opt.selected = (opt.value === String(order.supplier_id ?? ""));
+                    });
+                }
+
+                console.log("Supplier ID from order:", order);
+console.log("Options in select:", [...supplierSelect.options].map(o => o.value));
 
                 // Advance Amount
                 form.querySelector("[name='advance_amount']").value = order.advance_amount ?? 0;
@@ -567,11 +570,11 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-semibold">NW (LB)</label>
+                                <label class="form-label fw-semibold">NW /per pcs (KG)</label>
                                 <input type="number" class="form-control" name="nw[]" value="${item.nw ?? 0}">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-semibold">GW (LB)</label>
+                                <label class="form-label fw-semibold">GW /per pcs (KG)</label>
                                 <input type="number" class="form-control" name="gw[]" value="${item.gw ?? 0}">
                             </div>
                             <div class="col-md-3">
@@ -641,11 +644,11 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">NW (LB)</label>
+                        <label class="form-label fw-semibold">NW /per pcs (KG)</label>
                         <input type="number" class="form-control" name="nw[]" value="0">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">GW (LB)</label>
+                        <label class="form-label fw-semibold">GW /per pcs (KG)</label>
                         <input type="number" class="form-control" name="gw[]" value="0">
                     </div>
                     <div class="col-md-3">
