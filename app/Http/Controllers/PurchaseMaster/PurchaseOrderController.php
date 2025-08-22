@@ -178,6 +178,7 @@ class PurchaseOrderController extends Controller
                 'po_number' => $order->po_number,
                 'po_date' => $order->po_date,
                 'supplier_name' => $order->supplier->name ?? '',
+                'supplier_id' => $order->supplier_id ?? '',
                 'advance_amount' => $order->advance_amount ?? '',
                 'sku_list' => $skuList,
                 'photo' => $firstItem->photo ?? '',
