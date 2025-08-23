@@ -2116,13 +2116,13 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            console.log(response.data,'daataaa');
                             
                             tableData = response.data.map((item, index) => {
 
                                 const valueJson = item.value ? JSON.parse(item.value) : {};
                                 const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
                                 const liveVal   = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
+                                const dil = (item.INV && item.INV !== 0)  ? (item.L30 / item.INV) : 0;
 
                                 return {
                                     sl_no: index + 1,
@@ -2134,25 +2134,24 @@
                                     '', // Get R&A value from server data
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
-                                    'Dil%': item['Dil %'] || 0,
+                                    'Dil%': dil,
                                     'SH L30': item['SH L30'] || 0,
                                     'SH DIL%': item['SH DIL%'] || 0,
                                     views: item.views || 0,
-                                    Price: item.Price || 0,
+                                    Price: parseFloat(item.Price) || 0,
                                     'PFT %': item['PFT %'] || 0,
                                     Roi: item['ROI%'] || 0,
                                     Tacos30: item.TacosL30 || 0,
                                     SCVR: item.SCVR || 0,
                                     'ad cost/ pc': item['ad cost/ pc'] || '',
-                                    is_parent: item['(Child) sku'] ? item['(Child) sku'].toUpperCase().includes("PARENT") : false,
+                                    is_parent: typeof item['(Child) sku'] === "string" ? item['(Child) sku'].toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
                                     NR: item.NR !== undefined ? item.NR : '',
                                     listed: listedVal,
                                     live: liveVal,
                                 };
                             });
-
-                            console.log('Data loaded successfully:', tableData);
+                            
                             filteredData = [...tableData];
                         }
                     },
@@ -3955,20 +3954,32 @@
 
                 $menu.empty();
 
+                // Load saved state from localStorage
+                let savedVisibility = JSON.parse(localStorage.getItem('shopifyB2C_columnVisibility')) || {};
+
                 $headers.each(function() {
                     const $th = $(this);
                     const field = $th.data('field');
                     const title = $th.text().trim().replace(' ↓', '');
 
+                    // Agar saved state me entry hai to wahi use karo otherwise default true
+                    const isChecked = savedVisibility[field] !== false;
+
                     const $item = $(`
                         <div class="column-toggle-item">
                             <input type="checkbox" class="column-toggle-checkbox" 
-                                   id="toggle-${field}" data-field="${field}" checked>
+                                id="toggle-${field}" data-field="${field}" ${isChecked ? 'checked' : ''}>
                             <label for="toggle-${field}">${title}</label>
                         </div>
                     `);
 
                     $menu.append($item);
+
+                    // Apply initial visibility
+                    const colIndex = $headers.filter(`[data-field="${field}"]`).index();
+                    $table.find('tr').each(function() {
+                        $(this).find('td, th').eq(colIndex).toggle(isChecked);
+                    });
                 });
 
                 $dropdownBtn.on('click', function(e) {
@@ -3986,6 +3997,10 @@
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
 
+                    // Save state
+                    savedVisibility[field] = isVisible;
+                    localStorage.setItem('shopifyB2C_columnVisibility', JSON.stringify(savedVisibility));
+
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
                     $table.find('tr').each(function() {
                         $(this).find('td, th').eq(colIndex).toggle(isVisible);
@@ -3995,8 +4010,16 @@
                 $('#showAllColumns').on('click', function() {
                     $menu.find('.column-toggle-checkbox').prop('checked', true).trigger('change');
                     $menu.removeClass('show');
+
+                    // Reset saved state
+                    savedVisibility = {};
+                    $headers.each(function() {
+                        savedVisibility[$(this).data('field')] = true;
+                    });
+                    localStorage.setItem('shopifyB2C_columnVisibility', JSON.stringify(savedVisibility));
                 });
             }
+
 
             // Initialize filters
             function initFilters() {

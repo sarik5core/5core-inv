@@ -2001,6 +2001,7 @@
                     success: function(response) {
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
+                                const dil = (item.INV && item.INV !== 0)  ? (item.L30 / item.INV) : 0;
                                 return {
                                     sl_no: index + 1,
                                     'SL': item['SL'] || index + 1,

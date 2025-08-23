@@ -49,52 +49,47 @@ class Shopifyb2cLowVisibilityController extends Controller
         $shopifySkus = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
         $shopifyProducts = Shopifyb2cDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        // Fetch data from the Google Sheet using the ApiController method
-        $sheetResponse = $this->apiController->fetchShopifyB2CListingData();
-        $sheetData = [];
-        if ($sheetResponse->getStatusCode() === 200) {
-            $sheetRaw = $sheetResponse->getData();
-            $sheetData = $sheetRaw->data ?? [];
-        }
-
-        // Map ProductMaster SKUs to sheet data (by (Child) sku)
-        $sheetSkuMap = collect($sheetData)
-            ->filter(function ($item) {
-                return !empty($item->{'(Child) sku'} ?? null);
-            })
-            ->keyBy(function ($item) {
-                return $item->{'(Child) sku'};
-            });
-
-        // Attach matching ShopifySku, ShopifyProduct, and Sheet data to each ProductMaster record
-        $processedData = $productMasters->map(function ($product) use ($shopifySkus, $shopifyProducts, $sheetSkuMap) {
+        // Attach matching ShopifySku and ShopifyProduct data to each ProductMaster record
+        $processedData = $productMasters->map(function ($product) use ($shopifySkus, $shopifyProducts) {
             $sku = $product->sku;
+
+            // ShopifySku Data
             $product->INV = $shopifySkus->has($sku) ? $shopifySkus[$sku]->inv : 0;
             $product->L30 = $shopifySkus->has($sku) ? $shopifySkus[$sku]->quantity : 0;
-            $product->price = $shopifyProducts->has($sku) ? $shopifyProducts[$sku]->price : null;
-            $product->sheet_data = $sheetSkuMap->has($sku) ? $sheetSkuMap[$sku] : null;
 
-            // Fetch A_Z_Reason, A_Z_ActionRequired, A_Z_ActionTaken from Shopifyb2cDataView->value
+            // Shopifyb2cDataView Data
+            $product->price = $shopifyProducts->has($sku) ? $shopifyProducts[$sku]->price : null;
+
+            // Extract extra values from Shopifyb2cDataView->value (JSON decode if needed)
             $product->A_Z_Reason = null;
             $product->A_Z_ActionRequired = null;
             $product->A_Z_ActionTaken = null;
-            if ($shopifyProducts->has($sku) && is_array($shopifyProducts[$sku]->value ?? null)) {
+
+            if ($shopifyProducts->has($sku)) {
                 $value = $shopifyProducts[$sku]->value;
-                $product->A_Z_Reason = $value['A_Z_Reason'] ?? null;
-                $product->A_Z_ActionRequired = $value['A_Z_ActionRequired'] ?? null;
-                $product->A_Z_ActionTaken = $value['A_Z_ActionTaken'] ?? null;
+                if (is_string($value)) {
+                    $value = json_decode($value, true);
+                }
+                if (is_array($value)) {
+                    $product->A_Z_Reason = $value['A_Z_Reason'] ?? null;
+                    $product->A_Z_ActionRequired = $value['A_Z_ActionRequired'] ?? null;
+                    $product->A_Z_ActionTaken = $value['A_Z_ActionTaken'] ?? null;
+                }
+
+                // Agar VIEWS Shopifyb2cDataView me hai toh use karte hain
+                $product->VIEWS = $value['VIEWS'] ?? 0;
+            } else {
+                $product->VIEWS = 0;
             }
+
             return $product;
         })
-            // --- Apply filter: only rows where INV > 0 and VIEWS == 0 ---
-            ->filter(function ($product) {
-                $views = 0;
-                if ($product->sheet_data && isset($product->sheet_data->VIEWS)) {
-                    $views = (int) $product->sheet_data->VIEWS;
-                }
-                return $views >= 1 && $views <= 100;
-            })
-            ->values();
+        // --- Apply filter: only rows where VIEWS between 1 and 100 ---
+        ->filter(function ($product) {
+            $views = (int) ($product->VIEWS ?? 0);
+            return $views >= 1 && $views <= 100;
+        })
+        ->values();
 
         return response()->json([
             'message' => 'Data fetched successfully',
@@ -102,6 +97,7 @@ class Shopifyb2cLowVisibilityController extends Controller
             'status' => 200
         ]);
     }
+
 
     public function updateReasonAction(Request $request)
     {

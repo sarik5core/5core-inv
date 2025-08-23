@@ -8,6 +8,7 @@ use App\Models\AmazonDataView;
 use App\Models\ShopifySku;
 use App\Models\ProductMaster; // Add this at the top with other use statements
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +19,6 @@ class OverallAmazonFbaController extends Controller
     public function __construct(ApiController $apiController)
     {
         $this->apiController = $apiController;
-
     }
     public function overallAmazonFBA(Request $request)
     {
@@ -31,6 +31,8 @@ class OverallAmazonFbaController extends Controller
             'demo' => $demo
         ]);
     }
+
+
 
     public function getViewAmazonfbaData(Request $request)
     {
@@ -69,7 +71,7 @@ class OverallAmazonFbaController extends Controller
             });
 
             // Process the data to include Shopify inventory values and image path
-            $processedData = array_map(function ($item) use ($shopifyData) {
+            $processedData = array_map(function ($item) use ($shopifyData, $amazonDataViews) {
                 $childSku = $item->{'(Child) sku'} ?? '';
 
                 // Only update INV and L30 if this is not a PARENT SKU
@@ -89,9 +91,11 @@ class OverallAmazonFbaController extends Controller
                     $imagePath = $product->image_path ?? null;
                     $item->image_path = $imageSrc ?? $imagePath;
                     $item->NRL = "REQ";
-                    $dataView = $amazonDataViews[$childSku] ?? null;
+                    $dataView = $amazonDataViews[strtoupper(trim($childSku))] ?? null;
+
                     $value = $dataView ? $dataView->value : [];
                     $item->NRL = $value['NR'] ?? 'REQ';
+                    $item->FBA = $value['FBA'] ?? 'FBA';
                 } else {
                     // For PARENT SKUs or when childSku is empty, keep original values
                     $item->image_path = null;
@@ -195,7 +199,6 @@ class OverallAmazonFbaController extends Controller
                 'status' => 200,
                 'total_updated' => $totalUpdated
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error updating all Amazon SKUs: ' . $e->getMessage());
             return response()->json([

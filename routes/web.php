@@ -198,6 +198,7 @@ use App\Http\Controllers\MarketPlace\SheinController;
 use App\Http\Controllers\MarketPlace\TiktokShopController;
 use App\Http\Controllers\PurchaseMaster\LedgerMasterController;
 use App\Http\Controllers\PricingIncDsc\MasterIncDscController;
+use App\Http\Controllers\PurchaseMAster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
@@ -610,7 +611,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/zero-reverb/view-data', [ReverbZeroController::class, 'getViewReverbZeroData']);
     Route::get('/reverb/zero-low-visibility/view-data', [ReverbLowVisibilityController::class, 'getViewReverbLowVisibilityData']);
     Route::get('/temu/view-data', [TemuController::class, 'getViewTemuData']);
-    Route::get('/amazonfba/view-data', [EbayZeroController::class, 'getVieweBayZeroData'])->name('ebayfba.viewData');
+    Route::get('/amazonfba/view-data', [OverallAmazonFbaController::class, 'getViewAmazonFbaData'])->name('amazonfba.viewData');
     Route::get('/fbainv/view-data', [AmazonFbaInvController::class, 'getViewAmazonfbaInvData'])->name('fbainv.viewData');
     Route::get('/product-master-data', [ProductMasterController::class, 'product_master_data']);
 
@@ -958,6 +959,14 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/quality-enhance/data', 'getData')->name('quality.enhance.data');
         Route::post('/quality-enhance/save', 'saveQualityEnhance')->name('quality.enhance.save');
         Route::post('/quality-enhance/update', 'update')->name('quality.enhance.update');
+    });
+
+    Route::controller(ContainerPlanningController::class)->group(function () {
+        Route::get('/container-planning', 'index')->name('container.planning');
+        Route::get('/container-planning/data', 'getContainerPlannings')->name('container.planning.data');
+        Route::get('/container-planning/po-details/{id}', 'getPoDetails');
+        Route::post('/container-planning/save', 'saveContainerPlanning')->name('container.planning.save');
+        Route::post('/container-planning/delete', 'deleteContainerPlanning')->name('container.planning.delete');
     });
 
     //api data view routes
