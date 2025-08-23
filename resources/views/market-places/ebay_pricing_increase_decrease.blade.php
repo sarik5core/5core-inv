@@ -2626,18 +2626,53 @@
                     ));
 
                     // ✅ SPFT (rounded to whole number %)
-                    $row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
-                        item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
-                        `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
-                        ''
-                    ));
+                    // ✅ SPFT (with custom rounding + inline style + color ranges)
+$row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
+    item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
+    `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SPFT) <= 10 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SPFT) <= 15 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SPFT) <= 20 
+                        ? '#0d6efd'   // 🔵 blue
+                        : '#198754'   // 🟢 green
+        };">
+        ${(parseFloat(item.SPFT) - Math.floor(parseFloat(item.SPFT)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SPFT)) 
+            : Math.floor(parseFloat(item.SPFT)))}%
+     </span>` :
+    ''
+));
 
-                    // ✅ SROI (rounded to whole number %)
-                    $row.append($('<td>').attr('id', `sroi-${item["(Child) sku"]}`).html(
-                        item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
-                        `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
-                        ''
-                    ));
+// ✅ SROI (with custom rounding + inline style + color ranges)
+$row.append($('<td>').attr('id', `sroi-${item["(Child) sku"]}`).html(
+    item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
+    `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SROI) <= 50 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SROI) <= 100 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SROI) <= 150 
+                        ? '#198754'   // 🟢 green
+                        : '#6f42c1'   // 🟣 purple
+        };">
+        ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SROI)) 
+            : Math.floor(parseFloat(item.SROI)))}%
+     </span>` :
+    ''
+));
 
 
 
