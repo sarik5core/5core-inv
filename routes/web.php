@@ -198,6 +198,7 @@ use App\Http\Controllers\MarketPlace\SheinController;
 use App\Http\Controllers\MarketPlace\TiktokShopController;
 use App\Http\Controllers\PurchaseMaster\LedgerMasterController;
 use App\Http\Controllers\PricingIncDsc\MasterIncDscController;
+use App\Http\Controllers\PurchaseMAster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
@@ -960,6 +961,14 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/quality-enhance/update', 'update')->name('quality.enhance.update');
     });
 
+    Route::controller(ContainerPlanningController::class)->group(function () {
+        Route::get('/container-planning', 'index')->name('container.planning');
+        Route::get('/container-planning/data', 'getContainerPlannings')->name('container.planning.data');
+        Route::get('/container-planning/po-details/{id}', 'getPoDetails');
+        Route::post('/container-planning/save', 'saveContainerPlanning')->name('container.planning.save');
+        Route::post('/container-planning/delete', 'deleteContainerPlanning')->name('container.planning.delete');
+    });
+
     //api data view routes
     Route::get('/shopify/products', [ShopifyController::class, 'getProducts']);
 
@@ -1095,6 +1104,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing-ebayvariation', [ListingEbayVariationController::class, 'listingEbayVariation'])->name('listing.ebayvariation');
     Route::get('/listing_ebayvariation/view-data', [ListingEbayVariationController::class, 'getViewListingEbayVariationData']);
     Route::post('/listing_ebayvariation/save-status', [ListingEbayVariationController::class, 'saveStatus']);
+    Route::post('/listing_ebayvariation/import', [ListingEbayVariationController::class, 'import'])->name('listing_ebayvariation.import');
+    Route::get('/listing_ebayvariation/export', [ListingEbayVariationController::class, 'export'])->name('listing_ebayvariation.export');
 
     // shopify wholesale
     Route::get('/zero-shopifywholesale', [ShopifyWholesaleZeroController::class, 'shopifyWholesaleZeroview'])->name('zero.shopifywholesale');

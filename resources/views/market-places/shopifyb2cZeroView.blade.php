@@ -2001,6 +2001,7 @@
                     success: function(response) {
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
+                                const dil = (item.INV && item.INV !== 0)  ? (item.L30 / item.INV) : 0;
                                 return {
                                     sl_no: index + 1,
                                     'SL': item['SL'] || index + 1,
@@ -2011,7 +2012,7 @@
                                     '', // Get R&A value from server data
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
-                                    'Dil%': item['Dil %'] || 0,
+                                    'Dil%': dil || 0,
                                     'SH L30': item['SH L30'] || 0,
                                     'SH DIL%': item['SH DIL%'] || 0,
                                     views: item.views || 0,

@@ -160,6 +160,9 @@
                                 <a href="{{ route('transit.container.new') }}">Transit Container New</a>
                             </li>
                             <li>
+                                <a href="{{ route('container.planning') }}">Container Planning</a>
+                            </li>
+                            <li>
                                 <a href="{{ route('on.sea.transit') }}">On Sea Transit</a>
                             </li>
                             <li>
@@ -1584,7 +1587,7 @@
                                                         @if (isset($permissions['shopifyb2c_zero_view']) && in_array('view', $permissions['shopifyb2c_zero_view']))
                                                             <li>
                                                                 <a href="{{ route('shopifyB2C.zero.view') }}">Shopify
-                                                                    BC2 0 view</a>
+                                                                    B2C 0 view</a>
                                                             </li>
                                                         @endif
                                                         @if (isset($permissions['shopifyb2c_low_visibility']) && in_array('view', $permissions['shopifyb2c_low_visibility']))

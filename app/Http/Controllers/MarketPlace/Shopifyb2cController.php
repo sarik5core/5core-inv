@@ -79,8 +79,6 @@ class Shopifyb2cController extends Controller
     }
     // public function getViewShopifyB2CData(Request $request)
     // {
-
-
     //     $response = $this->apiController->fetchShopifyB2CListingData();
 
     //     if ($response->getStatusCode() === 200) {
@@ -95,7 +93,13 @@ class Shopifyb2cController extends Controller
     //             ->unique()
     //             ->toArray();
 
+    //         // Shopify data
     //         $shopifyData = ShopifySku::whereIn('sku', $skus)
+    //             ->get()
+    //             ->keyBy('sku');
+
+    //         // ProductMaster for LP & Ship
+    //         $productMasterData = ProductMaster::whereIn('sku', $skus)
     //             ->get()
     //             ->keyBy('sku');
 
@@ -107,7 +111,7 @@ class Shopifyb2cController extends Controller
     //             return !(empty(trim($parent)) && empty(trim($childSku)));
     //         });
 
-    //         $processedData = array_map(function ($item) use ($shopifyData, $nrValues) {
+    //         $processedData = array_map(function ($item) use ($shopifyData, $productMasterData, $nrValues) {
     //             $childSku = $item->{'(Child) sku'} ?? '';
 
     //             if (!empty($childSku) && stripos($childSku, 'PARENT') === false) {
@@ -119,24 +123,32 @@ class Shopifyb2cController extends Controller
     //                     $item->SPRICE = $skuData->SPRICE ?? null;
     //                     $item->SPFT   = $skuData->SPFT ?? null;
     //                     $item->SROI   = $skuData->SROI ?? null;
-
-    //                     // LP & SHIP extraction
-    //                     $values = is_array($skuData->Values)
-    //                         ? $skuData->Values
-    //                         : (is_string($skuData->Values) ? json_decode($skuData->Values, true) : []);
-
+    //                     $item->NR     = $skuData->NR ?? null;
+                        
+    //                     // LP & Ship from ProductMaster
+    //                     $pm = $productMasterData[$childSku] ?? null;
     //                     $lp = 0;
-    //                     foreach ($values as $k => $v) {
-    //                         if (strtolower($k) === 'lp') {
-    //                             $lp = floatval($v);
-    //                             break;
-    //                         }
-    //                     }
-    //                     if ($lp === 0 && isset($skuData->lp)) {
-    //                         $lp = floatval($skuData->lp);
-    //                     }
+    //                     $ship = 0;
 
-    //                     $ship = isset($values['ship']) ? floatval($values['ship']) : (isset($skuData->ship) ? floatval($skuData->ship) : 0);
+    //                     if ($pm) {
+    //                         $values = is_array($pm->Values)
+    //                             ? $pm->Values
+    //                             : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+    //                         foreach ($values as $k => $v) {
+    //                             if (strtolower($k) === 'lp') {
+    //                                 $lp = floatval($v);
+    //                                 break;
+    //                             }
+    //                         }
+    //                         if ($lp === 0 && isset($pm->lp)) {
+    //                             $lp = floatval($pm->lp);
+    //                         }
+
+    //                         $ship = isset($values['ship'])
+    //                             ? floatval($values['ship'])
+    //                             : (isset($pm->ship) ? floatval($pm->ship) : 0);
+    //                     }
 
     //                     $item->LP_productmaster = $lp;
     //                     $item->Ship_productmaster = $ship;
@@ -163,17 +175,27 @@ class Shopifyb2cController extends Controller
     //                     $item->SPRICE = null;
     //                     $item->SPFT = null;
     //                     $item->SROI = null;
+    //                     $item->NR = null;
+    //                     $item->LP_productmaster = 0;
+    //                     $item->Ship_productmaster = 0;
     //                 }
 
     //                 // NR Handling
     //                 $item->NR = false;
+    //                 $item->Listed = false;
+    //                 $item->Live = false;
+
     //                 if ($childSku && isset($nrValues[$childSku])) {
     //                     $val = $nrValues[$childSku];
     //                     if (is_array($val)) {
     //                         $item->NR = $val['NR'] ?? false;
+    //                         $item->Listed = !empty($val['Listed']) ? (int)$val['Listed'] : false;
+    //                         $item->Live = !empty($val['Live']) ? (int)$val['Live'] : false;
     //                     } else {
     //                         $decoded = json_decode($val, true);
     //                         $item->NR = $decoded['NR'] ?? false;
+    //                         $item->Listed = !empty($decoded['Listed']) ? (int)$decoded['Listed'] : false;
+    //                         $item->Live = !empty($decoded['Live']) ? (int)$decoded['Live'] : false;
     //                     }
     //                 }
     //             }
@@ -199,143 +221,88 @@ class Shopifyb2cController extends Controller
 
     public function getViewShopifyB2CData(Request $request)
     {
-        $response = $this->apiController->fetchShopifyB2CListingData();
+        // Fetch all relevant SKUs from ShopifySku and ProductMaster
+        $shopifyData = ShopifySku::all()->keyBy('sku');
+        $productMasterData = ProductMaster::all()->keyBy('sku');
+        $nrValues = Shopifyb2cDataView::pluck('value', 'sku');
 
-        if ($response->getStatusCode() === 200) {
-            $data = $response->getData();
+        // Collect all unique SKUs
+        $skus = $productMasterData->keys();
 
-            $skus = collect($data->data)
-                ->filter(function ($item) {
-                    $childSku = $item->{'(Child) sku'} ?? '';
-                    return !empty($childSku) && stripos($childSku, 'PARENT') === false;
-                })
-                ->pluck('(Child) sku')
-                ->unique()
-                ->toArray();
-
+        $processedData = $skus->map(function ($sku) use ($shopifyData, $productMasterData, $nrValues) {
+            $item = new \stdClass();
+            $item->{'(Child) sku'} = $sku;
+            
             // Shopify data
-            $shopifyData = ShopifySku::whereIn('sku', $skus)
-                ->get()
-                ->keyBy('sku');
+            if ($shopifyData->has($sku)) {
+                $skuData = $shopifyData[$sku];
+                $item->INV = $skuData->inv;
+                $item->L30 = $skuData->quantity;
+                $item->Price = $skuData->price;
+                $item->SPRICE = $skuData->SPRICE ?? null;
+                $item->SPFT   = $skuData->SPFT ?? null;
+                $item->SROI   = $skuData->SROI ?? null;
+            } else {
+                $item->INV = 0;
+                $item->L30 = 0;
+                $item->Price = 0;
+                $item->SPRICE = null;
+                $item->SPFT = null;
+                $item->SROI = null;
+            }
 
-            // ProductMaster for LP & Ship
-            $productMasterData = ProductMaster::whereIn('sku', $skus)
-                ->get()
-                ->keyBy('sku');
+            // ProductMaster LP & Ship
+            $pm = $productMasterData[$sku] ?? null;
+            $lp = 0;
+            $ship = 0;
+            $item->Parent = null;
+            if ($pm) {
+                $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+                $lp = $values['lp'] ?? $pm->lp ?? 0;
+                $ship = $values['ship'] ?? $pm->ship ?? 0;
+                $item->Parent = $pm->parent ?? null;
+            }
+            $item->LP_productmaster = floatval($lp);
+            $item->Ship_productmaster = floatval($ship);
 
-            $nrValues = Shopifyb2cDataView::pluck('value', 'sku');
+            // Profit Calculations
+            $price = floatval($item->SPRICE ?? 0);
+            $units_ordered_l30 = floatval($item->L30 ?? 0);
+            $percentage = 1; // default 100%
 
-            $filteredData = array_filter($data->data, function ($item) {
-                $parent = $item->Parent ?? '';
-                $childSku = $item->{'(Child) sku'} ?? '';
-                return !(empty(trim($parent)) && empty(trim($childSku)));
-            });
+            $item->Total_pft = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
+            $item->T_Sale_l30 = round($price * $units_ordered_l30, 2);
+            $item->PFT_percentage = round($price > 0 ? (($price * $percentage - $lp - $ship) / $price) * 100 : 0, 2);
+            $item->ROI_percentage = round($lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) * 100 : 0, 2);
+            $item->T_COGS = round($lp * $units_ordered_l30, 2);
 
-            $processedData = array_map(function ($item) use ($shopifyData, $productMasterData, $nrValues) {
-                $childSku = $item->{'(Child) sku'} ?? '';
+            // NR Handling
+            $item->NR = false;
+            $item->Listed = false;
+            $item->Live = false;
 
-                if (!empty($childSku) && stripos($childSku, 'PARENT') === false) {
-                    if ($shopifyData->has($childSku)) {
-                        $skuData = $shopifyData[$childSku];
-                        $item->INV = $skuData->inv;
-                        $item->L30 = $skuData->quantity;
-
-                        $item->SPRICE = $skuData->SPRICE ?? null;
-                        $item->SPFT   = $skuData->SPFT ?? null;
-                        $item->SROI   = $skuData->SROI ?? null;
-                        $item->NR     = $skuData->NR ?? null;
-                        
-                        // LP & Ship from ProductMaster
-                        $pm = $productMasterData[$childSku] ?? null;
-                        $lp = 0;
-                        $ship = 0;
-
-                        if ($pm) {
-                            $values = is_array($pm->Values)
-                                ? $pm->Values
-                                : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
-
-                            foreach ($values as $k => $v) {
-                                if (strtolower($k) === 'lp') {
-                                    $lp = floatval($v);
-                                    break;
-                                }
-                            }
-                            if ($lp === 0 && isset($pm->lp)) {
-                                $lp = floatval($pm->lp);
-                            }
-
-                            $ship = isset($values['ship'])
-                                ? floatval($values['ship'])
-                                : (isset($pm->ship) ? floatval($pm->ship) : 0);
-                        }
-
-                        $item->LP_productmaster = $lp;
-                        $item->Ship_productmaster = $ship;
-
-                        // Profit Calculations
-                        $price = floatval($item->SPRICE ?? 0);
-                        $units_ordered_l30 = floatval($item->L30 ?? 0);
-                        $percentage = 1; // default 100%
-
-                        $item->Total_pft = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
-                        $item->T_Sale_l30 = round($price * $units_ordered_l30, 2);
-                        $item->PFT_percentage = round(
-                            $price > 0 ? (($price * $percentage - $lp - $ship) / $price) * 100 : 0,
-                            2
-                        );
-                        $item->ROI_percentage = round(
-                            $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) * 100 : 0,
-                            2
-                        );
-                        $item->T_COGS = round($lp * $units_ordered_l30, 2);
-                    } else {
-                        $item->INV = 0;
-                        $item->L30 = 0;
-                        $item->SPRICE = null;
-                        $item->SPFT = null;
-                        $item->SROI = null;
-                        $item->NR = null;
-                        $item->LP_productmaster = 0;
-                        $item->Ship_productmaster = 0;
-                    }
-
-                    // NR Handling
-                    $item->NR = false;
-                    $item->Listed = false;
-                    $item->Live = false;
-
-                    if ($childSku && isset($nrValues[$childSku])) {
-                        $val = $nrValues[$childSku];
-                        if (is_array($val)) {
-                            $item->NR = $val['NR'] ?? false;
-                            $item->Listed = !empty($val['Listed']) ? (int)$val['Listed'] : false;
-                            $item->Live = !empty($val['Live']) ? (int)$val['Live'] : false;
-                        } else {
-                            $decoded = json_decode($val, true);
-                            $item->NR = $decoded['NR'] ?? false;
-                            $item->Listed = !empty($decoded['Listed']) ? (int)$decoded['Listed'] : false;
-                            $item->Live = !empty($decoded['Live']) ? (int)$decoded['Live'] : false;
-                        }
-                    }
+            if (isset($nrValues[$sku])) {
+                $val = $nrValues[$sku];
+                if (is_array($val)) {
+                    $item->NR = $val['NR'] ?? false;
+                    $item->Listed = !empty($val['Listed']) ? (int)$val['Listed'] : false;
+                    $item->Live = !empty($val['Live']) ? (int)$val['Live'] : false;
+                } else {
+                    $decoded = json_decode($val, true);
+                    $item->NR = $decoded['NR'] ?? false;
+                    $item->Listed = !empty($decoded['Listed']) ? (int)$decoded['Listed'] : false;
+                    $item->Live = !empty($decoded['Live']) ? (int)$decoded['Live'] : false;
                 }
+            }
 
-                return (array) $item;
-            }, $filteredData);
+            return (array) $item;
+        });
 
-            $processedData = array_values($processedData);
-
-            return response()->json([
-                'message' => 'Data fetched successfully',
-                'data' => $processedData,
-                'status' => 200
-            ]);
-        } else {
-            return response()->json([
-                'message' => 'Failed to fetch data from Google Sheet',
-                'status' => $response->getStatusCode()
-            ], $response->getStatusCode());
-        }
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data' => $processedData->values(),
+            'status' => 200
+        ]);
     }
 
 
