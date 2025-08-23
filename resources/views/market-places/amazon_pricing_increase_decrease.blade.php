@@ -2730,9 +2730,9 @@
                     `));
 
                     // A DIL with color coding
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${(item['A Dil%'] * 100).toFixed(2)}%</span>`
-                    ));
+                  $row.append($('<td>').html(
+    `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${Math.round(item['A Dil%'] * 100)}%</span>`
+));
 
                     // --- NR column ---
                     if (item.is_parent) {
@@ -2876,22 +2876,21 @@
 
 
                     // PFT with color coding
-                    $row.append($('<td>').html(
-                        typeof item['PFT_percentage'] === 'number' && !isNaN(item[
-                            'PFT_percentage']) ?
-                        `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
-                            ${item['PFT_percentage']}%
-                        </span>
-                        <span class="tooltip-container" style="margin-left:8px">
-                            <i class="fas fa-tag text-warning price-view-trigger" 
-                                style="transform:translateY(1px)"
-                                data-bs-toggle="tooltip" 
-                                data-bs-placement="top-end" 
-                                title="Pricing view"
-                                data-item='${JSON.stringify(item.raw_data)}'></i>
-                        </span>` :
-                        ''
-                    ));
+                   $row.append($('<td>').html(
+    typeof item['PFT_percentage'] === 'number' && !isNaN(item['PFT_percentage']) ?
+    `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
+        ${Math.round(item['PFT_percentage'])}%
+    </span>
+    <span class="tooltip-container" style="margin-left:8px">
+        <i class="fas fa-tag text-warning price-view-trigger" 
+            style="transform:translateY(1px)"
+            data-bs-toggle="tooltip" 
+            data-bs-placement="top-end" 
+            title="Pricing view"
+            data-item='${JSON.stringify(item.raw_data)}'></i>
+    </span>` :
+    ''
+));
 
 
                     const sku = String(item["(Child) sku"]).replace(/'/g, "\\'");
@@ -2932,10 +2931,11 @@
                     );
 
                     // TPFT 
-                    $row.append($('<td>').html(
-                        `<span class="badge bg-info">${((profitAfterAd / (price * aL30)) * 100).toFixed(2)}%</span>`
-                    ));
+                  const tpft = price * aL30 > 0 ? (profitAfterAd / (price * aL30)) * 100 : 0;
 
+$row.append($('<td>').html(
+    `<span class="badge bg-info">${Math.round(tpft)}%</span>`
+));
 
 
 
@@ -2957,16 +2957,17 @@
 
 
 
-                    const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+               const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
 
-                    $row.append($('<td>').html(
-                        typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
-                        `
-                        <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
-                            ${newPftPercentage.toFixed(2)}%
-                        </span>
+                $row.append($('<td>').html(
+                    typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
+                    `
+                    <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
+                        ${Math.round(newPftPercentage)}%
+                    </span>
                     ` : ''
-                    ));
+                ));
+
 
 
 

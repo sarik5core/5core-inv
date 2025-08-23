@@ -120,6 +120,7 @@ class EbayZeroController extends Controller
             $item->{'A_Z_ActionRequired'} = $value['A_Z_ActionRequired'] ?? '';
             $item->{'A_Z_ActionTaken'} = $value['A_Z_ActionTaken'] ?? '';
             $item->{'NR'} = $value['NR'] ?? 'REQ';
+            
 
             $processedData[] = $item;
         }

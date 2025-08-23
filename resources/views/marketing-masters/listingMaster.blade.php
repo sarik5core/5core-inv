@@ -109,6 +109,7 @@
                             </th> --}}
                             <th>
                                 Pending
+                                <span id="pending-arrow" style="cursor:pointer;">⬍</span>
                                 <div id="pending-total"
                                     style="display:inline-block; background:#f60920; color:white; border-radius:8px; padding:8px 18px; font-weight:600; font-size:15px; margin-left:8px;">
                                     0
@@ -131,80 +132,216 @@
     <script>
         document.body.style.zoom = "80%";
 
-        $(document).ready(function() {
+        // $(document).ready(function() {
+        //     let currentSort = 'desc';
+        //     let tableData = [];
+        //     $('#tableLoader').show();
+
+        //     $.ajax({
+        //         url: '/listing-master-data',
+        //         type: 'GET',
+        //         success: function(json) {
+        //             $('#tableLoader').hide();
+        //             $('#tableContainer').css('opacity', '1');
+        //             let rows = '';
+        //             let totalReq = 0;
+        //             let totalListed = 0;
+        //             let totalPending = 0;
+        //             json.data.forEach(function(row, idx) {
+        //                 if (typeof row === 'string') {
+        //                     rows += `<tr>
+        //                         <td>${idx + 1}</td>
+        //                         <td><strong>${row}</strong></td>
+        //                         <td>0</td>
+        //                     </tr>`;
+        //                 } else {
+        //                     rows += `<tr>
+        //                         <td>${idx + 1}</td>
+        //                         <td><a href="${row.channel_url}" target="_blank"><strong>${row.Channel}</strong></a></td>
+        //                         <td>${row.Pending ?? 0}</td>
+                                
+        //                     </tr>`;
+        //                     // <td>
+        //                     //     <button class="btn btn-sm btn-danger delete-btn" data-marketplace="${row.Channel}">Delete</button>
+        //                     // </td>
+        //                     totalReq += Number(row.REQ ?? 0);
+        //                     totalListed += Number(row.Listed ?? 0);
+        //                     totalPending += Number(row.Pending ?? 0);
+        //                 }
+        //             });
+        //             $('#channelTable tbody').remove();
+        //             $('#channelTable').append('<tbody>' + rows + '</tbody>');
+        //             $('#req-total').text(totalReq);
+        //             $('#listed-total').text(totalListed);
+        //             $('#pending-total').text(totalPending);
+        //         },
+        //         error: function(xhr, error, thrown) {
+        //             $('#tableLoader').hide();
+        //             $('#tableContainer').css('opacity', '1');
+        //             alert('Error loading data. Please try again.');
+        //         }
+        //     });
+
+        //     $(document).on('click', '#pending-arrow', function() {
+        //         console.log('ghgh');
+                
+        //         if (currentSort === 'desc') {
+        //             tableData.sort((a, b) => (a.Pending ?? 0) - (b.Pending ?? 0));
+        //             currentSort = 'asc';
+        //             $(this).text('Pending ↑');
+        //         } else {
+        //             tableData.sort((a, b) => (b.Pending ?? 0) - (a.Pending ?? 0));
+        //             currentSort = 'desc';
+        //             $(this).text('Pending ↓');
+        //         }
+        //         renderTable(tableData);
+        //     });
+
+        //     $('#channelSearchInput').on('keyup', function() {
+        //         const searchTerm = $(this).val().toLowerCase();
+        //         $('#channelTable tbody tr').each(function() {
+        //             const channel = $(this).find('td').eq(1).text().toLowerCase();
+        //             if (channel.includes(searchTerm)) {
+        //                 $(this).show();
+        //             } else {
+        //                 $(this).hide();
+        //             }
+        //         });
+        //     });
+
+        //     $('#exportExcelBtn').on('click', function() {
+        //         // Get table data
+        //         var wb = XLSX.utils.table_to_book(document.getElementById('channelTable'), {
+        //             sheet: "Sheet1"
+        //         });
+        //         // Export to Excel file
+        //         XLSX.writeFile(wb, 'listing_audit_master.xlsx');
+        //     });
+
+        //     // Delete marketplace
+        //     $(document).on('click', '.delete-btn', function() {
+        //         if (!confirm('Are you sure you want to delete this marketplace?')) return;
+
+        //         let marketplace  = $(this).data('marketplace');
+
+        //         $.ajax({
+        //             url: '/listing-master/' + marketplace,
+        //             type: 'DELETE',
+        //             data: {
+        //                 _token: '{{ csrf_token() }}'
+        //             },
+        //             success: function(res) {
+        //                 if (res.status === 200) {
+        //                     alert(res.message);
+        //                     location.reload(); // reload table
+        //                 } else {
+        //                     alert(res.message || 'Delete failed');
+        //                 }
+        //             },
+        //             error: function() {
+        //                 alert('Error deleting marketplace. Please try again.');
+        //             }
+        //         });
+        //     });
+
+        // });
+
+        $(document).ready(function () {
+            let currentSort = 'desc';
+            let tableData = [];
             $('#tableLoader').show();
 
+            // function to render table (moved from inside AJAX success)
+            function renderTable(data) {
+                let rows = '';
+                let totalReq = 0;
+                let totalListed = 0;
+                let totalPending = 0;
+
+                data.forEach(function (row, idx) {
+                    if (typeof row === 'string') {
+                        rows += `<tr>
+                            <td>${idx + 1}</td>
+                            <td><strong>${row}</strong></td>
+                            <td>0</td>
+                        </tr>`;
+                    } else {
+                        rows += `<tr>
+                            <td>${idx + 1}</td>
+                            <td><a href="${row.channel_url}" target="_blank"><strong>${row.Channel}</strong></a></td>
+                            <td>${row.Pending ?? 0}</td>
+                        </tr>`;
+                        totalReq += Number(row.REQ ?? 0);
+                        totalListed += Number(row.Listed ?? 0);
+                        totalPending += Number(row.Pending ?? 0);
+                    }
+                });
+
+                $('#channelTable tbody').remove();
+                $('#channelTable').append('<tbody>' + rows + '</tbody>');
+                $('#req-total').text(totalReq);
+                $('#listed-total').text(totalListed);
+                $('#pending-total').text(totalPending);
+            }
+
+            // Fetch data
             $.ajax({
                 url: '/listing-master-data',
                 type: 'GET',
-                success: function(json) {
+                success: function (json) {
                     $('#tableLoader').hide();
                     $('#tableContainer').css('opacity', '1');
-                    let rows = '';
-                    let totalReq = 0;
-                    let totalListed = 0;
-                    let totalPending = 0;
-                    json.data.forEach(function(row, idx) {
-                        if (typeof row === 'string') {
-                            rows += `<tr>
-                                <td>${idx + 1}</td>
-                                <td><strong>${row}</strong></td>
-                                <td>0</td>
-                            </tr>`;
-                        } else {
-                            rows += `<tr>
-                                <td>${idx + 1}</td>
-                                <td><a href="${row.channel_url}" target="_blank"><strong>${row.Channel}</strong></a></td>
-                                <td>${row.Pending ?? 0}</td>
-                                
-                            </tr>`;
-                            // <td>
-                            //     <button class="btn btn-sm btn-danger delete-btn" data-marketplace="${row.Channel}">Delete</button>
-                            // </td>
-                            totalReq += Number(row.REQ ?? 0);
-                            totalListed += Number(row.Listed ?? 0);
-                            totalPending += Number(row.Pending ?? 0);
-                        }
-                    });
-                    $('#channelTable tbody').remove();
-                    $('#channelTable').append('<tbody>' + rows + '</tbody>');
-                    $('#req-total').text(totalReq);
-                    $('#listed-total').text(totalListed);
-                    $('#pending-total').text(totalPending);
+
+                    tableData = json.data;
+
+                    // default sort: Pending high → low
+                    tableData.sort((a, b) => (b.Pending ?? 0) - (a.Pending ?? 0));
+
+                    renderTable(tableData);
                 },
-                error: function(xhr, error, thrown) {
+                error: function () {
                     $('#tableLoader').hide();
                     $('#tableContainer').css('opacity', '1');
                     alert('Error loading data. Please try again.');
                 }
             });
 
-            $('#channelSearchInput').on('keyup', function() {
+            // Sort on arrow click
+            $(document).on('click', '#pending-arrow', function () {
+                if (currentSort === 'desc') {
+                    tableData.sort((a, b) => (a.Pending ?? 0) - (b.Pending ?? 0));
+                    currentSort = 'asc';
+                    $(this).text('Pending ↑');
+                } else {
+                    tableData.sort((a, b) => (b.Pending ?? 0) - (a.Pending ?? 0));
+                    currentSort = 'desc';
+                    $(this).text('Pending ↓');
+                }
+                renderTable(tableData);
+            });
+
+            // Search filter
+            $('#channelSearchInput').on('keyup', function () {
                 const searchTerm = $(this).val().toLowerCase();
-                $('#channelTable tbody tr').each(function() {
+                $('#channelTable tbody tr').each(function () {
                     const channel = $(this).find('td').eq(1).text().toLowerCase();
-                    if (channel.includes(searchTerm)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
+                    $(this).toggle(channel.includes(searchTerm));
                 });
             });
 
-            $('#exportExcelBtn').on('click', function() {
-                // Get table data
+            // Export to Excel
+            $('#exportExcelBtn').on('click', function () {
                 var wb = XLSX.utils.table_to_book(document.getElementById('channelTable'), {
                     sheet: "Sheet1"
                 });
-                // Export to Excel file
                 XLSX.writeFile(wb, 'listing_audit_master.xlsx');
             });
 
             // Delete marketplace
-            $(document).on('click', '.delete-btn', function() {
+            $(document).on('click', '.delete-btn', function () {
                 if (!confirm('Are you sure you want to delete this marketplace?')) return;
 
-                let marketplace  = $(this).data('marketplace');
+                let marketplace = $(this).data('marketplace');
 
                 $.ajax({
                     url: '/listing-master/' + marketplace,
@@ -212,7 +349,7 @@
                     data: {
                         _token: '{{ csrf_token() }}'
                     },
-                    success: function(res) {
+                    success: function (res) {
                         if (res.status === 200) {
                             alert(res.message);
                             location.reload(); // reload table
@@ -220,12 +357,12 @@
                             alert(res.message || 'Delete failed');
                         }
                     },
-                    error: function() {
+                    error: function () {
                         alert('Error deleting marketplace. Please try again.');
                     }
                 });
             });
-
         });
+
     </script>
 @endsection
