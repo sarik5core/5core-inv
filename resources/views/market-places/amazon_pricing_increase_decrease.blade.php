@@ -2569,22 +2569,22 @@
                 }
 
                 filteredData.forEach(item => {
-                    
+
                     const inv = parseInt(item["INV"]) || 0;
                     const sess30 = parseInt(item["Sess30"]) || 0;
                     const cvr = parseFloat(item.SCVR) || 0; // using SCVR now
                     const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
 
                     // Skip rows based on your conditions
-                   // Skip rows based on your conditions
-                    if (!item.is_parent) {   // 
-                        if (inv <= 0) return;        
+                    // Skip rows based on your conditions
+                    if (!item.is_parent) { // 
+                        if (inv <= 0) return;
                         if (sess30 < 49) return;
                         if (cvrPercent >= 7) return;
                     }
-                //If the CVR percentage of this row is 7 or higher, skip this row and don’t add it to the table. 
+                    //If the CVR percentage of this row is 7 or higher, skip this row and don’t add it to the table. 
 
-                 
+
 
                     let rawData = {};
                     if (typeof item.raw_data === 'string') {
@@ -2730,9 +2730,9 @@
                     `));
 
                     // A DIL with color coding
-                  $row.append($('<td>').html(
-    `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${Math.round(item['A Dil%'] * 100)}%</span>`
-));
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${Math.round(item['A Dil%'] * 100)}%</span>`
+                    ));
 
                     // --- NR column ---
                     if (item.is_parent) {
@@ -2876,9 +2876,10 @@
 
 
                     // PFT with color coding
-                   $row.append($('<td>').html(
-    typeof item['PFT_percentage'] === 'number' && !isNaN(item['PFT_percentage']) ?
-    `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
+                    $row.append($('<td>').html(
+                        typeof item['PFT_percentage'] === 'number' && !isNaN(item[
+                        'PFT_percentage']) ?
+                        `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
         ${Math.round(item['PFT_percentage'])}%
     </span>
     <span class="tooltip-container" style="margin-left:8px">
@@ -2889,8 +2890,8 @@
             title="Pricing view"
             data-item='${JSON.stringify(item.raw_data)}'></i>
     </span>` :
-    ''
-));
+                        ''
+                    ));
 
 
                     const sku = String(item["(Child) sku"]).replace(/'/g, "\\'");
@@ -2931,11 +2932,11 @@
                     );
 
                     // TPFT 
-                  const tpft = price * aL30 > 0 ? (profitAfterAd / (price * aL30)) * 100 : 0;
+                    const tpft = price * aL30 > 0 ? (profitAfterAd / (price * aL30)) * 100 : 0;
 
-$row.append($('<td>').html(
-    `<span class="badge bg-info">${Math.round(tpft)}%</span>`
-));
+                    $row.append($('<td>').html(
+                        `<span class="badge bg-info">${Math.round(tpft)}%</span>`
+                    ));
 
 
 
@@ -2957,16 +2958,16 @@ $row.append($('<td>').html(
 
 
 
-               const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+                    const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
 
-                $row.append($('<td>').html(
-                    typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
-                    `
+                    $row.append($('<td>').html(
+                        typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
+                        `
                     <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
                         ${Math.round(newPftPercentage)}%
                     </span>
                     ` : ''
-                ));
+                    ));
 
 
 
@@ -3165,12 +3166,12 @@ $row.append($('<td>').html(
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_api_link'] ? `
-                                                        <a href="${item['js_comp_manual_api_link']}" target="_blank" 
-                                                           class="badge bg-success open-link-btn" 
-                                                           title="Open link" 
-                                                           style="text-decoration: none;">
-                                                            <i class="fas fa-link"></i>
-                                                        </a>` : ''
+                                                            <a href="${item['js_comp_manual_api_link']}" target="_blank" 
+                                                               class="badge bg-success open-link-btn" 
+                                                               title="Open link" 
+                                                               style="text-decoration: none;">
+                                                                <i class="fas fa-link"></i>
+                                                            </a>` : ''
         }
     </div>
 `));
@@ -3186,12 +3187,12 @@ $row.append($('<td>').html(
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_link'] ? `
-                                                        <a href="${item['js_comp_manual_link']}" target="_blank" 
-                                                           class="badge bg-success open-link-btn" 
-                                                           title="Open link" 
-                                                           style="text-decoration: none;">
-                                                            <i class="fas fa-link"></i>
-                                                        </a>` : ''
+                                                            <a href="${item['js_comp_manual_link']}" target="_blank" 
+                                                               class="badge bg-success open-link-btn" 
+                                                               title="Open link" 
+                                                               style="text-decoration: none;">
+                                                                <i class="fas fa-link"></i>
+                                                            </a>` : ''
         }
     </div>
 `));

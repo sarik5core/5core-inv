@@ -71,6 +71,58 @@ class ReverbController extends Controller
         ]);
     }
 
+      public function reverbPricingIncreaseCvr(Request $request)
+    {
+        $mode = $request->query("mode");
+        $demo = $request->query("demo");
+
+        // Get percentage from cache or database
+        $percentage = Cache::remember(
+            "reverb_marketplace_percentage",
+            now()->addDays(30),
+            function () {
+                $marketplaceData = MarketplacePercentage::where(
+                    "marketplace",
+                    "Reverb"
+                )->first();
+                return $marketplaceData ? $marketplaceData->percentage : 100;
+            }
+        );
+
+        return view("market-places.reverb_pricing_increase_cvr", [
+            "mode" => $mode,
+            "demo" => $demo,
+            "percentage" => $percentage,
+        ]);
+    }
+
+
+      public function reverbPricingdecreaseCvr(Request $request)
+    {
+        $mode = $request->query("mode");
+        $demo = $request->query("demo");
+
+        // Get percentage from cache or database
+        $percentage = Cache::remember(
+            "reverb_marketplace_percentage",
+            now()->addDays(30),
+            function () {
+                $marketplaceData = MarketplacePercentage::where(
+                    "marketplace",
+                    "Reverb"
+                )->first();
+                return $marketplaceData ? $marketplaceData->percentage : 100;
+            }
+        );
+
+        return view("market-places.reverb_pricing_decrease_cvr", [
+            "mode" => $mode,
+            "demo" => $demo,
+            "percentage" => $percentage,
+        ]);
+    }
+
+
     public function getViewReverbData(Request $request)
     {
         // Get percentage from cache or database
