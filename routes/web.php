@@ -198,7 +198,7 @@ use App\Http\Controllers\MarketPlace\SheinController;
 use App\Http\Controllers\MarketPlace\TiktokShopController;
 use App\Http\Controllers\PurchaseMaster\LedgerMasterController;
 use App\Http\Controllers\PricingIncDsc\MasterIncDscController;
-use App\Http\Controllers\PurchaseMAster\ContainerPlanningController;
+use App\Http\Controllers\PurchaseMaster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
