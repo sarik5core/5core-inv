@@ -1505,6 +1505,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('campaigns/update-note', 'updateField')->name('campaigns.update-note');
         Route::post('/campaigns/data', 'getCampaigns')->name('campaigns.data');
         Route::get('/campaigns/list', 'getCampaignsData')->name('campaigns.list');
+        Route::get('/campaigns/amz-utilized-bgt-kw', 'amzUtilizedBgtKw')->name('campaigns.amz-utilized-bgt-kw');
+        Route::get('/campaigns/get-amz-utilized-bgt-kw', 'getAmzUtilizedBgtKw')->name('campaigns.get-amz-utilized-bgt-kw');
         // Route::post('/campaign/save', 'storeOrUpdateCampaign')->name('campaign.save');
     });
 

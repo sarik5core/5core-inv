@@ -1470,6 +1470,9 @@
                                                     <li>
                                                         <a href=" {{ route('campaign.over') }} ">Over utilised</a>
                                                     </li>
+                                                    <li>
+                                                        <a href=" {{ route('campaigns.amz-utilized-bgt-kw') }} ">UTILIZED BGT KW</a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>
