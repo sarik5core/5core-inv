@@ -2715,12 +2715,14 @@
                         item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
                         `
     <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-primary s_price" style="font-size: 16px; padding: 6px 10px;">
+        <span class="badge bg-primary s_price" 
+              style="font-size:16px; padding:8px 14px; border-radius:8px;">
             $${Math.round(parseFloat(item.SPRICE))}
         </span>
-        <div class="btn-group btn-group-sm" role="group">
+        <div class="btn-group" role="group">
             <!-- Edit Button -->
             <button class="btn btn-outline-primary openPricingBtn"
+                style="font-size:15px; padding:6px 12px; border-radius:8px;"
                 title="Edit SPRICE"
                 data-lp="${item.LP}"
                 data-ship="${item.SHIP}"
@@ -2732,17 +2734,52 @@
     ` : ''
                     ));
 
-                    // ✅ SPFT (rounded to whole number %)
+
+                    // ✅ SPFT (with coloring logic + inline style)
                     $row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
                         item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
-                        `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SPFT) <= 10 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SPFT) <= 15 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SPFT) <= 20 
+                        ? '#0d6efd'   // 🔵 blue
+                        : '#198754'   // 🟢 green
+        };">
+        ${(parseFloat(item.SPFT) - Math.floor(parseFloat(item.SPFT)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SPFT)) 
+            : Math.floor(parseFloat(item.SPFT)))}%
+     </span>` :
                         ''
                     ));
 
-                    // ✅ SROI (rounded to whole number %)
+                    // ✅ SROI (with coloring logic + inline style)
                     $row.append($('<td>').attr('id', `sroi-${item["(Child) sku"]}`).html(
                         item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
-                        `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SROI) <= 50 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SROI) <= 100 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SROI) <= 150 
+                        ? '#198754'   // 🟢 green
+                        : '#6f42c1'   // 🟣 purple
+        };">
+        ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SROI)) 
+            : Math.floor(parseFloat(item.SROI)))}%
+     </span>` :
                         ''
                     ));
 

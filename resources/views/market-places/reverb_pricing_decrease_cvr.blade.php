@@ -982,10 +982,6 @@
             text-decoration: underline;
         }
 
-        .nr-hide {
-            display: none !important;
-        }
-
         /*popup modal style end */
     </style>
 @endsection
@@ -1486,6 +1482,16 @@
                                             <div class="metric-total" id="views-total">0</div>
                                         </div>
                                     </th>
+
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th data-field="price_wo_ship"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -1511,6 +1517,7 @@
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
+
                                     <th data-field="ROI_percentage" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
@@ -1520,6 +1527,37 @@
                                             <div class="metric-total" id="roi-total">0%</div>
                                         </div>
                                     </th>
+                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                SPRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                SPROFIT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                SROI <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -1985,6 +2023,48 @@
                 calculateTotals();
             }
 
+
+            if (!document.getElementById('pricingModal')) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                const actionUrl = "/reverb/save-nr"; // or whatever route you're using
+
+                $('body').append(`
+        <div class="modal fade" id="pricingModal" tabindex="-1" aria-labelledby="pricingModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content p-3">
+                    <div class="modal-header">
+                        <h5 class="modal-title">SPRICE Calculator</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="pricingForm" method="POST" action="${actionUrl}">
+                            <input type="hidden" name="_token" value="${csrfToken}">
+
+                            <input type="hidden" id="skuInput" name="sku">
+
+                            <div class="mb-2">
+                                <label>SPRICE ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="sprPriceInput" name="sprice">
+                            </div>
+                            <div class="mb-2">
+                                <label>SPFT%</label>
+                                <input type="text" class="form-control" id="spftPercentInput" name="sprofit_percent" readonly>
+                            </div>
+                            <div class="mb-2">
+                                <label>SROI%</label>
+                                <input type="text" class="form-control" id="sroiPercentInput" name="sroi_percent" readonly>
+                            </div>
+                            <button name="submit" type="submit" class="btn btn-primary">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+            }
+
+
             function nextParent() {
                 if (!isNavigationActive) return;
                 if (currentParentIndex >= uniqueParents.length - 1) return;
@@ -2206,45 +2286,56 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            tableData = response.data.map((item, index) => {
-                                // Calculate ovDil as L30 / INV
+                            // Use all data — include INV = 0 and views = 0
+                            const validRows = response.data;
+
+                            // Assign clean SR numbers using index
+                            tableData = validRows.map((item, index) => {
                                 const inv = parseFloat(item.INV) || 0;
                                 const l30 = parseFloat(item.L30) || 0;
                                 const rl30 = parseFloat(item.r_l30) || 0;
                                 const rl60 = parseFloat(item.r_l60) || 0;
-                                const conv = rl30 !== 0 ? ((rl30 - rl60) / rl30) : 0;
+                                const views = parseFloat(item.views) || 0;
+
                                 const ovDil = inv !== 0 ? l30 / inv : 0;
-                                const rDil = inv !== 0 ? rl30 / inv : 0; // R L30 / INV
+                                const rDil = inv !== 0 ? rl30 / inv : 0;
                                 const growth = rl30 !== 0 ? ((rl30 - rl60) / rl30) : 0;
+                                const cvr = (rl30 > 0 && views > 0) ? ((rl30 / views) * 100)
+                                    .toFixed(2) : 0;
 
                                 return {
                                     sl_no: index + 1,
-                                    'SL No.': item['SL No.'] || index + 1,
+                                    'SL No.': index + 1,
                                     Parent: item.Parent || item.parent || item.parent_asin ||
                                         item.Parent_ASIN || '(No Parent)',
                                     Sku: item.Sku || '',
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
-                                    INV: item.INV || 0,
-                                    L30: item.L30 || 0,
+                                    INV: inv,
+                                    L30: l30,
                                     price: item.price || 0,
                                     price_wo_ship: item.price_wo_ship || 0,
-                                    views: item.views || 0,
-                                    r_l30: item.r_l30 || 0,
-                                    r_l60: item.r_l60 || 0,
-                                    is_parent: item.Sku ? item.Sku
-                                        .toUpperCase().includes("PARENT") : false,
+                                    views: views,
+                                    r_l30: rl30,
+                                    r_l60: rl60,
+                                    is_parent: item.Sku ? item.Sku.toUpperCase().includes(
+                                        "PARENT") : false,
                                     raw_data: item || {},
                                     ovDil: ovDil,
                                     rDil: rDil,
+                                    LP: item.LP || 0,
+                                    SHIP: item.Ship || 0,
                                     PFT_percentage: item.PFT_percentage,
                                     ROI_percentage: item.ROI_percentage,
                                     growth: growth,
+                                    CVR: cvr,
                                     NR: item.NR !== undefined ? item.NR : '',
+                                    SPRICE: item.sprice || 0,
+                                    SPFT: item.spft_percent || 0,
+                                    SROI: item.sroi_percent || 0,
                                 };
                             });
 
                             filteredData = [...tableData];
-
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2256,6 +2347,10 @@
                     }
                 });
             }
+
+
+
+
 
             // Add this function to update 0 SOLD and SOLD counts
             function updateSoldCounts() {
@@ -2277,8 +2372,12 @@
 
             // Render table with current data
             function renderTable() {
+
+
+
                 const $tbody = $('#reverb-table tbody');
                 $tbody.empty();
+
 
                 const parentGroups = {};
                 filteredData.forEach(row => {
@@ -2313,14 +2412,24 @@
                 }
 
                 filteredData.forEach(item => {
+                    const inv = parseInt(item["INV"]) || 0;
+                    const views = parseInt(item["views"]) || 0; // using views for views
+                    const cvr = parseFloat(item.SCVR) || 0;
+                    const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
+
+                    // Skip rows based on conditions
+                    if (!item.is_parent) {
+                        if (inv <= 0) return;
+                        if (views < 49) return; // fixed: use views
+                        if (cvrPercent >= 7) return;
+                    }
+
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
 
-                    if (item.NR === 'NRA') {
-                        $row.addClass('nr-hide');
-                    }
+
                     // Helper functions for color coding
                     const getDilColor = (value) => {
                         const percent = parseFloat(value) * 100;
@@ -2347,6 +2456,8 @@
                         return 'pink';
                     };
 
+
+
                     const getTacosColor = (value) => {
                         const percent = parseFloat(value) * 100;
                         if (percent <= 5) return 'pink';
@@ -2360,7 +2471,7 @@
                         const percent = parseFloat(value) * 100;
                         if (percent <= 7) return 'red';
                         if (percent > 7 && percent <= 13) return 'green';
-                        return 'pink';
+                        return 'blue';
                     };
 
                     $row.append($('<td>').text(item['SL No.']));
@@ -2456,29 +2567,15 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
-                            item.NR : 'RA';
-
-                        const $select = $(`
-                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
-                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
-                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
-                            </select>
-                        `);
-
-                        // Set background color based on value
-                        if (currentNR === 'NRA') {
-                            $select.css('background-color', '#dc3545');
-                            $select.css('color', '#ffffff');
-                        } else if (currentNR === 'RA') {
-                            $select.css('background-color', '#28a745');
-                            $select.css('color', '#ffffff');
-                        }
-
-
-                        $select.data('sku', item['Sku']);
-                        $row.append($('<td>').append($select));
+                        // NRL direct edit: checkbox always enabled, no pen icon
+                        const $container = $(
+                            '<div class="nr-edit-container d-flex align-items-center"></div>');
+                        const $checkbox = $('<input type="checkbox" class="nr-checkbox" />')
+                            .prop('checked', item['NR'] === true || item['NR'] === 'true' || item['NR'] ===
+                                '1')
+                            .data('original-value', item['NR']);
+                        $container.append($checkbox);
+                        $row.append($('<td>').append($container));
                     }
 
                     // views with tooltip icon (no color coding)
@@ -2490,6 +2587,22 @@
                                title="visibility View"
                                data-item='${JSON.stringify(item.raw_data)}'>V</span>`
                     ));
+
+
+                    $row.append($('<td>').html(() => {
+                        // calculate CVR if not pre-calculated
+                        let cvr = Number(item.CVR) || 0;
+                        cvr = Math.round(cvr); // round properly
+
+                        return `
+                            <span style="background-color:${getCvrColor(cvr)}; color:white; padding:2px 6px; border-radius:4px;">
+                                ${cvr}%
+                            </span>
+                        `;
+                    }));
+
+
+
 
                     //price with tooltip
                     $row.append($('<td>').html(
@@ -2506,7 +2619,7 @@
 
                     $row.append($('<td>').text(`$${(Number(item.price) || 0).toFixed(2)}`));
 
-                    // PFT with color coding
+
 
                     // PFT with color coding
                     $row.append($('<td>').html(
@@ -2527,6 +2640,58 @@
     </span>` :
                         ''
                     ));
+
+                    // ✅ SPRICE column (rounded to nearest dollar)
+                    $row.append($('<td>').attr('id', `sprice-${item.Sku}`).html(
+                        item['SPRICE'] !== undefined && item['SPRICE'] !== null ?
+                        `
+    $${Math.round(item.SPRICE)}
+    <button class="btn btn-sm btn-outline-primary ms-2" title="Edit SPRICE"
+        onclick='openPricingModal(${JSON.stringify({ 
+            LP: item.LP, 
+            SHIP: item.SHIP, 
+            SKU: item.Sku, 
+            SPRICE: item.SPRICE, 
+            SPFT: item.SPFT, 
+            SROI: item.SROI 
+        })})'>
+        <i class="fa fa-pen"></i>
+    </button>
+    ` :
+                        `
+    <button class="btn btn-sm btn-outline-primary" title="Add SPRICE"
+        onclick='openPricingModal(${JSON.stringify({ 
+            LP: item.LP, 
+            SHIP: item.SHIP, 
+            SKU: item.Sku 
+        })})'>
+        <i class="fa fa-pen"></i>
+    </button>
+    `
+                    ));
+
+                    // ✅ SPFT column (rounded to nearest %)
+                    $row.append($('<td>').html(
+                        item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
+                        `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
+                        ''
+                    ));
+
+                    // ✅ SROI column (rounded to nearest %)
+                    $row.append($('<td>').html(
+                        item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
+                        `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
+                        ''
+                    ));
+
+
+
+
+
+
+
+
+
                     $tbody.append($row);
                 });
 
@@ -2646,48 +2811,60 @@
             }
 
             function initNREditHandlers() {
-                $(document).on('change', '.nr-select', function() {
-                    const $select = $(this);
-                    const sku = $(this).data('sku');
-                    const nrValue = $(this).val();
-                    if (nrValue === 'NRA') {
-                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
-                    } else {
-                        $select.css('background-color', '#28a745').css('color', '#ffffff');
-                    }
+                $(document).off('change', '.nr-checkbox');
+                $(document).on('change', '.nr-checkbox', function() {
+                    const $checkbox = $(this);
+                    const $row = $checkbox.closest('tr');
+                    const slNo = $row.find('td:eq(0)').text();
+                    const rowData = filteredData.find(item => item['sl_no'] == slNo || item['SL No.'] ==
+                        slNo);
+                    const sku = rowData ? rowData['Sku'] : null;
+                    const updatedValue = $checkbox.is(':checked');
+
+                    // Optional: show spinner or disable checkbox while saving
+                    $checkbox.prop('disabled', true);
+
                     $.ajax({
                         url: '/reverb/save-nr',
                         type: 'POST',
                         data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
                             sku: sku,
-                            nr: nrValue,
-                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+                            nr: updatedValue
                         },
-                        success: function(res) {
-                            showNotification('success', 'NR updated successfully');
+                        success: function(response) {
+                            showNotification('success', 'NR updated successfully!');
+                            $checkbox.prop('disabled', false);
 
-                            // Update tableData and filteredData correctly
-                            tableData.forEach(item => {
-                                if (item['Sku'] === sku) {
-                                    item.NR = nrValue;
-                                }
-                            });
-                            filteredData.forEach(item => {
-                                if (item['Sku'] === sku) {
-                                    item.NR = nrValue;
-                                }
-                            });
-                            // Recalculate & re-render
-                            calculateTotals();
-                            renderTable();
+                            // Update tableData and filteredData
+                            if (sku) {
+                                tableData.forEach(item => {
+                                    if (item['Sku'] === sku) {
+                                        item.NR = updatedValue;
+                                    }
+                                });
+                                filteredData.forEach(item => {
+                                    if (item['Sku'] === sku) {
+                                        item.NR = updatedValue;
+                                    }
+                                });
+                            }
                         },
-                        error: function(err) {
-                            console.error('Error saving NR:', err);
-                            showNotification('danger', 'Failed to update NR');
+                        error: function(xhr) {
+                            showNotification('danger', 'Failed to update NR.');
+                            $checkbox.prop('checked', $checkbox.data('original-value')).prop(
+                                'disabled', false);
                         }
                     });
                 });
+
+                $(document).off('click', '.nr-checkbox:disabled');
+                $(document).on('click', '.nr-checkbox:disabled', function(e) {
+                    e.stopPropagation();
+                    $(this).siblings('.nr-edit-icon').trigger('click');
+                });
             }
+
 
             window.openModal = function(selectedItem, type) {
                 try {
@@ -3065,7 +3242,6 @@
             function createFieldCard(field, data, type, itemId) {
                 const hyperlinkFields = ['LINK 1', 'LINK 2', 'LINK 3', 'LINK 4', 'LINK 5'];
 
-
                 const percentageFields = ['KwCtr60', 'KwCtr30'];
 
                 const getIndicatorColor = (fieldTitle, fieldValue) => {
@@ -3255,7 +3431,6 @@
                 if (!modalElement) return;
 
                 // Get editable fields from the same array used in createFieldCard
-
                 const editableFields = [
                     'SPRICE', 'Bump', 'S bump'
                 ];
@@ -4363,7 +4538,106 @@
             }
 
             // Initialize everything
+            // Initialize everything
             initTable();
+        });
+    </script>
+
+    <script>
+        function openPricingModal({
+            LP = 0,
+            SHIP = 0,
+            SKU = '',
+            SPRICE = '',
+            SPFT = '',
+            SROI = ''
+        }) {
+            $('#skuInput').val(SKU);
+            $('#sprPriceInput').val(SPRICE || '');
+            $('#spftPercentInput').val(SPFT ? `${SPFT}%` : '');
+            $('#sroiPercentInput').val(SROI ? `${SROI}%` : '');
+
+            $('#sprPriceInput').off('input').on('input', function() {
+                const spr = parseFloat($(this).val());
+                const lp = parseFloat(LP);
+                const ship = parseFloat(SHIP);
+
+                if (!isNaN(spr) && !isNaN(lp) && !isNaN(ship)) {
+                    const spft = (((spr - lp - ship) / spr) * 100).toFixed(2);
+                    const sroi = (((spr - lp - ship) / (lp + ship)) * 100).toFixed(2);
+
+                    $('#spftPercentInput').val(spft + '%');
+                    $('#sroiPercentInput').val(sroi + '%');
+                }
+            });
+
+            $('#pricingModal').modal('show');
+        }
+    </script>
+    <script>
+        $('#pricingForm').on('submit', function(e) {
+            e.preventDefault(); // prevent default form submission
+
+            const sku = $('#skuInput').val()?.trim();
+            const spriceVal = $('#sprPriceInput').val();
+            const spft = parseFloat($('#spftPercentInput').val()?.replace('%', '')) || 0;
+            const sroi = parseFloat($('#sroiPercentInput').val()?.replace('%', '')) || 0;
+
+            const sprice = spriceVal !== '' ? parseFloat(spriceVal) : null;
+
+            if (!sku || !sprice) {
+                alert('SKU and SPRICE are required.');
+                return;
+            }
+
+            $.ajax({
+                url: '/reverb/save-sprice',
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    sku: sku,
+                    sprice: sprice,
+                    sprofit_percent: spft,
+                    sroi_percent: sroi
+                },
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#pricingForm button[type="submit"]').html(
+                        '<i class="fa fa-spinner fa-spin"></i> Saving...');
+                },
+                success: function(response) {
+                    alert('SPRICE saved successfully!');
+                    $('#pricingModal').modal('hide');
+                },
+                error: function(xhr) {
+                    alert('Error saving SPRICE.');
+                    console.error(xhr.responseText);
+                },
+                complete: function() {
+                    $('#pricingForm button[type="submit"]').html('Save');
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).on('submit', '#pricingForm', function(e) {
+            e.preventDefault();
+
+            const formData = $(this).serialize();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    // Show success message, close modal, etc.
+                    $('#pricingModal').modal('hide');
+                    alert('Saved successfully');
+                },
+                error: function(xhr) {
+                    alert('Error saving data');
+                }
+            });
         });
     </script>
 @endsection

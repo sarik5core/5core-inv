@@ -2640,14 +2640,11 @@
                     // Replace the existing price section with this:
                     $row.append($('<td>').html(
                         `$${(parseFloat(item['eBay Price']) || 0).toFixed(2)}
-                            <span class="tooltip-container" style="margin-left:8px">
-                                <i class="fas fa-tag text-warning price-view-trigger" 
-                                style="transform:translateY(1px)"
-                                data-bs-toggle="tooltip" 
-                                data-bs-placement="top-end" 
-                                title="Pricing view"
-                                data-item='${JSON.stringify(item.raw_data)}'"></i>
-                            </span>`
+        <span class="tooltip-container" style="margin-left:8px">
+            <i class="fas fa-tag text-warning price-view-trigger" 
+                style="cursor:pointer; transform:translateY(1px)"
+                data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'></i>
+        </span>`
                     ));
 
                     $row.append($('<td>').html(
@@ -2732,18 +2729,52 @@
     ` : ''
                     ));
 
+                    function getSPFTStyle(value) {
+                        let baseStyle =
+                            "font-size:20px; padding:10px 18px; border-radius:10px; color:#fff;";
 
-                    // ✅ SPFT (rounded to whole number %)
+                        if (value <= 10) return baseStyle + "background-color:#dc3545;"; // 🔴 red
+                        if (value <= 15) return baseStyle +
+                            "background-color:#ffc107; color:#000;"; // 🟡 yellow (black text)
+                        if (value <= 20) return baseStyle + "background-color:#0d6efd;"; // 🔵 blue
+                        return baseStyle + "background-color:#198754;"; // 🟢 green
+                    }
+
+
+
                     $row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
                         item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
-                        `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
+                        `<span style="${getSPFTStyle(parseFloat(item.SPFT))}; font-size:14px; padding:6px 12px; border-radius:8px;">
+        ${(parseFloat(item.SPFT) - Math.floor(parseFloat(item.SPFT)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SPFT)) 
+            : Math.floor(parseFloat(item.SPFT)))}%
+     </span>` :
                         ''
                     ));
+
+
 
                     // ✅ SROI (rounded to whole number %)
                     $row.append($('<td>').attr('id', `sroi-${item["(Child) sku"]}`).html(
                         item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
-                        `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SROI) <= 50 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SROI) <= 100 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SROI) <= 150 
+                        ? '#198754'   // 🟢 green
+                        : '#6f42c1'   // 🟣 purple
+        };">
+        ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SROI)) 
+            : Math.floor(parseFloat(item.SROI)))}%
+     </span>` :
                         ''
                     ));
 
@@ -4440,8 +4471,29 @@
 
                     const th = $(this).closest('th');
                     const thField = th.data('field');
-                    const dataField = thField === 'parent' ? 'Parent' : thField;
 
+                    // Map the data-field values to the actual data properties
+                    const fieldMap = {
+                        'sl_no': 'Sl',
+                        'parent': 'Parent',
+                        'sku': '(Child) sku',
+                        'inv': 'INV',
+                        'ov_l30': 'L30',
+                        'ov_dil': 'ov_dil',
+                        'el_30': 'eBay L30',
+                        'e_dil': 'E Dil%',
+                        'views': 'OV CLICKS L30',
+                        'price': 'eBay Price',
+                        'pft': 'PFT %',
+                        'roi': 'Roi',
+                        'tacos': 'Tacos30',
+                        'cvr': 'SCVR',
+                        'sprice': 'SPRICE',
+                        'sprofit': 'SPFT',
+                        'sroi': 'SROI'
+                    };
+
+                    const dataField = fieldMap[thField] || thField;
 
                     // Toggle direction if clicking same column, otherwise reset to ascending
                     if (currentSort.field === dataField) {
@@ -4456,18 +4508,36 @@
                     $(this).find('.sort-arrow').html(currentSort.direction === 1 ? '↑' : '↓');
 
                     // Sort with fresh data
-                    const freshData = [...tableData];
+                    const freshData = [...filteredData];
                     freshData.sort((a, b) => {
-                        const valA = a[dataField] || '';
-                        const valB = b[dataField] || '';
+                        let valA = a[dataField];
+                        let valB = b[dataField];
 
-                        // Numeric comparison for numeric fields
-                        if (dataField === 'sl_no' || dataField === 'INV' || dataField === 'L30') {
+                        // Handle numeric fields including those stored as strings
+                        const numericFields = ['Sl', 'INV', 'L30', 'eBay L30', 'OV CLICKS L30', 'eBay Price', 'SPRICE', 'SPFT', 'SROI'];
+                        if (numericFields.includes(dataField)) {
                             return (parseFloat(valA) - parseFloat(valB)) * currentSort.direction;
                         }
 
-                        // String comparison for other fields
-                        return String(valA).localeCompare(String(valB)) * currentSort.direction;
+                        // Handle percentage fields
+                        const percentageFields = ['ov_dil', 'E Dil%', 'PFT %', 'Roi', 'Tacos30', 'SCVR'];
+                        if (percentageFields.includes(dataField)) {
+                            // Convert percentages to numbers for comparison
+                            valA = parseFloat(valA) || 0;
+                            valB = parseFloat(valB) || 0;
+                            return (valA - valB) * currentSort.direction;
+                        }
+
+                        // Handle boolean fields
+                        const booleanFields = ['listed', 'live'];
+                        if (booleanFields.includes(dataField)) {
+                            return ((valA ? 1 : 0) - (valB ? 1 : 0)) * currentSort.direction;
+                        }
+
+                        // Default string comparison for other fields
+                        valA = String(valA || '').toLowerCase();
+                        valB = String(valB || '').toLowerCase();
+                        return valA.localeCompare(valB) * currentSort.direction;
                     });
 
                     filteredData = freshData;
@@ -5575,5 +5645,108 @@
             // Make the static Hide SKU modal draggable using the existing logic
             ModalSystem.makeDraggable(document.getElementById('customHideSkuModal'));
         });
+
+        $(document).on("click", ".price-view-trigger", function() {
+            let itemData = JSON.parse($(this).attr("data-item").replace(/&apos;/g, "'"));
+
+            let fields = [{
+                    title: 'eBay LIVE Price',
+                    content: itemData['eBay Price']
+                },
+                {
+                    title: 'eBay Price',
+                    content: itemData['eBay Price']
+                },
+                {
+                    title: 'PFT %',
+                    content: itemData['PFT %']
+                },
+                {
+                    title: 'ROI%',
+                    content: itemData['ROI%']
+                },
+                {
+                    title: 'sprice',
+                    content: itemData['SPRICE']
+                },
+
+                {
+                    title: 'ad cost',
+                    content: itemData['ad cost']
+                },
+                {
+                    title: 'a+spft',
+                    content: itemData['a+spft']
+                },
+                {
+                    title: 'a+ROI',
+                    content: itemData['a+ROI']
+                },
+                {
+                    title: 'LMP 1',
+                    content: itemData['LMP 1']
+                },
+                {
+                    title: 'link 1',
+                    content: itemData['link 1']
+                },
+                {
+                    title: 'lmp 2',
+                    content: itemData['lmp 2']
+                },
+                {
+                    title: 'link 2',
+                    content: itemData['link 2']
+                },
+                {
+                    title: 'lmp 3',
+                    content: itemData['lmp 3']
+                },
+                {
+                    title: 'link 3',
+                    content: itemData['link 3']
+                },
+            ];
+
+            let tbody = $("#priceDetailsTable tbody");
+            tbody.empty();
+
+            fields.forEach(f => {
+                let row = `<tr>
+            <td><b>${f.title}</b></td>
+            <td>${f.content || ''}</td>
+        </tr>`;
+                tbody.append(row);
+            });
+
+            $("#priceModal").modal("show");
+        });
+
+
+        
     </script>
+    <!-- Modal -->
+    <div class="modal fade" id="priceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Price Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered" id="priceDetailsTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

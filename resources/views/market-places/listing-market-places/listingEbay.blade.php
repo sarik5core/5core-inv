@@ -1850,12 +1850,14 @@
                                     if (!item.buyer_link && !item.seller_link) {
                                         metrics.withoutLinkTotal++;
                                     }
-                                    // Count Listed and Pending rows
-                                    if (item.listed === 'Listed') {
-                                        metrics.listedTotal++;
-                                    }
-                                    if (item.listed === 'Pending' || !item.listed) {
-                                        metrics.pendingTotal++;
+                                    // Count Listed and Pending rows, but exclude NR rows
+                                    if (item.nr_req !== 'NR') {
+                                        if (item.listed === 'Listed') {
+                                            metrics.listedTotal++;
+                                        }
+                                        if (item.listed === 'Pending' || !item.listed) {
+                                            metrics.pendingTotal++;
+                                        }
                                     }
                                 }
                             });

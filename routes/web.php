@@ -621,6 +621,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     Route::get('/reverb-pricing-cvr', [ReverbController::class, 'reverbPricingCvr'])->name('reverb');
+    Route::get('/reverb-pricing-increase-cvr', [ReverbController::class, 'reverbPricingIncreaseCvr'])->name('reverb');
+    Route::get('/reverb-pricing-decrease-cvr', [ReverbController::class, 'reverbPricingDecreaseCvr'])->name('reverb');
+
     Route::post('/reverb/save-sprice', [ReverbController::class, 'saveSpriceToDatabase'])->name('reverb.save-sprice');
 
 
@@ -1104,6 +1107,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing-ebayvariation', [ListingEbayVariationController::class, 'listingEbayVariation'])->name('listing.ebayvariation');
     Route::get('/listing_ebayvariation/view-data', [ListingEbayVariationController::class, 'getViewListingEbayVariationData']);
     Route::post('/listing_ebayvariation/save-status', [ListingEbayVariationController::class, 'saveStatus']);
+    Route::post('/listing_ebayvariation/import', [ListingEbayVariationController::class, 'import'])->name('listing_ebayvariation.import');
+    Route::get('/listing_ebayvariation/export', [ListingEbayVariationController::class, 'export'])->name('listing_ebayvariation.export');
 
     // shopify wholesale
     Route::get('/zero-shopifywholesale', [ShopifyWholesaleZeroController::class, 'shopifyWholesaleZeroview'])->name('zero.shopifywholesale');
