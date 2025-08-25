@@ -1494,6 +1494,10 @@
                                     <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
                                         NRL
                                     </th>
+                                    
+                                    <th data-field="nra" style="vertical-align: middle; white-space: nowrap;">
+                                        NRA
+                                    </th>
 
                                     <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
                                         FBA
@@ -2493,6 +2497,7 @@
                                         .toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
                                     NR: item.NR !== undefined ? item.NR : '',
+                                    NRA: item.NRA !== undefined ? item.NRA : '',
                                     FBA: item.FBA !== undefined ? item.FBA : null,
                                     listed: listedVal,
                                     live: liveVal,
@@ -2794,8 +2799,36 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
-                            item.NR : 'RA';
+                        const currentNR = (item.NR === 'RL' || item.NR === 'NRL' || item.NR === 'LATER') ?
+                            item.NR : 'RL';
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
+                                <option value="NRL" ${currentNR === 'NRL' ? 'selected' : ''}>NRL</option>
+                                <option value="RL" ${currentNR === 'RL' ? 'selected' : ''}>RL</option>
+                            </select>
+                        `);
+
+
+                        // Set background color based on value
+                        if (currentNR === 'NRL') {
+                            $select.css('background-color', '#dc3545');
+                            $select.css('color', '#ffffff');
+                        } else if (currentNR === 'RL') {
+                            $select.css('background-color', '#28a745');
+                            $select.css('color', '#ffffff');
+                        }
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+                    }
+
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        const currentNR = (item.NRA === 'RA' || item.NRA === 'NRA' || item.NRA === 'LATER') ?
+                            item.NRA : 'RA';
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
