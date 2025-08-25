@@ -120,13 +120,20 @@ class ListingEbayThreeController extends Controller
                 $reqCount++;
             }
 
-            // Listed/Pending logic
-            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $listed = $status['listed'] ?? null;
             if ($listed === 'Listed') {
                 $listedCount++;
-            } elseif ($listed === 'Pending') {
-                $pendingCount++;
             }
+
+            $pendingCount = max($reqCount - $listedCount, 0);
+
+            // Listed/Pending logic
+            // $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            // if ($listed === 'Listed') {
+            //     $listedCount++;
+            // } elseif ($listed === 'Pending') {
+            //     $pendingCount++;
+            // }
         }
 
         return [
