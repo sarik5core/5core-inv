@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         FetchWayfairData::class,
         \App\Console\Commands\LogClear::class,
         \App\Console\Commands\SyncTemuSheet::class,
+        \App\Console\Commands\UpdateCampaignBid::class,
     ];
 
     /**
@@ -110,6 +111,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:ebay2-campaign-reports')
             ->dailyAt('01:15')
             ->timezone('America/Los_Angeles');
+        $schedule->command('update:campaign-bid')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+
     }
 
     /**
