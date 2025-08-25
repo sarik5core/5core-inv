@@ -156,7 +156,8 @@ use App\Http\Controllers\AdvertisementMaster\Promoted_Advt\PromotedEbayControlle
 use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingController;
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
-use App\Http\Controllers\Campaign\CampaignImportController;
+use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
+use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
 use App\Http\Controllers\PurchaseMaster\PurchaseController;
@@ -1510,9 +1511,14 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('campaigns/update-note', 'updateField')->name('campaigns.update-note');
         Route::post('/campaigns/data', 'getCampaigns')->name('campaigns.data');
         Route::get('/campaigns/list', 'getCampaignsData')->name('campaigns.list');
-        Route::get('/campaigns/amz-utilized-bgt-kw', 'amzUtilizedBgtKw')->name('campaigns.amz-utilized-bgt-kw');
-        Route::get('/campaigns/get-amz-utilized-bgt-kw', 'getAmzUtilizedBgtKw')->name('campaigns.get-amz-utilized-bgt-kw');
         // Route::post('/campaign/save', 'storeOrUpdateCampaign')->name('campaign.save');
+    });
+
+    Route::controller(AmazonSpBudgetController::class)->group(function () {
+        Route::get('/amazon-sp/amz-utilized-bgt-kw', 'amzUtilizedBgtKw')->name('amazon-sp.amz-utilized-bgt-kw');
+        Route::get('/amazon-sp/get-amz-utilized-bgt-kw', 'getAmzUtilizedBgtKw');
+        Route::post('/update-amazon-sp-bid-price', 'updateAmazonSpBidPrice');
+        Route::put('/update-keywords-bid-price', 'updateCampaignKeywordsBid');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
