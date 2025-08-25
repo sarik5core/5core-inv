@@ -497,6 +497,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //RFQ Form
     Route::controller(RFQController::class)->group(function () {
         Route::get('/rfq-form/list', 'index')->name('rfq-form.index');
+        Route::get('/rfq-form/{slug}', 'showRfqForm')->name('rfq-form.show');
+        Route::post('/rfq-form/store', 'storeRFQForm')->name('rfq-form.store');
     });
 
     //Sourcing
