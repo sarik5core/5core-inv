@@ -18,6 +18,9 @@ use App\Models\EbayPriorityReport;
 use App\Models\ProductMaster; // Add this at the top with other use statements
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\EbayGeneralReports;
+
+
 
 class EbayController extends Controller
 {
@@ -136,7 +139,7 @@ class EbayController extends Controller
                     "marketplace",
                     "Ebay"
                 )->first();
-                return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+                return $marketplaceData ? $marketplaceData->percentage : 100; 
             }
         );
 
@@ -175,219 +178,229 @@ class EbayController extends Controller
         ]);
     }
 
-    public function getViewEbayData(Request $request)
-    {
-        // 1. Base ProductMaster fetch
-        $productMasters = ProductMaster::orderBy("parent", "asc")
-            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
-            ->orderBy("sku", "asc")
-            ->get();
+   public function getViewEbayData(Request $request)
+{
+    // 1. Base ProductMaster fetch
+    $productMasters = ProductMaster::orderBy("parent", "asc")
+        ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+        ->orderBy("sku", "asc")
+        ->get();
 
-        // 2. SKU list
-        $skus = $productMasters
-            ->pluck("sku")
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+    // 2. SKU list
+    $skus = $productMasters->pluck("sku")
+        ->filter()
+        ->unique()
+        ->values()
+        ->all();
 
-        // 3. Related Models
-        $shopifyData = ShopifySku::whereIn("sku", $skus)
-            ->get()
-            ->keyBy("sku");
+    // 3. Related Models
+    $shopifyData = ShopifySku::whereIn("sku", $skus)
+        ->get()
+        ->keyBy("sku");
 
-        $ebayMetrics = EbayMetric::whereIn("sku", $skus)
-            ->get()
-            ->keyBy("sku");
+    $ebayMetrics = EbayMetric::whereIn("sku", $skus)
+        ->get()
+        ->keyBy("sku");
 
-        $nrValues = EbayDataView::whereIn("sku", $skus)->pluck("value", "sku");
+    $nrValues = EbayDataView::whereIn("sku", $skus)->pluck("value", "sku");
 
-        // Mapping arrays
-        $itemIdToSku     = $ebayMetrics->pluck('sku', 'item_id')->toArray();
-        $campaignIdToSku = $ebayMetrics->pluck('sku', 'campaign_id')->toArray();
+    // Mapping arrays
+    $itemIdToSku = $ebayMetrics->pluck('sku', 'item_id')->toArray();
+    $campaignIdToSku = $ebayMetrics->pluck('sku', 'campaign_id')->toArray();
 
-        // 4a. Fetch General Reports (listing_id → sku)
-        $generalReports = EbayGeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
-            ->whereIn('report_range', ['L60', 'L30', 'L7'])
-            ->get();
+    // ✅ Fetch L30 Clicks from ebay_general_reports (listing_id → clicks)
+    $extraClicksData = EbayGeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
+        ->where('report_range', 'L30')
+        ->pluck('clicks', 'listing_id')
+        ->toArray();
 
-        // 4b. Fetch Priority Reports (campaign_id → sku)
-        $priorityReports = EbayPriorityReport::whereIn('campaign_id', array_keys($campaignIdToSku))
-            ->whereIn('report_range', ['L60', 'L30', 'L7'])
-            ->get();
+    // 4a. Fetch General Reports (listing_id → sku)
+    $generalReports = EbayGeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
+        ->whereIn('report_range', ['L60', 'L30', 'L7'])
+        ->get();
 
-        $adMetricsBySku = [];
+    // 4b. Fetch Priority Reports (campaign_id → sku)
+    $priorityReports = EbayPriorityReport::whereIn('campaign_id', array_keys($campaignIdToSku))
+        ->whereIn('report_range', ['L60', 'L30', 'L7'])
+        ->get();
 
-        // General Reports
-        foreach ($generalReports as $report) {
-            $sku = $itemIdToSku[$report->listing_id] ?? null;
-            if (!$sku) continue;
+    $adMetricsBySku = [];
 
-            $range = strtoupper($report->report_range);
+    // General Reports
+    foreach ($generalReports as $report) {
+        $sku = $itemIdToSku[$report->listing_id] ?? null;
+        if (!$sku) continue;
 
-            $adMetricsBySku[$sku][$range]['GENERAL_SPENT'] =
-                ($adMetricsBySku[$sku][$range]['GENERAL_SPENT'] ?? 0)
-                + $this->extractNumber($report->ad_fees);
+        $range = strtoupper($report->report_range);
 
-            $adMetricsBySku[$sku][$range]['Imp'] =
-                ($adMetricsBySku[$sku][$range]['Imp'] ?? 0) + (int) $report->impressions;
+        $adMetricsBySku[$sku][$range]['GENERAL_SPENT'] =
+            ($adMetricsBySku[$sku][$range]['GENERAL_SPENT'] ?? 0) + $this->extractNumber($report->ad_fees);
 
-            $adMetricsBySku[$sku][$range]['Clk'] =
-                ($adMetricsBySku[$sku][$range]['Clk'] ?? 0) + (int) $report->clicks;
+        $adMetricsBySku[$sku][$range]['Imp'] =
+            ($adMetricsBySku[$sku][$range]['Imp'] ?? 0) + (int) $report->impressions;
 
-            $adMetricsBySku[$sku][$range]['Ctr'] =
-                ($adMetricsBySku[$sku][$range]['Ctr'] ?? 0) + (float) $report->ctr;
+        $adMetricsBySku[$sku][$range]['Clk'] =
+            ($adMetricsBySku[$sku][$range]['Clk'] ?? 0) + (int) $report->clicks;
 
-            $adMetricsBySku[$sku][$range]['Sls'] =
-                ($adMetricsBySku[$sku][$range]['Sls'] ?? 0) + (int) $report->sales;
-        }
+        $adMetricsBySku[$sku][$range]['Ctr'] =
+            ($adMetricsBySku[$sku][$range]['Ctr'] ?? 0) + (float) $report->ctr;
 
-        // Priority Reports
-        foreach ($priorityReports as $report) {
-            $sku = $campaignIdToSku[$report->campaign_id] ?? null;
-            if (!$sku) continue;
-
-            $range = strtoupper($report->report_range);
-
-            $adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] =
-                ($adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] ?? 0)
-                + $this->extractNumber($report->cpc_ad_fees_payout_currency);
-        }
-
-        // 5. Get marketplace percentage
-        $percentage = Cache::remember(
-            "ebay_marketplace_percentage",
-            now()->addDays(30),
-            function () {
-                return MarketplacePercentage::where("marketplace", "EBay")->value("percentage") ?? 100;
-            }
-        ) / 100;
-
-        // 6. Build Result
-        $result = [];
-
-        foreach ($productMasters as $pm) {
-            $sku = strtoupper($pm->sku);
-            $parent = $pm->parent;
-            $shopify = $shopifyData[$pm->sku] ?? null;
-            $ebayMetric = $ebayMetrics[$pm->sku] ?? null;
-
-            $row = [];
-            $row["Parent"] = $parent;
-            $row["(Child) sku"] = $pm->sku;
-            $row['fba'] = $pm->fba;
-
-            // Shopify
-            $row["INV"] = $shopify->inv ?? 0;
-            $row["L30"] = $shopify->quantity ?? 0;
-
-            // Metrics
-            $row["eBay L30"] = $ebayMetric->ebay_l30 ?? 0;
-            $row["eBay L60"] = $ebayMetric->ebay_l60 ?? 0;
-            $row["eBay Price"] = $ebayMetric->ebay_price ?? 0;
-            $row['eBay_item_id'] = $ebayMetric->item_id ?? null;
-            $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
-                ? round(($row["eBay L30"] / $row["INV"]), 2)
-                : 0;
-
-            // Ad Metrics (base structure)
-            $pmtData = $adMetricsBySku[$sku] ?? [];
-            foreach (['L60', 'L30', 'L7'] as $range) {
-                $metrics = $pmtData[$range] ?? [];
-                foreach (['Imp', 'Clk', 'Ctr', 'Sls', 'GENERAL_SPENT', 'PRIORITY_SPENT'] as $suffix) {
-                    $key = "Pmt{$suffix}{$range}";
-                    $row[$key] = $metrics[$suffix] ?? 0;
-                }
-            }
-
-            // Values: LP & Ship
-            $values = is_array($pm->Values)
-                ? $pm->Values
-                : (is_string($pm->Values)
-                    ? json_decode($pm->Values, true)
-                    : []);
-            $lp = 0;
-            foreach ($values as $k => $v) {
-                if (strtolower($k) === "lp") {
-                    $lp = floatval($v);
-                    break;
-                }
-            }
-            if ($lp === 0 && isset($pm->lp)) {
-                $lp = floatval($pm->lp);
-            }
-            $ship = isset($values["ship"])
-                ? floatval($values["ship"])
-                : (isset($pm->ship) ? floatval($pm->ship) : 0);
-
-            // Price and units for calculations
-            $price = floatval($row["eBay Price"] ?? 0);
-            $units_ordered_l30 = floatval($row["eBay L30"] ?? 0);
-
-            // New Tacos Formula
-            $generalSpent  = $adMetricsBySku[$sku]['L30']['GENERAL_SPENT'] ?? 0;
-            $prioritySpent = $adMetricsBySku[$sku]['L30']['PRIORITY_SPENT'] ?? 0;
-            $denominator   = ($price * $units_ordered_l30);
-
-            $row["TacosL30"] = $denominator > 0
-                ? round((($generalSpent + $prioritySpent) / $denominator), 4)
-                : 0;
-
-            // Old profit/sales calculations
-            $row["Total_pft"] = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
-            $row["T_Sale_l30"] = round($price * $units_ordered_l30, 2);
-            $row["PFT %"] = round(
-                $price > 0 ? (($price * $percentage - $lp - $ship) / $price) : 0,
-                2
-            );
-            $row["ROI%"] = round(
-                $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) : 0,
-                2
-            );
-
-            $row["percentage"] = $percentage;
-            $row["LP_productmaster"] = $lp;
-            $row["Ship_productmaster"] = $ship;
-
-            // NR & Hide
-            $row['NR'] = "";
-            $row['SPRICE'] = null;
-            $row['SPFT'] = null;
-            $row['SROI'] = null;
-            $row['Listed'] = null;
-            $row['Live'] = null;
-            $row['APlus'] = null;
-
-            if (isset($nrValues[$pm->sku])) {
-                $raw = $nrValues[$pm->sku];
-
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
-                }
-
-                if (is_array($raw)) {
-                    $row['NR'] = $raw['NR'] ?? null;
-                    $row['SPRICE'] = $raw['SPRICE'] ?? null;
-                    $row['SPFT'] = $raw['SPFT'] ?? null;
-                    $row['SROI'] = $raw['SROI'] ?? null;
-                    $row['Listed'] = isset($raw['Listed']) ? filter_var($raw['Listed'], FILTER_VALIDATE_BOOLEAN) : null;
-                    $row['Live'] = isset($raw['Live']) ? filter_var($raw['Live'], FILTER_VALIDATE_BOOLEAN) : null;
-                    $row['APlus'] = isset($raw['APlus']) ? filter_var($raw['APlus'], FILTER_VALIDATE_BOOLEAN) : null;
-                }
-            }
-
-            // Image
-            $row["image_path"] = $shopify->image_src ?? ($values["image_path"] ?? ($pm->image_path ?? null));
-
-            $result[] = (object) $row;
-        }
-
-        return response()->json([
-            "message" => "eBay Data Fetched Successfully",
-            "data" => $result,
-            "status" => 200,
-        ]);
+        $adMetricsBySku[$sku][$range]['Sls'] =
+            ($adMetricsBySku[$sku][$range]['Sls'] ?? 0) + (int) $report->sales;
     }
+
+    // Priority Reports
+    foreach ($priorityReports as $report) {
+        $sku = $campaignIdToSku[$report->campaign_id] ?? null;
+        if (!$sku) continue;
+
+        $range = strtoupper($report->report_range);
+
+        $adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] =
+            ($adMetricsBySku[$sku][$range]['PRIORITY_SPENT'] ?? 0) + $this->extractNumber($report->cpc_ad_fees_payout_currency);
+    }
+
+    // 5. Marketplace percentage
+    $percentage = Cache::remember(
+        "ebay_marketplace_percentage",
+        now()->addDays(30),
+        function () {
+            return MarketplacePercentage::where("marketplace", "EBay")->value("percentage") ?? 100;
+        }
+    ) / 100;
+
+    // 6. Build Result
+    $result = [];
+
+    foreach ($productMasters as $pm) {
+        $sku = strtoupper($pm->sku);
+        $parent = $pm->parent;
+
+        $shopify = $shopifyData[$pm->sku] ?? null;
+        $ebayMetric = $ebayMetrics[$pm->sku] ?? null;
+
+        $row = [];
+        $row["Parent"] = $parent;
+        $row["(Child) sku"] = $pm->sku;
+        $row['fba'] = $pm->fba;
+
+        // Shopify
+        $row["INV"] = $shopify->inv ?? 0;
+        $row["L30"] = $shopify->quantity ?? 0;
+
+        // eBay Metrics
+        $row["eBay L30"] = $ebayMetric->ebay_l30 ?? 0;
+        $row["eBay L60"] = $ebayMetric->ebay_l60 ?? 0;
+        $row["eBay Price"] = $ebayMetric->ebay_price ?? 0;
+        $row['eBay_item_id'] = $ebayMetric->item_id ?? null;
+
+        $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
+            ? round(($row["eBay L30"] / $row["INV"]), 2)
+            : 0;
+
+        // Ad Metrics
+        $pmtData = $adMetricsBySku[$sku] ?? [];
+        foreach (['L60', 'L30', 'L7'] as $range) {
+            $metrics = $pmtData[$range] ?? [];
+            foreach (['Imp', 'Clk', 'Ctr', 'Sls', 'GENERAL_SPENT', 'PRIORITY_SPENT'] as $suffix) {
+                $key = "Pmt{$suffix}{$range}";
+                $row[$key] = $metrics[$suffix] ?? 0;
+            }
+        }
+
+        // ✅ Merge Extra Clicks (L30 only)
+        if ($ebayMetric && isset($extraClicksData[$ebayMetric->item_id])) {
+            $row["PmtClkL30"] += (int) $extraClicksData[$ebayMetric->item_id];
+        }
+
+        // Values: LP & Ship
+        $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+        $lp = 0;
+        foreach ($values as $k => $v) {
+            if (strtolower($k) === "lp") {
+                $lp = floatval($v);
+                break;
+            }
+        }
+        if ($lp === 0 && isset($pm->lp)) {
+            $lp = floatval($pm->lp);
+        }
+
+        $ship = isset($values["ship"]) ? floatval($values["ship"]) : (isset($pm->ship) ? floatval($pm->ship) : 0);
+
+        // Price and units for calculations
+        $price = floatval($row["eBay Price"] ?? 0);
+        $units_ordered_l30 = floatval($row["eBay L30"] ?? 0);
+
+        // Set PmtClkL30 from adMetrics data
+        $row["PmtClkL30"] = $adMetricsBySku[$sku]['L30']['Clk'] ?? 0;
+        
+        // Add extra clicks from general reports if available
+        if ($ebayMetric && isset($extraClicksData[$ebayMetric->item_id])) {
+            $row["PmtClkL30"] += (int) $extraClicksData[$ebayMetric->item_id];
+        }
+        
+        // Log for debugging
+        \Illuminate\Support\Facades\Log::info("PmtClkL30 for SKU {$sku}: " . $row["PmtClkL30"]);
+
+        // New Tacos Formula
+        $generalSpent = $adMetricsBySku[$sku]['L30']['GENERAL_SPENT'] ?? 0;
+        $prioritySpent = $adMetricsBySku[$sku]['L30']['PRIORITY_SPENT'] ?? 0;
+        $denominator = ($price * $units_ordered_l30);
+        $row["TacosL30"] = $denominator > 0 ? round((($generalSpent + $prioritySpent) / $denominator), 4) : 0;
+
+        // Profit/Sales
+        $row["Total_pft"] = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
+        $row["T_Sale_l30"] = round($price * $units_ordered_l30, 2);
+        $row["PFT %"] = round(
+            $price > 0 ? (($price * $percentage - $lp - $ship) / $price) : 0,
+            2
+        );
+        $row["ROI%"] = round(
+            $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) : 0,
+            2
+        );
+        $row["percentage"] = $percentage;
+        $row["LP_productmaster"] = $lp;
+        $row["Ship_productmaster"] = $ship;
+
+        // NR & Hide
+        $row['NR'] = "";
+        $row['SPRICE'] = null;
+        $row['SPFT'] = null;
+        $row['SROI'] = null;
+        $row['Listed'] = null;
+        $row['Live'] = null;
+        $row['APlus'] = null;
+        if (isset($nrValues[$pm->sku])) {
+            $raw = $nrValues[$pm->sku];
+            if (!is_array($raw)) {
+                $raw = json_decode($raw, true);
+            }
+            if (is_array($raw)) {
+                $row['NR'] = $raw['NR'] ?? null;
+                $row['SPRICE'] = $raw['SPRICE'] ?? null;
+                $row['SPFT'] = $raw['SPFT'] ?? null;
+                $row['SROI'] = $raw['SROI'] ?? null;
+                $row['Listed'] = isset($raw['Listed']) ? filter_var($raw['Listed'], FILTER_VALIDATE_BOOLEAN) : null;
+                $row['Live'] = isset($raw['Live']) ? filter_var($raw['Live'], FILTER_VALIDATE_BOOLEAN) : null;
+                $row['APlus'] = isset($raw['APlus']) ? filter_var($raw['APlus'], FILTER_VALIDATE_BOOLEAN) : null;
+            }
+        }
+
+        // Image
+        $row["image_path"] = $shopify->image_src ?? ($values["image_path"] ?? ($pm->image_path ?? null));
+
+        $result[] = (object) $row;
+    }
+
+    return response()->json([
+        "message" => "eBay Data Fetched Successfully",
+        "data" => $result,
+        "status" => 200,
+    ]);
+}
+
 
     // Helper function
     private function extractNumber($value)
