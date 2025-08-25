@@ -1031,16 +1031,16 @@
                         <!-- A Dil% Filter -->
                         <div class="dropdown manual-dropdown-container ">
                             <button class="btn btn-light dropdown-toggle" type="button" id="ovClicksFilterDropdown">
-                                <span class="status-circle default"></span> OV CLICKS L30
+                                <span class="status-circle default"></span> PmtClkL30
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="ovClicksFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="all">
                                         <span class="status-circle default"></span> All OV CLICKS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="red">
                                         <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="green">
                                         <span class="status-circle green"></span> Green </a></li>
                             </ul>
@@ -1479,7 +1479,7 @@
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                OV CLICKS L30 <span class="sort-arrow">↓</span>
+                                                PmtClkL30 <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="views-total">0</div>
@@ -1785,7 +1785,7 @@
                 filters: {
                     'ov_dil': 'all',
                     'E Dil%': 'all',
-                    'OV CLICKS L30': 'all',
+                    'PmtClkL30': 'all',
                     'PFT %': 'all',
                     'Roi': 'all',
                     'Tacos30': 'all',
@@ -2270,13 +2270,13 @@
                                 const liveVal = valueJson.Live !== undefined ? parseInt(
                                     valueJson.Live) : 0;
 
-
-                                // Calculate SCVR as eBay L30 / OV CLICKS L30
+                                // Calculate SCVR as eBay L30 / PmtClkL30
                                 let scvr = 0;
-                                if (Number(item['OV CLICKS L30']) > 0) {
+                                if (Number(item['PmtClkL30']) > 0) {
                                     scvr = Number(item['eBay L30']) / Number(item[
-                                        'OV CLICKS L30']);
+                                        'PmtClkL30']);
                                 }
+
                                 return {
                                     sl_no: index + 1,
                                     'Sl': item['Sl'] || index + 1,
@@ -2289,7 +2289,10 @@
                                     ov_dil: ovDil,
                                     'eBay L30': item['eBay L30'] || 0,
                                     'E Dil%': item['E Dil%'] || 0,
-                                    'OV CLICKS L30': item['OV CLICKS L30'] || 0,
+
+                                    'PmtClkL30': item['PmtClkL30'] || 0,
+
+                                    'PmtClkL30': item['PmtClkL30'] || 0,
                                     'eBay Price': item['eBay Price'] || 0,
                                     'PFT %': item['PFT %'] || 0,
                                     Profit: item.Profit || item['Profit'] || item['profit'] ||
@@ -2298,7 +2301,7 @@
                                         'L30'] || 0,
                                     Roi: item['ROI%'] || 0,
                                     Tacos30: item.TacosL30 || 0,
-                                    SCVR: scvr, // <-- use calculated value
+                                    SCVR: scvr, // <-- calculated value
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
                                         .toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
@@ -2317,9 +2320,7 @@
                                 };
                             });
 
-
                             filteredData = [...tableData];
-
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2331,6 +2332,7 @@
                     }
                 });
             }
+
 
             // Add this function to update 0 SOLD and SOLD counts
             function updateSoldCounts() {
@@ -2389,6 +2391,7 @@
 
             // Render table with current data
             function renderTable() {
+
                 const $tbody = $('#ebay-table tbody');
                 $tbody.empty();
 
@@ -2403,6 +2406,7 @@
                 }
 
                 filteredData.forEach(item => {
+                    
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
@@ -2626,15 +2630,17 @@
                         $row.append($('<td>').append($hideContainer));
                     }
 
-                    // OV CLICKS L30 with tooltip icon (no color coding)
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getViewColor(item['OV CLICKS L30'])}">${Math.round(item['OV CLICKS L30'])}</span>
-                         <span class="text-info tooltip-icon ad-view-trigger" 
-                               data-bs-toggle="tooltip" 
-                               data-bs-placement="left" 
-                               title="visibility View"
-                               data-item='${JSON.stringify(item.raw_data)}'>V</span>`
-                    ));
+                    // PmtClkL30 with tooltip icon (no color coding)
+                     $row.append($('<td>').html(
+            `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">
+                ${Math.round(item['PmtClkL30'])}
+             </span>
+             <span class="text-info tooltip-icon ad-view-trigger" 
+                   data-bs-toggle="tooltip" 
+                   data-bs-placement="left" 
+                   title="Visibility View"
+                   data-item='${JSON.stringify(item.raw_data)}'>V</span>`
+        ));
 
                     //price with tooltip
                     // Replace the existing price section with this:
@@ -2695,8 +2701,8 @@
 
                     // CVR with color coding and tooltip
                     let scvrValue = 0;
-                    if (Number(item['OV CLICKS L30']) > 0) {
-                        scvrValue = (Number(item['eBay L30']) / Number(item['OV CLICKS L30'])) * 100;
+                    if (Number(item['PmtClkL30']) > 0) {
+                        scvrValue = (Number(item['eBay L30']) / Number(item['PmtClkL30'])) * 100;
                     }
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getCvrColor(scvrValue/100)}">${Math.round(scvrValue)}%</span>
@@ -3081,14 +3087,14 @@
                     switch (type.toLowerCase()) {
                         case 'conversion view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'PmtClkL30',
+                                    content: selectedItem['PmtClkL30']
                                 },
                                 {
                                     title: 'SCVR',
-                                    content: (Number(selectedItem['OV CLICKS L30']) > 0) ?
+                                    content: (Number(selectedItem['PmtClkL30']) > 0) ?
                                         ((Number(selectedItem['eBay L30']) / Number(selectedItem[
-                                            'OV CLICKS L30'])) * 100).toFixed(2) + '%' : '0%'
+                                            'PmtClkL30'])) * 100).toFixed(2) + '%' : '0%'
                                 },
                                 {
                                     title: 'KwClkL60',
@@ -3154,8 +3160,8 @@
                             break;
                         case 'visibility view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'PmtClkL30',
+                                    content: selectedItem['PmtClkL30']
                                 },
                                 {
                                     title: 'KwImpL60',
@@ -4482,7 +4488,7 @@
                         'ov_dil': 'ov_dil',
                         'el_30': 'eBay L30',
                         'e_dil': 'E Dil%',
-                        'views': 'OV CLICKS L30',
+                        'views': 'PmtClkL30',
                         'price': 'eBay Price',
                         'pft': 'PFT %',
                         'roi': 'Roi',
@@ -4514,13 +4520,17 @@
                         let valB = b[dataField];
 
                         // Handle numeric fields including those stored as strings
-                        const numericFields = ['Sl', 'INV', 'L30', 'eBay L30', 'OV CLICKS L30', 'eBay Price', 'SPRICE', 'SPFT', 'SROI'];
+                        const numericFields = ['Sl', 'INV', 'L30', 'eBay L30', 'PmtClkL30',
+                            'eBay Price', 'SPRICE', 'SPFT', 'SROI'
+                        ];
                         if (numericFields.includes(dataField)) {
                             return (parseFloat(valA) - parseFloat(valB)) * currentSort.direction;
                         }
 
                         // Handle percentage fields
-                        const percentageFields = ['ov_dil', 'E Dil%', 'PFT %', 'Roi', 'Tacos30', 'SCVR'];
+                        const percentageFields = ['ov_dil', 'E Dil%', 'PFT %', 'Roi', 'Tacos30',
+                            'SCVR'
+                        ];
                         if (percentageFields.includes(dataField)) {
                             // Convert percentages to numbers for comparison
                             valA = parseFloat(valA) || 0;
@@ -4800,8 +4810,8 @@
                     return '';
                 }
 
-                // For OV CLICKS L30, use the raw value (not percentage)
-                if (column === 'OV CLICKS L30') {
+                // For PmtClkL30, use the raw value (not percentage)
+                if (column === 'PmtClkL30') {
                     const value = parseInt(rowData[column]) || 0;
                     return value >= 30 ? 'green' : 'red';
                 }
@@ -4809,8 +4819,8 @@
                 // For SCVR, always use the calculated value
                 if (column === 'SCVR') {
                     let scvr = 0;
-                    if (Number(rowData['OV CLICKS L30']) > 0) {
-                        scvr = Number(rowData['eBay L30']) / Number(rowData['OV CLICKS L30']);
+                    if (Number(rowData['PmtClkL30']) > 0) {
+                        scvr = Number(rowData['eBay L30']) / Number(rowData['PmtClkL30']);
                     }
                     const value = scvr * 100;
                     if (value <= 4) return 'red';
@@ -4929,15 +4939,15 @@
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['eBay L30']) || 0;
-                        metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
-                        let views = parseFloat(item['OV CLICKS L30']) || 0;
+                        metrics.viewsTotal += parseFloat(item['PmtClkL30']) || 0;
+                        let views = parseFloat(item['PmtClkL30']) || 0;
                         if (item.NR !== 'NRA') {
                             metrics.viewsTotal += views;
                         }
                         metrics.roiSum += parseFloat(item.Roi) || 0;
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
-                        metrics.scvrSum += (Number(item['OV CLICKS L30']) > 0) ?
-                            (Number(item['eBay L30']) / Number(item['OV CLICKS L30'])) :
+                        metrics.scvrSum += (Number(item['PmtClkL30']) > 0) ?
+                            (Number(item['eBay L30']) / Number(item['PmtClkL30'])) :
                             0;
                         metrics.rowCount++;
                     });
@@ -5721,9 +5731,6 @@
 
             $("#priceModal").modal("show");
         });
-
-
-        
     </script>
     <!-- Modal -->
     <div class="modal fade" id="priceModal" tabindex="-1" aria-hidden="true">
