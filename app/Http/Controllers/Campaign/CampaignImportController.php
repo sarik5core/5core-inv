@@ -3,89 +3,98 @@
 namespace App\Http\Controllers\Campaign;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\JungleScoutController;
 use Illuminate\Http\Request;
 use App\Jobs\ProcessCampaignCsvChunk;
+use App\Models\AmazonDatasheet;
+use App\Models\AmazonDataView;
+use App\Models\AmazonSpCampaignReport;
 use App\Models\Campaign;
+use App\Models\JungleScoutProductData;
+use App\Models\MarketplacePercentage;
+use App\Models\ProductMaster;
+use App\Models\ShopifySku;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log; // <-- Add this
 use Illuminate\Support\Facades\Validator;
+
 class CampaignImportController extends Controller
 {
-   
-public function updateField(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'id'    => 'required|integer',
-        'field' => 'required|string|in:note,sbid,yes_sbid,move',
-        'value' => 'nullable|string',
-    ]);
 
-    if ($validator->fails()) {
-        return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-    }
+    public function updateField(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id'    => 'required|integer',
+            'field' => 'required|string|in:note,sbid,yes_sbid,move',
+            'value' => 'nullable|string',
+        ]);
 
-    $id = $request->id;
-    $field = $request->field;
-    $value = $request->value;
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
 
-    $tables = [
-        'amazon_sp_campaign_reports',
-        'amazon_sd_campaign_reports',
-        'amazon_sb_campaign_reports',
-    ];
+        $id = $request->id;
+        $field = $request->field;
+        $value = $request->value;
 
-    foreach ($tables as $table) {
-        $exists = DB::table($table)->where('id', $id)->exists();
+        $tables = [
+            'amazon_sp_campaign_reports',
+            'amazon_sd_campaign_reports',
+            'amazon_sb_campaign_reports',
+        ];
 
-        if ($exists) {
-            if ($field === 'move') {
-                $current = DB::table($table)->where('id', $id)->first();
-                if ($current && !empty($current->sbid)) {
-                    DB::table($table)->where('id', $id)->update([
-                        'ysid' => ($current->sbid == 'done') ? '' : $current->sbid,
-                        'sbid' => null,
-                        'updated_at' => Carbon::now()
-                    ]);
+        foreach ($tables as $table) {
+            $exists = DB::table($table)->where('id', $id)->exists();
+
+            if ($exists) {
+                if ($field === 'move') {
+                    $current = DB::table($table)->where('id', $id)->first();
+                    if ($current && !empty($current->sbid)) {
+                        DB::table($table)->where('id', $id)->update([
+                            'ysid' => ($current->sbid == 'done') ? '' : $current->sbid,
+                            'sbid' => null,
+                            'updated_at' => Carbon::now()
+                        ]);
+
+                        return response()->json([
+                            'success' => true,
+                            'message' => "sbid moved to ysid in table '$table'."
+                        ]);
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "No sbid value to move for ID $id in table $table."
+                        ], 400);
+                    }
+                } else {
+
+                    DB::table($table)
+                        ->where('id', $id)
+                        ->update([
+                            $field => $value,
+                            'updated_at' => DB::raw('NOW()')
+                        ]);
 
                     return response()->json([
                         'success' => true,
-                        'message' => "sbid moved to ysid in table '$table'."
+                        'message' => "Field '$field' updated in table '$table'."
                     ]);
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "No sbid value to move for ID $id in table $table."
-                    ], 400);
                 }
-            } else {
-           
-             DB::table($table)
-    ->where('id', $id)
-    ->update([
-        $field => $value,
-        'updated_at' => DB::raw('NOW()')
-    ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "Field '$field' updated in table '$table'."
-                ]);
             }
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'ID not found in any campaign table.'
+        ], 404);
     }
 
-    return response()->json([
-        'success' => false,
-        'message' => 'ID not found in any campaign table.'
-    ], 404);
-}
-
     public function index()
-   {
-    $campaigns = DB::select("
+    {
+        $campaigns = DB::select("
     SELECT * FROM (
         SELECT 
             id,
@@ -162,23 +171,23 @@ public function updateField(Request $request)
     ) AS campaign_id
     ORDER BY id DESC
 ");
-    return view('campaign.campaign', compact('campaigns'));
-}
-public function getCampaigns(Request $request)
-{
-    $draw = $request->input('draw');
-    $start = $request->input('start', 0);
-    $length = $request->input('length', 10);
-    $search = $request->input('search.value');
-    $order = $request->input('order');
-    $columns = $request->input('columns');
+        return view('campaign.campaign', compact('campaigns'));
+    }
+    public function getCampaigns(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+        $search = $request->input('search.value');
+        $order = $request->input('order');
+        $columns = $request->input('columns');
 
-    $startDateFilter = $request->input('start_date');
-    $endDateFilter = $request->input('end_date');
+        $startDateFilter = $request->input('start_date');
+        $endDateFilter = $request->input('end_date');
 
-    \DB::enableQueryLog();
+        \DB::enableQueryLog();
 
-    $subQuery = "
+        $subQuery = "
         SELECT 
     base.*,
     ce.parent AS parent,
@@ -337,43 +346,43 @@ LEFT JOIN (
 ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_range.profile_id AND base.source = order_by_range.source
     ";
 
-    $query = DB::table(DB::raw("($subQuery) as campaign_id"));
+        $query = DB::table(DB::raw("($subQuery) as campaign_id"));
 
-    if (!empty($search)) {
-        $query->where(function ($q) use ($search) {
-            $q->where('campaignName', 'LIKE', "%{$search}%")
-              ->orWhere('ad_type', 'LIKE', "%{$search}%")
-              ->orWhere('note', 'LIKE', "%{$search}%")
-              ->orWhere('sbid', 'LIKE', "%{$search}%")
-              ->orWhere('yes_sbid', 'LIKE', "%{$search}%")
-               ->orWhere('campaignStatus', 'LIKE', "%{$search}%")
-              ->orWhere('ce.parent', 'LIKE', "%{$search}%"); 
-        });
-    }
-
-    if (!empty($startDateFilter)) {
-        $query->whereDate('startDate', '>=', $startDateFilter);
-    }
-
-    if (!empty($endDateFilter)) {
-        $query->whereDate('endDate', '<=', $endDateFilter);
-    }
-
-    if (!empty($order)) {
-        $columnIndex = $order[0]['column'];
-        $columnName = $columns[$columnIndex]['data'];
-        $direction = $order[0]['dir'];
-        if (!empty($columnName)) {
-            $query->orderBy($columnName, $direction);
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('campaignName', 'LIKE', "%{$search}%")
+                    ->orWhere('ad_type', 'LIKE', "%{$search}%")
+                    ->orWhere('note', 'LIKE', "%{$search}%")
+                    ->orWhere('sbid', 'LIKE', "%{$search}%")
+                    ->orWhere('yes_sbid', 'LIKE', "%{$search}%")
+                    ->orWhere('campaignStatus', 'LIKE', "%{$search}%")
+                    ->orWhere('ce.parent', 'LIKE', "%{$search}%");
+            });
         }
-    } else {
-        $query->orderBy('id', 'desc');
-    }
 
-    $filteredRecords = $query->count();
-    $campaigns = $query->offset($start)->limit($length)->get();
+        if (!empty($startDateFilter)) {
+            $query->whereDate('startDate', '>=', $startDateFilter);
+        }
 
-    $totalRecords = DB::table(DB::raw("(
+        if (!empty($endDateFilter)) {
+            $query->whereDate('endDate', '<=', $endDateFilter);
+        }
+
+        if (!empty($order)) {
+            $columnIndex = $order[0]['column'];
+            $columnName = $columns[$columnIndex]['data'];
+            $direction = $order[0]['dir'];
+            if (!empty($columnName)) {
+                $query->orderBy($columnName, $direction);
+            }
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $filteredRecords = $query->count();
+        $campaigns = $query->offset($start)->limit($length)->get();
+
+        $totalRecords = DB::table(DB::raw("(
         SELECT id FROM amazon_sb_campaign_reports
         UNION ALL
         SELECT id FROM amazon_sd_campaign_reports
@@ -381,19 +390,19 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
         SELECT id FROM amazon_sp_campaign_reports
     ) as total"))->count();
 
-    $queries = \DB::getQueryLog();
-    if (!empty($queries)) {
-        $lastQuery = end($queries);
-        \Log::info('Executed SQL Query: ', ['query' => $lastQuery['query'], 'bindings' => $lastQuery['bindings'], 'time' => $lastQuery['time']]);
-    }
+        $queries = \DB::getQueryLog();
+        if (!empty($queries)) {
+            $lastQuery = end($queries);
+            \Log::info('Executed SQL Query: ', ['query' => $lastQuery['query'], 'bindings' => $lastQuery['bindings'], 'time' => $lastQuery['time']]);
+        }
 
-    return response()->json([
-        'draw' => intval($draw),
-        'recordsTotal' => $totalRecords,
-        'recordsFiltered' => $filteredRecords,
-        'data' => $campaigns
-    ]);
-}
+        return response()->json([
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $campaigns
+        ]);
+    }
 
     private function cleanNumber($value)
     {
@@ -533,8 +542,9 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
         }
         return null;
     }
-    
-    function getCampaignsData() {
+
+    function getCampaignsData()
+    {
         $subBase = DB::table('amazon_sb_campaign_reports')
             ->selectRaw("
                 id, campaign_id, note, sbid, yes_sbid, profile_id, ad_type,
@@ -561,11 +571,11 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
                         campaignBudgetCurrencyCode, 'SP' AS source, campaignStatus
                     ")
             );
-    
+
         $base = DB::table(DB::raw("({$subBase->toSql()}) as base"))
             ->mergeBindings($subBase)
             ->leftJoin('campaign_entries as ce', DB::raw('TRIM(base.campaignName)'), '=', DB::raw('TRIM(ce.campaign_name)'));
-    
+
         // --- Clicks by range ---
         $clicksByRange = DB::table(DB::raw("
             (SELECT campaign_id, profile_id, report_date_range, clicks, 'SB' AS source FROM amazon_sb_campaign_reports
@@ -574,21 +584,21 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             UNION ALL
             SELECT campaign_id, profile_id, report_date_range, clicks, 'SP' AS source FROM amazon_sp_campaign_reports) AS reports
         "))
-        ->selectRaw("
+            ->selectRaw("
             campaign_id, profile_id, source,
             SUM(CASE WHEN report_date_range = 'L7' THEN clicks ELSE 0 END) AS l7_clicks,
             SUM(CASE WHEN report_date_range = 'L15' THEN clicks ELSE 0 END) AS l15_clicks,
             SUM(CASE WHEN report_date_range = 'L30' THEN clicks ELSE 0 END) AS l30_clicks,
             SUM(CASE WHEN report_date_range = 'L60' THEN clicks ELSE 0 END) AS l60_clicks
         ")
-        ->groupBy('campaign_id', 'profile_id', 'source');
-    
-        $base = $base->leftJoinSub($clicksByRange, 'clicks_by_range', function($join) {
+            ->groupBy('campaign_id', 'profile_id', 'source');
+
+        $base = $base->leftJoinSub($clicksByRange, 'clicks_by_range', function ($join) {
             $join->on('base.campaign_id', '=', 'clicks_by_range.campaign_id')
-                 ->on('base.profile_id', '=', 'clicks_by_range.profile_id')
-                 ->on('base.source', '=', 'clicks_by_range.source');
+                ->on('base.profile_id', '=', 'clicks_by_range.profile_id')
+                ->on('base.source', '=', 'clicks_by_range.source');
         });
-    
+
         // --- Spend by range ---
         $spendByRange = DB::table(DB::raw("
             (SELECT campaign_id, profile_id, report_date_range, cost, 'SB' AS source FROM amazon_sb_campaign_reports
@@ -597,7 +607,7 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             UNION ALL
             SELECT campaign_id, profile_id, report_date_range, cost, 'SP' AS source FROM amazon_sp_campaign_reports) AS spend_reports
         "))
-        ->selectRaw("
+            ->selectRaw("
             campaign_id, profile_id, source,
             SUM(CASE WHEN report_date_range = 'L1' THEN cost ELSE 0 END) AS l1_spend,
             SUM(CASE WHEN report_date_range = 'L7' THEN cost ELSE 0 END) AS l7_spend,
@@ -605,14 +615,14 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             SUM(CASE WHEN report_date_range = 'L30' THEN cost ELSE 0 END) AS l30_spend,
             SUM(CASE WHEN report_date_range = 'L60' THEN cost ELSE 0 END) AS l60_spend
         ")
-        ->groupBy('campaign_id', 'profile_id', 'source');
-    
-        $base = $base->leftJoinSub($spendByRange, 'spend_by_range', function($join) {
+            ->groupBy('campaign_id', 'profile_id', 'source');
+
+        $base = $base->leftJoinSub($spendByRange, 'spend_by_range', function ($join) {
             $join->on('base.campaign_id', '=', 'spend_by_range.campaign_id')
-                 ->on('base.profile_id', '=', 'spend_by_range.profile_id')
-                 ->on('base.source', '=', 'spend_by_range.source');
+                ->on('base.profile_id', '=', 'spend_by_range.profile_id')
+                ->on('base.source', '=', 'spend_by_range.source');
         });
-    
+
         // --- Sales by range ---
         $salesByRange = DB::table(DB::raw("
             (SELECT campaign_id, profile_id, report_date_range, sales, 'SB' AS source FROM amazon_sb_campaign_reports
@@ -621,21 +631,21 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             UNION ALL
             SELECT campaign_id, profile_id, report_date_range, sales30d AS sales, 'SP' AS source FROM amazon_sp_campaign_reports) AS sales_reports
         "))
-        ->selectRaw("
+            ->selectRaw("
             campaign_id, profile_id, source,
             SUM(CASE WHEN report_date_range = 'L7' THEN sales ELSE 0 END) AS l7_sales,
             SUM(CASE WHEN report_date_range = 'L15' THEN sales ELSE 0 END) AS l15_sales,
             SUM(CASE WHEN report_date_range = 'L30' THEN sales ELSE 0 END) AS l30_sales,
             SUM(CASE WHEN report_date_range = 'L60' THEN sales ELSE 0 END) AS l60_sales
         ")
-        ->groupBy('campaign_id', 'profile_id', 'source');
-    
-        $base = $base->leftJoinSub($salesByRange, 'sales_by_range', function($join) {
+            ->groupBy('campaign_id', 'profile_id', 'source');
+
+        $base = $base->leftJoinSub($salesByRange, 'sales_by_range', function ($join) {
             $join->on('base.campaign_id', '=', 'sales_by_range.campaign_id')
-                 ->on('base.profile_id', '=', 'sales_by_range.profile_id')
-                 ->on('base.source', '=', 'sales_by_range.source');
+                ->on('base.profile_id', '=', 'sales_by_range.profile_id')
+                ->on('base.source', '=', 'sales_by_range.source');
         });
-    
+
         // --- CPC by range ---
         $cpcByRange = DB::table(DB::raw("
             (SELECT campaign_id, profile_id, report_date_range, clicks, cost, 'SB' AS source FROM amazon_sb_campaign_reports
@@ -644,21 +654,21 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             UNION ALL
             SELECT campaign_id, profile_id, report_date_range, clicks, cost, 'SP' AS source FROM amazon_sp_campaign_reports) AS cpc_reports
         "))
-        ->selectRaw("
+            ->selectRaw("
             campaign_id, profile_id, source,
             ROUND(SUM(CASE WHEN report_date_range = 'L7' THEN cost ELSE 0 END) / NULLIF(SUM(CASE WHEN report_date_range = 'L7' THEN clicks ELSE 0 END),0),2) AS l7_cpc,
             ROUND(SUM(CASE WHEN report_date_range = 'L15' THEN cost ELSE 0 END) / NULLIF(SUM(CASE WHEN report_date_range = 'L15' THEN clicks ELSE 0 END),0),2) AS l15_cpc,
             ROUND(SUM(CASE WHEN report_date_range = 'L30' THEN cost ELSE 0 END) / NULLIF(SUM(CASE WHEN report_date_range = 'L30' THEN clicks ELSE 0 END),0),2) AS l30_cpc,
             ROUND(SUM(CASE WHEN report_date_range = 'L60' THEN cost ELSE 0 END) / NULLIF(SUM(CASE WHEN report_date_range = 'L60' THEN clicks ELSE 0 END),0),2) AS l60_cpc
         ")
-        ->groupBy('campaign_id', 'profile_id', 'source');
-    
-        $base = $base->leftJoinSub($cpcByRange, 'cpc_by_range', function($join) {
+            ->groupBy('campaign_id', 'profile_id', 'source');
+
+        $base = $base->leftJoinSub($cpcByRange, 'cpc_by_range', function ($join) {
             $join->on('base.campaign_id', '=', 'cpc_by_range.campaign_id')
-                 ->on('base.profile_id', '=', 'cpc_by_range.profile_id')
-                 ->on('base.source', '=', 'cpc_by_range.source');
+                ->on('base.profile_id', '=', 'cpc_by_range.profile_id')
+                ->on('base.source', '=', 'cpc_by_range.source');
         });
-    
+
         // --- Orders by range ---
         $ordersByRange = DB::table(DB::raw("
             (SELECT campaign_id, profile_id, report_date_range, purchases, 'SB' AS source FROM amazon_sb_campaign_reports
@@ -667,21 +677,21 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             UNION ALL
             SELECT campaign_id, profile_id, report_date_range, purchases30d AS purchases, 'SP' AS source FROM amazon_sp_campaign_reports) AS order_reports
         "))
-        ->selectRaw("
+            ->selectRaw("
             campaign_id, profile_id, source,
             SUM(CASE WHEN report_date_range = 'L7' THEN purchases ELSE 0 END) AS l7_orders,
             SUM(CASE WHEN report_date_range = 'L15' THEN purchases ELSE 0 END) AS l15_orders,
             SUM(CASE WHEN report_date_range = 'L30' THEN purchases ELSE 0 END) AS l30_orders,
             SUM(CASE WHEN report_date_range = 'L60' THEN purchases ELSE 0 END) AS l60_orders
         ")
-        ->groupBy('campaign_id', 'profile_id', 'source');
-    
-        $base = $base->leftJoinSub($ordersByRange, 'order_by_range', function($join) {
+            ->groupBy('campaign_id', 'profile_id', 'source');
+
+        $base = $base->leftJoinSub($ordersByRange, 'order_by_range', function ($join) {
             $join->on('base.campaign_id', '=', 'order_by_range.campaign_id')
-                 ->on('base.profile_id', '=', 'order_by_range.profile_id')
-                 ->on('base.source', '=', 'order_by_range.source');
+                ->on('base.profile_id', '=', 'order_by_range.profile_id')
+                ->on('base.source', '=', 'order_by_range.source');
         });
-    
+
         // --- Final select including ACOS ---
         $results = $base->selectRaw("
             base.*, ce.parent AS parent,
@@ -711,16 +721,122 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
             ROUND(COALESCE(spend_by_range.l30_spend,0)/NULLIF(COALESCE(sales_by_range.l30_sales,0),0)*100,2) AS l30_acos,
             ROUND(COALESCE(spend_by_range.l60_spend,0)/NULLIF(COALESCE(sales_by_range.l60_sales,0),0)*100,2) AS l60_acos
         ")->get();
-    
+
         return response()->json([
-            'data' => $results, 
+            'data' => $results,
         ]);
     }
-    
-    public function budgetUnderUtilised(){
+
+    public function budgetUnderUtilised()
+    {
         return view('campaign.under_utilised');
     }
-    public function budgetOverUtilised(){
+    public function budgetOverUtilised()
+    {
         return view('campaign.over_utilised');
     }
+
+    public function amzUtilizedBgtKw()
+    {
+        return view('campaign.amz-utilized-bgt-kw');
+    }
+
+    function getAmzUtilizedBgtKw()
+{
+    // Step 1: Fetch ProductMaster data
+    $productMasters = ProductMaster::orderBy('parent', 'asc')
+        ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+        ->orderBy('sku', 'asc')
+        ->get();
+
+    $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+    // Step 2: Fetch Amazon Datasheet and Shopify data
+    $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+        return strtoupper($item->sku);
+    });
+
+    $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+    // Step 3: Fetch NR values
+    $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+    // Step 4: Fetch SP Campaign Reports separately for L7 and L1
+    $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+        ->where('report_date_range', 'L7')
+        ->where(function ($q) use ($skus) {
+            foreach ($skus as $sku) {
+                $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+            }
+        })
+        ->where('campaignName', 'NOT LIKE', '%PT')
+        ->where('campaignName', 'NOT LIKE', '%PT.')
+        ->get();
+
+    $amazonSpCampaignReportsL1 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+        ->where('report_date_range', 'L1')
+        ->where(function ($q) use ($skus) {
+            foreach ($skus as $sku) {
+                $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+            }
+        })
+        ->where('campaignName', 'NOT LIKE', '%PT')
+        ->where('campaignName', 'NOT LIKE', '%PT.')
+        ->get();
+
+    $result = [];
+
+    // Step 5: Build result for Tabulator
+    foreach ($productMasters as $pm) {
+        $sku = strtoupper($pm->sku);
+        $parent = $pm->parent;
+
+        $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+        $shopify = $shopifyData[$pm->sku] ?? null;
+
+        $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
+            return stripos($item->campaignName, $sku) !== false;
+        });
+
+        $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
+            return stripos($item->campaignName, $sku) !== false;
+        });
+
+        $row = [];
+        $row['parent'] = $parent;
+        $row['sku']    = $pm->sku;
+        $row['INV']    = $shopify->inv ?? 0;
+        $row['L30']    = $shopify->quantity ?? 0;
+        $row['fba']    = $pm->fba ?? null;
+        $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
+        $row['campaignName'] = $matchedCampaignL7->campaignName ?? ($matchedCampaignL1->campaignName ?? '');
+        $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
+        $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
+        $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
+        $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
+        $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
+
+        $row['NR']  = '';
+        $row['NRA'] = '';
+        if (isset($nrValues[$pm->sku])) {
+            $raw = $nrValues[$pm->sku];
+            if (!is_array($raw)) {
+                $raw = json_decode($raw, true);
+            }
+            if (is_array($raw)) {
+                $row['NR']  = $raw['NR'] ?? null;
+                $row['NRA'] = $raw['NRA'] ?? null;
+            }
+        }
+
+        $result[] = (object) $row;
+    }
+
+    return response()->json([
+        'message' => 'Data fetched successfully',
+        'data'    => $result,
+        'status'  => 200,
+    ]);
+}
+
 }

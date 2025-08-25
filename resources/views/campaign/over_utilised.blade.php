@@ -146,14 +146,6 @@
                     <!-- Filters Row -->
                     <div class="row mb-3">
                         <div class="col-md-3">
-                            <label>From Date:</label>
-                            <input type="date" id="filter-start" class="form-control">
-                        </div>
-                        <div class="col-md-3">
-                            <label>To Date:</label>
-                            <input type="date" id="filter-end" class="form-control">
-                        </div>
-                        <div class="col-md-3">
                             <label>Search:</label>
                             <input type="text" id="global-search" class="form-control" placeholder="Parent, Campaign, Ad Type">
                         </div>
@@ -467,7 +459,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
                     {
@@ -476,7 +468,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
                     {
@@ -485,7 +477,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
                     {
@@ -494,7 +486,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
 

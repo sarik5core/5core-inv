@@ -2661,15 +2661,17 @@
                         ''
                     ));
                     // CVR with color coding and tooltip
+$row.append($('<td>').html(
+    `<span class="dil-percent-value ${getCvrColor(item.CVR)}">
+        ${Math.round(item.CVR * 100)}%
+    </span>
+    <span class="text-info tooltip-icon conversion-view-trigger" 
+        data-bs-toggle="tooltip" 
+        data-bs-placement="left" 
+        title="Conversion View"
+        data-item='${JSON.stringify(item.raw_data)}'>C</span>`
+));
 
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getCvrColor(item.CVR)}">${(item.CVR * 100).toFixed(1)}%</span>
-                        <span class="text-info tooltip-icon conversion-view-trigger" 
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="left" 
-                            title="Conversion View"
-                            data-item='${JSON.stringify(item.raw_data)}'>C</span>`
-                    ));
 
                     $row.append($('<td>').html(
                         item.SHIP !== null && !isNaN(parseFloat(item.SHIP)) ?

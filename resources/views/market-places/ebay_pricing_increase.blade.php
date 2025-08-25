@@ -894,7 +894,8 @@
         option[value="Q-Task"] {
             background-color: #ff00ff;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
 
@@ -2505,7 +2506,8 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR : 'REQ'; // default to REQ
+                        const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR :
+                            'REQ'; // default to REQ
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
                                 <option value="NR" ${currentNR === 'NR' ? 'selected' : ''}>NR</option>
@@ -2610,34 +2612,74 @@
                     $row.append($('<td>').attr('id', `sprice-${item["(Child) sku"]}`).html(
                         item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
                         `
-                        <span class="badge bg-primary">$${Math.round(parseFloat(item.SPRICE))}</span>
-                        <button class="btn btn-sm btn-outline-primary ms-2" title="Edit SPRICE"
-                            onclick='openPricingModal(${JSON.stringify({
-                                LP: item.LP,
-                                SH: item.SH,
-                                SKU: item["(Child) sku"],
-                                SPRICE: item.SPRICE,
-                                sprofit_percent: item.sprofit_percent,
-                                sroi_percent: item.sroi_percent
-                            })})'>
-                            <i class="fa fa-edit"></i>
-                        </button>
-                    ` : '0'
+    <span class="badge bg-primary" 
+          style="font-size:16px; padding:8px 14px; border-radius:8px;">
+        $${Math.round(parseFloat(item.SPRICE))}
+    </span>
+    <button class="btn btn-outline-primary ms-2" title="Edit SPRICE"
+        onclick='openPricingModal(${JSON.stringify({
+            LP: item.LP,
+            SH: item.SH,
+            SKU: item["(Child) sku"],
+            SPRICE: item.SPRICE,
+            sprofit_percent: item.sprofit_percent,
+            sroi_percent: item.sroi_percent
+        })})'>
+        <i class="fa fa-edit"></i>
+    </button>
+    ` : '0'
                     ));
+
 
                     // ✅ SPFT (rounded to whole number %)
+                    // ✅ SPFT (with custom rounding + inline style + color ranges)
                     $row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
                         item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
-                        `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SPFT) <= 10 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SPFT) <= 15 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SPFT) <= 20 
+                        ? '#0d6efd'   // 🔵 blue
+                        : '#198754'   // 🟢 green
+        };">
+        ${(parseFloat(item.SPFT) - Math.floor(parseFloat(item.SPFT)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SPFT)) 
+            : Math.floor(parseFloat(item.SPFT)))}%
+     </span>` :
                         ''
                     ));
 
-                    // ✅ SROI (rounded to whole number %)
+                    // ✅ SROI (with custom rounding + inline style + color ranges)
                     $row.append($('<td>').attr('id', `sroi-${item["(Child) sku"]}`).html(
                         item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
-                        `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SROI) <= 50 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SROI) <= 100 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SROI) <= 150 
+                        ? '#198754'   // 🟢 green
+                        : '#6f42c1'   // 🟣 purple
+        };">
+        ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SROI)) 
+            : Math.floor(parseFloat(item.SROI)))}%
+     </span>` :
                         ''
                     ));
+
 
 
 
@@ -2869,9 +2911,9 @@
                     $(this).closest('.hide-edit-container').find('.hide-edit-icon').trigger('click');
                 });
             }
-            
+
             function initNRSelectChangeHandler() {
-                $(document).on('change', '.nr-select', function () {
+                $(document).on('change', '.nr-select', function() {
                     const $select = $(this);
                     const newValue = $select.val();
                     const sku = $select.data('sku');
@@ -2892,7 +2934,7 @@
                             nr: newValue,
                             _token: $('meta[name="csrf-token"]').attr('content')
                         },
-                        success: function (response) {
+                        success: function(response) {
                             showNotification('success', 'NR updated successfully!');
 
                             // Update tableData and filteredData
@@ -2909,7 +2951,7 @@
                             calculateTotals();
                             renderTable();
                         },
-                        error: function (xhr) {
+                        error: function(xhr) {
                             showNotification('danger', 'Failed to update NR.');
                         }
                     });
@@ -4444,7 +4486,7 @@
                 // Load saved visibility from localStorage
                 let savedVisibility = JSON.parse(localStorage.getItem('columnVisibility')) || {};
 
-                $headers.each(function () {
+                $headers.each(function() {
                     const $th = $(this);
                     const field = $th.data('field');
                     const title = $th.text().trim().replace(' ↓', '');
@@ -4463,25 +4505,25 @@
 
                     // Apply initial visibility
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function () {
+                    $table.find('tr').each(function() {
                         $(this).find('td, th').eq(colIndex).toggle(checked);
                     });
                 });
 
                 // Dropdown toggle
-                $dropdownBtn.on('click', function (e) {
+                $dropdownBtn.on('click', function(e) {
                     e.stopPropagation();
                     $menu.toggleClass('show');
                 });
 
-                $(document).on('click', function (e) {
+                $(document).on('click', function(e) {
                     if (!$(e.target).closest('.custom-dropdown').length) {
                         $menu.removeClass('show');
                     }
                 });
 
                 // Handle checkbox change
-                $menu.on('change', '.column-toggle-checkbox', function () {
+                $menu.on('change', '.column-toggle-checkbox', function() {
                     const field = $(this).data('field');
                     const isVisible = $(this).is(':checked');
 
@@ -4491,21 +4533,21 @@
 
                     // Apply visibility
                     const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function () {
+                    $table.find('tr').each(function() {
                         $(this).find('td, th').eq(colIndex).toggle(isVisible);
                     });
                 });
 
                 // Show all columns
-                $('#showAllColumns').on('click', function () {
+                $('#showAllColumns').on('click', function() {
                     $menu.find('.column-toggle-checkbox').prop('checked', true);
 
-                    $headers.each(function () {
+                    $headers.each(function() {
                         const field = $(this).data('field');
                         savedVisibility[field] = true;
 
                         const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                        $table.find('tr').each(function () {
+                        $table.find('tr').each(function() {
                             $(this).find('td, th').eq(colIndex).show();
                         });
                     });

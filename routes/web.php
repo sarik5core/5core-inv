@@ -198,7 +198,7 @@ use App\Http\Controllers\MarketPlace\SheinController;
 use App\Http\Controllers\MarketPlace\TiktokShopController;
 use App\Http\Controllers\PurchaseMaster\LedgerMasterController;
 use App\Http\Controllers\PricingIncDsc\MasterIncDscController;
-use App\Http\Controllers\PurchaseMAster\ContainerPlanningController;
+use App\Http\Controllers\PurchaseMaster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
@@ -621,6 +621,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     Route::get('/reverb-pricing-cvr', [ReverbController::class, 'reverbPricingCvr'])->name('reverb');
+    Route::get('/reverb-pricing-increase-cvr', [ReverbController::class, 'reverbPricingIncreaseCvr'])->name('reverb');
+    Route::get('/reverb-pricing-decrease-cvr', [ReverbController::class, 'reverbPricingDecreaseCvr'])->name('reverb');
+
     Route::post('/reverb/save-sprice', [ReverbController::class, 'saveSpriceToDatabase'])->name('reverb.save-sprice');
 
 
@@ -1507,6 +1510,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('campaigns/update-note', 'updateField')->name('campaigns.update-note');
         Route::post('/campaigns/data', 'getCampaigns')->name('campaigns.data');
         Route::get('/campaigns/list', 'getCampaignsData')->name('campaigns.list');
+        Route::get('/campaigns/amz-utilized-bgt-kw', 'amzUtilizedBgtKw')->name('campaigns.amz-utilized-bgt-kw');
+        Route::get('/campaigns/get-amz-utilized-bgt-kw', 'getAmzUtilizedBgtKw')->name('campaigns.get-amz-utilized-bgt-kw');
         // Route::post('/campaign/save', 'storeOrUpdateCampaign')->name('campaign.save');
     });
 

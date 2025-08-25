@@ -467,7 +467,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
                     {
@@ -476,7 +476,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
                     {
@@ -485,7 +485,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
                     {
@@ -494,7 +494,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue()) || 0;
-                            return value + "%";
+                            return value.toFixed(0) + "%";
                         }
                     },
 

@@ -1470,6 +1470,9 @@
                                                     <li>
                                                         <a href=" {{ route('campaign.over') }} ">Over utilised</a>
                                                     </li>
+                                                    <li>
+                                                        <a href=" {{ route('campaigns.amz-utilized-bgt-kw') }} ">UTILIZED BGT KW</a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>
@@ -1848,6 +1851,10 @@
                                                                 <a href="{{ route('reverb') }}">Reverb Analytics</a>
                                                             </li>
                                                         @endif
+
+                                                         <li>
+                                                                <a href="{{ url('reverb-pricing-cvr') }}">Reverb Pricing CVR</a>
+                                                            </li>
                                                         @if (isset($permissions['reverb_zero_view']) && in_array('view', $permissions['reverb_zero_view']))
                                                             <li>
                                                                 <a href="{{ route('reverb.zero.view') }}">Reverb 0
@@ -1878,7 +1885,14 @@
                                             </li>
                                         @endif
 
-
+   <li>
+                                                <a href="{{ url('reverb-pricing-increase-cvr') }}">
+                                                    Reverb Pricing Increase CVR</a>
+                                            </li>
+                                               <li>
+                                                <a href="{{ url('reverb-pricing-decrease-cvr') }}">
+                                                    Reverb Pricing Decrease CVR</a>
+                                            </li>
                                     </ul>
                                 </div>
                             </li>

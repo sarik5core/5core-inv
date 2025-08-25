@@ -1544,7 +1544,7 @@
                                             </div>
                                         </div>
                                     </th>
-                                    <th data-field="Macy_p" style="vertical-align: middle; white-space: nowrap;">
+                                    {{-- <th data-field="Macy_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 NeweeggB2C-P <span class="sort-arrow">↓</span>
@@ -1564,7 +1564,7 @@
                                                 NeweeggB2C-ROI <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th>
+                                    </th> --}}
                                     <th data-field="reverb_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -2241,7 +2241,7 @@
                         eBay: parseFloat(item.ebay_price) || Infinity,
                         Shopify: parseFloat(item.shopifyb2c_price) || Infinity,
                         Macy: parseFloat(item.macy_price) || Infinity,
-                        Newegg: parseFloat(item.neweegb2c_price) || Infinity,
+                        // Newegg: parseFloat(item.neweegb2c_price) || Infinity,
                         Reverb: parseFloat(item.reverb_price) || Infinity,
                         doba: parseFloat(item.doba_price) || Infinity,
                         temu: parseFloat(item.temu_price) || Infinity,
@@ -2301,12 +2301,12 @@
                                                                                                     pft: item.macy_pft,
                                                                                                     roi: item.macy_roi
                                                                                                 },
-                                                                                                Newegg: {
-                                                                                                    price: item.neweegb2c_price,
-                                                                                                    l30: item.neweegb2c_l30,
-                                                                                                    pft: item.neweegb2c_pft,
-                                                                                                    roi: item.neweegb2c_roi
-                                                                                                },
+                                                                                                // Newegg: {
+                                                                                                //     price: item.neweegb2c_price,
+                                                                                                //     l30: item.neweegb2c_l30,
+                                                                                                //     pft: item.neweegb2c_pft,
+                                                                                                //     roi: item.neweegb2c_roi
+                                                                                                // },
                                                                                                 Reverb: {
                                                                                                     price: item.reverb_price,
                                                                                                     l30: item.reverb_l30,
@@ -2395,12 +2395,12 @@
                                                                                                     pft: item.macy_pft,
                                                                                                     roi: item.macy_roi
                                                                                                 },
-                                                                                                Newegg: {
-                                                                                                    price: item.neweegb2c_price,
-                                                                                                    l30: item.neweegb2c_l30,
-                                                                                                    pft: item.neweegb2c_pft,
-                                                                                                    roi: item.neweegb2c_roi
-                                                                                                },
+                                                                                                // Newegg: {
+                                                                                                //     price: item.neweegb2c_price,
+                                                                                                //     l30: item.neweegb2c_l30,
+                                                                                                //     pft: item.neweegb2c_pft,
+                                                                                                //     roi: item.neweegb2c_roi
+                                                                                                // },
                                                                                                 Reverb: {
                                                                                                     price: item.reverb_price,
                                                                                                     l30: item.reverb_l30,
@@ -2509,8 +2509,8 @@
                     const macyL30Val = parseFloat(item.macy_l30) || 0;
                     const reverbPriceVal = parseFloat(item.reverb_price) || 0;
                     const reverbL30Val = parseFloat(item.reverb_l30) || 0;
-                    const neweggPriceVal = parseFloat(item.neweegb2c_price) || 0;
-                    const neweggL30Val = parseFloat(item.neweegb2c_l30) || 0;
+                    // const neweggPriceVal = parseFloat(item.neweegb2c_price) || 0;
+                    // const neweggL30Val = parseFloat(item.neweegb2c_l30) || 0;
                     const dobaPriceVal = parseFloat(item.doba_price) || 0;
                     const dobaL30Val = parseFloat(item.doba_l30) || 0;
                     const temuPriceVal = parseFloat(item.temu_price) || 0;
@@ -2529,7 +2529,7 @@
                         (ebayPriceVal * ebayL30Val) +
                         (shopifyPriceVal * shopifyL30Val) +
                         (macyPriceVal * macyL30Val) +
-                        (neweggPriceVal * neweggL30Val) +
+                        // (neweggPriceVal * neweggL30Val) +
                         (reverbPriceVal * reverbL30Val) +
                         (dobaPriceVal * dobaL30Val) +
                         (temuPriceVal * temuL30Val) +
@@ -2539,7 +2539,7 @@
                         (walmartPriceVal * walmartL30Val); // ✅ Add Walmart
 
                     const totalL30 =
-                        amzL30Val + ebayL30Val + shopifyL30Val + macyL30Val + neweggL30Val +
+                        amzL30Val + ebayL30Val + shopifyL30Val + macyL30Val  +
                         reverbL30Val + dobaL30Val + temuL30Val + wayfairL30Val + ebay3L30Val +
                         ebay2L30Val + walmartL30Val; // ✅ Add Walmart
 
@@ -2621,7 +2621,7 @@
                     const macyProfit = ((macyPriceVal * 0.77) - LP - SHIP) * macyL30Val;
                     const reverbProfit = ((reverbPriceVal * 0.84) - LP - SHIP) * reverbL30Val;
                     const dobaProfit = ((dobaPriceVal * 0.95) - LP - SHIP) * dobaL30Val;
-                    const neweggProfit = ((neweggPriceVal * 0.72) - LP - SHIP) * neweggL30Val;
+                    // const neweggProfit = ((neweggPriceVal * 0.72) - LP - SHIP) * neweggL30Val;
                     const temuProfit = ((temuPriceVal * 0.95) - LP - SHIP) * temuL30Val;
                     const wayfairProfit = ((wayfairPriceVal * 0.90) - LP - SHIP) * wayfairL30Val;
                     const ebay3Profit = ((ebay3PriceVal * 0.76) - LP - SHIP) * ebay3L30Val;
@@ -2630,7 +2630,7 @@
 
                     // ✅ Now correct totalProfit (includes L30 × per-unit profit)
                     const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                        dobaProfit + neweggProfit + temuProfit + wayfairProfit + ebay3Profit +
+                        dobaProfit  + temuProfit + wayfairProfit + ebay3Profit +
                         ebay2Profit + walmartProfit;
 
 
@@ -2643,7 +2643,7 @@
                         (macyPriceVal * macyL30Val) +
                         (reverbPriceVal * reverbL30Val) +
                         (dobaPriceVal * dobaL30Val) +
-                        (neweggPriceVal * neweggL30Val) +
+                        // (neweggPriceVal * neweggL30Val) +
                         (temuPriceVal * temuL30Val) +
                         (wayfairPriceVal * wayfairL30Val) +
                         (ebay3PriceVal * ebay3L30Val) + // ✅ Add eBay3
@@ -2684,10 +2684,10 @@
                             price: item.macy_price,
                             profit: Math.round((item.macy_pft || 0) * 100)
                         },
-                        Newegg: {
-                            price: item.neweegb2c_price,
-                            profit: Math.round((item.neweegb2c_pft || 0) * 100)
-                        },
+                        // Newegg: {
+                        //     price: item.neweegb2c_price,
+                        //     profit: Math.round((item.neweegb2c_pft || 0) * 100)
+                        // },
                         Reverb: {
                             price: item.reverb_price,
                             profit: Math.round((item.reverb_pft || 0) * 100)
@@ -2780,10 +2780,10 @@
                             price: item.macy_price || 0,
                             roi: Math.round((item.macy_roi || 0) * 100)
                         },
-                        Newegg: {
-                            price: item.neweegb2c_price || 0,
-                            roi: Math.round((item.neweegb2c_roi || 0) * 100)
-                        },
+                        // Newegg: {
+                        //     price: item.neweegb2c_price || 0,
+                        //     roi: Math.round((item.neweegb2c_roi || 0) * 100)
+                        // },
                         Reverb: {
                             price: item.reverb_price || 0,
                             roi: Math.round((item.reverb_roi || 0) * 100)
@@ -3054,50 +3054,50 @@
                     ));
 
                     // Newegg Price
-                    const neweggPrice = item.neweegb2c_price !== null ? '$' + parseFloat(item
-                        .neweegb2c_price).toFixed(2) : '0';
-                    const neweggBuyerLink = item.neweegb2c_buy_link || '';
+                    // const neweggPrice = item.neweegb2c_price !== null ? '$' + parseFloat(item
+                    //     .neweegb2c_price).toFixed(2) : '0';
+                    // const neweggBuyerLink = item.neweegb2c_buy_link || '';
 
-                    const neweggL30 = item.neweegb2c_l30 || 0;
-                    const neweggDil = item.INV !== 0 ? (neweggL30 / item.INV).toFixed(2) : '0.00';
+                    // const neweggL30 = item.neweegb2c_l30 || 0;
+                    // const neweggDil = item.INV !== 0 ? (neweggL30 / item.INV).toFixed(2) : '0.00';
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (neweggBuyerLink || neweggL30 || neweggDil) {
-                        $row.append($('<td>').html(`
-                        <div class="sku-tooltip-container">
-                            <span class="price-text">${neweggPrice}</span>
-                            <div class="sku-tooltip">
-                                ${neweggBuyerLink ? `<div class="sku-link"><a href="${neweggBuyerLink}" target="_blank" rel="noopener noreferrer">Newegg Buyer Link</a></div>` : ''}
-                                <div class="sku-link"><strong>L30: ${parseFloat(neweggL30 || 0).toFixed(2)}</strong></div>
-                                <div class="sku-link"><strong>DIL: ${parseFloat(neweggDil || 0).toFixed(2)}%</strong></div>
-                            </div>
-                        </div>
-                    `));
-                    } else {
-                        $row.append($('<td>').text(neweggPrice));
-                    }
-
-
-                    $row.append($('<td>').html(
-                        typeof item.neweegb2c_pft === 'number' && !isNaN(item.neweegb2c_pft) ?
-                        `<div>
-                                <span class="dil-percent-value ${getshopifyPftColor(item.neweegb2c_pft)}">
-                                    ${Math.round(item.neweegb2c_pft * 100)}%
-                                </span>
-                                <small style="margin-left: 6px; color: #555;">
-                                    (L30: ${parseFloat(item.neweegb2c_l30 || 0).toFixed(2)})
-                                </small>
-                            </div>` : ''
-                    ));
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (neweggBuyerLink || neweggL30 || neweggDil) {
+                    //     $row.append($('<td>').html(`
+                    //     <div class="sku-tooltip-container">
+                    //         <span class="price-text">${neweggPrice}</span>
+                    //         <div class="sku-tooltip">
+                    //             ${neweggBuyerLink ? `<div class="sku-link"><a href="${neweggBuyerLink}" target="_blank" rel="noopener noreferrer">Newegg Buyer Link</a></div>` : ''}
+                    //             <div class="sku-link"><strong>L30: ${parseFloat(neweggL30 || 0).toFixed(2)}</strong></div>
+                    //             <div class="sku-link"><strong>DIL: ${parseFloat(neweggDil || 0).toFixed(2)}%</strong></div>
+                    //         </div>
+                    //     </div>
+                    // `));
+                    // } else {
+                    //     $row.append($('<td>').text(neweggPrice));
+                    // }
 
 
-                    $row.append($('<td>').html(
-                        typeof item.neweegb2c_roi === 'number' && !isNaN(item.neweegb2c_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.neweegb2c_roi)}">
-                                ${Math.round(item.neweegb2c_roi * 100)}%
-                            </span>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.neweegb2c_pft === 'number' && !isNaN(item.neweegb2c_pft) ?
+                    //     `<div>
+                    //             <span class="dil-percent-value ${getshopifyPftColor(item.neweegb2c_pft)}">
+                    //                 ${Math.round(item.neweegb2c_pft * 100)}%
+                    //             </span>
+                    //             <small style="margin-left: 6px; color: #555;">
+                    //                 (L30: ${parseFloat(item.neweegb2c_l30 || 0).toFixed(2)})
+                    //             </small>
+                    //         </div>` : ''
+                    // ));
+
+
+                    // $row.append($('<td>').html(
+                    //     typeof item.neweegb2c_roi === 'number' && !isNaN(item.neweegb2c_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.neweegb2c_roi)}">
+                    //             ${Math.round(item.neweegb2c_roi * 100)}%
+                    //         </span>` : ''
+                    // ));
 
                     // Newegg Metrics
 

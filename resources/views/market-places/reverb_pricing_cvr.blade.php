@@ -2581,11 +2581,18 @@
                     ));
 
 
-                    $row.append($('<td>').html(`
-                    <span style="background-color:${getCvrColor(item.CVR)}; color:white; padding:2px 6px; border-radius:4px;">
-                        ${item.CVR}%
-                    </span>
-                `));
+                    $row.append($('<td>').html(() => {
+                        // calculate CVR if not pre-calculated
+                        let cvr = Number(item.CVR) || 0;
+                        cvr = Math.round(cvr); // round properly
+
+                        return `
+                            <span style="background-color:${getCvrColor(cvr)}; color:white; padding:2px 6px; border-radius:4px;">
+                                ${cvr}%
+                            </span>
+                        `;
+                    }));
+
 
 
                     //price with tooltip
@@ -2605,21 +2612,24 @@
 
 
 
+
+                    // PFT with color coding
                     $row.append($('<td>').html(
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
-                            'PFT_percentage']) ?
+                        'PFT_percentage']) ?
                         `
-                        <span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
-                            ${item['PFT_percentage']}%
-                        </span>
-                        ` : ''
+    <span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
+        ${Math.round(item['PFT_percentage'])}%
+    </span>
+    ` : ''
                     ));
-
 
                     // ROI with color coding
                     $row.append($('<td>').html(
                         typeof item.ROI_percentage === 'number' && !isNaN(item.ROI_percentage) ?
-                        `<span class="dil-percent-value ${getRoiColor(item.ROI_percentage)}">${Math.round(item.ROI_percentage)}%</span>` :
+                        `<span class="dil-percent-value ${getRoiColor(item.ROI_percentage)}">
+        ${Math.round(item.ROI_percentage)}%
+    </span>` :
                         ''
                     ));
 
