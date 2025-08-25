@@ -2477,8 +2477,8 @@
 
                     const inv = parseInt(item["INV"]) || 0;
                     const sess30 = parseInt(item["PmtClkL30"]) || 0;
-                    const cvr = parseFloat(item.SCVR) || 0; // using SCVR now
-                    const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
+                    const cvr = parseFloat(item.SCVR) || 0; 
+                    const cvrPercent = cvr * 100; 
 
                     // Skip rows based on your conditions
                     if (!item.is_parent) {
