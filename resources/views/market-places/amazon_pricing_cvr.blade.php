@@ -2585,6 +2585,7 @@
                     if (!sku.includes('PARENT') && inv > 0) {
                         if (al30 === 0) zeroSold++;
                     }
+                    
                     // For SOLD: count all SKUs that are not parent (regardless of inv)
                     if (!sku.includes('PARENT')) {
                         totalSku++;

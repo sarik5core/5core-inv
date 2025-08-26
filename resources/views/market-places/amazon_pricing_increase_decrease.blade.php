@@ -1393,7 +1393,7 @@
                         <table class="custom-resizable-table" id="amazon-table">
                             <thead>
                                 <tr>
-                                    <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th>
+                                    {{-- <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th> --}}
                                     <th data-field="parent" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center sortable-header">
@@ -1471,14 +1471,29 @@
                                             <div class="metric-total" id="lDil-total">0%</div>
                                         </div>
                                     </th>
-
-                                    <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
-                                        NRL
+                                    <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                VIEWS <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="views-total">0</div>
+                                        </div>
                                     </th>
 
-                                    <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
-                                        FBA
-                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
+
+
+                                  
+                                    {{-- <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 LISTED <span class="sort-arrow">↓</span>
@@ -1496,26 +1511,9 @@
                                             <div class="metric-total" id="live-total">0</div>
                                         </div>
                                     </th>
-                                    <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                VIEWS <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="views-total">0</div>
-                                        </div>
-                                    </th>
+ --}}
 
 
-                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                CVR <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="cvr-total">0%</div>
-                                        </div>
-                                    </th>
                                     <th data-field="price"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -1640,6 +1638,13 @@
                                         </div>
                                     </th>
 
+                                      <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
+                                        NRL
+                                    </th>
+
+                                    <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
+                                        FBA
+                                    </th>
                                     <th data-field="ad cost/ pc" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -2570,18 +2575,18 @@
 
                 filteredData.forEach(item => {
 
-                    const inv = parseInt(item["INV"]) || 0;
-                    const sess30 = parseInt(item["Sess30"]) || 0;
-                    const cvr = parseFloat(item.SCVR) || 0; // using SCVR now
-                    const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
+                    // const inv = parseInt(item["INV"]) || 0;
+                    // const sess30 = parseInt(item["Sess30"]) || 0;
+                    // const cvr = parseFloat(item.SCVR) || 0; // using SCVR now
+                    // const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
 
-                    // Skip rows based on your conditions
-                    // Skip rows based on your conditions
-                    if (!item.is_parent) { // 
-                        if (inv <= 0) return;
-                        if (sess30 < 49) return;
-                        if (cvrPercent >= 7) return;
-                    }
+                    // // Skip rows based on your conditions
+                    // // Skip rows based on your conditions
+                    // if (!item.is_parent) { // 
+                    //     if (inv <= 0) return;
+                    //     if (sess30 < 49) return;
+                    //     if (cvrPercent >= 7) return;
+                    // }
                     //If the CVR percentage of this row is 7 or higher, skip this row and don’t add it to the table. 
 
 
@@ -2644,10 +2649,10 @@
                         const percent = parseFloat(value) * 100;
                         if (percent <= 7) return 'red';
                         if (percent > 7 && percent <= 13) return 'green';
-                        return 'pink';
+                        return 'red';
                     };
 
-                    $row.append($('<td>').text(item['SL No.']));
+                    // $row.append($('<td>').text(item['SL No.']));
                     $row.append($('<td>').text(item.Parent));
 
                     // SKU with hover content for links
@@ -2734,123 +2739,59 @@
                         `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${Math.round(item['A Dil%'] * 100)}%</span>`
                     ));
 
-                    // --- NR column ---
-                    if (item.is_parent) {
-                        $row.append($('<td>')); // Empty cell for parent
-                    } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
-                            item.NR : 'RA';
-
-                        const $select = $(`
-                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
-                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
-                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
-                            </select>
-                        `);
 
 
-                        // Set background color based on value
-                        if (currentNR === 'NRA') {
-                            $select.css('background-color', '#dc3545');
-                            $select.css('color', '#ffffff');
-                        } else if (currentNR === 'RA') {
-                            $select.css('background-color', '#28a745');
-                            $select.css('color', '#ffffff');
-                        } else if (currentNR === 'LATER') {
-                            $select.css('background-color', '#ffc107');
-                            $select.css('color', '#000000');
-                        }
+                    $row.append($('<td>').html(
+                        `<span>${Math.round(item.Sess30)}</span>
+                        <span class="text-info tooltip-icon ad-view-trigger1" 
+                            data-item='${JSON.stringify(item.raw_data)}'
+                            style="cursor:pointer"><i class="fas fa-eye"></i></span>`
+                    ));
+                    let al30 = Number(item['A L30']) || 0;
+                    let sess30 = Number(item.Sess30) || 0;
 
-
-                        $select.data('sku', item['(Child) sku']);
-                        $row.append($('<td>').append($select));
+                    let cvrPercent = 0;
+                    if (sess30 > 0) {
+                        cvrPercent = (al30 / sess30) * 1000 / 10; // 15 / 441 = 0.034 → 34%
                     }
 
-
-                    if (item.is_parent) {
-                        $row.append($('<td>')); // Empty cell for parent
-                    } else {
-                        const currentFBA = (item.FBA === 'FBA' || item.FBA === 'FBM' || item.FBA ===
-                                'BOTH') ?
-                            item.FBA :
-                            'FBM'; // default
-
-                        const $select = $(`
-                            <select class="form-select form-select-sm fba-select" style="min-width: 100px;">
-                                <option value="FBA" ${currentFBA === 'FBA' ? 'selected' : ''}>FBA</option>
-                                <option value="FBM" ${currentFBA === 'FBM' ? 'selected' : ''}>FBM</option>
-                                <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
-                            </select>
-                        `);
-
-                        // Set background color
-                        if (currentFBA === 'FBA') {
-                            // Vibrant Blue
-                            $select.css({
-                                backgroundColor: '#007bff', // Bootstrap Primary Blue
-                                color: '#ffffff'
-                            });
-                        } else if (currentFBA === 'FBM') {
-                            // Rich Violet
-                            $select.css({
-                                backgroundColor: '#6f42c1', // Bootstrap Purple
-                                color: '#ffffff'
-                            });
-                        } else if (currentFBA === 'BOTH') {
-                            // Bright Teal
-                            $select.css({
-                                backgroundColor: '#20c997', // Bootstrap Teal
-                                color: '#ffffff'
-                            });
-                        }
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value" style="color: ${getCvrColor(cvrPercent)}">
+                        ${cvrPercent.toFixed(0)}%
+                        </span>`
+                    ));
 
 
-                        $select.data('sku', item['(Child) sku']);
-                        $row.append($('<td>').append($select));
 
-                    }
 
                     //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
-                        .Listed === 1 || rawData.Listed === '1';
-                    const $listedCb = $('<input>', {
-                        type: 'checkbox',
-                        class: 'listed-checkbox',
-                        checked: listedVal
-                    }).data('sku', item['(Child) sku']);
+                    // const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                    //     .Listed === 1 || rawData.Listed === '1';
+                    // const $listedCb = $('<input>', {
+                    //     type: 'checkbox',
+                    //     class: 'listed-checkbox',
+                    //     checked: listedVal
+                    // }).data('sku', item['(Child) sku']);
 
-                    $row.append($('<td>').append($listedCb));
+                    // $row.append($('<td>').append($listedCb));
 
-                    // Live checkbox
-                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
-                        1 || rawData.Live === '1';
-                    const $liveCb = $('<input>', {
-                        type: 'checkbox',
-                        class: 'live-checkbox',
-                        checked: liveVal
-                    }).data('sku', item['(Child) sku']);
+                    // // Live checkbox
+                    // const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                    //     1 || rawData.Live === '1';
+                    // const $liveCb = $('<input>', {
+                    //     type: 'checkbox',
+                    //     class: 'live-checkbox',
+                    //     checked: liveVal
+                    // }).data('sku', item['(Child) sku']);
 
-                    $row.append($('<td>').append($liveCb));
+                    // $row.append($('<td>').append($liveCb));
 
 
                     // Sess30 with tooltip icon (no color coding)
-                    $row.append($('<td>').html(
-                        `<span>${Math.round(item.Sess30)}</span>
-                        <span class="text-info tooltip-icon ad-view-trigger" 
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="left" 
-                            title="visibility View"
-                            data-item='${JSON.stringify(item.raw_data)}'>V</span>`
-                    ));
 
 
-                    $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
-                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
-                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
-                            data-item='${JSON.stringify(item.raw_data)}'></i>`
-                    ));
+
+
 
                     //price with tooltip
                     $row.append($('<td>').html(
@@ -2878,7 +2819,7 @@
                     // PFT with color coding
                     $row.append($('<td>').html(
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
-                        'PFT_percentage']) ?
+                            'PFT_percentage']) ?
                         `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
         ${Math.round(item['PFT_percentage'])}%
     </span>
@@ -3121,6 +3062,83 @@
                     ));
 
 
+
+                    // --- NR column ---
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
+                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
+                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
+                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
+                            </select>
+                        `);
+
+
+                        // Set background color based on value
+                        if (currentNR === 'NRA') {
+                            $select.css('background-color', '#dc3545');
+                            $select.css('color', '#ffffff');
+                        } else if (currentNR === 'RA') {
+                            $select.css('background-color', '#28a745');
+                            $select.css('color', '#ffffff');
+                        } else if (currentNR === 'LATER') {
+                            $select.css('background-color', '#ffc107');
+                            $select.css('color', '#000000');
+                        }
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+                    }
+
+
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        const currentFBA = (item.FBA === 'FBA' || item.FBA === 'FBM' || item.FBA ===
+                                'BOTH') ?
+                            item.FBA :
+                            'FBM'; // default
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm fba-select" style="min-width: 100px;">
+                                <option value="FBA" ${currentFBA === 'FBA' ? 'selected' : ''}>FBA</option>
+                                <option value="FBM" ${currentFBA === 'FBM' ? 'selected' : ''}>FBM</option>
+                                <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                            </select>
+                        `);
+
+                        // Set background color
+                        if (currentFBA === 'FBA') {
+                            // Vibrant Blue
+                            $select.css({
+                                backgroundColor: '#007bff', // Bootstrap Primary Blue
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'FBM') {
+                            // Rich Violet
+                            $select.css({
+                                backgroundColor: '#6f42c1', // Bootstrap Purple
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'BOTH') {
+                            // Bright Teal
+                            $select.css({
+                                backgroundColor: '#20c997', // Bootstrap Teal
+                                color: '#ffffff'
+                            });
+                        }
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+
+                    }
                     // CVR with color coding and tooltip
 
                     $row.append($('<td>').text(
@@ -3166,12 +3184,12 @@
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_api_link'] ? `
-                                                            <a href="${item['js_comp_manual_api_link']}" target="_blank" 
-                                                               class="badge bg-success open-link-btn" 
-                                                               title="Open link" 
-                                                               style="text-decoration: none;">
-                                                                <i class="fas fa-link"></i>
-                                                            </a>` : ''
+                                                                        <a href="${item['js_comp_manual_api_link']}" target="_blank" 
+                                                                           class="badge bg-success open-link-btn" 
+                                                                           title="Open link" 
+                                                                           style="text-decoration: none;">
+                                                                            <i class="fas fa-link"></i>
+                                                                        </a>` : ''
         }
     </div>
 `));
@@ -3187,12 +3205,12 @@
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_link'] ? `
-                                                            <a href="${item['js_comp_manual_link']}" target="_blank" 
-                                                               class="badge bg-success open-link-btn" 
-                                                               title="Open link" 
-                                                               style="text-decoration: none;">
-                                                                <i class="fas fa-link"></i>
-                                                            </a>` : ''
+                                                                        <a href="${item['js_comp_manual_link']}" target="_blank" 
+                                                                           class="badge bg-success open-link-btn" 
+                                                                           title="Open link" 
+                                                                           style="text-decoration: none;">
+                                                                            <i class="fas fa-link"></i>
+                                                                        </a>` : ''
         }
     </div>
 `));
@@ -3585,137 +3603,7 @@
                                 }
                             ];
                             break;
-                        case 'visibility view':
-                            fieldsToDisplay = [{
-                                    title: 'Sess30',
-                                    content: selectedItem['Sess30']
-                                },
-                                {
-                                    title: 'Sessl60',
-                                    content: selectedItem['sessions_l60']
-                                },
-                                {
-                                    title: 'KwImp60',
-                                    content: selectedItem['KwImp60']
-                                },
-                                {
-                                    title: 'KwImp30',
-                                    content: selectedItem['KwImp30']
-                                },
-                                {
-                                    title: 'KwClks60',
-                                    content: selectedItem['KwClks60']
-                                },
-                                {
-                                    title: 'KwClks30',
-                                    content: selectedItem['KwClks30']
-                                },
-                                {
-                                    title: 'KwCtr60',
-                                    content: selectedItem['KwCtr60']
-                                },
-                                {
-                                    title: 'KwCtr30',
-                                    content: selectedItem['KwCtr30']
-                                },
-                                {
-                                    title: 'PtImp60',
-                                    content: selectedItem['PtImp60']
-                                },
-                                {
-                                    title: 'PtImp30',
-                                    content: selectedItem['PtImp30']
-                                },
-                                {
-                                    title: 'PtClks60',
-                                    content: selectedItem['PtClks60']
-                                },
-                                {
-                                    title: 'PtClks30',
-                                    content: selectedItem['PtClks30']
-                                },
-                                {
-                                    title: 'PtCtr60',
-                                    content: selectedItem['PtCtr60']
-                                },
-                                {
-                                    title: 'PtCtr30',
-                                    content: selectedItem['PtCtr30']
-                                },
-                                {
-                                    title: 'DspImp60',
-                                    content: selectedItem['DspImp60']
-                                },
-                                {
-                                    title: 'DspImp30',
-                                    content: selectedItem['DspImp30']
-                                },
-                                {
-                                    title: 'DspClks60',
-                                    content: selectedItem['DspClks60']
-                                },
-                                {
-                                    title: 'DspClks30',
-                                    content: selectedItem['DspClks30']
-                                },
-                                {
-                                    title: 'DspCtr60',
-                                    content: selectedItem['DspCtr60']
-                                },
-                                {
-                                    title: 'DspCtr30',
-                                    content: selectedItem['DspCtr30']
-                                },
-                                {
-                                    title: 'HdImp60',
-                                    content: selectedItem['HdImp60']
-                                },
-                                {
-                                    title: 'HdImp30',
-                                    content: selectedItem['HdImp30']
-                                },
-                                {
-                                    title: 'HdClks60',
-                                    content: selectedItem['HdClks60']
-                                },
-                                {
-                                    title: 'HdClks30',
-                                    content: selectedItem['HdClks30']
-                                },
-                                {
-                                    title: 'HdCtr60',
-                                    content: selectedItem['HdCtr60']
-                                },
-                                {
-                                    title: 'HdCtr30',
-                                    content: selectedItem['HdCtr30']
-                                },
-                                {
-                                    title: 'TImp60',
-                                    content: selectedItem['TImp60']
-                                },
-                                {
-                                    title: 'TImp30',
-                                    content: selectedItem['TImp30']
-                                },
-                                {
-                                    title: 'TClks60',
-                                    content: selectedItem['TClks60']
-                                },
-                                {
-                                    title: 'TClks30',
-                                    content: selectedItem['TClks30']
-                                },
-                                {
-                                    title: 'TCtr60',
-                                    content: selectedItem['TCtr60']
-                                },
-                                {
-                                    title: 'TCtr30',
-                                    content: selectedItem['TCtr30']
-                                }
-                            ];
-                            break;
+
                         case 'price view':
                             fieldsToDisplay = [{
                                     title: 'MSRP',
@@ -6451,6 +6339,105 @@
         });
     </script>
 
+
+    <script>
+        $(document).on("click", ".ad-view-trigger1", function() {
+            let selectedItem = $(this).data("item"); // raw_data
+
+            let fieldsToDisplay = [
+                // { title: 'Sess30',  content: selectedItem['Sess30'] },
+                {
+                    title: 'KwImp30',
+                    content: selectedItem['KwImp30']
+                },
+                {
+                    title: 'KwClks30',
+                    content: selectedItem['KwClks30']
+                },
+                {
+                    title: 'KwCtr30',
+                    content: selectedItem['KwCtr30']
+                },
+                {
+                    title: 'PtImp30',
+                    content: selectedItem['PtImp30']
+                },
+                {
+                    title: 'PtClks30',
+                    content: selectedItem['PtClks30']
+                },
+                {
+                    title: 'PtCtr30',
+                    content: selectedItem['PtCtr30']
+                },
+                {
+                    title: 'DspImp30',
+                    content: selectedItem['DspImp30']
+                },
+                {
+                    title: 'DspClks30',
+                    content: selectedItem['DspClks30']
+                },
+                {
+                    title: 'DspCtr30',
+                    content: selectedItem['DspCtr30']
+                },
+                {
+                    title: 'HdImp30',
+                    content: selectedItem['HdImp30']
+                },
+                {
+                    title: 'HdClks30',
+                    content: selectedItem['HdClks30']
+                },
+                {
+                    title: 'HdCtr30',
+                    content: selectedItem['HdCtr30']
+                },
+                {
+                    title: 'TImp30',
+                    content: selectedItem['TImp30']
+                },
+                {
+                    title: 'TClks30',
+                    content: selectedItem['TClks30']
+                },
+                {
+                    title: 'TCtr30',
+                    content: selectedItem['TCtr30']
+                }
+            ];
+
+            // Build table HTML
+            let tableHtml = `
+        <table class="table table-bordered table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+            fieldsToDisplay.forEach(f => {
+                tableHtml += `
+            <tr>
+                <td>${f.title}</td>
+                <td>${f.content ?? '-'}</td>
+            </tr>
+        `;
+            });
+
+            tableHtml += `</tbody></table>`;
+
+            // Inject into modal body
+            $("#visibilityModal .modal-body").html(tableHtml);
+
+            // Show modal
+            $("#visibilityModal").modal("show");
+        });
+    </script>
     <!-- Modal -->
     <div class="modal fade" id="priceViewModal" tabindex="-1" aria-labelledby="priceViewModalLabel"
         aria-hidden="true">
@@ -6472,6 +6459,21 @@
                             <!-- Dynamic rows go here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visibility View Modal -->
+    <div class="modal fade" id="visibilityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Visibility Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Table will be injected here -->
                 </div>
             </div>
         </div>
