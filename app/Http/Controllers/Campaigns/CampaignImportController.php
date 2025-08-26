@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Campaign;
+namespace App\Http\Controllers\Campaigns;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\JungleScoutController;
@@ -735,108 +735,5 @@ ON base.campaign_id = order_by_range.campaign_id AND base.profile_id = order_by_
     {
         return view('campaign.over_utilised');
     }
-
-    public function amzUtilizedBgtKw()
-    {
-        return view('campaign.amz-utilized-bgt-kw');
-    }
-
-    function getAmzUtilizedBgtKw()
-{
-    // Step 1: Fetch ProductMaster data
-    $productMasters = ProductMaster::orderBy('parent', 'asc')
-        ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
-        ->orderBy('sku', 'asc')
-        ->get();
-
-    $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
-
-    // Step 2: Fetch Amazon Datasheet and Shopify data
-    $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-        return strtoupper($item->sku);
-    });
-
-    $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-
-    // Step 3: Fetch NR values
-    $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
-
-    // Step 4: Fetch SP Campaign Reports separately for L7 and L1
-    $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
-        ->where('report_date_range', 'L7')
-        ->where(function ($q) use ($skus) {
-            foreach ($skus as $sku) {
-                $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
-            }
-        })
-        ->where('campaignName', 'NOT LIKE', '%PT')
-        ->where('campaignName', 'NOT LIKE', '%PT.')
-        ->get();
-
-    $amazonSpCampaignReportsL1 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
-        ->where('report_date_range', 'L1')
-        ->where(function ($q) use ($skus) {
-            foreach ($skus as $sku) {
-                $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
-            }
-        })
-        ->where('campaignName', 'NOT LIKE', '%PT')
-        ->where('campaignName', 'NOT LIKE', '%PT.')
-        ->get();
-
-    $result = [];
-
-    // Step 5: Build result for Tabulator
-    foreach ($productMasters as $pm) {
-        $sku = strtoupper($pm->sku);
-        $parent = $pm->parent;
-
-        $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
-        $shopify = $shopifyData[$pm->sku] ?? null;
-
-        $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-            return stripos($item->campaignName, $sku) !== false;
-        });
-
-        $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-            return stripos($item->campaignName, $sku) !== false;
-        });
-
-        $row = [];
-        $row['parent'] = $parent;
-        $row['sku']    = $pm->sku;
-        $row['INV']    = $shopify->inv ?? 0;
-        $row['L30']    = $shopify->quantity ?? 0;
-        $row['fba']    = $pm->fba ?? null;
-        $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
-        $row['campaignName'] = $matchedCampaignL7->campaignName ?? ($matchedCampaignL1->campaignName ?? '');
-        $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
-        $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
-        $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
-        $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
-        $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
-
-        $row['NR']  = '';
-        $row['NRA'] = '';
-        if (isset($nrValues[$pm->sku])) {
-            $raw = $nrValues[$pm->sku];
-            if (!is_array($raw)) {
-                $raw = json_decode($raw, true);
-            }
-            if (is_array($raw)) {
-                $row['NR']  = $raw['NR'] ?? null;
-                $row['NRA'] = $raw['NRA'] ?? null;
-            }
-        }
-
-        $result[] = (object) $row;
-    }
-
-    return response()->json([
-        'message' => 'Data fetched successfully',
-        'data'    => $result,
-        'status'  => 200,
-    ]);
-}
 
 }
