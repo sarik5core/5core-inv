@@ -983,9 +983,11 @@
         .scouth-product-value a:hover {
             text-decoration: underline;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
+
         /*popup modal style end */
     </style>
 @endsection
@@ -1107,6 +1109,29 @@
                                         <span class="status-circle pink"></span> Pink</a></li>
                             </ul>
                         </div>
+                        <div class="dropdown manual-dropdown-container">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="fbaFilterDropdown">
+                                <span class="status-circle default"></span> FBA / FBM
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="fbaFilterDropdown">
+                                <li>
+                                    <a class="dropdown-item fba-filter" href="#" data-value="all">
+                                        <span class="status-circle default"></span> All
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item fba-filter" href="#" data-value="FBA">
+                                        <span class="status-circle green"></span> FBA
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item fba-filter" href="#" data-value="FBM">
+                                        <span class="status-circle red"></span> FBM
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
 
                         <!-- Tacos Filter -->
                         <div class="dropdown manual-dropdown-container">
@@ -1413,12 +1438,37 @@
                                             <div class="metric-total" id="dil-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
-                                        NRL
+
+                                    <th data-field="finv" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                FINV <span class="sort-arrow">↓</span>
+                                            </div>
+                                            {{-- <div class="metric-total" id="finv-total">0</div> --}}
+                                        </div>
                                     </th>
+                                    <th data-field="fl30" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                FL30 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            {{-- <div class="metric-total" id="fl30-total">0</div> --}}
+                                        </div>
+                                    </th>
+                                    <th data-field="fdil_pct" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                FDil% <span class="sort-arrow">↓</span>
+                                            </div>
+                                            {{-- <div class="metric-total" id="fdil-total">0%</div> --}}
+                                        </div>
+                                    </th>
+                                    {{-- <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
+                                        NRL
+                                    </th> --}}
 
                                     <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
-                                        FBA 
+                                        FBA
                                     </th>
                                     <th data-field="FBA SKU" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1451,30 +1501,7 @@
                                             </div>
                                         </div>
                                     </th>
-                                    <th data-field="finv" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                FINV <span class="sort-arrow">↓</span>
-                                            </div>
-                                            {{-- <div class="metric-total" id="finv-total">0</div> --}}
-                                        </div>
-                                    </th>
-                                    <th data-field="fl30" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                FL30 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            {{-- <div class="metric-total" id="fl30-total">0</div> --}}
-                                        </div>
-                                    </th>
-                                    <th data-field="fdil_pct" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                FDil% <span class="sort-arrow">↓</span>
-                                            </div>
-                                            {{-- <div class="metric-total" id="fdil-total">0%</div> --}}
-                                        </div>
-                                    </th>
+
                                     <th data-field="msl" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -2224,7 +2251,7 @@
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
                                         .toUpperCase().includes("PARENT") : false,
                                     NR: item.NRL || '',
-                                    FBA: item.FBA || '',
+                                    NRL_REQ_FBA: item.NRL_REQ_FBA || '',
                                     raw_data: item || {} // Ensure raw_data always exists
                                 };
                             });
@@ -2261,10 +2288,10 @@
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if(item.NR === 'NR'){
+                    if (item.NR === 'NR') {
                         $row.addClass('nr-hide');
                     }
-                    
+
                     // Updated color coding functions
                     const getDilColor = (value) => {
                         const percent = parseFloat(value) * 100;
@@ -2372,80 +2399,7 @@
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>`
                     ));
-                    
-                    if (item.is_parent) {
-                        $row.append($('<td>')); // Empty cell for parent
-                    } else {
-                        const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR : 'REQ'; // default to REQ
-                        const $select = $(`
-                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NR" ${currentNR === 'NR' ? 'selected' : ''}>NR</option>
-                                <option value="REQ" ${currentNR === 'REQ' ? 'selected' : ''}>REQ</option>
-                            </select>
-                        `);
 
-                        // Set background color based on value
-                        if (currentNR === 'NR') {
-                            $select.css('background-color', '#dc3545');
-                            $select.css('color', '#ffffff');
-                        } else if (currentNR === 'REQ') {
-                            $select.css('background-color', '#28a745');
-                            $select.css('color', '#ffffff');
-                        }
-                        $select.data('sku', item['(Child) sku']);
-                        $row.append($('<td>').append($select));
-                    }
-
-                    if (item.is_parent) {
-                        $row.append($('<td>')); // Empty cell for parent
-                    } else {
-                        const currentFBA = (item.FBA === 'FBA' || item.FBA === 'FBM' || item.FBA ===
-                                'BOTH') ?
-                            item.FBA :
-                            'FBA'; // default
-
-                        const $select = $(`
-                            <select class="form-select form-select-sm fba-select" style="min-width: 100px;">
-                                <option value="FBA" ${currentFBA === 'FBA' ? 'selected' : ''}>FBA</option>
-                                <option value="FBM" ${currentFBA === 'FBM' ? 'selected' : ''}>FBM</option>
-                               
-                            </select>
-                        `);
-                        //  <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
-                        // Set background color
-                        if (currentFBA === 'FBA') {
-                            // Vibrant Blue
-                            $select.css({
-                                backgroundColor: '#007bff', // Bootstrap Primary Blue
-                                color: '#ffffff'
-                            });
-                        } else if (currentFBA === 'FBM') {
-                            // Rich Violet
-                            $select.css({
-                                backgroundColor: '#6f42c1', // Bootstrap Purple
-                                color: '#ffffff'
-                            });
-                        }
-                        //  else if (currentFBA === 'BOTH') {
-                        //     // Bright Teal
-                        //     $select.css({
-                        //         backgroundColor: '#20c997', // Bootstrap Teal
-                        //         color: '#ffffff'
-                        //     });
-                        // }
-
-
-                        $select.data('sku', item['(Child) sku']);
-                        $row.append($('<td>').append($select));
-
-                    }
-
-
-                    $row.append($('<td>').text(item['FBA SKU']));
-
-                    $row.append($('<td>').text(item['TO SEND TO FBA']));
-
-                    $row.append($('<td>').text(item.ASIN));
 
                     $row.append($('<td>').text(item.FINV));
 
@@ -2459,8 +2413,80 @@
                     ));
 
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getFDilColor(item['FDil%'])}">${(Number(item['FDil%']) * 100 || 0).toFixed(2)}%</span>`
+                        `<span class="dil-percent-value ${getFDilColor(item['FDil%'])}">
+                        ${(Number(item['FDil%']) * 100 || 0).toFixed(0)}%
+                    </span>`
                     ));
+
+
+
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>')); // Empty cell for parent
+                    // } else {
+                    //     const currentNR = item.NR === 'REQ' || item.NR === 'NR' ? item.NR : 'REQ'; // default to REQ
+                    //     const $select = $(`
+                //         <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
+                //             <option value="NR" ${currentNR === 'NR' ? 'selected' : ''}>NR</option>
+                //             <option value="REQ" ${currentNR === 'REQ' ? 'selected' : ''}>REQ</option>
+                //         </select>
+                //     `);
+
+                    //     // Set background color based on value
+                    //     if (currentNR === 'NR') {
+                    //         $select.css('background-color', '#dc3545');
+                    //         $select.css('color', '#ffffff');
+                    //     } else if (currentNR === 'REQ') {
+                    //         $select.css('background-color', '#28a745');
+                    //         $select.css('color', '#ffffff');
+                    //     }
+                    //     $select.data('sku', item['(Child) sku']);
+                    //     $row.append($('<td>').append($select));
+                    // }
+
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                       const currentFBA = (item.NRL_REQ_FBA === 'REQ FBA' || item.NRL_REQ_FBA === 'NRL FBA')
+    ? item.NRL_REQ_FBA
+    : 'REQ FBA'; // default
+
+
+                        const $select = $(`
+                            <select class="form-select form-select-sm fba-select" style="min-width: 130px;">
+                                <option value="REQ FBA" ${currentFBA === 'REQ FBA' ? 'selected' : ''}>REQ FBA</option>
+                                <option value="NRL FBA" ${currentFBA === 'NRL FBA' ? 'selected' : ''}>NRL FBA</option>
+                            </select>
+                        `);
+                        //  <option value="BOTH" ${currentFBA === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                        // Set background color
+                        if (currentFBA === 'NRL FBA') {
+                            // Green
+                            $select.css({
+                                backgroundColor: '#28a745', // Bootstrap Success Green
+                                color: '#ffffff'
+                            });
+                        } else if (currentFBA === 'REQ FBA') {
+                            // Red
+                            $select.css({
+                                backgroundColor: '#dc3545', // Bootstrap Danger Red
+                                color: '#ffffff'
+                            });
+                        }
+
+
+
+
+                        $select.data('sku', item['(Child) sku']);
+                        $row.append($('<td>').append($select));
+
+                    }
+
+
+                    $row.append($('<td>').text(item['FBA SKU']));
+
+                    $row.append($('<td>').text(item['TO SEND TO FBA']));
+
+                    $row.append($('<td>').text(item.ASIN));
 
                     $row.append($('<td>').text(item.MSL));
 
@@ -2576,25 +2602,27 @@
             }
 
             function initNRSelectChangeHandler() {
-                $(document).on('change', '.nr-select', function () {
+                $(document).on('change', '.nr-select', function() {
                     const $select = $(this);
                     const sku = $(this).data('sku');
                     const nrValue = $(this).val();
-                    
+
                     if (nrValue === 'NR') {
                         $select.css('background-color', '#dc3545').css('color', '#ffffff');
                     } else {
                         $select.css('background-color', '#28a745').css('color', '#ffffff');
                     }
                     $.ajax({
-                        url: '/amazon/save-nr', 
+                        url: '/amazon/save-nr',
                         type: 'POST',
                         data: {
                             sku: sku,
-                            nr: JSON.stringify({ NR: nrValue }),
+                            nr: JSON.stringify({
+                                NR: nrValue
+                            }),
                             _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
                         },
-                        success: function (res) {
+                        success: function(res) {
                             showNotification('success', 'NR updated successfully');
 
                             // ✅ Update tableData and filteredData correctly
@@ -2612,60 +2640,64 @@
                             calculateTotals();
                             renderTable();
                         },
-                        error: function (err) {
+                        error: function(err) {
                             console.error('Error saving NR:', err);
                             showNotification('danger', 'Failed to update NR');
                         }
                     });
-                });  
-            }
-
-
-            function initNRSelectChangeHandler2() {
-                $(document).on('change', '.fba-select', function() {
-                    const $select = $(this);
-                    const sku = $(this).data('sku');
-                    const fbaValue = $(this).val();
-                    if (fbaValue === 'FBA') {
-                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
-                    } else {
-                        $select.css('background-color', '#28a745').css('color', '#ffffff');
-                    }
-                    $.ajax({
-                        url: '/amazon/save-nr',
-                        type: 'POST',
-                        data: {
-                            sku: sku,
-                            fba: JSON.stringify({
-                                FBA: fbaValue
-                            }),
-                            _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
-                        },
-                        success: function(res) {
-                            showNotification('success', 'FBA updated successfully');
-
-                            // Update tableData and filteredData correctly
-                            tableData.forEach(item => {
-                                if (item['(Child) sku'] === sku) {
-                                    item.FBA = fbaValue;
-                                }
-                            });
-                            filteredData.forEach(item => {
-                                if (item['(Child) sku'] === sku) {
-                                    item.FBA = fbaValue;
-                                }
-                            });
-                            // Recalculate & re-render
-                            calculateTotals();
-                            renderTable();
-                        },
-                        error: function(err) {
-                            console.error('Error saving FBA:', err);
-                            showNotification('danger', 'Failed to update FBA');
-                        }
-                    });
                 });
             }
+
+
+           function initNRSelectChangeHandler2() {
+    $(document).on('change', '.fba-select', function() {
+        const $select = $(this);
+        const sku = $(this).data('sku');
+        const fbaValue = $(this).val();
+
+        // Apply background color based on selection
+        if (fbaValue === 'REQ FBA') {
+            $select.css('background-color', '#dc3545').css('color', '#ffffff');
+        } else if (fbaValue === 'NRL FBA') {
+            $select.css('background-color', '#28a745').css('color', '#ffffff');
+        }
+
+        $.ajax({
+            url: '/amazon/save-nr',
+            type: 'POST',
+            data: {
+                sku: sku,
+                nrl_req_fba: JSON.stringify({
+                    NRL_REQ_FBA: fbaValue   // ✅ updated key name
+                }),
+                _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
+            },
+            success: function(res) {
+                showNotification('success', 'NRL_REQ_FBA updated successfully');
+
+                // Update tableData and filteredData correctly
+                tableData.forEach(item => {
+                    if (item['(Child) sku'] === sku) {
+                        item.NRL_REQ_FBA = fbaValue;   // ✅ update new key
+                    }
+                });
+                filteredData.forEach(item => {
+                    if (item['(Child) sku'] === sku) {
+                        item.NRL_REQ_FBA = fbaValue;   // ✅ update new key
+                    }
+                });
+
+                // Recalculate & re-render
+                calculateTotals();
+                renderTable();
+            },
+            error: function(err) {
+                console.error('Error saving NRL_REQ_FBA:', err);
+                showNotification('danger', 'Failed to update NRL_REQ_FBA');
+            }
+        });
+    });
+}
 
             window.openModal = function(selectedItem, type) {
                 try {
@@ -4211,6 +4243,42 @@
                 });
             }
 
+            let selectedFbaFilter = "all";
+
+            // Dropdown click
+            $(document).on("click", ".fba-filter", function(e) {
+                e.preventDefault();
+                selectedFbaFilter = $(this).data("value");
+
+                // Dropdown button label update
+                $("#fbaFilterDropdown").html(
+                    `<span class="status-circle ${selectedFbaFilter === "FBA" ? "green" : selectedFbaFilter === "FBM" ? "red" : "default"}"></span> ${selectedFbaFilter === "all" ? "All" : selectedFbaFilter}`
+                );
+
+                applyFbaFilter();
+            });
+
+            // Apply filter to table
+            function applyFbaFilter() {
+                $("#yourTableId tbody tr").each(function() {
+                    // Data attribute ya JS object se FBA/FBM value nikalna
+                    let fbaValue = $(this).data("fba"); // row me save kiya hoga
+
+                    if (!fbaValue) {
+                        // agar aapne row pe data nahi lagaya toh fallback select box se lo
+                        fbaValue = $(this).find("select.fba-select").val();
+                    }
+
+                    if (selectedFbaFilter === "all") {
+                        $(this).show();
+                    } else if (fbaValue === selectedFbaFilter) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+
             // Show notification
             function showNotification(type, message) {
                 const notification = $(`
@@ -4237,6 +4305,8 @@
             function hideLoader() {
                 $('#data-loader').fadeOut();
             }
+
+
 
             // Initialize everything
             initTable();

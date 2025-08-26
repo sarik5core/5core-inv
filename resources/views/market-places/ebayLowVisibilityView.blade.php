@@ -980,16 +980,16 @@
                         <!-- A Dil% Filter -->
                         <div class="dropdown manual-dropdown-container ">
                             <button class="btn btn-light dropdown-toggle" type="button" id="ovClicksFilterDropdown">
-                                <span class="status-circle default"></span> OV CLICKS L30
+                                <span class="status-circle default"></span> PmtClkL30
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="ovClicksFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="all">
                                         <span class="status-circle default"></span> All OV CLICKS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="red">
                                         <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="green">
                                         <span class="status-circle green"></span> Green </a></li>
                             </ul>
@@ -1397,7 +1397,7 @@
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                OV CLICKS L30 <span class="sort-arrow">↓</span>
+                                                PmtClkL30 <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="views-total">0</div>
@@ -1625,7 +1625,7 @@
                 filters: {
                     'ov_dil': 'all',
                     'E Dil%': 'all',
-                    'OV CLICKS L30': 'all',
+                    'PmtClkL30': 'all',
                     'PFT %': 'all',
                     'Roi': 'all',
                     'Tacos30': 'all',
@@ -2125,7 +2125,7 @@
                                     ov_dil: ovDil,
                                     'E L30': item['E L30'] || 0,
                                     'E Dil%': item['E Dil%'] || 0,
-                                    'OV CLICKS L30': item['OV CLICKS L30'] || 0,
+                                    'PmtClkL30': item['PmtClkL30'] || 0,
                                     A_Z_Reason: item.A_Z_Reason || '',
                                     A_Z_ActionRequired: item.A_Z_ActionRequired || '',
                                     A_Z_ActionTaken: item.A_Z_ActionTaken || '',
@@ -2332,9 +2332,9 @@
                         `<span class="dil-percent-value ${getEDilColor(item['E Dil%'])}">${Math.round(item['E Dil%'] * 100)}%</span>`
                     ));
 
-                    // OV CLICKS L30 with tooltip icon (no color coding)
+                    // PmtClkL30 with tooltip icon (no color coding)
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getViewColor(item['OV CLICKS L30'])}">${Math.round(item['OV CLICKS L30'])}</span>
+                        `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">${Math.round(item['PmtClkL30'])}</span>
                          <span class="text-info tooltip-icon ad-view-trigger" 
                                data-bs-toggle="tooltip" 
                                data-bs-placement="left" 
@@ -2572,8 +2572,8 @@
                     switch (type.toLowerCase()) {
                         case 'conversion view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'PmtClkL30',
+                                    content: selectedItem['PmtClkL30']
                                 },
                                 {
                                     title: 'SCVR',
@@ -2643,8 +2643,8 @@
                             break;
                         case 'visibility view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'PmtClkL30',
+                                    content: selectedItem['PmtClkL30']
                                 },
                                 {
                                     title: 'KwImpL60',
@@ -4199,8 +4199,8 @@
                     return '';
                 }
 
-                // For OV CLICKS L30, use the raw value (not percentage)
-                if (column === 'OV CLICKS L30') {
+                // For PmtClkL30, use the raw value (not percentage)
+                if (column === 'PmtClkL30') {
                     const value = parseInt(rowData[column]) || 0;
                     return value >= 30 ? 'green' : 'red';
                 }
@@ -4289,8 +4289,8 @@
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['E L30']) || 0;
-                        metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
-                        let views = parseFloat(item['OV CLICKS L30']) || 0;
+                        metrics.viewsTotal += parseFloat(item['PmtClkL30']) || 0;
+                        let views = parseFloat(item['PmtClkL30']) || 0;
                         if (item.NR !== 'NR') {
                             metrics.viewsTotal += views;
                         }

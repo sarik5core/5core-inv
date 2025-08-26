@@ -981,9 +981,11 @@
         .scouth-product-value a:hover {
             text-decoration: underline;
         }
+
         .nr-hide {
             display: none !important;
         }
+
         /*popup modal style end */
     </style>
 @endsection
@@ -998,7 +1000,7 @@
                     <div id="percent-edit-div" class="d-flex align-items-center">
                         <div class="input-group" style="width: 150px;">
                             <input type="number" id="updateAllSkusPercent" class="form-control" min="0"
-                                max="100" value="{{ $ebayPercentage }}" step="0.01" title="Percent" disabled />
+                                max="100" value="{{ $ebayTwoPercentage }}" step="0.01" title="Percent" disabled />
                             <span class="input-group-text">%</span>
                         </div>
                         <button id="editPercentBtn" class="btn btn-outline-primary ms-2">
@@ -1114,16 +1116,16 @@
                         <!-- A Dil% Filter -->
                         <div class="dropdown manual-dropdown-container ">
                             <button class="btn btn-light dropdown-toggle" type="button" id="ovClicksFilterDropdown">
-                                <span class="status-circle default"></span> OV CLICKS L30
+                                <span class="status-circle default"></span> PmtClkL30
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="ovClicksFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="all">
                                         <span class="status-circle default"></span> All OV CLICKS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="red">
                                         <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="OV CLICKS L30"
+                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
                                         data-color="green">
                                         <span class="status-circle green"></span> Green </a></li>
                             </ul>
@@ -1516,7 +1518,7 @@
                                             <div class="metric-total" id="ovl30-total">0</div>
                                         </div>
                                     </th>
-                                    {{-- <th data-field="ov_dil" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="ov_dil" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 OV DIL <span class="sort-arrow">↓</span>
@@ -1524,8 +1526,8 @@
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="ovdil-total">0%</div>
                                         </div>
-                                    </th> --}}
-                                    {{-- <th data-field="el_30" style="vertical-align: middle; white-space: nowrap;">
+                                    </th>
+                                    <th data-field="el_30" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 EL 30 <span class="sort-arrow">↓</span>
@@ -1533,8 +1535,8 @@
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="el30-total">0</div>
                                         </div>
-                                    </th> --}}
-                                    {{-- <th data-field="e_dil" style="vertical-align: middle; white-space: nowrap;">
+                                    </th>
+                                    <th data-field="e_dil" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 E DIL <span class="sort-arrow">↓</span>
@@ -1542,7 +1544,7 @@
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="eDil-total">0%</div>
                                         </div>
-                                    </th> --}}
+                                    </th>
                                     <th>NRL</th>
 
                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
@@ -1565,11 +1567,12 @@
                                         </div>
                                     </th>
 
-                                    {{-- <th>Hide</th>
+                                    <th>Hide</th>
+
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                OV CLICKS L30 <span class="sort-arrow">↓</span>
+                                                PmtClkL30 <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="views-total">0</div>
@@ -1626,8 +1629,37 @@
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="cvr-total">0%</div>
                                         </div>
-                                    </th> --}}
+                                    </th>
+
+                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                SPRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                SPROFIT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                SROI <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
                                 </tr>
+                            </thead>
                             </thead>
                             <tbody>
                                 <!-- Data will be populated by JavaScript -->
@@ -1847,7 +1879,7 @@
                 filters: {
                     'ov_dil': 'all',
                     'E Dil%': 'all',
-                    'OV CLICKS L30': 'all',
+                    'PmtClkL30': 'all',
                     'PFT %': 'all',
                     'Roi': 'all',
                     'Tacos30': 'all',
@@ -2328,28 +2360,30 @@
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
                                 const valueJson = item.value ? JSON.parse(item.value) : {};
-                                const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
-                                const liveVal   = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
 
-                                // Calculate SCVR as eBay L30 / OV CLICKS L30
+                                // Calculate SCVR as eBay L30 / PmtClkL30
                                 let scvr = 0;
-                                if (Number(item['OV CLICKS L30']) > 0) {
+                                if (Number(item['PmtClkL30']) > 0) {
                                     scvr = Number(item['eBay L30']) / Number(item[
-                                        'OV CLICKS L30']);
+                                        'PmtClkL30']);
                                 }
                                 return {
                                     sl_no: index + 1,
                                     'Sl': item['Sl'] || index + 1,
                                     Parent: item.Parent || item.parent || item.parent_asin ||
                                         item.Parent_ASIN || '(No Parent)',
-                                    '(Child) sku': item['Sku'] || '',
+                                    '(Child) sku': item['(Child) sku'] || '',
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
                                     ov_dil: ovDil,
                                     'eBay L30': item['eBay L30'] || 0,
                                     'E Dil%': item['E Dil%'] || 0,
-                                    'OV CLICKS L30': item['OV CLICKS L30'] || 0,
+                                    'PmtClkL30': item['PmtClkL30'] || 0,
                                     'eBay Price': item['eBay Price'] || 0,
                                     'PFT %': item['PFT %'] || 0,
                                     Profit: item.Profit || item['Profit'] || item['profit'] ||
@@ -2363,9 +2397,17 @@
                                         .toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
                                     NR: item.NR || '',
-                                    Hide: item.Hide !== undefined ? item.Hide : '',
                                     listed: listedVal,
                                     live: liveVal,
+                                    Hide: item.Hide !== undefined ? item.Hide : '',
+                                    SPRICE: (item.SPRICE !== null && !isNaN(parseFloat(item
+                                        .SPRICE))) ? parseFloat(item.SPRICE) : 0,
+                                    SPFT: (item.SPFT !== null && !isNaN(parseFloat(item
+                                        .SPFT))) ? parseFloat(item.SPFT) : 0,
+                                    SROI: (item.SROI !== null && !isNaN(parseFloat(item
+                                        .SROI))) ? parseFloat(item.SROI) : 0,
+                                    LP: item.LP_productmaster || 0,
+                                    SHIP: item.Ship_productmaster || 0,
                                 };
                             });
 
@@ -2572,12 +2614,30 @@
 
                     $row.append($('<td>').text(item.INV));
                     $row.append($('<td>').text(item.L30));
+                    // A DIL with color coding
 
-                    // --- NR column ---
+
+                    // OV DIL with color coding and WMPNM tooltip
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>
+                         <span class="text-info tooltip-icon wmpnm-view-trigger" 
+                               data-bs-toggle="tooltip" 
+                               data-bs-placement="left" 
+                               title="WMPNM View"
+                               data-item='${JSON.stringify(item.raw_data)}'>W</span>`
+                    ));
+
+                    $row.append($('<td>').text(item['eBay L30']));
+
+                    // A DIL with color coding
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getEDilColor(item['E Dil%'])}">${Math.round(item['E Dil%'] * 100)}%</span>`
+                    ));
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ? item.NR : 'RA';
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
@@ -2600,8 +2660,9 @@
                         $row.append($('<td>').append($select));
                     }
 
-                      //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1';
+                    //Listed checkbox
+                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                        .Listed === 1 || rawData.Listed === '1';
                     const $listedCb = $('<input>', {
                         type: 'checkbox',
                         class: 'listed-checkbox',
@@ -2611,7 +2672,8 @@
                     $row.append($('<td>').append($listedCb));
 
                     // Live checkbox
-                    const liveVal   = rawData.Live === true   || rawData.Live === 'true'   || rawData.Live === 1   || rawData.Live === '1';
+                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                        1 || rawData.Live === '1';
                     const $liveCb = $('<input>', {
                         type: 'checkbox',
                         class: 'live-checkbox',
@@ -2619,6 +2681,186 @@
                     }).data('sku', item['(Child) sku']);
 
                     $row.append($('<td>').append($liveCb));
+
+
+
+                    if (item.is_parent) {
+                        $row.append($('<td>')); // Empty cell for parent
+                    } else {
+                        // Hide
+                        const $hideContainer = $(
+                            '<div class="hide-edit-container d-flex align-items-center"></div>');
+                        const $hideCheckbox = $('<input type="checkbox" class="hide-checkbox" disabled />')
+                            .prop('checked', item['Hide'] === true || item['Hide'] === 'true' || item[
+                                'Hide'] === '1')
+                            .data('original-value', item['Hide']);
+                        const $hideEditIcon = $(
+                            '<i class="fas fa-pen hide-edit-icon ml-2 text-primary" style="cursor:pointer" title="Edit Hide"></i>'
+                        );
+                        $hideContainer.append($hideCheckbox, $hideEditIcon);
+                        $row.append($('<td>').append($hideContainer));
+                    }
+
+                    // PmtClkL30 with tooltip icon (no color coding)
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">${Math.round(item['PmtClkL30'])}</span>
+                         <span class="text-info tooltip-icon ad-view-trigger" 
+                               data-bs-toggle="tooltip" 
+                               data-bs-placement="left" 
+                               title="visibility View"
+                               data-item='${JSON.stringify(item.raw_data)}'>V</span>`
+                    ));
+
+                    //price with tooltip
+                    // Replace the existing price section with this:
+                    $row.append($('<td>').html(
+                        `$${(parseFloat(item['eBay Price']) || 0).toFixed(2)}
+                            <span class="tooltip-container" style="margin-left:8px">
+                                <i class="fas fa-tag text-warning price-view-trigger" 
+                                style="transform:translateY(1px)"
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top-end" 
+                                title="Pricing view"
+                                data-item='${JSON.stringify(item.raw_data)}'"></i>
+                            </span>`
+                    ));
+
+                    $row.append($('<td>').html(
+                        `<div style="display:flex;align-items:center">
+                            <span class="sPriceText" data-sku="${item.raw_data['Item ID']}" style="min-width:100px; display:inline-block;">
+                                ` + item['eBay Price'] + `
+                            </span>
+                            <input 
+                                value="` + item['eBay Price'] + `" 
+                                data-sku="` + item.raw_data['Item ID'] + `" 
+                                style="min-width:100px; display:none;" 
+                                type="number" 
+                                class="sPriceInput form-control"
+                            >
+                            <span class="tooltip-container" style="margin-left:8px">
+                                <i class="fas fa-tag text-warning price-view-trigger" 
+                                   style="transform:translateY(1px)"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top-end" 
+                                   title="Pricing view"
+                                   data-item='${JSON.stringify(item.raw_data)}'></i>
+                            </span>
+                        </div>`
+                    ));
+
+
+                  
+                    // PFT with color coding
+                    $row.append($('<td>').html(
+                        typeof item['PFT %'] === 'number' && !isNaN(item['PFT %']) ?
+                        `<span class="dil-percent-value ${getPftColor(item['PFT %'])}">${Math.round(item['PFT %'] * 100)}%</span>` :
+                        ''
+                    ));
+
+                    // ROI with color coding
+                    $row.append($('<td>').html(
+                        typeof item.Roi === 'number' && !isNaN(item.Roi) ?
+                        `<span class="dil-percent-value ${getRoiColor(item.Roi)}">${Math.round(item.Roi * 100)}%</span>` :
+                        ''
+                    ));
+
+                    // TACOS with color coding and tooltip
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${(item.Tacos30 * 100).toFixed(0)}%</span>
+                         <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
+                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
+                            data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
+                       // CVR with color coding and tooltip
+                    let scvrValue = 0;
+                    if (Number(item['PmtClkL30']) > 0) {
+                        scvrValue = (Number(item['eBay L30']) / Number(item['PmtClkL30'])) * 100;
+                    }
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(scvrValue/100)}">${Math.round(scvrValue)}%</span>
+                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+                            data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
+
+
+
+                    // SPRICE + Edit Button (no decimals)
+                    $row.append($('<td>').html(
+                        item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
+                        `
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary s_price" 
+              style="font-size:16px; padding:8px 14px; border-radius:8px;">
+            $${Math.round(parseFloat(item.SPRICE))}
+        </span>
+        <div class="btn-group" role="group">
+            <!-- Edit Button -->
+            <button class="btn btn-outline-primary openPricingBtn"
+                style="font-size:15px; padding:6px 12px; border-radius:8px;"
+                title="Edit SPRICE"
+                data-lp="${item.LP}"
+                data-ship="${item.SHIP}"
+                data-sku="${item["(Child) sku"]}">
+                <i class="fa fa-edit"></i>
+            </button>
+        </div>
+    </div>
+    ` : ''
+                    ));
+
+
+                    // ✅ SPFT (with coloring logic + inline style)
+                    $row.append($('<td>').attr('id', `spft-${item["(Child) sku"]}`).html(
+                        item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SPFT) <= 10 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SPFT) <= 15 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SPFT) <= 20 
+                        ? '#0d6efd'   // 🔵 blue
+                        : '#198754'   // 🟢 green
+        };">
+        ${(parseFloat(item.SPFT) - Math.floor(parseFloat(item.SPFT)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SPFT)) 
+            : Math.floor(parseFloat(item.SPFT)))}%
+     </span>` :
+                        ''
+                    ));
+
+                    // ✅ SROI (with coloring logic + inline style)
+                    $row.append($('<td>').attr('id', `sroi-${item["(Child) sku"]}`).html(
+                        item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
+                        `<span style="
+        font-size:14px; 
+        padding:6px 12px; 
+        border-radius:8px; 
+        color:#fff; 
+        background-color:${
+            parseFloat(item.SROI) <= 50 
+                ? '#dc3545'   // 🔴 red
+                : parseFloat(item.SROI) <= 100 
+                    ? '#ffc107'   // 🟡 yellow
+                    : parseFloat(item.SROI) <= 150 
+                        ? '#198754'   // 🟢 green
+                        : '#6f42c1'   // 🟣 purple
+        };">
+        ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
+            ? Math.ceil(parseFloat(item.SROI)) 
+            : Math.floor(parseFloat(item.SROI)))}%
+     </span>` :
+                        ''
+                    ));
+
+
 
                     $tbody.append($row);
                 });
@@ -2819,14 +3061,14 @@
                     switch (type.toLowerCase()) {
                         case 'conversion view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'PmtClkL30',
+                                    content: selectedItem['PmtClkL30']
                                 },
                                 {
                                     title: 'SCVR',
-                                    content: (Number(selectedItem['OV CLICKS L30']) > 0) ?
+                                    content: (Number(selectedItem['PmtClkL30']) > 0) ?
                                         ((Number(selectedItem['eBay L30']) / Number(selectedItem[
-                                            'OV CLICKS L30'])) * 100).toFixed(2) + '%' : '0%'
+                                            'PmtClkL30'])) * 100).toFixed(2) + '%' : '0%'
                                 },
                                 {
                                     title: 'KwClkL60',
@@ -2892,8 +3134,8 @@
                             break;
                         case 'visibility view':
                             fieldsToDisplay = [{
-                                    title: 'OV CLICKS L30',
-                                    content: selectedItem['OV CLICKS L30']
+                                    title: 'PmtClkL30',
+                                    content: selectedItem['PmtClkL30']
                                 },
                                 {
                                     title: 'KwImpL60',
@@ -3496,6 +3738,45 @@
                     showNotification('danger', 'Failed to open details view. Please try again.');
                 }
             };
+
+
+               if (!document.getElementById('pricingModal')) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                $('body').append(`
+                <div class="modal fade" id="pricingModal" tabindex="-1" aria-labelledby="pricingModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content p-3">
+                            <div class="modal-header">
+                                <h5 class="modal-title">SPRICE Calculator</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="pricingForm" method="POST" >
+                                    @csrf
+                                    <input type="hidden" id="skuInput" name="sku">
+
+                                    <div class="mb-2">
+                                        <label>SPRICE ($)</label>
+                                        <input type="number" step="0.01" class="form-control" id="sprPriceInput" name="sprice">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label>SPFT%</label>
+                                        <input type="text" class="form-control" id="spftPercentInput" name="spft_percent" readonly>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label>SROI%</label>
+                                        <input type="text" class="form-control" id="sroiPercentInput" name="sroi_percent" readonly>
+                                    </div>
+<button type="button" id="savePricingBtn" class="btn btn-primary">Save</button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    `);
+            }
 
             // Helper function to create a field card
             function createFieldCard(field, data, type, itemId) {
@@ -4415,8 +4696,8 @@
                     return '';
                 }
 
-                // For OV CLICKS L30, use the raw value (not percentage)
-                if (column === 'OV CLICKS L30') {
+                // For PmtClkL30, use the raw value (not percentage)
+                if (column === 'PmtClkL30') {
                     const value = parseInt(rowData[column]) || 0;
                     return value >= 30 ? 'green' : 'red';
                 }
@@ -4424,8 +4705,8 @@
                 // For SCVR, always use the calculated value
                 if (column === 'SCVR') {
                     let scvr = 0;
-                    if (Number(rowData['OV CLICKS L30']) > 0) {
-                        scvr = Number(rowData['eBay L30']) / Number(rowData['OV CLICKS L30']);
+                    if (Number(rowData['PmtClkL30']) > 0) {
+                        scvr = Number(rowData['eBay L30']) / Number(rowData['PmtClkL30']);
                     }
                     const value = scvr * 100;
                     if (value <= 4) return 'red';
@@ -4523,12 +4804,14 @@
                         }
 
                         // Count listed checkboxes
-                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1') {
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
+                            rawData.Listed === '1') {
                             metrics.listedCount++;
                         }
 
                         // Count Live checkboxes
-                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 || rawData.Live === '1') {
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
+                            rawData.Live === '1') {
                             metrics.liveCount++;
                         }
 
@@ -4542,15 +4825,15 @@
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['eBay L30']) || 0;
-                        metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
-                        let views = parseFloat(item['OV CLICKS L30']) || 0;
+                        metrics.viewsTotal += parseFloat(item['PmtClkL30']) || 0;
+                        let views = parseFloat(item['PmtClkL30']) || 0;
                         if (item.NR !== 'NR') {
                             metrics.viewsTotal += views;
                         }
                         metrics.roiSum += parseFloat(item.Roi) || 0;
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
-                        metrics.scvrSum += (Number(item['OV CLICKS L30']) > 0) ?
-                            (Number(item['eBay L30']) / Number(item['OV CLICKS L30'])) :
+                        metrics.scvrSum += (Number(item['PmtClkL30']) > 0) ?
+                            (Number(item['eBay L30']) / Number(item['PmtClkL30'])) :
                             0;
                         metrics.rowCount++;
                     });
@@ -5154,7 +5437,120 @@
                         $btn.prop('disabled', false).html('Update Selected');
                     }
                 });
+
+
+                
             });
+
+
+               $(document).on('click', '.openPricingBtn', function() {
+                const LP = parseFloat($(this).data('lp')) || 0;
+                const SHIP = parseFloat($(this).data('ship')) || 0;
+                const SKU = $(this).data('sku') || '';
+
+                $('#skuInput').val(SKU);
+
+                const $sprInput = $('#sprPriceInput');
+                const $spftInput = $('#spftPercentInput');
+                const $sroiInput = $('#sroiPercentInput');
+
+                // Reset values
+                $sprInput.val('');
+                $spftInput.val('');
+                $sroiInput.val('');
+
+                $sprInput.off('input').on('input', function() {
+                    const SPRICE = parseFloat(this.value) || 0;
+
+                    if (SPRICE > 0) {
+                        const SPFT = ((SPRICE * 0.74) - LP - SHIP) / SPRICE;
+                        const SROI = ((SPRICE * 0.74) - LP - SHIP) / LP;
+
+                        $spftInput.val((SPFT * 100).toFixed(2) + '%');
+                        $sroiInput.val(isFinite(SROI) ? (SROI * 100).toFixed(2) + '%' : '∞');
+                    } else {
+                        $spftInput.val('');
+                        $sroiInput.val('');
+                    }
+                });
+
+                $('#pricingModal').modal('show');
+            });
+
+            $(document).on('click', '#savePricingBtn', function() {
+                const sku = $('#skuInput').val()?.trim();
+                const spriceVal = $('#sprPriceInput').val();
+                const spft = parseFloat($('#spftPercentInput').val()?.replace('%', '')) || 0;
+                const sroi = parseFloat($('#sroiPercentInput').val()?.replace('%', '')) || 0;
+
+                const sprice = spriceVal !== '' ? parseFloat(spriceVal) : null;
+
+                if (!sku || !sprice) {
+                    alert('SKU and SPRICE are required.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/ebay/save-sprice',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        sprice: sprice,
+                        spft_percent: spft,
+                        sroi_percent: sroi
+                    },
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $('#savePricingBtn').html(
+                            '<i class="fa fa-spinner fa-spin"></i> Saving...');
+                    },
+                    success: function(response) {
+                        showNotification('success', 'Data updated successfully...');
+                        $('#pricingModal').modal('hide');
+                        tableData.forEach(item => {
+                            if (item['(Child) sku'] === sku) {
+                                item.SPRICE = sprice;
+                                item.SPFT = spft;
+                                item.SROI = sroi;
+                            }
+                        });
+
+                        filteredData.forEach(item => {
+                            if (item['(Child) sku'] === sku) {
+                                item.SPRICE = sprice;
+                                item.SPFT = spft;
+                                item.SROI = sroi;
+                            }
+                        });
+                        renderTable();
+                    },
+                    error: function(xhr) {
+                        alert('Error saving SPRICE.');
+                        console.error(xhr.responseText);
+                    },
+                    complete: function() {
+                        $('#savePricingBtn').html('Save');
+                    }
+                });
+            });
+
+            function showNotification(type, message) {
+                const notification = $(`
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `);
+
+                $('body').append(notification);
+
+                setTimeout(() => {
+                    notification.find('.alert').alert('close');
+                }, 3000);
+            }
 
             // Initialize everything
             initTable();
