@@ -38,59 +38,6 @@ class AmazonSpBudgetController extends Controller
         return $data['access_token'];
     }
 
-    public function getAdGroupsList(Request $request)
-    {
-        $campaignIds = $request->input('campaign_ids', []);
-        if (empty($campaignIds)) {
-            return response()->json([
-                'message' => 'Campaign IDs are required',
-                'status' => 400
-            ]);
-        }
-
-        $accessToken = $this->getAccessToken();
-        $client = new Client();
-
-        $url = 'https://advertising-api.amazon.com/sp/adGroups/list';
-
-        $payload = [
-            'campaignIdFilter' => [
-                'include' => $campaignIds
-            ],
-            'stateFilter' => [
-                'include' => ['ENABLED']
-            ]
-        ];
-
-        try {
-            $response = $client->post($url, [
-                'headers' => [
-                    'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
-                    'Authorization' => 'Bearer ' . $accessToken,
-                    'Amazon-Advertising-API-Scope' => $this->profileId,
-                    'Content-Type' => 'application/vnd.spAdGroup.v3+json',
-                    'Accept' => 'application/vnd.spAdGroup.v3+json',
-                ],
-                'json' => $payload,
-            ]);
-
-            $data = json_decode($response->getBody(), true);
-
-            return response()->json([
-                'message' => 'Ad Groups fetched successfully',
-                'data' => $data,
-                'status' => 200,
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error fetching Ad Groups',
-                'error' => $e->getMessage(),
-                'status' => 500,
-            ]);
-        }
-    }
-
     public function getAdGroupsByCampaigns(array $campaignIds)
     {
         $accessToken = $this->getAccessToken();
