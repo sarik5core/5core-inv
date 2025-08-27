@@ -90,12 +90,16 @@ class OverallAmazonFbaController extends Controller
                     $imageSrc = $shopifyData[$childSku]->image_src ?? null;
                     $imagePath = $product->image_path ?? null;
                     $item->image_path = $imageSrc ?? $imagePath;
-                    $item->NRL = "REQ";
-                    $dataView = $amazonDataViews[strtoupper(trim($childSku))] ?? null;
 
+                    $dataView = $amazonDataViews[strtoupper(trim($childSku))] ?? null;
                     $value = $dataView ? $dataView->value : [];
-                    $item->NRL = $value['NR'] ?? 'REQ';
-                    $item->FBA = $value['FBA'] ?? 'FBA';
+
+                    // ✅ Key renamed here
+                    $item->NRL_REQ_FBA = $value['NRL_REQ_FBA'] ?? 'REQ FBA';
+
+                    if ($item->NRL_REQ_FBA !== 'REQ FBA' && $item->NRL_REQ_FBA !== 'NRL FBA') {
+                        $item->NRL_REQ_FBA = 'REQ FBA';
+                    }
                 } else {
                     // For PARENT SKUs or when childSku is empty, keep original values
                     $item->image_path = null;

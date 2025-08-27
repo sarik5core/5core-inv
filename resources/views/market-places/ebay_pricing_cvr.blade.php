@@ -2292,7 +2292,6 @@
 
                                     'PmtClkL30': item['PmtClkL30'] || 0,
 
-                                    'PmtClkL30': item['PmtClkL30'] || 0,
                                     'eBay Price': item['eBay Price'] || 0,
                                     'PFT %': item['PFT %'] || 0,
                                     Profit: item.Profit || item['Profit'] || item['profit'] ||
@@ -2406,7 +2405,7 @@
                 }
 
                 filteredData.forEach(item => {
-                    
+
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
