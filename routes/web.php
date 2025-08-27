@@ -158,6 +158,7 @@ use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksCon
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
+use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
@@ -1536,6 +1537,16 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon-sb/get-amz-utilized-bgt-hl', 'getAmzUtilizedBgtHl');
         Route::post('/update-amazon-sb-bid-price', 'updateAmazonSbBidPrice');
         Route::put('/amazon-sb/update-keywords-bid-price', 'updateCampaignKeywordsBid');
+    });
+
+    Route::controller(AmzUnderUtilizedBgtController::class)->group(function () {
+        Route::get('/amazon-sp/amz-under-utilized-bgt-kw', 'amzUnderUtilizedBgtKw')->name('amazon-sp.amz-under-utilized-bgt-kw');
+        Route::get('/amazon-sp/get-amz-under-utilized-bgt-kw', 'getAmzUnderUtilizedBgtKw');
+        Route::post('/update-amazon-under-utilized-sp-bid-price', 'updateAmazonSpBidPrice');
+        Route::put('/update-keywords-bid-price', 'updateCampaignKeywordsBid');
+
+        Route::get('/amazon-sp/amz-under-utilized-bgt-pt', 'amzUnderUtilizedBgtPt')->name('amazon-sp.amz-under-utilized-bgt-pt');
+        Route::get('/amazon-sp/get-amz-under-utilized-bgt-pt', 'getAmzUnderUtilizedBgtPt');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
