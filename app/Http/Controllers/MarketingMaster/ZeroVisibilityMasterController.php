@@ -28,6 +28,7 @@ use App\Models\EbayDataView;
 use App\Models\EbayThreeDataView;
 use App\Models\EbayTwoDataView;
 use App\Models\MacyDataView;
+use App\Models\MarketplacePercentage;
 use App\Models\ZeroVisibilityMaster;
 use App\Models\ProductMaster;
 use App\Models\SheinDataView;
@@ -109,27 +110,24 @@ class ZeroVisibilityMasterController extends Controller
         $channels = ZeroVisibilityMaster::all();
 
         foreach ($channels as $channel) {
-            $nrCount = null;
+            $livePending = null;
+            $zeroView = null;
 
-            $channelName = strtolower(trim($channel->channel_name));
+            // Build controller class name dynamically (e.g., "Amazon" => AmazonZeroController)
+            $baseName = str_replace([' ', '&', '-', '/'], '', ucwords(strtolower(trim($channel->channel_name))));
+            $controllerClass = "App\\Http\\Controllers\\MarketPlace\\{$baseName}ZeroController";
 
-            switch ($channelName) {
-                case 'amazon':
-                    $nrCount = app(ListingAmazonController::class)->getNrReqCount()['NR'] ?? null;
-                    break;
-
-                case 'ebay':
-                    $nrCount = app(ListingEbayController::class)->getNrReqCount()['NR'] ?? null;
-                    break;
-
-                case 'temu':
-                    $nrCount = app(ListingTemuController::class)->getNrReqCount()['NR'] ?? null;
-                    break;
-
-                // Add more cases for other channels
+            if (class_exists($controllerClass)) {
+                $controller = app($controllerClass);
+                if (method_exists($controller, 'getLivePendingAndZeroViewCounts')) {
+                    $counts = $controller->getLivePendingAndZeroViewCounts();
+                    $livePending = $counts['live_pending'] ?? null;
+                    $zeroView = $counts['zero_view'] ?? null;
+                }
             }
 
-            $channel->NR = $nrCount; // assign NR to be shown in blade
+            $channel->live_pending = $livePending;
+            $channel->zero_view = $zeroView;
         }
 
         return view('marketing-masters.zero-visibility-master', compact('totalSkuCount', 'zeroInvCount','channels'));
@@ -587,113 +585,250 @@ class ZeroVisibilityMasterController extends Controller
     //     ]);
     // }
 
+    // public function getMergedChannelData(Request $request)
+    // {
+    //     ini_set('max_execution_time', 120);
+
+    //     $sheetResponse = (new ApiController)->fetchDataFromChannelMasterGoogleSheet();
+    //     if ($sheetResponse->getStatusCode() !== 200) {
+    //         return response()->json(['data' => [], 'message' => 'Sheet fetch failed'], 500);
+    //     }
+
+    //     $sheetData = $sheetResponse->getData()->data ?? [];
+
+    //     // Load DB records once
+    //     $dbRecords = ZeroVisibilityMaster::all()->keyBy(fn($row) => strtolower(trim($row->channel_name)));
+
+    //     // Preload all zero counts
+    //     $zeroCounts = [
+    //         'amazon'      => app(AmazonZeroController::class)->getZeroViewCount(),
+    //         'ebay'        => app(EbayZeroController::class)->getZeroViewCount(),
+    //         'shopify b2c' => app(Shopifyb2cZeroController::class)->getZeroViewCount(),
+    //         'macys'       => app(MacyZeroController::class)->getZeroViewCount(),
+    //         'wayfair'     => app(WayfairZeroController::class)->getZeroViewCount(),
+    //         'temu'        => app(TemuZeroController::class)->getZeroViewCount(),
+    //         'doba'        => app(DobaZeroController::class)->getZeroViewCount(),
+    //         'ebay 2'      => app(Ebay2ZeroController::class)->getZeroViewCount(),
+    //         'ebay 3'      => app(Ebay3ZeroController::class)->getZeroViewCount(),
+    //         'walmart'     => app(WalmartZeroController::class)->getZeroViewCount(),
+    //         'aliexpress'  => app(AliexpressZeroController::class)->getZeroViewCount(),
+    //         'tiktok shop' => app(TiktokShopZeroController::class)->getZeroViewCount(),
+    //         'shein'       => app(SheinZeroController::class)->getZeroViewCount(),
+    //     ];
+
+    //     // Preload and decode all data views once
+    //     $channelData = [
+    //         'amazon'      => AmazonDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'ebay'        => EbayDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'shopify b2c' => Shopifyb2cDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'macys'       => MacyDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'wayfair'     => WayfairDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'temu'        => TemuDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'doba'        => DobaDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'ebay 2'      => EbayTwoDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'ebay 3'      => EbayThreeDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'walmart'     => WalmartDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'aliexpress'  => AliexpressDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'tiktok shop' => TiktokShopDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //         'shein'       => SheinDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
+    //     ];
+
+    //     // Precompute counts for each channel
+    //     $channelCounts = [];
+    //     foreach ($channelData as $channel => $records) {
+    //         $listed = 0;
+    //         $live = 0;
+    //         foreach ($records as $valueData) {
+    //             if (!empty($valueData['Listed']) && $valueData['Listed'] === true) {
+    //                 $listed++;
+    //             }
+    //             if (!empty($valueData['Live']) && $valueData['Live'] === true) {
+    //                 $live++;
+    //             }
+    //         }
+    //         $channelCounts[$channel] = [
+    //             'listed' => $listed,
+    //             'live'   => $live
+    //         ];
+    //     }
+
+    //     $mergedData = [];
+
+    //     foreach ($sheetData as $item) {
+    //         $channelName = trim($item->{'Channel '} ?? '');
+    //         if (!$channelName) {
+    //             continue;
+    //         }
+
+    //         $lower = strtolower($channelName);
+    //         $dbRow = $dbRecords[$lower] ?? null;
+
+    //         if (!$dbRow) {
+    //             $dbRow = ZeroVisibilityMaster::create([
+    //                 'channel_name' => $channelName,
+    //             ]);
+    //             $dbRecords[$lower] = $dbRow;
+    //         }
+
+    //         $zeroInv = $dbRow->zero_inv ?? 0;
+
+    //         $listedCount = $channelCounts[$lower]['listed'] ?? 0;
+    //         $liveCount   = $channelCounts[$lower]['live'] ?? 0;
+
+    //         // Apply formula: Listed - Zero Inv - Live
+    //         $livePending = $listedCount - $zeroInv - $liveCount;
+
+    //         $mergedData[] = [
+    //             'Channel '               => $channelName,
+    //             'R&A'                    => trim($item->{'R&A'} ?? ''),
+    //             'Live Pending'           => $livePending,
+    //             'Zero Visibility SKU Count' => $zeroCounts[$lower] ?? 0,
+    //         ];
+    //     }
+
+    //     return response()->json([
+    //         'data' => array_values($mergedData),
+    //         'message' => 'Merged successfully'
+    //     ]);
+    // }
+
+    // public function getMergedChannelData()
+    // {
+    //     $channels = MarketplacePercentage::pluck('marketplace')->toArray();
+
+    //     $summary = [];
+
+    //     foreach ($channels as $channel) {
+    //         // Build dynamic controller name
+    //         $controllerClass = "\\App\\Http\\Controllers\\MarketPlace\\" . $channel . "ZeroController";
+
+    //         if (class_exists($controllerClass)) {
+    //             $controller = app($controllerClass);
+
+    //             if (method_exists($controller, 'get' . $channel . 'ListingCounts')) {
+    //                 // Example: getAmazonListingCounts()
+    //                 $counts = $controller->{'get' . $channel . 'ListingCounts'}();
+
+    //                 // Live Pending = Listed - Live - ZeroInv
+    //                 $livePending = max(0, ($counts['Listed'] ?? 0) - ($counts['Live'] ?? 0) - ($counts['ZeroInv'] ?? 0));
+    //                 dd($livePending);
+
+    //                 // Zero visibility = ZeroView
+    //                 $zeroVisibility = $counts['ZeroView'] ?? 0;
+
+    //                 $summary[] = [
+    //                     'channel' => $channel,
+    //                     'live_pending' => $livePending,
+    //                     'zero_visibility' => $zeroVisibility,
+    //                 ];
+    //             } else {
+    //                 $summary[] = [
+    //                     'channel' => $channel,
+    //                     'live_pending' => 0,
+    //                     'zero_visibility' => 0,
+    //                 ];
+    //             }
+    //         } else {
+    //             $summary[] = [
+    //                 'channel' => $channel,
+    //                 'live_pending' => 0,
+    //                 'zero_visibility' => 0,
+    //             ];
+    //         }
+    //     }
+
+    //     return response()->json($summary);
+    // }
+
+
+    // public function getMergedChannelData()
+    // {
+    //     $channels = MarketplacePercentage::pluck('marketplace')->toArray();
+    //     $summary = [];
+
+    //     foreach ($channels as $channel) {
+    //         try {
+    //             // Build dynamic controller class name
+    //             $controllerClass = "\\App\\Http\\Controllers\\MarketPlace\\" . $channel . "ZeroController";
+
+    //             if (class_exists($controllerClass)) {
+    //                 $controller = app($controllerClass);
+    //                 $method = 'get' . $channel . 'ListingCounts';
+
+    //                 if (method_exists($controller, $method)) {
+    //                     // Example: getAmazonListingCounts()
+    //                     $counts = $controller->{$method}();
+
+    //                     $livePending = max(0, ($counts['Listed'] ?? 0) - ($counts['Live'] ?? 0) - ($counts['ZeroInv'] ?? 0));
+    //                     $zeroVisibility = $counts['ZeroView'] ?? 0;
+
+    //                     $summary[] = [
+    //                         'channel' => $channel,
+    //                         'live_pending' => $livePending,
+    //                         'zero_visibility' => $zeroVisibility,
+    //                     ];
+    //                     continue; // move to next channel
+    //                 }
+    //             }
+    //         } catch (\Throwable $e) {
+    //             // Log the error if needed
+    //             Log::error("Error processing channel {$channel}: " . $e->getMessage());
+    //         }
+
+    //         // If no controller/method or exception → push defaults
+    //         $summary[] = [
+    //             'channel' => $channel,
+    //             'live_pending' => 0,
+    //             'zero_visibility' => 0,
+    //         ];
+    //     }
+
+    //     return response()->json($summary);
+    // }
+
     public function getMergedChannelData(Request $request)
     {
-        ini_set('max_execution_time', 120);
+        // Get all channels from DB
+        $channels = MarketplacePercentage::pluck('marketplace')->toArray();
 
-        $sheetResponse = (new ApiController)->fetchDataFromChannelMasterGoogleSheet();
-        if ($sheetResponse->getStatusCode() !== 200) {
-            return response()->json(['data' => [], 'message' => 'Sheet fetch failed'], 500);
-        }
+        $data = [];
 
-        $sheetData = $sheetResponse->getData()->data ?? [];
+        foreach ($channels as $channel) {
+            // Build dynamic controller name
+            $controllerClass = "\\App\\Http\\Controllers\\MarketPlace\\" . ucfirst($channel) . "ZeroController";
 
-        // Load DB records once
-        $dbRecords = ZeroVisibilityMaster::all()->keyBy(fn($row) => strtolower(trim($row->channel_name)));
+            $livePending = 0;
+            $zeroViews = 0;
 
-        // Preload all zero counts
-        $zeroCounts = [
-            'amazon'      => app(AmazonZeroController::class)->getZeroViewCount(),
-            'ebay'        => app(EbayZeroController::class)->getZeroViewCount(),
-            'shopify b2c' => app(Shopifyb2cZeroController::class)->getZeroViewCount(),
-            'macys'       => app(MacyZeroController::class)->getZeroViewCount(),
-            'wayfair'     => app(WayfairZeroController::class)->getZeroViewCount(),
-            'temu'        => app(TemuZeroController::class)->getZeroViewCount(),
-            'doba'        => app(DobaZeroController::class)->getZeroViewCount(),
-            'ebay 2'      => app(Ebay2ZeroController::class)->getZeroViewCount(),
-            'ebay 3'      => app(Ebay3ZeroController::class)->getZeroViewCount(),
-            'walmart'     => app(WalmartZeroController::class)->getZeroViewCount(),
-            'aliexpress'  => app(AliexpressZeroController::class)->getZeroViewCount(),
-            'tiktok shop' => app(TiktokShopZeroController::class)->getZeroViewCount(),
-            'shein'       => app(SheinZeroController::class)->getZeroViewCount(),
-        ];
 
-        // Preload and decode all data views once
-        $channelData = [
-            'amazon'      => AmazonDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'ebay'        => EbayDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'shopify b2c' => Shopifyb2cDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'macys'       => MacyDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'wayfair'     => WayfairDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'temu'        => TemuDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'doba'        => DobaDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'ebay 2'      => EbayTwoDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'ebay 3'      => EbayThreeDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'walmart'     => WalmartDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'aliexpress'  => AliexpressDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'tiktok shop' => TiktokShopDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-            'shein'       => SheinDataView::pluck('value')->map(fn($v) => is_string($v) ? json_decode($v, true) : $v),
-        ];
-
-        // Precompute counts for each channel
-        $channelCounts = [];
-        foreach ($channelData as $channel => $records) {
-            $listed = 0;
-            $live = 0;
-            foreach ($records as $valueData) {
-                if (!empty($valueData['Listed']) && $valueData['Listed'] === true) {
-                    $listed++;
+            if (class_exists($controllerClass)) {
+                $controller = app($controllerClass);
+                // Try getLivePendingAndZeroViewCounts (preferred, returns both counts)
+                if (method_exists($controller, 'getLivePendingAndZeroViewCounts')) {
+                    $counts = $controller->getLivePendingAndZeroViewCounts();
+                    $livePending = $counts['live_pending'] ?? 0;
+                    $zeroViews = $counts['zero_view'] ?? 0;
                 }
-                if (!empty($valueData['Live']) && $valueData['Live'] === true) {
-                    $live++;
+                // Fallback: try getZeroViewCount (returns only zero view count)
+                else if (method_exists($controller, 'getZeroViewCount')) {
+                    $zeroViews = $controller->getZeroViewCount();
+                }
+                // Fallback: try getZeroViewCounts (plural, some controllers use this)
+                else if (method_exists($controller, 'getZeroViewCounts')) {
+                    $zeroViews = $controller->getZeroViewCounts();
                 }
             }
-            $channelCounts[$channel] = [
-                'listed' => $listed,
-                'live'   => $live
+
+            $data[] = [
+                'Channel ' => $channel,          // keep space to match your DataTable
+                'R&A' => false,                  // placeholder
+                'Live Pending' => $livePending,
+                'Zero Visibility SKU Count' => $zeroViews,
             ];
         }
 
-        $mergedData = [];
-
-        foreach ($sheetData as $item) {
-            $channelName = trim($item->{'Channel '} ?? '');
-            if (!$channelName) {
-                continue;
-            }
-
-            $lower = strtolower($channelName);
-            $dbRow = $dbRecords[$lower] ?? null;
-
-            if (!$dbRow) {
-                $dbRow = ZeroVisibilityMaster::create([
-                    'channel_name' => $channelName,
-                ]);
-                $dbRecords[$lower] = $dbRow;
-            }
-
-            $zeroInv = $dbRow->zero_inv ?? 0;
-
-            $listedCount = $channelCounts[$lower]['listed'] ?? 0;
-            $liveCount   = $channelCounts[$lower]['live'] ?? 0;
-
-            // Apply formula: Listed - Zero Inv - Live
-            $livePending = $listedCount - $zeroInv - $liveCount;
-
-            $mergedData[] = [
-                'Channel '               => $channelName,
-                'R&A'                    => trim($item->{'R&A'} ?? ''),
-                'Live Pending'           => $livePending,
-                'Zero Visibility SKU Count' => $zeroCounts[$lower] ?? 0,
-            ];
-        }
-
-        return response()->json([
-            'data' => array_values($mergedData),
-            'message' => 'Merged successfully'
-        ]);
+        return response()->json(['data' => $data]);
     }
-
 
 
     public function exportCsv()

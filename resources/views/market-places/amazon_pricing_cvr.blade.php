@@ -2585,6 +2585,7 @@
                     if (!sku.includes('PARENT') && inv > 0) {
                         if (al30 === 0) zeroSold++;
                     }
+
                     // For SOLD: count all SKUs that are not parent (regardless of inv)
                     if (!sku.includes('PARENT')) {
                         totalSku++;
@@ -2957,15 +2958,18 @@
                     const aL30 = Number(item['A L30']) || 0;
                     const price = Number(item.price) || 0;
 
+                    
                     // Sold Amount
                     const soldAmount = aL30 * price;
                     const pftAmt = (soldAmount * rawPft) / 100;
                     const PFTafterPFT = pftAmt - spend;
                     const adSpend = Number(item['Ad_Spend']) || 0;
                     const tacos = spend / soldAmount;
-                    const totalProfit = (aL30 * price) * rawPft;
+                    const totalProfit = (soldAmount * rawPft) / 100;
 
 
+                    console.log('Total Profit:', totalProfit);
+                    console.error('Sold Amount:', soldAmount);
                     // total profit 
                     $row.append($('<td>').html(
                         `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`

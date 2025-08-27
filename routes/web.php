@@ -569,6 +569,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-all-amazon-skus', [OverallAmazonController::class, 'updateAllAmazonSkus']);
     Route::post('/update-all-amazon-fba-skus', [OverallAmazonFbaController::class, 'updateAllAmazonfbaSkus']);
     Route::post('/update-all-ebay-skus', [EbayController::class, 'updateAllEbaySkus']);
+    Route::post('/update-all-ebay-skus', [EbayTwoController::class, 'updateAllEbay2Skus']);
+
     Route::post('/update-all-shopifyB2C-skus', [Shopifyb2cController::class, 'updateAllShopifyB2CSkus']);
     Route::post('/update-all-macy-skus', [MacyController::class, 'updateAllMacySkus']);
     Route::post('/update-all-neweggb2c-skus', [Neweggb2cController::class, 'updateAllNeweggB2CSkus']);
@@ -1020,6 +1022,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/ebay/save-nr', [EbayController::class, 'saveNrToDatabase']);
     Route::post('/ebay/update-listed-live', [EbayController::class, 'updateListedLive']);
     Route::post('/ebay/save-sprice', [EbayController::class, 'saveSpriceToDatabase'])->name('ebay.save-sprice');
+    Route::post('/ebay/save-sprice', [EbayTwoController::class, 'saveSpriceToDatabase'])->name('ebay.save-sprice');
+
     Route::post('/listing_ebay/save-status', [ListingEbayController::class, 'saveStatus']);
     Route::post('/listing_audit_ebay/save-na', [ListingAuditEbayController::class, 'saveAuditToDatabase']);
     Route::post('/ebay-zero/reason-action/update', [EbayZeroController::class, 'updateReasonAction']);
@@ -1555,4 +1559,4 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     // Route::post('/import-amazon-listing-status', [ListingAmazonController::class, 'importAmazonListingStatus'])->name('import.amazon.listing.status');
-    });
+});

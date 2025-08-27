@@ -12,6 +12,9 @@ use App\Models\MarketplacePercentage;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\ApiController;
 use App\Models\ChannelMaster;
+use App\Models\Ebay2GeneralReport;
+use App\Models\Ebay2Metric;
+use Illuminate\Support\Facades\DB;
 
 class EbayTwoController extends Controller
 {
@@ -42,130 +45,218 @@ class EbayTwoController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        // Get percentage from cache or database
-        $percentage = Cache::remember('Ebay2', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Ebay2')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100;
-        });
+        // Get percentage directly from database
+        $marketplaceData = MarketplacePercentage::where('marketplace', 'EbayTwo')->first();
+        $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
 
-        return view('market-places.ebayTwoAnalysis', [
+        return view('market-places.EbayTwoAnalysis', [
             'mode' => $mode,
             'demo' => $demo,
-            'ebayPercentage' => $percentage
+            'ebayTwoPercentage' => $percentage
         ]);
     }
 
 
-    public function ebayTwoPricingCVR(Request $request)
+    public function EbayTwoPricingCVR(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        $percentage = Cache::remember('Ebay2', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Ebay2')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100;
-        });
-
-        return view('market-places.ebayTwoPricingCvr', [
+        // Get percentage directly from database
+        $marketplaceData = MarketplacePercentage::where('marketplace', 'EbayTwo')->first();
+        $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
+        return view('market-places.EbayTwoPricingCvr', [
             'mode' => $mode,
             'demo' => $demo,
-            'percentage' => $percentage
+            'ebayTwoPercentage' => $percentage
         ]);
     }
 
     public function getViewEbayData(Request $request)
     {
-        // Get percentage from cache or database
-        $percentage = Cache::remember('Ebay2', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Ebay2')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100;
-        });
-        $percentageValue = $percentage / 100;
+        // 1. Base ProductMaster fetch
+        $productMasters = ProductMaster::orderBy("parent", "asc")
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy("sku", "asc")
+            ->get();
 
-        // Fetch all product master records
-        $productMasterRows = ProductMaster::all()->keyBy('sku');
+        // 2. SKU list
+        $skus = $productMasters->pluck("sku")
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
 
-        // Get all unique SKUs from product master
-        $skus = $productMasterRows->pluck('sku')->toArray();
+        // 3. Related Models
+        $shopifyData = ShopifySku::whereIn("sku", $skus)
+            ->get()
+            ->keyBy("sku");
 
-        // Fetch shopify data for these SKUs
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = Ebay2Metric::whereIn("sku", $skus)
+            ->get()
+            ->keyBy("sku");
 
-        // Fetch NR values for these SKUs from EbayDataView
-        $ebayDataViews = EbayTwoDataView::whereIn('sku', $skus)->get()->keyBy('sku');
-        $nrValues = [];
-        $listedValues = [];
-        $liveValues = [];
+        $nrValues = EbayTwoDataView::whereIn("sku", $skus)->pluck("value", "sku");
 
-        foreach ($ebayDataViews as $sku => $dataView) {
-            $value = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
-            $nrValues[$sku] = $value['NR'] ?? false;
-            $listedValues[$sku] = isset($value['Listed']) ? (int) $value['Listed'] : false;
-            $liveValues[$sku] = isset($value['Live']) ? (int) $value['Live'] : false;
+        // Mapping: item_id → sku
+        $itemIdToSku = $ebayMetrics->pluck('sku', 'item_id')->toArray();
+
+        // ✅ Fetch L30 Clicks directly from ebay2_general_reports
+        $extraClicksData = Ebay2GeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
+            ->where('report_range', 'L30')
+            ->pluck('clicks', 'listing_id')
+            ->toArray();
+
+        // 4. Fetch General Reports (listing_id → sku)
+        $generalReports = Ebay2GeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
+            ->whereIn('report_range', ['L60', 'L30', 'L7'])
+            ->get();
+
+        $adMetricsBySku = [];
+
+        // General Reports
+        foreach ($generalReports as $report) {
+            $sku = $itemIdToSku[$report->listing_id] ?? null;
+            if (!$sku) continue;
+
+            $range = strtoupper($report->report_range);
+
+            $adMetricsBySku[$sku][$range]['GENERAL_SPENT'] =
+                ($adMetricsBySku[$sku][$range]['GENERAL_SPENT'] ?? 0) + $this->extractNumber($report->ad_fees);
+
+            $adMetricsBySku[$sku][$range]['Imp'] =
+                ($adMetricsBySku[$sku][$range]['Imp'] ?? 0) + (int) $report->impressions;
+
+            $adMetricsBySku[$sku][$range]['Clk'] =
+                ($adMetricsBySku[$sku][$range]['Clk'] ?? 0) + (int) $report->clicks;
+
+            $adMetricsBySku[$sku][$range]['Ctr'] =
+                ($adMetricsBySku[$sku][$range]['Ctr'] ?? 0) + (float) $report->ctr;
+
+            $adMetricsBySku[$sku][$range]['Sls'] =
+                ($adMetricsBySku[$sku][$range]['Sls'] ?? 0) + (int) $report->sales;
         }
 
-        // Process data from product master and shopify tables
-        $processedData = [];
-        $slNo = 1;
+        // 5. Marketplace percentage (EbayTwo)
+        $percentage = (MarketplacePercentage::where("marketplace", "EbayTwo")->value("percentage") ?? 100) / 100;
 
-        foreach ($productMasterRows as $productMaster) {
-            $sku = $productMaster->sku;
-            $isParent = stripos($sku, 'PARENT') !== false;
+        // 6. Build Result
+        $result = [];
 
-            // Initialize the data structure
-            $processedItem = [
-                'SL No.' => $slNo++,
-                'Parent' => $productMaster->parent ?? null,
-                'Sku' => $sku,
-                'R&A' => false, // Default value, can be updated as needed
-                'is_parent' => $isParent,
-                'raw_data' => [
-                    'parent' => $productMaster->parent,
-                    'sku' => $sku,
-                    'Values' => $productMaster->Values
-                ]
-            ];
-            
-            // Add values from product_master
-            $values = $productMaster->Values ?: [];
-            $processedItem['LP'] = $values['lp'] ?? 0;
-            $processedItem['Ship'] = $values['ship'] ?? 0;
-            $processedItem['COGS'] = $values['cogs'] ?? 0;
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
 
-            // Add data from shopify_skus if available
-            if (isset($shopifyData[$sku])) {
-                $shopifyItem = $shopifyData[$sku];
-                $processedItem['INV'] = $shopifyItem->inv ?? 0;
-                $processedItem['L30'] = $shopifyItem->quantity ?? 0;
-            } else {
-                $processedItem['INV'] = 0;
-                $processedItem['L30'] = 0;
+            $shopify = $shopifyData[$pm->sku] ?? null;
+            $ebayMetric = $ebayMetrics[$pm->sku] ?? null;
+
+            $row = [];
+            $row["Parent"] = $parent;
+            $row["(Child) sku"] = $pm->sku;
+            $row['fba'] = $pm->fba;
+
+            // Shopify
+            $row["INV"] = $shopify->inv ?? 0;
+            $row["L30"] = $shopify->quantity ?? 0;
+
+            // eBay2 Metrics
+            $row["eBay L30"] = $ebayMetric->ebay_l30 ?? 0;
+            $row["eBay L60"] = $ebayMetric->ebay_l60 ?? 0;
+            $row["eBay Price"] = $ebayMetric->ebay_price ?? 0;
+            $row['eBay_item_id'] = $ebayMetric->item_id ?? null;
+
+            $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
+                ? round(($row["eBay L30"] / $row["INV"]), 2)
+                : 0;
+
+            // Ad Metrics (only GENERAL from ebay2_general_reports)
+            $pmtData = $adMetricsBySku[$sku] ?? [];
+            foreach (['L60', 'L30', 'L7'] as $range) {
+                $metrics = $pmtData[$range] ?? [];
+                foreach (['Imp', 'Clk', 'Ctr', 'Sls', 'GENERAL_SPENT'] as $suffix) {
+                    $key = "Pmt{$suffix}{$range}";
+                    $row[$key] = $metrics[$suffix] ?? 0;
+                }
             }
 
-            // Fetch NR value if available
-            $processedItem['NR'] = $nrValues[$sku] ?? null;
-            $processedItem['Listed'] = $listedValues[$sku] ?? false;
-            $processedItem['Live'] = $liveValues[$sku] ?? false;
+            // ✅ Merge Extra Clicks (L30 only)
+            if ($ebayMetric && isset($extraClicksData[$ebayMetric->item_id])) {
+                $row["PmtClkL30"] += (int) $extraClicksData[$ebayMetric->item_id];
+            }
 
-            // Default values for other fields
-            $processedItem['A L30'] = 0;
-            $processedItem['Sess30'] = 0;
-            $processedItem['price'] = 0;
-            $processedItem['TOTAL PFT'] = 0;
-            $processedItem['T Sales L30'] = 0;
-            $processedItem['PFT %'] = 0;
-            $processedItem['Roi'] = 0;
-            $processedItem['percentage'] = $percentageValue;
+            // Values: LP & Ship
+            $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+            $lp = 0;
+            foreach ($values as $k => $v) {
+                if (strtolower($k) === "lp") {
+                    $lp = floatval($v);
+                    break;
+                }
+            }
+            if ($lp === 0 && isset($pm->lp)) {
+                $lp = floatval($pm->lp);
+            }
 
-            $processedData[] = $processedItem;
+            $ship = isset($values["ship"]) ? floatval($values["ship"]) : (isset($pm->ship) ? floatval($pm->ship) : 0);
+
+            // Price and units for calculations
+            $price = floatval($row["eBay Price"] ?? 0);
+            $units_ordered_l30 = floatval($row["eBay L30"] ?? 0);
+            $row["PmtClkL30"] = $adMetricsBySku[$sku]['L30']['Clk'] ?? 0;
+            // Profit/Sales
+            $row["Total_pft"] = round(($price * $percentage - $lp - $ship) * $units_ordered_l30, 2);
+            $row["T_Sale_l30"] = round($price * $units_ordered_l30, 2);
+            $row["PFT %"] = round(
+                $price > 0 ? (($price * $percentage - $lp - $ship) / $price) : 0,
+                2
+            );
+            $row["ROI%"] = round(
+                $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) : 0,
+                2
+            );
+            $row["percentage"] = $percentage;
+            $row["LP_productmaster"] = $lp;
+            $row["Ship_productmaster"] = $ship;
+
+            // NR & Hide
+            $row['NR'] = "";
+            $row['SPRICE'] = null;
+            $row['SPFT'] = null;
+            $row['SROI'] = null;
+            $row['Listed'] = null;
+            $row['Live'] = null;
+            $row['APlus'] = null;
+            if (isset($nrValues[$pm->sku])) {
+                $raw = $nrValues[$pm->sku];
+                if (!is_array($raw)) {
+                    $raw = json_decode($raw, true);
+                }
+                if (is_array($raw)) {
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['SPRICE'] = $raw['SPRICE'] ?? null;
+                    $row['SPFT'] = $raw['SPFT'] ?? null;
+                    $row['SROI'] = $raw['SROI'] ?? null;
+                    $row['Listed'] = isset($raw['Listed']) ? filter_var($raw['Listed'], FILTER_VALIDATE_BOOLEAN) : null;
+                    $row['Live'] = isset($raw['Live']) ? filter_var($raw['Live'], FILTER_VALIDATE_BOOLEAN) : null;
+                    $row['APlus'] = isset($raw['APlus']) ? filter_var($raw['APlus'], FILTER_VALIDATE_BOOLEAN) : null;
+                }
+            }
+
+            // Image
+            $row["image_path"] = $shopify->image_src ?? ($values["image_path"] ?? ($pm->image_path ?? null));
+
+            $result[] = (object) $row;
         }
 
         return response()->json([
-            'message' => 'Data fetched successfully',
-            'data' => $processedData,
-            'status' => 200
+            "message" => "eBay2 Data Fetched Successfully",
+            "data" => $result,
+            "status" => 200,
         ]);
     }
+
+
+
 
     public function updateAllEbay2Skus(Request $request)
     {
@@ -181,18 +272,16 @@ class EbayTwoController extends Controller
 
             // Update database
             MarketplacePercentage::updateOrCreate(
-                ['marketplace' => 'Ebay2'],
+                ['marketplace' => 'EbayTwo'],
                 ['percentage' => $percent]
             );
 
-            // Store in cache
-            Cache::put('Ebay2', $percent, now()->addDays(30));
-
+            // No caching needed for instant results
             return response()->json([
                 'status' => 200,
                 'message' => 'Percentage updated successfully',
                 'data' => [
-                    'marketplace' => 'Wayfair',
+                    'marketplace' => 'EbayTwo',   // ✅ Fix here
                     'percentage' => $percent
                 ]
             ]);
@@ -253,5 +342,47 @@ class EbayTwoController extends Controller
 
         return response()->json(['success' => true]);
     }
+    function extractNumber($value)
+    {
+        if (is_null($value)) {
+            return null;
+        }
 
+        // Match only digits
+        preg_match('/\d+/', $value, $matches);
+
+        return $matches[0] ?? null;
+    }
+
+
+    public function saveSpriceToDatabase(Request $request)
+    {
+        // LOG::info('Saving Shopify pricing data', $request->all());
+        $sku = $request->input('sku');
+        $spriceData = $request->only(['sprice', 'spft_percent', 'sroi_percent']);
+
+        if (!$sku || !$spriceData['sprice']) {
+            return response()->json(['error' => 'SKU and sprice are required.'], 400);
+        }
+
+
+        $ebayDataView = EbayTwoDataView::firstOrNew(['sku' => $sku]);
+
+        // Decode value column safely
+        $existing = is_array($ebayDataView->value)
+            ? $ebayDataView->value
+            : (json_decode($ebayDataView->value, true) ?: []);
+
+        // Merge new sprice data
+        $merged = array_merge($existing, [
+            'SPRICE' => $spriceData['sprice'],
+            'SPFT' => $spriceData['spft_percent'],
+            'SROI' => $spriceData['sroi_percent'],
+        ]);
+
+        $ebayDataView->value = $merged;
+        $ebayDataView->save();
+
+        return response()->json(['message' => 'Data saved successfully.']);
+    }
 }
