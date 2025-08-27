@@ -5,21 +5,19 @@ namespace App\Http\Controllers\Campaigns;
 use App\Http\Controllers\Controller;
 use App\Models\AmazonDatasheet;
 use App\Models\AmazonDataView;
-use App\Models\AmazonSpCampaignReport;
+use App\Models\AmazonSbCampaignReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
-use AWS\CRT\Log;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log as FacadesLog;
 
-class AmazonSpBudgetController extends Controller
+class AmazonSbBudgetController extends Controller
 {
     protected $profileId;
 
     public function __construct()
     {
-        $this->profileId = "4216505535403428";
+        $this->profileId = env('AMAZON_ADS_PROFILE_IDS');
     }
 
     public function getAccessToken()
@@ -43,7 +41,7 @@ class AmazonSpBudgetController extends Controller
         $accessToken = $this->getAccessToken();
         $client = new Client();
 
-        $url = 'https://advertising-api.amazon.com/sp/adGroups/list';
+        $url = 'https://advertising-api.amazon.com/sb/v4/adGroups/list';
         $payload = [
             'campaignIdFilter' => ['include' => $campaignIds],
             'stateFilter' => ['include' => ['ENABLED']],
@@ -54,8 +52,8 @@ class AmazonSpBudgetController extends Controller
                 'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Amazon-Advertising-API-Scope' => $this->profileId,
-                'Content-Type' => 'application/vnd.spAdGroup.v3+json',
-                'Accept' => 'application/vnd.spAdGroup.v3+json',
+                'Content-Type' => 'application/vnd.sbadgroupresource.v4+json',
+                'Accept' => 'application/vnd.sbadgroupresource.v4+json',
             ],
             'json' => $payload,
         ]);
@@ -69,24 +67,22 @@ class AmazonSpBudgetController extends Controller
         $accessToken = $this->getAccessToken();
         $client = new Client();
 
-        $url = 'https://advertising-api.amazon.com/sp/keywords/list';
-        $payload = [
-            'adGroupIdFilter' => ['include' => [$adGroupId]],
-        ];
-
-        $response = $client->post($url, [
+        $url = 'https://advertising-api.amazon.com/sb/keywords';
+        
+        $response = $client->get($url, [
             'headers' => [
                 'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Amazon-Advertising-API-Scope' => $this->profileId,
-                'Content-Type' => 'application/vnd.spKeyword.v3+json',
-                'Accept' => 'application/vnd.spKeyword.v3+json',
+                'Accept' => 'application/vnd.sbkeyword.v3.2+json',
             ],
-            'json' => $payload,
+            'query' => [
+                'adGroupIdFilter' => $adGroupId,
+            ],
         ]);
 
         $data = json_decode($response->getBody(), true);
-        return $data['keywords'] ?? [];
+        return $data ?? [];
     }
 
     public function updateCampaignKeywordsBid(Request $request)
@@ -106,8 +102,8 @@ class AmazonSpBudgetController extends Controller
         foreach ($campaignIds as $index => $campaignId) {
             $newBid = floatval($newBids[$index] ?? 0);
 
-            AmazonSpCampaignReport::where('campaign_id', $campaignId)
-                ->where('ad_type', 'SPONSORED_PRODUCTS')
+            AmazonSbCampaignReport::where('campaign_id', $campaignId)
+                ->where('ad_type', 'SPONSORED_BRANDS')
                 ->whereIn('report_date_range', ['L7', 'L1'])
                 ->update([
                     'apprSbid' => "approved"
@@ -121,7 +117,10 @@ class AmazonSpBudgetController extends Controller
                 foreach ($keywords as $kw) {
                     $allKeywords[] = [
                         'keywordId' => $kw['keywordId'],
+                        'campaignId' => $campaignId,
+                        'adGroupId' => $adGroup['adGroupId'],
                         'bid' => $newBid,
+                        'state' => $kw['state'] ?? 'enabled'
                     ];
                 }
             }
@@ -136,7 +135,7 @@ class AmazonSpBudgetController extends Controller
 
         $accessToken = $this->getAccessToken();
         $client = new Client();
-        $url = 'https://advertising-api.amazon.com/sp/keywords';
+        $url = 'https://advertising-api.amazon.com/sb/keywords';
         $results = [];
 
         try {
@@ -147,12 +146,9 @@ class AmazonSpBudgetController extends Controller
                         'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
                         'Authorization' => 'Bearer ' . $accessToken,
                         'Amazon-Advertising-API-Scope' => $this->profileId,
-                        'Content-Type' => 'application/vnd.spKeyword.v3+json',
-                        'Accept' => 'application/vnd.spKeyword.v3+json',
+                        'Content-Type' => 'application/json',
                     ],
-                    'json' => [
-                        'keywords' => $chunk
-                    ],
+                    'json' => $chunk,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);
@@ -173,12 +169,13 @@ class AmazonSpBudgetController extends Controller
         }
     }
 
-    
-    public function amzUtilizedBgtKw(){
-        return view('campaign.amz-utilized-bgt-kw');
+
+    public function amzUtilizedBgtHl()
+    {   
+        return view('campaign.amz-utilized-bgt-hl');
     }
 
-    function getAmzUtilizedBgtKw()
+    function getAmzUtilizedBgtHl()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -195,26 +192,22 @@ class AmazonSpBudgetController extends Controller
 
         $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
-        $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+        $amazonSpCampaignReportsL7 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
                 foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
                 }
             })
-            ->where('campaignName', 'NOT LIKE', '%PT')
-            ->where('campaignName', 'NOT LIKE', '%PT.')
             ->get();
 
-        $amazonSpCampaignReportsL1 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+        $amazonSpCampaignReportsL1 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
             ->where('report_date_range', 'L1')
             ->where(function ($q) use ($skus) {
                 foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
                 }
             })
-            ->where('campaignName', 'NOT LIKE', '%PT')
-            ->where('campaignName', 'NOT LIKE', '%PT.')
             ->get();
 
         $result = [];
@@ -227,121 +220,28 @@ class AmazonSpBudgetController extends Controller
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
             });
 
             $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;
+                $expected2 = $sku . ' HEAD';
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
             });
 
-            $row = [];
-            $row['parent'] = $parent;
-            $row['sku']    = $pm->sku;
-            $row['INV']    = $shopify->inv ?? 0;
-            $row['L30']    = $shopify->quantity ?? 0;
-            $row['fba']    = $pm->fba ?? null;
-            $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
-            $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
-            $row['campaignName'] = $matchedCampaignL7->campaignName ?? ($matchedCampaignL1->campaignName ?? '');
-            $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');
-            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
-            $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
-            $row['crnt_bid'] = $matchedCampaignL7->currentSpBidPrice ?? ($matchedCampaignL1->currentSpBidPrice ?? '');
-            $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
-            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
-            $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
-            $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
 
-            $row['NR']  = '';
-            $row['NRA'] = '';
-            if (isset($nrValues[$pm->sku])) {
-                $raw = $nrValues[$pm->sku];
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
-                }
-                if (is_array($raw)) {
-                    $row['NR']  = $raw['NR'] ?? null;
-                    $row['NRA'] = $raw['NRA'] ?? null;
-                }
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
             }
 
-            $result[] = (object) $row;
-        }
-
-        return response()->json([
-            'message' => 'Data fetched successfully',
-            'data'    => $result,
-            'status'  => 200,
-        ]);
-    }
-
-    public function amzUtilizedBgtPt()
-    {   
-        return view('campaign.amz-utilized-bgt-pt');
-    }
-
-    function getAmzUtilizedBgtPt()
-    {
-        $productMasters = ProductMaster::orderBy('parent', 'asc')
-            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
-            ->orderBy('sku', 'asc')
-            ->get();
-
-        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
-
-        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-            return strtoupper($item->sku);
-        });
-
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
-
-        $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
-            ->where('report_date_range', 'L7')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
-                }
-            })
-            ->get();
-
-        $amazonSpCampaignReportsL1 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
-            ->where('report_date_range', 'L1')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
-                }
-            })
-            ->get();
-
-        $result = [];
-
-        foreach ($productMasters as $pm) {
-            $sku = strtoupper($pm->sku);
-            $parent = $pm->parent;
-
-            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
-            $shopify = $shopifyData[$pm->sku] ?? null;
-
-            $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                $cleanName = strtoupper(trim($item->campaignName));
-
-                return (
-                    (str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.'))
-                    && strtoupper($item->campaignStatus) === 'ENABLED'
-                );
-            });
-
-            $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-                $cleanName = strtoupper(trim($item->campaignName));
-
-                return (
-                    (str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.'))
-                    && strtoupper($item->campaignStatus) === 'ENABLED'
-                );
-            });
-
             $row = [];
             $row['parent'] = $parent;
             $row['sku']    = $pm->sku;
@@ -354,11 +254,20 @@ class AmazonSpBudgetController extends Controller
             $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
             $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
-            $row['crnt_bid'] = $matchedCampaignL7->currentSpBidPrice ?? ($matchedCampaignL1->currentSpBidPrice ?? '');
-            $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
-            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
-            $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
-            $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
+            $row['crnt_bid'] = $matchedCampaignL7->currentSbBidPrice ?? ($matchedCampaignL1->currentSbBidPrice ?? '');
+            $row['l7_spend'] = $matchedCampaignL7->cost ?? 0;
+
+            $costPerClick7 = ($matchedCampaignL7 && $matchedCampaignL7->clicks > 0)
+                ? ($matchedCampaignL7->cost / $matchedCampaignL7->clicks)
+                : 0;
+
+            $costPerClick1 = ($matchedCampaignL1 && $matchedCampaignL1->clicks > 0)
+                ? ($matchedCampaignL1->cost / $matchedCampaignL1->clicks)
+                : 0;
+
+            $row['l7_cpc']   = $costPerClick7;
+            $row['l1_spend'] = $matchedCampaignL1->cost ?? 0;
+            $row['l1_cpc']   = $costPerClick1;
 
             $row['NR']  = '';
             $row['NRA'] = '';
@@ -385,7 +294,7 @@ class AmazonSpBudgetController extends Controller
         ]);
     }
 
-    public function updateAmazonSpBidPrice(Request $request)
+    public function updateAmazonSbBidPrice(Request $request)
     {
         $validated = $request->validate([
             'id' => 'required|string',  
@@ -393,11 +302,11 @@ class AmazonSpBudgetController extends Controller
             '_token' => 'required|string',
         ]);
 
-        $updated = AmazonSpCampaignReport::where('campaign_id', $validated['id'])
-            ->where('ad_type', 'SPONSORED_PRODUCTS')
+        $updated = AmazonSbCampaignReport::where('campaign_id', $validated['id'])
+            ->where('ad_type', 'SPONSORED_BRANDS')
             ->whereIn('report_date_range', ['L7', 'L1'])
             ->update([
-                'currentSpBidPrice' => $validated['crnt_bid'],
+                'currentSbBidPrice' => $validated['crnt_bid'],
                 'sbid' => $validated['crnt_bid'] * 0.9
             ]);
 
@@ -413,7 +322,4 @@ class AmazonSpBudgetController extends Controller
             'status' => 404,
         ]);
     }
-
-
-
 }
