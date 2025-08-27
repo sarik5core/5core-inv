@@ -114,6 +114,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('update:campaign-bid')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
+        $schedule->command('sync:amazon-prices')->everyMinute();
 
     }
 
