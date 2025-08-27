@@ -1663,6 +1663,17 @@
                                         </div>
                                     </th>
 
+                                    <th data-field="S-PRICE" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center" style="gap: 4px">
+                                                LMP Price<span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+
+
                                     <th data-field="JS-Comp-API" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
@@ -2408,6 +2419,7 @@
                                     'A Dil%': aDil,
                                     Sess30: item.Sess30 || 0,
                                     price: Number(item.price) || 0,
+                                    price_lmpa: item['price_lmpa'] || 0,
                                     COMP: item.COMP || 0,
                                     min_price: item.scout_data ? item.scout_data.min_price : 0,
                                     all_products: item.scout_data ? item.scout_data.all_data :
@@ -2431,6 +2443,7 @@
                                     SPFT: item.SPFT || 0,
                                     SROI: item.SROI || 0,
                                     Spend: item.Spend || 0,
+
                                     js_comp_manual_api_link: item.js_comp_manual_api_link || '',
                                     js_comp_manual_link: item.js_comp_manual_link || '',
                                 };
@@ -2464,7 +2477,7 @@
                         sl_no: index + 1, // Proper serial number after filtering
                         'SL No.': index + 1,
                         Parent: item.Parent || item.parent || item.parent_asin ||
-                            item.Parent_ASIN || '(No Parent)',
+                        item.Parent_ASIN || '(No Parent)',
                         '(Child) sku': item['(Child) sku'] || '',
                         'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
                         INV: inv,
@@ -2475,6 +2488,7 @@
                         'A Dil%': aDil,
                         Sess30: item.Sess30 || 0,
                         price: Number(item.price) || 0,
+                        price_lmpa: item['price_lmpa'] || 0,
                         COMP: item.COMP || 0,
                         min_price: item.scout_data ? item.scout_data.min_price : 0,
                         all_products: item.scout_data ? item.scout_data.all_data : 0,
@@ -3175,6 +3189,16 @@
                         </div>
                         ` : ''
                     ));
+
+
+                   $row.append($('<td>').html(
+    item.price_lmpa && !isNaN(parseFloat(item.price_lmpa))
+        ? `<span class="dil-percent-value ${getRoiColor(item.price_lmpa)}">${parseFloat(item.price_lmpa).toFixed(2)}</span>`
+        : ''
+));
+
+
+
                     $row.append($('<td>').html(`
     <div class="text-center">
         <span class="badge bg-danger editable-link mb-1"
@@ -3186,12 +3210,12 @@
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_api_link'] ? `
-                                                                            <a href="${item['js_comp_manual_api_link']}" target="_blank" 
-                                                                               class="badge bg-success open-link-btn" 
-                                                                               title="Open link" 
-                                                                               style="text-decoration: none;">
-                                                                                <i class="fas fa-link"></i>
-                                                                            </a>` : ''
+                                                                                <a href="${item['js_comp_manual_api_link']}" target="_blank" 
+                                                                                   class="badge bg-success open-link-btn" 
+                                                                                   title="Open link" 
+                                                                                   style="text-decoration: none;">
+                                                                                    <i class="fas fa-link"></i>
+                                                                                </a>` : ''
         }
     </div>
 `));
@@ -3207,12 +3231,12 @@
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_link'] ? `
-                                                                            <a href="${item['js_comp_manual_link']}" target="_blank" 
-                                                                               class="badge bg-success open-link-btn" 
-                                                                               title="Open link" 
-                                                                               style="text-decoration: none;">
-                                                                                <i class="fas fa-link"></i>
-                                                                            </a>` : ''
+                                                                                <a href="${item['js_comp_manual_link']}" target="_blank" 
+                                                                                   class="badge bg-success open-link-btn" 
+                                                                                   title="Open link" 
+                                                                                   style="text-decoration: none;">
+                                                                                    <i class="fas fa-link"></i>
+                                                                                </a>` : ''
         }
     </div>
 `));
