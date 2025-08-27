@@ -22,6 +22,7 @@ class EbayZeroController extends Controller
         $this->apiController = $apiController;
     }
 
+    
     public function ebayZero(Request $request)
     {
         $mode = $request->query('mode');
@@ -268,6 +269,68 @@ class EbayZeroController extends Controller
             'REQ' => $reqCount,
             'Listed' => $listedCount,
             'Pending' => $pendingCount,
+        ];
+    }
+
+     public function getLivePendingAndZeroViewCounts()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataViews = EbayDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $listedCount = 0;
+        $zeroInvOfListed = 0;
+        $liveCount = 0;
+        $zeroViewCount = 0;
+        $zeroViewNRCount = 0;
+
+        foreach ($productMasters as $item) {
+            $sku = trim($item->sku);
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $isParent = stripos($sku, 'PARENT') !== false;
+            if ($isParent) continue;
+
+            $status = $ebayDataViews[$sku]->value ?? null;
+            if (is_string($status)) {
+                $status = json_decode($status, true);
+            }
+            $nr = $status['NR'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $live = $status['live'] ?? null;
+
+            // Listed count (for live pending)
+            if ($listed === 'Listed') {
+                $listedCount++;
+                if (floatval($inv) <= 0) {
+                    $zeroInvOfListed++;
+                }
+            }
+
+            // Live count
+            if ($live === 'Live') {
+                $liveCount++;
+            }
+
+            // Zero view: INV > 0, sessions_l30 == 0 (try EbayMetric->ebay_l30 as sessions_l30 equivalent)
+            $sess30 = $ebayMetrics[$sku]->ebay_l30 ?? null;
+            if (floatval($inv) > 0 && $sess30 !== null && intval($sess30) === 0) {
+                $zeroViewCount++;
+                if ($nr === 'NR') {
+                    $zeroViewNRCount++;
+                }
+            }
+        }
+
+        // live pending = listed - 0-inv of listed - live
+        $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+        $zeroViewFinal = $zeroViewCount - $zeroViewNRCount;
+
+        return [
+            'live_pending' => $livePending,
+            'zero_view' => $zeroViewFinal,
         ];
     }
 }
