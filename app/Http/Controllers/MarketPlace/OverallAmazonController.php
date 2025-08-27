@@ -192,13 +192,16 @@ class OverallAmazonController extends Controller
                 $row['A_L30'] = $amazonSheet->units_ordered_l30;
                 $row['Sess30'] = $amazonSheet->sessions_l30;
                 $row['price'] = $amazonSheet->price;
+                $row['price_lmpa'] = $amazonSheet->price_lmpa;
                 $row['sessions_l60'] = $amazonSheet->sessions_l60;
                 $row['units_ordered_l60'] = $amazonSheet->units_ordered_l60;
+                
             }
 
             $row['INV'] = $shopify->inv ?? 0;
             $row['L30'] = $shopify->quantity ?? 0;
             $row['fba'] = $pm->fba;
+            
 
             // LP & ship cost
             $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
