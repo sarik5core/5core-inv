@@ -1473,6 +1473,12 @@
                                                     <li>
                                                         <a href=" {{ route('amazon-sp.amz-utilized-bgt-kw') }} ">UTILIZED BGT KW</a>
                                                     </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sb.amz-utilized-bgt-hl') }} ">UTILIZED BGT HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sp.amz-utilized-bgt-pt') }} ">UTILIZED BGT PT</a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>

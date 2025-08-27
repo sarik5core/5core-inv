@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Amazon - UTILIZED BGT KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Amazon - UTILIZED BGT PT', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -145,7 +145,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-0 d-flex align-items-center me-3">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Utilized BGT KW
+                            Utilized BGT PT
                         </h4>
 
                         <!-- Stats as Buttons -->
@@ -206,10 +206,10 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/amazon-sp/get-amz-utilized-bgt-kw",
+                ajaxURL: "/amazon-sp/get-amz-utilized-bgt-pt",
                 layout: "fitData",
                 pagination: "local",
-                paginationSize: 25,
+                paginationSize: 50,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {

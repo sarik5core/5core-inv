@@ -49,18 +49,8 @@ class RFQController extends Controller
 
     public function showRfqForm($slug)
     {
-        $rfqForm = RfqForm::where('slug', $slug)->firstOrFail();
+        $rfqForm = RfqForm::with('category')->where('slug', $slug)->firstOrFail();
 
-        // Fixed fields
-        $fields = [
-            "Supplier Name","Company Name","Supplier Link","Product Name",
-            "NW (KG)","GW (KG)","Locking Mechanism Image URL","Packing Type","Packing GSM",
-            "Product Width (cm)","Product Depth (cm)","Product Height (cm)",
-            "Package Width (cm)","Package Depth (cm)","Package Height (cm)",
-            "USD Price","RMB Price","MOQ","Price Type","CBM",
-            "Main Product Image URL","Additional Images URLs"
-        ];
-
-        return view('purchase-master.rfq-form.rfq-form', compact('rfqForm', 'fields'));
+        return view('purchase-master.rfq-form.rfq-form', compact('rfqForm'));
     }
 }
