@@ -1492,7 +1492,7 @@
                                     </th>
 
 
-                                  
+
                                     {{-- <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -1539,13 +1539,13 @@
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
+                                    {{-- <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 Total Profit <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th>
+                                    </th> --}}
 
                                     <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1638,7 +1638,7 @@
                                         </div>
                                     </th>
 
-                                      <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
                                         NRL
                                     </th>
 
@@ -2842,7 +2842,7 @@
                     const aL30 = Number(item['A L30']) || 0;
                     const price = Number(item.price) || 0;
 
-                
+
                     // Sold Amount
                     const soldAmount = aL30 * price;
                     const pftAmt = (soldAmount * rawPft) / 100;
@@ -2852,12 +2852,11 @@
                     const totalProfit = (soldAmount * rawPft) / 100;
 
 
-                    console.log('Total Profit:', totalProfit);
-                    console.error('Sold Amount:', soldAmount);
-                    // total profit 
-                    $row.append($('<td>').html(
-                        `<button class="btn  btn-success"> ${totalProfit.toFixed(2)}</button>`
-                    ));
+
+                    // // total profit 
+                    // $row.append($('<td>').html(
+                    //     `<button class="btn  btn-success"> ${totalProfit.toFixed(2)}</button>`
+                    // ));
 
 
                     // spend in advertising     
@@ -3187,12 +3186,12 @@
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_api_link'] ? `
-                                                                        <a href="${item['js_comp_manual_api_link']}" target="_blank" 
-                                                                           class="badge bg-success open-link-btn" 
-                                                                           title="Open link" 
-                                                                           style="text-decoration: none;">
-                                                                            <i class="fas fa-link"></i>
-                                                                        </a>` : ''
+                                                                            <a href="${item['js_comp_manual_api_link']}" target="_blank" 
+                                                                               class="badge bg-success open-link-btn" 
+                                                                               title="Open link" 
+                                                                               style="text-decoration: none;">
+                                                                                <i class="fas fa-link"></i>
+                                                                            </a>` : ''
         }
     </div>
 `));
@@ -3208,12 +3207,12 @@
             <i class="fas fa-plus"></i>
         </span><br/>
         ${item['js_comp_manual_link'] ? `
-                                                                        <a href="${item['js_comp_manual_link']}" target="_blank" 
-                                                                           class="badge bg-success open-link-btn" 
-                                                                           title="Open link" 
-                                                                           style="text-decoration: none;">
-                                                                            <i class="fas fa-link"></i>
-                                                                        </a>` : ''
+                                                                            <a href="${item['js_comp_manual_link']}" target="_blank" 
+                                                                               class="badge bg-success open-link-btn" 
+                                                                               title="Open link" 
+                                                                               style="text-decoration: none;">
+                                                                                <i class="fas fa-link"></i>
+                                                                            </a>` : ''
         }
     </div>
 `));
