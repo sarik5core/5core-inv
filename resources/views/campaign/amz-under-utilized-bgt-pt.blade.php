@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Amazon - UTILIZED BGT HL', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Amazon - UNDER UTILIZED BGT PT', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -145,7 +145,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-0 d-flex align-items-center me-3">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Utilized BGT HL
+                            UNDER Utilized BGT PT
                         </h4>
 
                         <!-- Stats as Buttons -->
@@ -206,7 +206,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/amazon-sb/get-amz-utilized-bgt-hl",
+                ajaxURL: "/amazon-sp/get-amz-under-utilized-bgt-pt",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 50,
@@ -502,11 +502,11 @@
                     var newCrntBid = parseFloat(rowData.crnt_bid) || 0;
 
                     row.update({
-                        sbid: (newCrntBid * 0.9).toFixed(2)
+                        sbid: (newCrntBid * 1.1).toFixed(2)
                     });
 
                     $.ajax({
-                        url: '/update-amazon-sb-bid-price', 
+                        url: '/update-amazon-under-utilized-sp-bid-price', 
                         method: 'POST',
                         data: {
                             id: rowData.campaign_id,
@@ -533,7 +533,7 @@
                     var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    if (!(ub7 > 90 && ub1 > 90)) return false;
+                    if (!(ub7 < 70 && ub1 < 70)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
@@ -605,7 +605,7 @@
                     bids.push(sbid);
                 });
 
-                fetch('/amazon-sb/update-keywords-bid-price', {
+                fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -629,7 +629,7 @@
             });
 
             function updateBid(aprBid, campaignId) {
-                fetch('/amazon-sb/update-keywords-bid-price', {
+                fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
