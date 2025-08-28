@@ -5,34 +5,43 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class SyncAmazonPrices extends Command
+class SyncEbayPrice extends Command
 {
-    protected $signature = 'sync:amazon-prices';
-    protected $description = 'One-time sync of prices from repricer.lmpa_data to dash_inventory.amazon_datsheets';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'sync:ebay-prices';
+    protected $description = 'One-time sync of prices from repricer.lmp_data to dash_inventory.ebay_metrics';
 
+
+    /**
+     * Execute the console command.
+     */
     public function handle(): int
     {
         try {
             // Subquery to get lowest non-zero price per SKU
-            $subQuery = DB::table('5core_repricer.lmpa_data')
+            $subQuery = DB::table('5core_repricer.lmp_data')
                 ->select('sku', DB::raw('MIN(price) as price'))
                 ->where('price', '>', 0)
                 ->groupBy('sku');
 
-            $updated = DB::table('dash_inventory.amazon_datsheets as a')
+            $updated = DB::table('dash_inventory.ebay_metrics as a')
                 ->joinSub($subQuery, 'l', function ($join) {
                     $join->on('a.sku', '=', 'l.sku');
                 })
                 ->where(function ($q) {
                     $q->whereColumn('a.price_lmpa', '<>', 'l.price')
-                      ->orWhere(function ($sub) {
-                          $sub->whereNull('a.price_lmpa')
-                              ->whereNotNull('l.price');
-                      })
-                      ->orWhere(function ($sub) {
-                          $sub->whereNotNull('a.price_lmpa')
-                              ->whereNull('l.price');
-                      });
+                        ->orWhere(function ($sub) {
+                            $sub->whereNull('a.price_lmpa')
+                                ->whereNotNull('l.price');
+                        })
+                        ->orWhere(function ($sub) {
+                            $sub->whereNotNull('a.price_lmpa')
+                                ->whereNull('l.price');
+                        });
                 })
                 ->update([
                     'a.price_lmpa' => DB::raw('l.price'),
@@ -46,7 +55,6 @@ class SyncAmazonPrices extends Command
             }
 
             return self::SUCCESS;
-
         } catch (\Throwable $e) {
             $this->error("❌ Error syncing prices: " . $e->getMessage());
             return self::FAILURE;
