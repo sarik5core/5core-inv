@@ -13,7 +13,7 @@ class SyncEbayPrice extends Command
      * @var string
      */
     protected $signature = 'sync:ebay-prices';
-    protected $description = 'One-time sync of prices from repricer.lmp_data to dash_inventory.ebay_metrics';
+    protected $description = 'One-time sync of prices from repricer.lmp_data to 5coreinventory.ebay_metrics';
 
 
     /**
@@ -28,7 +28,7 @@ class SyncEbayPrice extends Command
                 ->where('price', '>', 0)
                 ->groupBy('sku');
 
-            $updated = DB::table('dash_inventory.ebay_metrics as a')
+            $updated = DB::table('5coreinventory.ebay_metrics as a')
                 ->joinSub($subQuery, 'l', function ($join) {
                     $join->on('a.sku', '=', 'l.sku');
                 })

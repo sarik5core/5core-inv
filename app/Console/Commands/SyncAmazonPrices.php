@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class SyncAmazonPrices extends Command
 {
     protected $signature = 'sync:amazon-prices';
-    protected $description = 'One-time sync of prices from repricer.lmpa_data to dash_inventory.amazon_datsheets';
+    protected $description = 'One-time sync of prices from repricer.lmpa_data to 5coreinventory.amazon_datsheets';
 
     public function handle(): int
     {
@@ -19,7 +19,7 @@ class SyncAmazonPrices extends Command
                 ->where('price', '>', 0)
                 ->groupBy('sku');
 
-            $updated = DB::table('dash_inventory.amazon_datsheets as a')
+            $updated = DB::table('5coreinventory.amazon_datsheets as a')
                 ->joinSub($subQuery, 'l', function ($join) {
                     $join->on('a.sku', '=', 'l.sku');
                 })
