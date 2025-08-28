@@ -254,6 +254,7 @@
                     },
                     {
                         title: "DIL %",
+                        field: "DIL %",
                         formatter: function(cell) {
                             const data = cell.getData();
                             const l30 = parseFloat(data.L30);
@@ -275,6 +276,7 @@
                     },
                     {
                         title: "A DIL %",
+                        field: "A DIL %",
                         formatter: function(cell) {
                             const data = cell.getData();
                             const al30 = parseFloat(data.A_L30);
@@ -397,7 +399,6 @@
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
                             var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                            // Set cell background color based on UB%
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
                             if (ub1 >= 70 && ub1 <= 90) {
