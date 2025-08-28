@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AmazonSbCampaignReport;
 use Illuminate\Console\Command;
 use App\Models\AmazonSpCampaignReport;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +14,40 @@ class UpdateCampaignBid extends Command
 
     public function handle()
     {
-        $updated = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+        $updatedSp = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('apprSbid', 'approved')
             ->whereIn('report_date_range', ['L7', 'L1'])
             ->update([
-                'currentSpBidPrice' => DB::raw('sbid')
+                'currentSpBidPrice' => DB::raw('sbid'),
+                'sbid' => DB::raw('sbid * 0.9')     
             ]);
 
-        $this->info("{$updated} campaigns updated successfully.");
+        $updatedUnderSpBgt = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('apprUnderSbid', 'approved')
+            ->whereIn('report_date_range', ['L7', 'L1'])
+            ->update([
+                'currentUnderSpBidPrice' => DB::raw('sbid'),
+                'sbid' => DB::raw('sbid * 1.1')     
+            ]);
+
+        $updatedSb = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('apprSbid', 'approved')
+            ->whereIn('report_date_range', ['L7', 'L1'])
+            ->update([
+                'currentSbBidPrice' => DB::raw('sbid'),
+                'sbid' => DB::raw('sbid * 0.9')     
+            ]);
+        $updatedUnderSb = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('apprUnderSbid', 'approved')
+            ->whereIn('report_date_range', ['L7', 'L1'])
+            ->update([
+                'currentUnderSbBidPrice' => DB::raw('sbid'),
+                'sbid' => DB::raw('sbid * 1.1')     
+            ]);
+
+        $this->info("{$updatedSp} campaigns updated successfully.");
+        $this->info("{$updatedUnderSpBgt} campaigns updated successfully.");
+        $this->info("{$updatedSb} campaigns updated successfully.");
+        $this->info("{$updatedUnderSb} campaigns updated successfully.");
     }
 }

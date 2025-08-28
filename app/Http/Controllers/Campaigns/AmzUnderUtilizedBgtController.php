@@ -8,12 +8,10 @@ use App\Models\AmazonDataView;
 use App\Models\AmazonSpCampaignReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
-use AWS\CRT\Log;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log as FacadesLog;
 
-class AmazonSpBudgetController extends Controller
+class AmzUnderUtilizedBgtController extends Controller
 {
     protected $profileId;
 
@@ -110,7 +108,7 @@ class AmazonSpBudgetController extends Controller
                 ->where('ad_type', 'SPONSORED_PRODUCTS')
                 ->whereIn('report_date_range', ['L7', 'L1'])
                 ->update([
-                    'apprSbid' => "approved"
+                    'apprUnderSbid' => "approved"
                 ]);
 
             $adGroups = $this->getAdGroupsByCampaigns([$campaignId]);
@@ -174,11 +172,11 @@ class AmazonSpBudgetController extends Controller
     }
 
     
-    public function amzUtilizedBgtKw(){
-        return view('campaign.amz-utilized-bgt-kw');
+    public function amzUnderUtilizedBgtKw(){
+        return view('campaign.amz-under-utilized-bgt-kw');
     }
 
-    function getAmzUtilizedBgtKw()
+    function getAmzUnderUtilizedBgtKw()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -199,7 +197,7 @@ class AmazonSpBudgetController extends Controller
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
                 foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                    $q->orWhere('campaignName', 'REGEXP', '[[:<:]]' . preg_quote($sku, '/') . '[[:>:]]');
                 }
             })
             ->where('campaignName', 'NOT LIKE', '%PT')
@@ -210,7 +208,7 @@ class AmazonSpBudgetController extends Controller
             ->where('report_date_range', 'L1')
             ->where(function ($q) use ($skus) {
                 foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                    $q->orWhere('campaignName', 'REGEXP', '[[:<:]]' . preg_quote($sku, '/') . '[[:>:]]');
                 }
             })
             ->where('campaignName', 'NOT LIKE', '%PT')
@@ -227,12 +225,16 @@ class AmazonSpBudgetController extends Controller
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
             });
 
             $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
             });
+
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
+            }
 
             $row = [];
             $row['parent'] = $parent;
@@ -246,7 +248,7 @@ class AmazonSpBudgetController extends Controller
             $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
             $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
-            $row['crnt_bid'] = $matchedCampaignL7->currentSpBidPrice ?? ($matchedCampaignL1->currentSpBidPrice ?? '');
+            $row['crnt_bid'] = $matchedCampaignL7->currentUnderSpBidPrice ?? ($matchedCampaignL1->currentUnderSpBidPrice ?? '');
             $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
             $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
@@ -265,7 +267,9 @@ class AmazonSpBudgetController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['INV'] > 0) {
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([
@@ -275,12 +279,13 @@ class AmazonSpBudgetController extends Controller
         ]);
     }
 
-    public function amzUtilizedBgtPt()
+
+    public function amzUnderUtilizedBgtPt()
     {   
-        return view('campaign.amz-utilized-bgt-pt');
+        return view('campaign.amz-under-utilized-bgt-pt');
     }
 
-    function getAmzUtilizedBgtPt()
+    function getAmzUnderUtilizedBgtPt()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -299,26 +304,16 @@ class AmazonSpBudgetController extends Controller
 
         $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L7')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
-                }
-            })
             ->get();
 
         $amazonSpCampaignReportsL1 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L1')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
-                }
-            })
             ->get();
 
         $result = [];
 
         foreach ($productMasters as $pm) {
-            $sku = strtoupper($pm->sku);
+            $sku = strtoupper(trim($pm->sku));
             $parent = $pm->parent;
 
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
@@ -326,21 +321,23 @@ class AmazonSpBudgetController extends Controller
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
                 $cleanName = strtoupper(trim($item->campaignName));
-
                 return (
-                    (str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.'))
+                    ($cleanName === $sku . ' PT' || $cleanName === $sku . ' PT.')
                     && strtoupper($item->campaignStatus) === 'ENABLED'
                 );
             });
 
             $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
                 $cleanName = strtoupper(trim($item->campaignName));
-
                 return (
-                    (str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.'))
+                    ($cleanName === $sku . ' PT' || $cleanName === $sku . ' PT.')
                     && strtoupper($item->campaignStatus) === 'ENABLED'
                 );
             });
+
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
+            }
 
             $row = [];
             $row['parent'] = $parent;
@@ -354,7 +351,7 @@ class AmazonSpBudgetController extends Controller
             $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
             $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
-            $row['crnt_bid'] = $matchedCampaignL7->currentSpBidPrice ?? ($matchedCampaignL1->currentSpBidPrice ?? '');
+            $row['crnt_bid'] = $matchedCampaignL7->currentUnderSpBidPrice ?? ($matchedCampaignL1->currentUnderSpBidPrice ?? '');
             $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
             $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
@@ -385,6 +382,7 @@ class AmazonSpBudgetController extends Controller
         ]);
     }
 
+
     public function updateAmazonSpBidPrice(Request $request)
     {
         $validated = $request->validate([
@@ -397,8 +395,8 @@ class AmazonSpBudgetController extends Controller
             ->where('ad_type', 'SPONSORED_PRODUCTS')
             ->whereIn('report_date_range', ['L7', 'L1'])
             ->update([
-                'currentSpBidPrice' => $validated['crnt_bid'],
-                'sbid' => $validated['crnt_bid'] * 0.9
+                'currentUnderSpBidPrice' => $validated['crnt_bid'],
+                'sbid' => $validated['crnt_bid'] * 1.1
             ]);
 
         if($updated){
@@ -413,7 +411,4 @@ class AmazonSpBudgetController extends Controller
             'status' => 404,
         ]);
     }
-
-
-
 }

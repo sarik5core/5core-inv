@@ -111,9 +111,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:ebay2-campaign-reports')
             ->dailyAt('01:15')
             ->timezone('America/Los_Angeles');
-        $schedule->command('update:campaign-bid')
-            ->dailyAt('12:00')
+       $schedule->command('update:campaign-bid')
+            ->dailyAt('23:00')
             ->timezone('Asia/Kolkata');
+        $schedule->command('sync:amazon-prices')->everyMinute();
 
     }
 

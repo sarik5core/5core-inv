@@ -156,7 +156,9 @@ use App\Http\Controllers\AdvertisementMaster\Promoted_Advt\PromotedEbayControlle
 use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingController;
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
+use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
+use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
@@ -1525,6 +1527,30 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon-sp/get-amz-utilized-bgt-kw', 'getAmzUtilizedBgtKw');
         Route::post('/update-amazon-sp-bid-price', 'updateAmazonSpBidPrice');
         Route::put('/update-keywords-bid-price', 'updateCampaignKeywordsBid');
+
+        Route::get('/amazon-sp/amz-utilized-bgt-pt', 'amzUtilizedBgtPt')->name('amazon-sp.amz-utilized-bgt-pt');
+        Route::get('/amazon-sp/get-amz-utilized-bgt-pt', 'getAmzUtilizedBgtPt');
+    });
+
+    Route::controller(AmazonSbBudgetController::class)->group(function () {
+        Route::get('/amazon-sb/amz-utilized-bgt-hl', 'amzUtilizedBgtHl')->name('amazon-sb.amz-utilized-bgt-hl');
+        Route::get('/amazon-sb/get-amz-utilized-bgt-hl', 'getAmzUtilizedBgtHl');
+        Route::post('/update-amazon-sb-bid-price', 'updateAmazonSbBidPrice');
+        Route::put('/amazon-sb/update-keywords-bid-price', 'updateCampaignKeywordsBid');
+
+        Route::get('/amazon-sb/amz-under-utilized-bgt-hl', 'amzUnderUtilizedBgtHl')->name('amazon-sb.amz-under-utilized-bgt-hl');
+        Route::get('/amazon-sb/get-amz-under-utilized-bgt-hl', 'getAmzUnderUtilizedBgtHl');
+        Route::post('/update-amazon-under-sb-bid-price', 'updateUnderAmazonSbBidPrice');
+    });
+
+    Route::controller(AmzUnderUtilizedBgtController::class)->group(function () {
+        Route::get('/amazon-sp/amz-under-utilized-bgt-kw', 'amzUnderUtilizedBgtKw')->name('amazon-sp.amz-under-utilized-bgt-kw');
+        Route::get('/amazon-sp/get-amz-under-utilized-bgt-kw', 'getAmzUnderUtilizedBgtKw');
+        Route::post('/update-amazon-under-utilized-sp-bid-price', 'updateAmazonSpBidPrice');
+        Route::put('/update-keywords-bid-price', 'updateCampaignKeywordsBid');
+
+        Route::get('/amazon-sp/amz-under-utilized-bgt-pt', 'amzUnderUtilizedBgtPt')->name('amazon-sp.amz-under-utilized-bgt-pt');
+        Route::get('/amazon-sp/get-amz-under-utilized-bgt-pt', 'getAmzUnderUtilizedBgtPt');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
