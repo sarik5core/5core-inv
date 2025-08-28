@@ -1471,15 +1471,27 @@
                                                         <a href=" {{ route('campaign.over') }} ">Over utilised</a>
                                                     </li>
                                                     <li>
-                                                        <a href=" {{ route('amazon-sp.amz-utilized-bgt-kw') }} ">UTILIZED BGT KW</a>
+                                                        <a href=" {{ route('amazon-sp.amz-utilized-bgt-kw') }} ">AMZ > UTILIZED BGT KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sb.amz-utilized-bgt-hl') }} ">AMZ > UTILIZED BGT HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sp.amz-utilized-bgt-pt') }} ">AMZ > UTILIZED BGT PT</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-kw') }} ">AMZ < UTILIZED BGT KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sb.amz-under-utilized-bgt-hl') }} ">AMZ < UTILIZED BGT HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-pt') }} ">AMZ < UTILIZED BGT PT</a>
                                                     </li>
                                                 </ul>
                                             </div>
                                         </li>
                                         {{-- Add EXtra For Amazon Pricing --}}
-
-
-
                                     </ul>
                                 </div>
                             </li>

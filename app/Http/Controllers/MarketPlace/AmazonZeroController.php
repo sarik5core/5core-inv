@@ -12,6 +12,7 @@ use App\Models\MarketplacePercentage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Models\AmazonDataView; // Import the AmazonDataView model
+use App\Models\AmazonListingStatus;
 
 class AmazonZeroController extends Controller
 {
@@ -359,4 +360,223 @@ class AmazonZeroController extends Controller
             'Pending' => $pendingCount,
         ];
     }
+
+
+    // public function getAmazonListingCounts()
+    // {
+    //     $productMasters = ProductMaster::whereNull('deleted_at')->get();
+    //     $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+    //     $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $statusData = AmazonDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $sheetData = AmazonDataSheet::whereIn('sku', $skus)->get()->keyBy('sku'); // sessions_l30 here
+
+    //     $listedCount = 0;
+    //     $liveCount = 0;
+    //     $zeroInvCount = 0;
+    //     $zeroViewCount = 0;
+    //     $nrCount       = 0;
+
+    //     foreach ($productMasters as $item) {
+    //         $sku = trim($item->sku);
+    //         $inv = $shopifyData[$sku]->inv ?? 0;
+    //         $isParent = stripos($sku, 'PARENT') !== false;
+
+    //         // skip parent or invalid SKUs
+    //         if ($isParent) continue;
+
+    //         // --- Inventory check ---
+    //         if (floatval($inv) <= 0) {
+    //             $zeroInvCount++;
+    //         }
+
+    //         // --- Status from AmazonListingStatus ---
+    //         $status = $statusData[$sku]->value ?? null;
+    //         if (is_string($status)) {
+    //             $status = json_decode($status, true);
+    //         }
+
+    //         $listed = $status['listed'] ?? null;
+    //         $live   = $status['live'] ?? null;
+    //         $nr   = $status['nr_req'] ?? null;
+
+    //         if ($listed === 'Listed') {
+    //             $listedCount++;
+    //         }
+    //         if ($live === 'Live') {
+    //             $liveCount++;
+    //         }
+    //         if ($nr === 'NR') {
+    //             $nrCount++;
+    //         }
+
+    //         // --- Zero view check from amazon_data_sheet.sessions_l30 ---
+    //         $sessionsL30 = $sheetData[$sku]->sessions_l30 ?? 0;
+    //         if (intval($sessionsL30) === 0) {
+    //             $zeroViewCount++;
+    //         }
+    //     }
+
+    //     return [
+    //         'Req'        => $nrCount,
+    //         'Listed'     => $listedCount,
+    //         'Live'       => $liveCount,
+    //         'ZeroInv'    => $zeroInvCount,
+    //         'ZeroView'   => $zeroViewCount,
+    //     ];
+    // }
+    
+
+    // public function getZeroViewCounts()
+    // {
+    //     // 1. Reuse the same base data building as in getViewAmazonZeroData()
+    //     $productMasters = ProductMaster::orderBy('parent', 'asc')
+    //         ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+    //         ->orderBy('sku', 'asc')
+    //         ->get();
+
+    //     $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+    //     $amazonDataViews = AmazonDataView::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+    //         return strtoupper($item->sku);
+    //     });
+
+    //     $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+    //         return strtoupper($item->sku);
+    //     });
+    //     $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+    //     $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
+    //     $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
+    //         ->get()
+    //         ->groupBy(function ($item) {
+    //             return strtoupper(trim($item->parent));
+    //         });
+
+    //     $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
+    //         return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
+    //     });
+    //     $percentage = $percentage / 100;
+
+    //     $result = [];
+    //     foreach ($productMasters as $pm) {
+    //         $sku = strtoupper($pm->sku);
+    //         $parent = $pm->parent;
+
+    //         $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+    //         $shopify = $shopifyData[$pm->sku] ?? null;
+
+    //         $row = [];
+    //         $row['Parent'] = $parent;
+    //         $row['(Child) sku'] = $pm->sku;
+
+    //         $dataView = $amazonDataViews[$sku] ?? null;
+    //         $value = $dataView ? $dataView->value : [];
+    //         if (!is_array($value)) {
+    //             $value = is_string($value) ? json_decode($value, true) ?: [] : [];
+    //         }
+    //         $row['NR'] = isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ';
+
+    //         if ($amazonSheet) {
+    //             $row['Sess30'] = $amazonSheet->sessions_l30;
+    //         }
+
+    //         $row['INV'] = $shopify->inv ?? 0;
+
+    //         $result[] = (object) $row;
+    //     }
+
+    //     // Apply AmazonZero filters
+    //     $result = array_filter($result, function ($item) {
+    //         $childSku = $item->{'(Child) sku'} ?? '';
+    //         $inv = $item->INV ?? 0;
+    //         $sess30 = $item->Sess30 ?? 1;
+
+    //         return stripos($childSku, 'PARENT') === false &&
+    //             $inv > 0 &&
+    //             $sess30 == 0;
+    //     });
+
+    //     $result = array_values($result);
+
+    //     // ✅ Count logic
+    //     $collection = collect($result);
+
+    //     $zeroViews = $collection->count(); // all zero view items
+    //     $nrCount   = $collection->where('NR', 'NR')->count(); // those marked as NR
+    //     $finalCount = $zeroViews - $nrCount;
+
+
+    //     return [
+    //         'zero_views' => $zeroViews,
+    //         'nr_count'   => $nrCount,
+    //         'finalCount' => $finalCount,
+    //     ];
+    // }
+
+     public function getLivePendingAndZeroViewCounts()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $amazonDataViews = AmazonListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $amazonDatasheets = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $listedCount = 0;
+        $zeroInvOfListed = 0;
+        $liveCount = 0;
+        $zeroViewCount = 0;
+        $zeroViewNRCount = 0;
+
+        foreach ($productMasters as $item) {
+            $sku = trim($item->sku);
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $isParent = stripos($sku, 'PARENT') !== false;
+            if ($isParent) continue;
+
+            $status = $amazonDataViews[$sku]->value ?? null;
+            if (is_string($status)) {
+                $status = json_decode($status, true);
+            }
+            $nr = $status['NR'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $live = $status['live'] ?? null;
+
+            // Listed count (for live pending)
+            if ($listed === 'Listed') {
+                $listedCount++;
+                if (floatval($inv) <= 0) {
+                    $zeroInvOfListed++;
+                }
+            }
+
+            // Live count
+            if ($live === 'Live') {
+                $liveCount++;
+            }
+
+            // Zero view: INV > 0, Sess30 == 0
+            $sess30 = $amazonDatasheets[$sku]->sessions_l30 ?? null;
+            if (floatval($inv) > 0 && $sess30 !== null && intval($sess30) === 0) {
+                $zeroViewCount++;
+                if ($nr === 'NR') {
+                    $zeroViewNRCount++;
+                }
+            }
+        }
+
+        // dd($listedCount, $zeroInvOfListed, $liveCount);
+        // live pending = listed - 0-inv of listed - live
+        $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+        $zeroViewFinal = $zeroViewCount - $zeroViewNRCount;
+
+        return [
+            'live_pending' => $livePending,
+            'zero_view' => $zeroViewFinal,
+        ];
+    }
+
+
+
 }

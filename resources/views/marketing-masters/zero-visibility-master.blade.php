@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => '0 visbility Master', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => '0 Views Master', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('css')
@@ -28,7 +28,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f5f7fa !important;
-            color: var(--dark-color) !important;
+            color: #111 !important;
         }
 
         .container {
@@ -47,8 +47,17 @@
         }
 
         .header h4 {
-            font-weight: 600;
+            font-weight: 700;
             margin: 0;
+            color: #111 !important;
+        }
+
+        /* Make total count in header bigger and bold */
+        .header .total-count {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #111 !important;
+            letter-spacing: 1px;
         }
 
         .metric-value {
@@ -236,6 +245,7 @@
         table th,
         table td {
             white-space: nowrap;
+            color: #111 !important;
         }
 
         .dropdown-search-item {
@@ -456,6 +466,9 @@
             text-align: center;
             vertical-align: middle;
             white-space: nowrap;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         /* Optional: Fix for column cell overflow */
@@ -498,8 +511,8 @@
 
 @section('content')
     @include('layouts.shared/page-title', [
-        'page_title' => '0 visbility Master',
-        'sub_title' => '0 visbility master Analysis',
+        'page_title' => '0 Views Master',
+        'sub_title' => '0 Views master Analysis',
     ])
     <div class="container-fluid">
 
@@ -1062,34 +1075,35 @@
                             const routeMap = {
                                 'amazon': '/amazon-zero-view',
                                 'ebay': '/ebay-zero-view',
-                                'ebay 2': '/zero-ebay2',
-                                'ebay 3': '/zero-ebay3',
+                                'ebaytwo': '/zero-ebay2',
+                                'ebaythree': '/zero-ebay3',
+                                'ebayvariation': '/zero-ebayvariation',
                                 'temu': '/temu-zero-view',
                                 'macys': '/macys-zero-view',
                                 'wayfair': '/Wayfair-zero-view',
                                 'reverb': '/reverb/zero/view',
-                                'shopify b2c': '/shopifyB2C-zero-view',
+                                'shopifyb2c': '/shopifyB2C-zero-view',
                                 'doba': '/zero-doba',
                                 'walmart': '/zero-walmart',
                                 'aliexpress': '/zero-aliexpress',
-                                'tiktok shop': '/zero-tiktokshop',
+                                'tiktokshop': '/zero-tiktokshop',
                                 'shein': '/zero-shein',
                                 'faire': '/zero-faire',
-                                'mercari w ship': '/zero-mercariwship',
-                                'fb marketplace': '/zero-fbmarketplace',
-                                'business 5core': '/zero-business5core',
+                                'mercariwship': '/zero-mercariwship',
+                                'fbmarketplace': '/zero-fbmarketplace',
+                                'business5core': '/zero-business5core',
                                 'pls': '/zero-pls',
                                 'auto ds': '/zero-autods',
-                                'mercari w/o ship': '/zero-mercariwoship',
+                                'mercariwoship': '/zero-mercariwoship',
                                 'tiendamia': '/zero-tiendamia',
                                 'syncee': '/zero-syncee',
-                                'fb shop': '/zero-fbshop',
-                                'instagram shop': '/zero-instagramshop',
+                                'fbshop': '/zero-fbshop',
+                                'instagramshop': '/zero-instagramshop',
                                 'yamibuy': '/zero-yamibuy',
                                 'dhgate': '/zero-dhgate',
-                                'bestbuy usa': '/zero-bestbuyusa',
-                                'sw gear exchange': '/zero-swgearexchange',
-                                'shopify wholesale/ds': '/zero-shopifywholesale',
+                                'bestbuyusa': '/zero-bestbuyusa',
+                                'swgearexchange': '/zero-swgearexchange',
+                                'shopifywholesale/ds': '/zero-shopifywholesale',
                             };
 
                             const routeUrl = routeMap[channelName];
@@ -1181,8 +1195,8 @@
                     let livePendingHeader = api.column(3).header();
                     let zeroVisibilityHeader = api.column(4).header();
 
-                    jq(livePendingHeader).html('Live Pending<br><span style="color:white; font-weight:bold;">' + livePendingTotal + '</span>');
-                    jq(zeroVisibilityHeader).html('Zero Visibility SKU Count<br><span style="color:white; font-weight:bold;">' + zeroVisibilityTotal + '</span>');
+                    jq(livePendingHeader).html('Live Pending<br><span style="color:white; font-weight:bold; font-size:1rem;">' + livePendingTotal + '</span>');
+                    jq(zeroVisibilityHeader).html('Zero Visibility SKU Count<br><span style="color:white; font-weight:bold; font-size:1rem;">' + zeroVisibilityTotal + '</span>');
                 },
                 responsive: true,
                 language: {
