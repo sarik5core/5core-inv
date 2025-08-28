@@ -254,6 +254,7 @@
                     },
                     {
                         title: "DIL %",
+                        field: "DIL %",
                         formatter: function(cell) {
                             const data = cell.getData();
                             const l30 = parseFloat(data.L30);
@@ -275,6 +276,7 @@
                     },
                     {
                         title: "A DIL %",
+                        field: "A DIL %",
                         formatter: function(cell) {
                             const data = cell.getData();
                             const al30 = parseFloat(data.A_L30);
@@ -397,7 +399,6 @@
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
                             var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                            // Set cell background color based on UB%
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
                             if (ub1 >= 70 && ub1 <= 90) {
@@ -457,7 +458,8 @@
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
                                 var rowData = cell.getRow().getData();
-                                var sbid = parseFloat(rowData.sbid) || 0;
+                                var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                                var sbid = (l1_cpc * 0.9).toFixed(2);
                                 updateBid(sbid, rowData.campaign_id);
                             }
                         }
@@ -590,19 +592,20 @@
             });
 
             document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
-                var selectedRows = table.getSelectedRows();
+                var filteredData = table.getData("active"); 
                 
                 var campaignIds = [];
                 var bids = [];
 
-                selectedRows.forEach(function(row){
-                    var rowData = row.getData();
-                    var sbid = parseFloat(rowData.sbid) || 0;
+                filteredData.forEach(function(rowData){
+                    var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                    var sbid = (l1_cpc * 0.9).toFixed(2);
 
                     campaignIds.push(rowData.campaign_id);
                     bids.push(sbid);
                 });
-
+                console.log("Campaign IDs:", campaignIds);
+                console.log("Bids:", bids);
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
@@ -627,6 +630,7 @@
             });
 
             function updateBid(aprBid, campaignId) {
+                console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
