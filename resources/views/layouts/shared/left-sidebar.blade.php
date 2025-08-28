@@ -1482,9 +1482,9 @@
                                                     <li>
                                                         <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-kw') }} ">AMZ < UTILIZED BGT KW</a>
                                                     </li>
-                                                    {{-- <li>
-                                                        <a href=" {{ route('amazon-sb.amz-utilized-bgt-hl') }} ">AMZ < UTILIZED BGT HL</a>
-                                                    </li> --}}
+                                                    <li>
+                                                        <a href=" {{ route('amazon-sb.amz-under-utilized-bgt-hl') }} ">AMZ < UTILIZED BGT HL</a>
+                                                    </li>
                                                     <li>
                                                         <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-pt') }} ">AMZ < UTILIZED BGT PT</a>
                                                     </li>

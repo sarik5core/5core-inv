@@ -294,6 +294,130 @@ class AmazonSbBudgetController extends Controller
         ]);
     }
 
+    public function amzUnderUtilizedBgtHl()
+    {   
+        return view('campaign.amz-under-utilized-bgt-hl');
+    }
+
+    function getAmzUnderUtilizedBgtHl()
+    {
+        $productMasters = ProductMaster::orderBy('parent', 'asc')
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy('sku', 'asc')
+            ->get();
+
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+        $amazonSpCampaignReportsL7 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L7')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $amazonSpCampaignReportsL1 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L1')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $result = [];
+
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
+
+            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+            $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
+
+            $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;
+                $expected2 = $sku . ' HEAD';
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
+
+
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
+            }
+
+            $row = [];
+            $row['parent'] = $parent;
+            $row['sku']    = $pm->sku;
+            $row['INV']    = $shopify->inv ?? 0;
+            $row['L30']    = $shopify->quantity ?? 0;
+            $row['fba']    = $pm->fba ?? null;
+            $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
+            $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
+            $row['campaignName'] = $matchedCampaignL7->campaignName ?? ($matchedCampaignL1->campaignName ?? '');
+            $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');
+            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
+            $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
+            $row['crnt_bid'] = $matchedCampaignL7->currentUnderSbBidPrice ?? ($matchedCampaignL1->currentUnderSbBidPrice ?? '');
+            $row['l7_spend'] = $matchedCampaignL7->cost ?? 0;
+
+            $costPerClick7 = ($matchedCampaignL7 && $matchedCampaignL7->clicks > 0)
+                ? ($matchedCampaignL7->cost / $matchedCampaignL7->clicks)
+                : 0;
+
+            $costPerClick1 = ($matchedCampaignL1 && $matchedCampaignL1->clicks > 0)
+                ? ($matchedCampaignL1->cost / $matchedCampaignL1->clicks)
+                : 0;
+
+            $row['l7_cpc']   = $costPerClick7;
+            $row['l1_spend'] = $matchedCampaignL1->cost ?? 0;
+            $row['l1_cpc']   = $costPerClick1;
+
+            $row['NR']  = '';
+            $row['NRA'] = '';
+            if (isset($nrValues[$pm->sku])) {
+                $raw = $nrValues[$pm->sku];
+                if (!is_array($raw)) {
+                    $raw = json_decode($raw, true);
+                }
+                if (is_array($raw)) {
+                    $row['NR']  = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
+                }
+            }
+
+            $result[] = (object) $row;
+        }
+
+        $uniqueResult = collect($result)->unique('sku')->values()->all();
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data'    => $uniqueResult,
+            'status'  => 200,
+        ]);
+    }
+
     public function updateAmazonSbBidPrice(Request $request)
     {
         $validated = $request->validate([
@@ -308,6 +432,35 @@ class AmazonSbBudgetController extends Controller
             ->update([
                 'currentSbBidPrice' => $validated['crnt_bid'],
                 'sbid' => $validated['crnt_bid'] * 0.9
+            ]);
+
+        if($updated){
+            return response()->json([
+                'message' => 'CRNT BID updated successfully for all matching campaigns',
+                'status' => 200,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'No matching campaigns found',
+            'status' => 404,
+        ]);
+    }
+
+    public function updateUnderAmazonSbBidPrice(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|string',  
+            'crnt_bid' => 'required|numeric',
+            '_token' => 'required|string',
+        ]);
+
+        $updated = AmazonSbCampaignReport::where('campaign_id', $validated['id'])
+            ->where('ad_type', 'SPONSORED_BRANDS')
+            ->whereIn('report_date_range', ['L7', 'L1'])
+            ->update([
+                'currentUnderSbBidPrice' => $validated['crnt_bid'],
+                'sbid' => $validated['crnt_bid'] * 1.1
             ]);
 
         if($updated){
