@@ -439,8 +439,10 @@
                         field: "sbid",
                         hozAlign: "center",
                         formatter: function(cell) {
-                            var value = cell.getValue() || 0;
-                            return parseFloat(value).toFixed(2);
+                            var row = cell.getRow().getData();
+                            var l1_cpc = parseFloat(row.l1_cpc) || 0;
+                            var sbid = (l1_cpc * 1.1).toFixed(2);
+                            return sbid;
                         },
                     },
                     {
@@ -463,12 +465,12 @@
                             }
                         }
                     },
-                    {
-                        title: "CRNT BID",
-                        field: "crnt_bid",
-                        hozAlign: "center",
-                        editor: "input"
-                    },
+                    // {
+                    //     title: "CRNT BID",
+                    //     field: "crnt_bid",
+                    //     hozAlign: "center",
+                    //     editor: "input"
+                    // },
                     {
                         title: "SBGT",
                         field: "sbgt",
