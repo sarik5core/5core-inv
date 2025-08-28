@@ -1493,6 +1493,14 @@
                                             </div>
                                         </div>
                                     </th>
+                                      <th data-field="lmpprice"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                LMP PRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th data-field="sprice"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center">
@@ -2299,6 +2307,8 @@
                                     'Sales L30': item['Sales L30'] || item['sales_l30'] || item[
                                         'L30'] || 0,
                                     Roi: item['ROI%'] || 0,
+                                    price: Number(item.price) || 0,
+                                    price_lmpa: item['price_lmpa'] || 0,
                                     Tacos30: item.TacosL30 || 0,
                                     SCVR: scvr, // <-- calculated value
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
@@ -2630,8 +2640,8 @@
                     }
 
                     // PmtClkL30 with tooltip icon (no color coding)
-                     $row.append($('<td>').html(
-            `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">
                 ${Math.round(item['PmtClkL30'])}
              </span>
              <span class="text-info tooltip-icon ad-view-trigger" 
@@ -2639,7 +2649,7 @@
                    data-bs-placement="left" 
                    title="Visibility View"
                    data-item='${JSON.stringify(item.raw_data)}'>V</span>`
-        ));
+                    ));
 
                     //price with tooltip
                     // Replace the existing price section with this:
@@ -2651,6 +2661,13 @@
                 data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'></i>
         </span>`
                     ));
+
+                    $row.append($('<td>').html(
+                    item.price_lmpa && !isNaN(parseFloat(item.price_lmpa))
+                        ? `<span class="dil-percent-value">${parseFloat(item.price_lmpa).toFixed(2)}</span>`
+                        : ''
+                ));
+
 
                     $row.append($('<td>').html(
                         `<div style="display:flex;align-items:center">
@@ -5666,18 +5683,18 @@
                     title: 'eBay Price',
                     content: itemData['eBay Price']
                 },
-               {
-    title: 'PFT %',
-    content: itemData['PFT %'] 
-        ? Math.round(parseFloat(itemData['PFT %']) * 100) + ' %' 
-        : ''
-},
-{
-    title: 'ROI%',
-    content: itemData['ROI%'] 
-        ? Math.round(parseFloat(itemData['ROI%']) * 100) + ' %' 
-        : ''
-},
+                {
+                    title: 'PFT %',
+                    content: itemData['PFT %'] ?
+                        Math.round(parseFloat(itemData['PFT %']) * 100) + ' %' :
+                        ''
+                },
+                {
+                    title: 'ROI%',
+                    content: itemData['ROI%'] ?
+                        Math.round(parseFloat(itemData['ROI%']) * 100) + ' %' :
+                        ''
+                },
 
                 {
                     title: 'sprice',

@@ -1493,6 +1493,14 @@
                                             </div>
                                         </div>
                                     </th>
+                                    <th data-field="lmpprice"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                LMP PRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th data-field="sprice"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1565,64 +1573,6 @@
                                             <div class="metric-total" id="pft-total">0%</div>
                                         </div>
                                     </th>
-
-
-
-                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LMP 1 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                Link 1 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LMP 2 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                Link 2 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LMP 3 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                Link 3 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-
                                 </tr>
                             </thead>
                             <tbody>
@@ -2272,17 +2222,17 @@
                     }
                 });
 
-                $(document).on('click', '.price-view-trigger', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                // $(document).on('click', '.price-view-trigger', function(e) {
+                //     e.preventDefault();
+                //     e.stopPropagation();
 
-                    const rawData = $(this).data('item');
-                    if (rawData) {
-                        openModal(rawData, 'price view');
-                    } else {
-                        console.error("No data found for Price view");
-                    }
-                });
+                //     const rawData = $(this).data('item');
+                //     if (rawData) {
+                //         openModal(rawData, 'price view');
+                //     } else {
+                //         console.error("No data found for Price view");
+                //     }
+                // });
 
                 $(document).on('click', '.advertisement-view-trigger', function(e) {
                     e.preventDefault();
@@ -2350,7 +2300,6 @@
 
                                     'PmtClkL30': item['PmtClkL30'] || 0,
 
-                                    'PmtClkL30': item['PmtClkL30'] || 0,
                                     'eBay Price': item['eBay Price'] || 0,
                                     'PFT %': item['PFT %'] || 0,
                                     Profit: item.Profit || item['Profit'] || item['profit'] ||
@@ -2358,6 +2307,8 @@
                                     'Sales L30': item['Sales L30'] || item['sales_l30'] || item[
                                         'L30'] || 0,
                                     Roi: item['ROI%'] || 0,
+                                    price: Number(item.price) || 0,
+                                    price_lmpa: item['price_lmpa'] || 0,
                                     Tacos30: item.TacosL30 || 0,
                                     SCVR: scvr, // <-- calculated value
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
@@ -2375,15 +2326,6 @@
                                         .SROI))) ? parseFloat(item.SROI) : 0,
                                     LP: item.LP_productmaster || 0,
                                     SHIP: item.Ship_productmaster || 0,
-                                      LMP1: item.LMPP1 || 0,
-                                    Tacos30: item.link1 || 0,
-
-                                    'LMP 1': item['LMP 1'] || 0,
-                                    'lmp 2': item['lmp 2'] || 0,
-                                    'lmp 3': item['lmp 3'] || 0,
-                                    'link 1': item['link 1'] || 0,
-                                    'link 2': item['link 2'] || 0,
-                                    'link 3': item['link 3'] || 0,
                                 };
                             });
 
@@ -2473,19 +2415,6 @@
                 }
 
                 filteredData.forEach(item => {
-                    
-                    const inv = parseInt(item["INV"]) || 0;
-                    const sess30 = parseInt(item["PmtClkL30"]) || 0;
-                    const cvr = parseFloat(item.SCVR) || 0; // using SCVR now
-                    const cvrPercent = cvr * 100; // convert to percentage if SCVR is 0–1 scale
-
-                    // Skip rows based on your conditions
-                    if (!item.is_parent) {
-                    if (inv <= 0) return;
-                    if (sess30 < 49) return;
-                    if (cvrPercent <= 7) return;
-                    }
-
 
                     const $row = $('<tr>');
                     if (item.is_parent) {
@@ -2711,8 +2640,8 @@
                     }
 
                     // PmtClkL30 with tooltip icon (no color coding)
-                     $row.append($('<td>').html(
-            `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getViewColor(item['PmtClkL30'])}">
                 ${Math.round(item['PmtClkL30'])}
              </span>
              <span class="text-info tooltip-icon ad-view-trigger" 
@@ -2720,7 +2649,7 @@
                    data-bs-placement="left" 
                    title="Visibility View"
                    data-item='${JSON.stringify(item.raw_data)}'>V</span>`
-        ));
+                    ));
 
                     //price with tooltip
                     // Replace the existing price section with this:
@@ -2732,6 +2661,13 @@
                 data-item='${JSON.stringify(item).replace(/'/g, "&apos;")}'></i>
         </span>`
                     ));
+
+                    $row.append($('<td>').html(
+                        item.price_lmpa && !isNaN(parseFloat(item.price_lmpa)) ?
+                        `<span class="dil-percent-value">${parseFloat(item.price_lmpa).toFixed(2)}</span>` :
+                        ''
+                    ));
+
 
                     $row.append($('<td>').html(
                         `<div style="display:flex;align-items:center">
@@ -2864,76 +2800,6 @@
                         ''
                     ));
 
-
-
-
-                    // LMP1 with tooltip
-                    $row.append($('<td>').html(
-                        typeof item['LMP 1'] === 'number' && !isNaN(item['LMP 1']) ?
-                        `
-                                <span class="dil-percent-value ${getPftColor(item['LMP 1'])}">
-                                 ${Math.round(item['LMP 1'])}
-                                </span>
-                                ` : ''
-                    ));
-
-                    $row.append($('<td>').html(
-                        item['link 1'] ? `
-        <a href="${item['link 1']}" target="_blank" title="Open Link">
-            <i class="fa fa-link"></i>
-        </a>
-    ` : `
-        <span style="color: red; font-weight: bold;">✘</span>
-    `
-                    ));
-
-
-                    $row.append($('<td>').html(
-                        typeof item['lmp 2'] === 'number' && !isNaN(item['lmp 2']) ?
-                        `
-                                <span class="dil-percent-value ${getPftColor(item['lmp 2'])}">
-                                 ${Math.round(item['lmp 2'])}
-                                </span>
-                                ` : ''
-                    ));
-
-
-                    $row.append($('<td>').html(
-                        item['link 2'] ? `
-        <a href="${item['link 2']}" target="_blank" title="Open Link">
-            <i class="fa fa-link"></i>
-        </a>
-    ` : `
-        <span style="color: red; font-weight: bold;">✘</span>
-    `
-                    ));
-
-
-
-                    $row.append($('<td>').html(
-                        typeof item['lmp 3'] === 'number' && !isNaN(item['lmp 3']) ?
-                        `
-                                <span class="dil-percent-value ${getPftColor(item['lmp 3'])}">
-                                 ${Math.round(item['lmp 3'])}
-                                </span>
-                                ` : ''
-                    ));
-
-
-
-                    $row.append($('<td>').html(
-                        item['link 3'] ? `
-        <a href="${item['link 3']}" target="_blank" title="Open Link">
-            <i class="fa fa-link"></i>
-        </a>
-    ` : `
-        <span style="color: red; font-weight: bold;">✘</span>
-    `
-                    ));
-
-
-
-                    // CVR with color coding and tooltip
 
 
                     $tbody.append($row);
@@ -5819,12 +5685,15 @@
                 },
                 {
                     title: 'PFT %',
-                    content: itemData['PFT %']
+                    content: itemData['PFT %'] ?
+                        Math.round(parseFloat(itemData['PFT %']) * 100) + ' %' : ''
                 },
                 {
                     title: 'ROI%',
-                    content: itemData['ROI%']
+                    content: itemData['ROI%'] ?
+                        Math.round(parseFloat(itemData['ROI%']) * 100) + ' %' : ''
                 },
+
                 {
                     title: 'sprice',
                     content: itemData['SPRICE']
@@ -5868,7 +5737,7 @@
                 },
             ];
 
-            let tbody = $("#priceDetailsTable tbody");
+            let tbody = $("#priceDetailsTable1 tbody");
             tbody.empty();
 
             fields.forEach(f => {
@@ -5879,11 +5748,11 @@
                 tbody.append(row);
             });
 
-            $("#priceModal").modal("show");
+            $("#priceModaldata").modal("show");
         });
     </script>
     <!-- Modal -->
-    <div class="modal fade" id="priceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="priceModaldata" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -5891,7 +5760,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-bordered" id="priceDetailsTable">
+                    <table class="table table-bordered" id="priceDetailsTable1">
                         <thead>
                             <tr>
                                 <th>Title</th>

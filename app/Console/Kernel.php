@@ -115,6 +115,7 @@ class Kernel extends ConsoleKernel
             ->dailyAt('23:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();
+         $schedule->command('sync:ebay-prices')->everyMinute();
 
     }
 

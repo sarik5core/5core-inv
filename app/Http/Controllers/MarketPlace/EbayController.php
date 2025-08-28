@@ -292,6 +292,7 @@ class EbayController extends Controller
             $row["eBay L30"] = $ebayMetric->ebay_l30 ?? 0;
             $row["eBay L60"] = $ebayMetric->ebay_l60 ?? 0;
             $row["eBay Price"] = $ebayMetric->ebay_price ?? 0;
+            $row['price_lmpa'] = $ebayMetric->price_lmpa ?? null;
             $row['eBay_item_id'] = $ebayMetric->item_id ?? null;
 
             $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
@@ -330,6 +331,7 @@ class EbayController extends Controller
 
             // Price and units for calculations
             $price = floatval($row["eBay Price"] ?? 0);
+           
             $units_ordered_l30 = floatval($row["eBay L30"] ?? 0);
 
             // Set PmtClkL30 from adMetrics data
