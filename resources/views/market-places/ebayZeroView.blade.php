@@ -1391,7 +1391,7 @@
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                OV CLICKS L30 <span class="sort-arrow">↓</span>
+                                                Views <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <!-- 0 view div after create task -->
@@ -2108,36 +2108,32 @@
                     success: function(response) {
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
-                                
                                 const inv = Number(item.INV) || 0;
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
                                 return {
                                     sl_no: index + 1,
                                     'Sl': item['Sl'] || index + 1,
-                                    Parent: item.Parent || item.parent || item.parent_asin ||
-                                        item.Parent_ASIN || '(No Parent)',
+                                    Parent: item.Parent || item.parent || item.parent_asin || item.Parent_ASIN || '(No Parent)',
                                     '(Child) sku': item['(Child) sku'] || '',
-                                    'R&A': item['R&A'] !== undefined ? item['R&A'] :
-                                    '', // Get R&A value from server data
+                                    'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
                                     ov_dil: ovDil,
                                     'E L30': item['eBay L30'] || 0,
                                     'E Dil%': item['E Dil%'] || 0,
                                     'OV CLICKS L30': item['OV CLICKS L30'] || 0,
+                                    views: item.views || 0,
                                     A_Z_Reason: item.A_Z_Reason || '',
                                     A_Z_ActionRequired: item.A_Z_ActionRequired || '',
                                     A_Z_ActionTaken: item.A_Z_ActionTaken || '',
-                                    is_parent: item['(Child) sku'] ? item['(Child) sku']
-                                        .toUpperCase().includes("PARENT") : false,
+                                    is_parent: item['(Child) sku'] ? item['(Child) sku'].toUpperCase().includes("PARENT") : false,
                                     NR: item.NR || '',
-                                    raw_data: item || {} // Ensure raw_data always exists
+                                    raw_data: item || {}
                                 };
                             });
-
-                            filteredData = [...tableData];
-
+                            // Only show 0-views rows in datatable
+                            filteredData = tableData.filter(row => parseInt(row.views) === 0);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2331,14 +2327,20 @@
                     ));
 
                     // OV CLICKS L30 with tooltip icon (no color coding)
+                    
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getViewColor(item['OV CLICKS L30'])}">${Math.round(item['OV CLICKS L30'])}</span>
+                        `<span class="dil-percent-value ${getViewColor(item.views)}">${Math.round(item.views)}</span>
                          <span class="text-info tooltip-icon ad-view-trigger" 
                                data-bs-toggle="tooltip" 
                                data-bs-placement="left" 
                                title="visibility View"
                                data-item='${JSON.stringify(item.raw_data)}'>V</span>`
                     ));
+                    
+                    // Views column
+                    // $row.append($('<td>').html(
+                    //     `<span class="dil-percent-value">${item.views}</span>`
+                    // ));
 
                     // Truncate function for dynamic column width
                     function truncateWithTooltip(text, cellWidth) {
@@ -4310,7 +4312,8 @@
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['E L30']) || 0;
-                        metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
+                        // metrics.viewsTotal += parseFloat(item['OV CLICKS L30']) || 0;
+                        metrics.viewsTotal += parseFloat(item.views) || 0;
                         metrics.roiSum += parseFloat(item.Roi) || 0;
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
                         metrics.scvrSum += parseFloat(item.SCVR) || 0;
