@@ -116,18 +116,15 @@
         }
 
         .green-bg {
-            background-color: #05bd30 !important;
-            color: #ffffff !important;
+            color: #05bd30 !important;
         }
 
         .pink-bg {
-            background-color: #ff01d0 !important;
-            color: #ffffff !important;
+            color: #ff01d0 !important;
         }
 
         .red-bg {
-            background-color: #ff2727 !important;
-            color: #ffffff !important;
+            color: #ff2727 !important;
         }
     </style>
 @endsection
@@ -301,7 +298,7 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select ${bgColor}" 
+                                <select class="form-select form-select-sm editable-select" 
                                         data-row-id="${sku}" 
                                         data-type="ad_req"
                                         style="width: 90px;">
@@ -322,7 +319,7 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select ${bgColor}" 
+                                <select class="form-select form-select-sm editable-select" 
                                         data-row-id="${sku}" 
                                         data-type="ad_req"
                                         style="width: 90px;">
@@ -344,7 +341,7 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select ${bgColor}" 
+                                <select class="form-select form-select-sm editable-select" 
                                         data-row-id="${sku}" 
                                         data-type="ad_req"
                                         style="width: 90px;">

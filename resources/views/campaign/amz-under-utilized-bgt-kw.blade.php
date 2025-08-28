@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Amazon - UNDER UTILIZED BGT PT', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Amazon - UNDER UTILIZED BGT KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -116,18 +116,15 @@
         }
 
         .green-bg {
-            background-color: #05bd30 !important;
-            color: #ffffff !important;
+            color: #05bd30 !important;
         }
 
         .pink-bg {
-            background-color: #ff01d0 !important;
-            color: #ffffff !important;
+            color: #ff01d0 !important;
         }
 
         .red-bg {
-            background-color: #ff2727 !important;
-            color: #ffffff !important;
+            color: #ff2727 !important;
         }
     </style>
 @endsection
@@ -145,7 +142,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-0 d-flex align-items-center me-3">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            UNDER Utilized BGT PT
+                            UNDER Utilized BGT KW
                         </h4>
 
                         <!-- Stats as Buttons -->
@@ -301,7 +298,7 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select ${bgColor}" 
+                                <select class="form-select form-select-sm editable-select" 
                                         data-row-id="${sku}" 
                                         data-type="ad_req"
                                         style="width: 90px;">
@@ -322,7 +319,7 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select ${bgColor}" 
+                                <select class="form-select form-select-sm editable-select" 
                                         data-row-id="${sku}" 
                                         data-type="ad_req"
                                         style="width: 90px;">
@@ -344,7 +341,7 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select ${bgColor}" 
+                                <select class="form-select form-select-sm editable-select" 
                                         data-row-id="${sku}" 
                                         data-type="ad_req"
                                         style="width: 90px;">
