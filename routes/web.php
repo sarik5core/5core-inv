@@ -1530,6 +1530,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
         Route::get('/amazon-sp/amz-utilized-bgt-pt', 'amzUtilizedBgtPt')->name('amazon-sp.amz-utilized-bgt-pt');
         Route::get('/amazon-sp/get-amz-utilized-bgt-pt', 'getAmzUtilizedBgtPt');
+
+        Route::post('/update-amazon-nr-nrl-fba', 'updateNrNRLFba');
     });
 
     Route::controller(AmazonSbBudgetController::class)->group(function () {

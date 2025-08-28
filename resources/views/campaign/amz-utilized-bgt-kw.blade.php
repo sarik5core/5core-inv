@@ -137,50 +137,87 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body py-3">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap">
-
+                    <div class="mb-4">
                         <!-- Title -->
-                        <h4 class="fw-bold text-primary mb-0 d-flex align-items-center me-3">
+                        <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
                             Utilized BGT KW
                         </h4>
 
-                        <!-- Stats as Buttons -->
-                        <div class="d-flex align-items-center gap-2 me-3">
-                            <button class="btn btn-success d-flex align-items-center fs-5">
-                                <i class="fa fa-arrow-up me-1"></i>
-                                <span>Need to increase bids:</span>
-                                <span id="total-campaigns" class="fw-bold ms-1">0</span>
-                            </button>
+                        <!-- Filters Row -->
+                        <div class="row g-3 mb-3">
+                            <!-- Inventory Filters -->
+                            <div class="col-md-6">
+                                <div class="d-flex gap-2">
+                                    <select id="inv-filter" class="form-select form-select-md">
+                                        <option value="">Select INV</option>
+                                        <option value="ALL">ALL</option>
+                                        <option value="INV_0">0 INV</option>
+                                        <option value="OTHERS">OTHERS</option>
+                                    </select>
 
-                            <button class="btn btn-primary d-flex align-items-center fs-5">
-                                <i class="fa fa-percent me-1"></i>
-                                <span>of Total:</span>
-                                <span id="percentage-campaigns" class="fw-bold ms-2">0%</span>
-                            </button>
-                        </div>
+                                    <select id="nrl-filter" class="form-select form-select-md">
+                                        <option value="">Select NRL</option>
+                                        <option value="NRL">NRL</option>
+                                        <option value="RL">RL</option>
+                                    </select>
 
-                        <!-- Filters -->
-                        <div class="d-flex align-items-center gap-2">
-                            <button id="apr-all-sbid-btn" class="btn btn-info d-none fs-5" style="white-space: nowrap;">
-                                APR ALL SBID
-                            </button>
+                                    <select id="nra-filter" class="form-select form-select-md">
+                                        <option value="">Select NRA</option>
+                                        <option value="NRA">NRA</option>
+                                        <option value="RA">RA</option>
+                                        <option value="LATER">LATER</option>
+                                    </select>
 
-                            <div class="input-group" style="max-width: 250px;">
-                                <input type="text" id="global-search" class="form-control border-1 border-dark" placeholder="Search campaign...">
+                                    <select id="fba-filter" class="form-select form-select-md">
+                                        <option value="">Select FBA</option>
+                                        <option value="FBA">FBA</option>
+                                        <option value="FBM">FBM</option>
+                                        <option value="BOTH">BOTH</option>
+                                    </select>
+
+                                </div>
                             </div>
 
-                            <select id="status-filter" class="form-select" style="width: 140px;">
-                                <option value="">All Status</option>
-                                <option value="ENABLED">Enabled</option>
-                                <option value="PAUSED">Paused</option>
-                                <option value="ARCHIVED">Archived</option>
-                            </select>
+                            <!-- Stats -->
+                            <div class="col-md-6">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
+                                        APR ALL SBID
+                                    </button>
+                                    <button class="btn btn-success btn-md">
+                                        <i class="fa fa-arrow-up me-1"></i>
+                                        Need to increase bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
+                                    </button>
+                                    <button class="btn btn-primary btn-md">
+                                        <i class="fa fa-percent me-1"></i>
+                                        of Total: <span id="percentage-campaigns" class="fw-bold ms-1 fs-4">0%</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search and Controls Row -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex gap-2">
+                                    <div class="input-group">
+                                        <input type="text" id="global-search" class="form-control form-control-md" 
+                                               placeholder="Search campaign...">
+                                    </div>
+                                    <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
+                                        <option value="">All Status</option>
+                                        <option value="ENABLED">Enabled</option>
+                                        <option value="PAUSED">Paused</option>
+                                        <option value="ARCHIVED">Archived</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Table Section -->
-                    <div id="budget-under-table" class="mt-4"></div>
+                    <div id="budget-under-table"></div>
                 </div>
             </div>
         </div>
@@ -192,6 +229,12 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
+            const invFilter  = document.querySelector("#inv-filter");
+            const nrlFilter  = document.querySelector("#nrl-filter");
+            const nraFilter  = document.querySelector("#nra-filter");
+            const fbaFilter  = document.querySelector("#fba-filter");
+
 
             const getDilColor = (value) => {
                 const percent = parseFloat(value) * 100;
@@ -293,16 +336,16 @@
                     },
                     {
                         title: "NRL",
-                        field: "NR",
+                        field: "NRL",
                         formatter: function(cell) {
                             const row = cell.getRow();
-                            const sku = row.getData().Sku;
+                            const sku = row.getData().sku;
                             const value = cell.getValue();
                             const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
                             return `
                                 <select class="form-select form-select-sm editable-select" 
-                                        data-row-id="${sku}" 
-                                        data-type="ad_req"
+                                        data-sku="${sku}" 
+                                        data-field="NRL"
                                         style="width: 90px;">
                                     <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
                                     <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
@@ -314,16 +357,16 @@
                     },
                     {
                         title: "NRA",
-                        field: "NRA",
+                        field: "NR",
                         formatter: function(cell) {
                             const row = cell.getRow();
-                            const sku = row.getData().Sku;
+                            const sku = row.getData().sku;
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
                                 <select class="form-select form-select-sm editable-select" 
-                                        data-row-id="${sku}" 
-                                        data-type="ad_req"
+                                        data-sku="${sku}" 
+                                        data-field="NR"
                                         style="width: 90px;">
                                     <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
@@ -336,16 +379,16 @@
                     },
                     {
                         title: "FBA",
-                        field: "fba",
+                        field: "FBA",
                         formatter: function(cell) {
                             const row = cell.getRow();
-                            const sku = row.getData().Sku;
+                            const sku = row.getData().sku;
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
                                 <select class="form-select form-select-sm editable-select" 
-                                        data-row-id="${sku}" 
-                                        data-type="ad_req"
+                                        data-sku="${sku}" 
+                                        data-field="FBA"
                                         style="width: 90px;">
                                     <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
                                     <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
@@ -523,6 +566,33 @@
                 }
             });
 
+            document.addEventListener("change", function(e){
+                if(e.target.classList.contains("editable-select")){
+                    let sku   = e.target.getAttribute("data-sku");
+                    let field = e.target.getAttribute("data-field");
+                    let value = e.target.value;
+
+                    fetch('/update-amazon-nr-nrl-fba', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            sku: sku,
+                            field: field,
+                            value: value
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(err => console.error(err));
+                }
+            });
+
+
             table.on("tableBuilt", function() {
 
                 function combinedFilter(data) {
@@ -542,6 +612,30 @@
 
                     let statusVal = $("#status-filter").val();
                     if (statusVal && data.campaignStatus !== statusVal) {
+                        return false;
+                    }
+
+                    let invFilterVal = $("#inv-filter").val();
+                    if (!invFilterVal) {
+                        if (parseFloat(data.INV) === 0) return false;
+                    } else if (invFilterVal === "INV_0") {
+                        if (parseFloat(data.INV) !== 0) return false;
+                    } else if (invFilterVal === "OTHERS") {
+                        if (parseFloat(data.INV) === 0) return false;
+                    }
+
+                    let nrlFilterVal = $("#nrl-filter").val();
+                    if (nrlFilterVal && data.NRL !== nrlFilterVal) {
+                        return false;
+                    }
+
+                    let nraFilterVal = $("#nra-filter").val();
+                    if (nraFilterVal && data.NRA !== nraFilterVal) {
+                        return false;
+                    }
+
+                    let fbaFilterVal = $("#fba-filter").val();
+                    if (fbaFilterVal && data.FBA !== fbaFilterVal) {
                         return false;
                     }
 
@@ -569,7 +663,7 @@
                     table.setFilter(combinedFilter);
                 });
 
-                $("#status-filter").on("change", function() {
+                $("#status-filter, #inv-filter, #nrl-filter, #nra-filter, #fba-filter").on("change", function() {
                     table.setFilter(combinedFilter);
                 });
 
@@ -580,7 +674,7 @@
                 if (e.target.classList.contains("toggle-cols-btn")) {
                     let btn = e.target;
 
-                    let colsToToggle = ["INV", "L30", "DIL %", "A_L30", "A DIL %", "NR", "NRA", "fba"];
+                    let colsToToggle = ["INV", "L30", "DIL %", "A_L30", "A DIL %", "NRL", "NR", "FBA"];
 
                     colsToToggle.forEach(colName => {
                         let col = table.getColumn(colName);

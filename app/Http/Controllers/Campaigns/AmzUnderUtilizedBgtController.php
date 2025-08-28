@@ -197,7 +197,7 @@ class AmzUnderUtilizedBgtController extends Controller
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
                 foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'REGEXP', '[[:<:]]' . preg_quote($sku, '/') . '[[:>:]]');
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
                 }
             })
             ->where('campaignName', 'NOT LIKE', '%PT')
@@ -208,7 +208,7 @@ class AmzUnderUtilizedBgtController extends Controller
             ->where('report_date_range', 'L1')
             ->where(function ($q) use ($skus) {
                 foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'REGEXP', '[[:<:]]' . preg_quote($sku, '/') . '[[:>:]]');
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
                 }
             })
             ->where('campaignName', 'NOT LIKE', '%PT')
@@ -225,11 +225,11 @@ class AmzUnderUtilizedBgtController extends Controller
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
+                return stripos($item->campaignName, $sku) !== false;
             });
 
             $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
+                return stripos($item->campaignName, $sku) !== false;
             });
 
             if (!$matchedCampaignL7 && !$matchedCampaignL1) {
@@ -254,16 +254,18 @@ class AmzUnderUtilizedBgtController extends Controller
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
             $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
 
-            $row['NR']  = '';
-            $row['NRA'] = '';
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
                     $raw = json_decode($raw, true);
                 }
                 if (is_array($raw)) {
-                    $row['NR']  = $raw['NR'] ?? null;
-                    $row['NRA'] = $raw['NRA'] ?? null;
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 
@@ -357,16 +359,18 @@ class AmzUnderUtilizedBgtController extends Controller
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
             $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
 
-            $row['NR']  = '';
-            $row['NRA'] = '';
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
                     $raw = json_decode($raw, true);
                 }
                 if (is_array($raw)) {
-                    $row['NR']  = $raw['NR'] ?? null;
-                    $row['NRA'] = $raw['NRA'] ?? null;
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 
