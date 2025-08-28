@@ -3191,11 +3191,12 @@
                     ));
 
 
-                   $row.append($('<td>').html(
-    item.price_lmpa && !isNaN(parseFloat(item.price_lmpa))
-        ? `<span class="dil-percent-value ${getRoiColor(item.price_lmpa)}">${parseFloat(item.price_lmpa).toFixed(2)}</span>`
-        : ''
-));
+                $row.append($('<td>').html(
+                    item.price_lmpa && !isNaN(parseFloat(item.price_lmpa))
+                        ? `<span class="dil-percent-value">${parseFloat(item.price_lmpa).toFixed(2)}</span>`
+                        : ''
+                ));
+
 
 
 
