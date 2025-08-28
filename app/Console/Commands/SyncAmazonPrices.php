@@ -7,37 +7,44 @@ use Illuminate\Support\Facades\DB;
 
 class SyncAmazonPrices extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * Run with: php artisan sync:amazon-prices
-     */
     protected $signature = 'sync:amazon-prices';
-
-    /**
-     * The console command description.
-     */
     protected $description = 'One-time sync of prices from repricer.lmpa_data to 5coreinventory.amazon_datsheets';
 
-    /**
-     * Execute the console command.
-     */
     public function handle(): int
     {
         try {
-            $sql = <<<SQL
-                UPDATE `5coreinventory`.`amazon_datsheets` a
-                JOIN `5core_repricer`.`lmpa_data` l ON a.`sku` = l.`sku`
-                SET a.`price_lmpa` = l.`price`,
-                    a.`updated_at` = NOW()
-                WHERE (a.`price_lmpa` <> l.`price`)
-                   OR (a.`price_lmpa` IS NULL AND l.`price` IS NOT NULL)
-                   OR (a.`price_lmpa` IS NOT NULL AND l.`price` IS NULL)
-            SQL;
+            // Subquery to get lowest non-zero price per SKU
+            $subQuery = DB::table('5core_repricer.lmpa_data')
+                ->select('sku', DB::raw('MIN(price) as price'))
+                ->where('price', '>', 0)
+                ->groupBy('sku');
 
-            $updated = DB::statement($sql);
+            $updated = DB::table('5coreinventory.amazon_datsheets as a')
+                ->joinSub($subQuery, 'l', function ($join) {
+                    $join->on('a.sku', '=', 'l.sku');
+                })
+                ->where(function ($q) {
+                    $q->whereColumn('a.price_lmpa', '<>', 'l.price')
+                      ->orWhere(function ($sub) {
+                          $sub->whereNull('a.price_lmpa')
+                              ->whereNotNull('l.price');
+                      })
+                      ->orWhere(function ($sub) {
+                          $sub->whereNotNull('a.price_lmpa')
+                              ->whereNull('l.price');
+                      });
+                })
+                ->update([
+                    'a.price_lmpa' => DB::raw('l.price'),
+                    'a.updated_at' => now(),
+                ]);
 
-            $this->info("✅ Price_lmpa synced successfully. Rows updated: {$updated}");
+            if ($updated) {
+                $this->info("✅ {$updated} rows updated successfully.");
+            } else {
+                $this->warn("⚠️ No rows updated, prices already in sync.");
+            }
+
             return self::SUCCESS;
 
         } catch (\Throwable $e) {
