@@ -9,6 +9,6 @@ class LmpaData extends Model
 {
     protected $connection = 'repricer';
     protected $table = 'lmpa_data';
-    public $timestamps = false; // यदि timestamps नहीं हैं
+    public $timestamps = false; 
     protected $fillable = ['sku', 'epid', 'price'];
 }
