@@ -37,9 +37,17 @@ class UpdateCampaignBid extends Command
                 'currentSbBidPrice' => DB::raw('sbid'),
                 'sbid' => DB::raw('sbid * 0.9')     
             ]);
+        $updatedUnderSb = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('apprUnderSbid', 'approved')
+            ->whereIn('report_date_range', ['L7', 'L1'])
+            ->update([
+                'currentUnderSbBidPrice' => DB::raw('sbid'),
+                'sbid' => DB::raw('sbid * 1.1')     
+            ]);
 
         $this->info("{$updatedSp} campaigns updated successfully.");
         $this->info("{$updatedUnderSpBgt} campaigns updated successfully.");
         $this->info("{$updatedSb} campaigns updated successfully.");
+        $this->info("{$updatedUnderSb} campaigns updated successfully.");
     }
 }
