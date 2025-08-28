@@ -2214,17 +2214,17 @@
                     }
                 });
 
-                $(document).on('click', '.price-view-trigger', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                // $(document).on('click', '.price-view-trigger', function(e) {
+                //     e.preventDefault();
+                //     e.stopPropagation();
 
-                    const rawData = $(this).data('item');
-                    if (rawData) {
-                        openModal(rawData, 'price view');
-                    } else {
-                        console.error("No data found for Price view");
-                    }
-                });
+                //     const rawData = $(this).data('item');
+                //     if (rawData) {
+                //         openModal(rawData, 'price view');
+                //     } else {
+                //         console.error("No data found for Price view");
+                //     }
+                // });
 
                 $(document).on('click', '.advertisement-view-trigger', function(e) {
                     e.preventDefault();
@@ -5666,14 +5666,19 @@
                     title: 'eBay Price',
                     content: itemData['eBay Price']
                 },
-                {
-                    title: 'PFT %',
-                    content: itemData['PFT %']
-                },
-                {
-                    title: 'ROI%',
-                    content: itemData['ROI%']
-                },
+               {
+    title: 'PFT %',
+    content: itemData['PFT %'] 
+        ? Math.round(parseFloat(itemData['PFT %']) * 100) + ' %' 
+        : ''
+},
+{
+    title: 'ROI%',
+    content: itemData['ROI%'] 
+        ? Math.round(parseFloat(itemData['ROI%']) * 100) + ' %' 
+        : ''
+},
+
                 {
                     title: 'sprice',
                     content: itemData['SPRICE']
@@ -5717,7 +5722,7 @@
                 },
             ];
 
-            let tbody = $("#priceDetailsTable tbody");
+            let tbody = $("#priceDetailsTable1 tbody");
             tbody.empty();
 
             fields.forEach(f => {
@@ -5728,11 +5733,11 @@
                 tbody.append(row);
             });
 
-            $("#priceModal").modal("show");
+            $("#priceModaldata").modal("show");
         });
     </script>
     <!-- Modal -->
-    <div class="modal fade" id="priceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="priceModaldata" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -5740,7 +5745,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-bordered" id="priceDetailsTable">
+                    <table class="table table-bordered" id="priceDetailsTable1">
                         <thead>
                             <tr>
                                 <th>Title</th>
