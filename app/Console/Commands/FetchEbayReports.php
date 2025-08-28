@@ -44,6 +44,45 @@ class FetchEbayReports extends Command
         $dateRanges = $this->getDateRanges();
         $listingData = $this->fetchAndParseReport('LMS_ACTIVE_INVENTORY_REPORT', null, $token);
 
+        // 1. Gather all item_ids from listingData
+        $itemIdToSku = [];
+        foreach ($listingData as $row) {
+            if (!empty($row['item_id']) && !empty($row['sku'])) {
+                $itemIdToSku[$row['item_id']] = $row['sku'];
+            }
+        }
+
+        // 2. Fetch views from eBay Analytics API for all item_ids
+        if (!empty($itemIdToSku)) {
+            $itemIds = array_keys($itemIdToSku);
+            $itemIdChunks = array_chunk($itemIds, 20); // eBay API may have limits
+            $viewsByItemId = [];
+            foreach ($itemIdChunks as $chunk) {
+                $ids = implode('|', $chunk);
+                $dateRange = now()->subDays(30)->format('Ymd') . '..' . now()->format('Ymd');
+                $url = "https://api.ebay.com/sell/analytics/v1/traffic_report?dimension=LISTING&filter=listing_ids:%7B{$ids}%7D,date_range:[{$dateRange}]&metric=LISTING_VIEWS_TOTAL&sort=LISTING_VIEWS_TOTAL";
+                $response = Http::withToken($token)->get($url);
+                if ($response->ok()) {
+                    $data = $response->json();
+                    foreach ($data['records'] ?? [] as $record) {
+                        $itemId = $record['dimensionValues'][0]['value'] ?? null;
+                        $views = $record['metricValues'][0]['value'] ?? null;
+                        if ($itemId && $views !== null) {
+                            $viewsByItemId[$itemId] = $views;
+                        }
+                    }
+                }
+            }
+
+            // 3. Store views in EbayMetric table for each SKU
+            foreach ($viewsByItemId as $itemId => $views) {
+                $sku = $itemIdToSku[$itemId] ?? null;
+                if ($sku) {
+                    EbayMetric::where('item_id', $itemId)->update(['views' => $views]);
+                }
+            }
+        }
+
         foreach ($listingData as $row) {
             $itemId = $row['item_id'] ?? null;
             if (!$itemId) continue;
@@ -87,6 +126,8 @@ class FetchEbayReports extends Command
                 continue;
             }
         }
+
+       
 
 
         // 🔹 Orders se L30 & L60 quantities update karo
