@@ -233,8 +233,8 @@ class AmzUnderUtilizedBgtController extends Controller
             });
 
             if (!$matchedCampaignL7 && !$matchedCampaignL1) {
-                    continue;
-                }
+                continue;
+            }
 
             $row = [];
             $row['parent'] = $parent;
@@ -267,7 +267,9 @@ class AmzUnderUtilizedBgtController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['INV'] > 0) {
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([

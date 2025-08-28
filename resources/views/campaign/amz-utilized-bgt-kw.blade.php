@@ -457,7 +457,8 @@
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
                                 var rowData = cell.getRow().getData();
-                                var sbid = parseFloat(rowData.sbid) || 0;
+                                var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                                var sbid = (l1_cpc * 0.9).toFixed(2);
                                 updateBid(sbid, rowData.campaign_id);
                             }
                         }
@@ -590,19 +591,20 @@
             });
 
             document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
-                var selectedRows = table.getSelectedRows();
+                var filteredData = table.getData("active"); 
                 
                 var campaignIds = [];
                 var bids = [];
 
-                selectedRows.forEach(function(row){
-                    var rowData = row.getData();
-                    var sbid = parseFloat(rowData.sbid) || 0;
+                filteredData.forEach(function(rowData){
+                    var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                    var sbid = (l1_cpc * 0.9).toFixed(2);
 
                     campaignIds.push(rowData.campaign_id);
                     bids.push(sbid);
                 });
-
+                console.log("Campaign IDs:", campaignIds);
+                console.log("Bids:", bids);
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
@@ -627,6 +629,7 @@
             });
 
             function updateBid(aprBid, campaignId) {
+                console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
