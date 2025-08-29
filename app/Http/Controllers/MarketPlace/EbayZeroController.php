@@ -257,7 +257,6 @@ class EbayZeroController extends Controller
         $zeroInvOfListed = 0;
         $liveCount = 0;
         $zeroViewCount = 0;
-        $zeroViewNRCount = 0;
 
         foreach ($productMasters as $item) {
             $sku = trim($item->sku);
@@ -269,7 +268,6 @@ class EbayZeroController extends Controller
             if (is_string($status)) {
                 $status = json_decode($status, true);
             }
-            $nr = $status['NR'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
             $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
             $live = $status['live'] ?? null;
 
@@ -286,23 +284,19 @@ class EbayZeroController extends Controller
                 $liveCount++;
             }
 
-            // Zero view: INV > 0, sessions_l30 == 0 (try EbayMetric->ebay_l30 as sessions_l30 equivalent)
-            $sess30 = $ebayMetrics[$sku]->ebay_l30 ?? null;
-            if (floatval($inv) > 0 && $sess30 !== null && intval($sess30) === 0) {
+            // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
+            $views = $ebayMetrics[$sku]->views ?? null;
+            if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
                 $zeroViewCount++;
-                if ($nr === 'NR') {
-                    $zeroViewNRCount++;
-                }
             }
         }
 
         // live pending = listed - 0-inv of listed - live
         $livePending = $listedCount - $zeroInvOfListed - $liveCount;
-        $zeroViewFinal = $zeroViewCount - $zeroViewNRCount;
 
         return [
             'live_pending' => $livePending,
-            'zero_view' => $zeroViewFinal,
+            'zero_view' => $zeroViewCount,
         ];
     }
 }
