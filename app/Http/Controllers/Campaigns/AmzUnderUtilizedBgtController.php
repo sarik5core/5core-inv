@@ -269,9 +269,7 @@ class AmzUnderUtilizedBgtController extends Controller
                 }
             }
 
-            if ($row['INV'] > 0) {
-                $result[] = (object) $row;
-            }
+            $result[] = (object) $row;
         }
 
         return response()->json([
