@@ -115,6 +115,16 @@ class FetchEbayReports extends Command
                     'report_date' => now()->toDateString(),
                 ]
             );
+            // $metric = EbayMetric::updateOrCreate(
+            //     [
+            //         'item_id' => $itemId,
+            //         'sku'     => $row['sku'] ?? '',
+            //     ],
+            //     [
+            //         'ebay_price'  => $row['price'] ?? null,
+            //         'report_date' => now()->toDateString(),
+            //     ]
+            // );
 
             try {
                 $processor = new EbayDataProcessor();
