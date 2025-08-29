@@ -126,7 +126,12 @@ class ListingEbayVariationController extends Controller
                 $listedCount++;
             }
 
-            $pendingCount = max($reqCount - $listedCount, 0);
+            // Row-wise pending logic to match frontend
+            if ($nrReq !== 'NR' && ($listed === 'Pending' || empty($listed))) {
+                $pendingCount++;
+            }
+
+            // $pendingCount = max($reqCount - $listedCount, 0);
 
             // Listed/Pending logic
             // $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
