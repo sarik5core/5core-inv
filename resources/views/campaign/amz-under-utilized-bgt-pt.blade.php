@@ -620,18 +620,36 @@
                     }
 
                     let nrlFilterVal = $("#nrl-filter").val();
-                    if (nrlFilterVal && data.NRL !== nrlFilterVal) {
-                        return false;
+                    if (nrlFilterVal) {
+                        let rowSelect = document.querySelector(
+                            `select[data-sku="${data.sku}"][data-field="NRL"]`
+                        );
+                        let rowVal = rowSelect ? rowSelect.value : "";
+                        if (!rowVal) rowVal = data.NRL || "";
+
+                        if (rowVal !== nrlFilterVal) return false;
                     }
 
                     let nraFilterVal = $("#nra-filter").val();
-                    if (nraFilterVal && data.NRA !== nraFilterVal) {
-                        return false;
+                    if (nraFilterVal) {
+                        let rowSelect = document.querySelector(
+                            `select[data-sku="${data.sku}"][data-field="NR"]`
+                        );
+                        let rowVal = rowSelect ? rowSelect.value : "";
+                        if (!rowVal) rowVal = data.NR || "";
+
+                        if (rowVal !== nraFilterVal) return false;
                     }
 
                     let fbaFilterVal = $("#fba-filter").val();
-                    if (fbaFilterVal && data.FBA !== fbaFilterVal) {
-                        return false;
+                    if (fbaFilterVal) {
+                        let rowSelect = document.querySelector(
+                            `select[data-sku="${data.sku}"][data-field="FBA"]`
+                        );
+                        let rowVal = rowSelect ? rowSelect.value : "";
+                        if (!rowVal) rowVal = data.FBA || "";
+
+                        if (rowVal !== fbaFilterVal) return false;
                     }
 
                     return true;
