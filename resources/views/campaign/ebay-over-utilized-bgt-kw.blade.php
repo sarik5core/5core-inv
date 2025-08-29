@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Amazon - UTILIZED BGT PT', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED BGT KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Amazon - Budget',
-        'sub_title' => 'Amazon - Budget',
+        'page_title' => 'Ebay - OVER UTILIZED BGT KW',
+        'sub_title' => 'Ebay - OVER UTILIZED BGT KW',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Utilized BGT PT
+                           Ebay - OVER UTILIZED BGT KW
                         </h4>
 
                         <!-- Filters Row -->
@@ -156,24 +156,11 @@
                                         <option value="OTHERS">OTHERS</option>
                                     </select>
 
-                                    <select id="nrl-filter" class="form-select form-select-md">
-                                        <option value="">Select NRL</option>
-                                        <option value="NRL">NRL</option>
-                                        <option value="RL">RL</option>
-                                    </select>
-
                                     <select id="nra-filter" class="form-select form-select-md">
                                         <option value="">Select NRA</option>
                                         <option value="NRA">NRA</option>
                                         <option value="RA">RA</option>
                                         <option value="LATER">LATER</option>
-                                    </select>
-
-                                    <select id="fba-filter" class="form-select form-select-md">
-                                        <option value="">Select FBA</option>
-                                        <option value="FBA">FBA</option>
-                                        <option value="FBM">FBM</option>
-                                        <option value="BOTH">BOTH</option>
                                     </select>
 
                                 </div>
@@ -217,7 +204,7 @@
                     </div>
 
                     <!-- Table Section -->
-                    <div id="budget-under-table" class="mt-4"></div>
+                    <div id="budget-under-table"></div>
                 </div>
             </div>
         </div>
@@ -240,10 +227,10 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/amazon-sp/get-amz-utilized-bgt-pt",
+                ajaxURL: "/ebay-over-utilized-bgt-kw/data",
                 layout: "fitData",
                 pagination: "local",
-                paginationSize: 50,
+                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
@@ -307,50 +294,7 @@
                         visible: false
                     },
                     {
-                        title: "AL 30",
-                        field: "A_L30",
-                        visible: false
-                    },
-                    {
-                        title: "A DIL %",
-                        field: "A DIL %",
-                        formatter: function(cell) {
-                            const data = cell.getData();
-                            const al30 = parseFloat(data.A_L30);
-                            const inv = parseFloat(data.INV);
-
-                            if (!isNaN(al30) && !isNaN(inv) && inv !== 0) {
-                                const dilDecimal = (al30 / inv);
-                                const color = getDilColor(dilDecimal);
-                                return `<div class="text-center"><span class="dil-percent-value ${color}">${Math.round(dilDecimal * 100)}%</span></div>`;
-                            }
-                            return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
-                        },
-                        visible: false
-                    },
-                    {
                         title: "NRL",
-                        field: "NRL",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="NRL"
-                                        style="width: 90px;">
-                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
-                                    <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
-                                </select>
-                            `;
-                        },
-                        visible: false,
-                        hozAlign: "center"
-                    },
-                    {
-                        title: "NRA",
                         field: "NR",
                         formatter: function(cell) {
                             const row = cell.getRow();
@@ -365,28 +309,6 @@
                                     <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
                                     <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
-                                </select>
-                            `;
-                        },
-                        hozAlign: "center",
-                        visible: false
-                    },
-                    {
-                        title: "FBA",
-                        field: "FBA",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="FBA"
-                                        style="width: 90px;">
-                                    <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
-                                    <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
-                                    <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
                                 </select>
                             `;
                         },
@@ -436,7 +358,6 @@
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
                             var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                            // Set cell background color based on UB%
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
                             if (ub1 >= 70 && ub1 <= 90) {
@@ -502,12 +423,6 @@
                             }
                         }
                     },
-                    // {
-                    //     title: "CRNT BID",
-                    //     field: "crnt_bid",
-                    //     hozAlign: "center",
-                    //     editor: "input"
-                    // },
                     {
                         title: "SBGT",
                         field: "sbgt",
@@ -534,59 +449,32 @@
                 }
             });
 
-            table.on("cellEdited", function(cell){
-                if(cell.getField() === "crnt_bid"){
-                    var row = cell.getRow();
-                    var rowData = row.getData();
-                    var newCrntBid = parseFloat(rowData.crnt_bid) || 0;
+            // document.addEventListener("change", function(e){
+            //     if(e.target.classList.contains("editable-select")){
+            //         let sku   = e.target.getAttribute("data-sku");
+            //         let field = e.target.getAttribute("data-field");
+            //         let value = e.target.value;
 
-                    row.update({
-                        sbid: (newCrntBid * 0.9).toFixed(2)
-                    });
+            //         fetch('/update-amazon-nr-nrl-fba', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'Content-Type': 'application/json',
+            //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            //             },
+            //             body: JSON.stringify({
+            //                 sku: sku,
+            //                 field: field,
+            //                 value: value
+            //             })
+            //         })
+            //         .then(res => res.json())
+            //         .then(data => {
+            //             console.log(data);
+            //         })
+            //         .catch(err => console.error(err));
+            //     }
+            // });
 
-                    $.ajax({
-                        url: '/update-amazon-sp-bid-price', 
-                        method: 'POST',
-                        data: {
-                            id: rowData.campaign_id,
-                            crnt_bid: newCrntBid,
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response){
-                            console.log(response);
-                        },
-                        error: function(xhr){
-                            alert('Error updating CRNT BID');
-                        }
-                    });
-                }
-            });
-
-            document.addEventListener("change", function(e){
-                if(e.target.classList.contains("editable-select")){
-                    let sku   = e.target.getAttribute("data-sku");
-                    let field = e.target.getAttribute("data-field");
-                    let value = e.target.value;
-
-                    fetch('/update-amazon-nr-nrl-fba', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            sku: sku,
-                            field: field,
-                            value: value
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-                    })
-                    .catch(err => console.error(err));
-                }
-            });
 
             table.on("tableBuilt", function() {
 
@@ -619,17 +507,6 @@
                         if (parseFloat(data.INV) === 0) return false;
                     }
 
-                    let nrlFilterVal = $("#nrl-filter").val();
-                    if (nrlFilterVal) {
-                        let rowSelect = document.querySelector(
-                            `select[data-sku="${data.sku}"][data-field="NRL"]`
-                        );
-                        let rowVal = rowSelect ? rowSelect.value : "";
-                        if (!rowVal) rowVal = data.NRL || "";
-
-                        if (rowVal !== nrlFilterVal) return false;
-                    }
-
                     let nraFilterVal = $("#nra-filter").val();
                     if (nraFilterVal) {
                         let rowSelect = document.querySelector(
@@ -639,17 +516,6 @@
                         if (!rowVal) rowVal = data.NR || "";
 
                         if (rowVal !== nraFilterVal) return false;
-                    }
-
-                    let fbaFilterVal = $("#fba-filter").val();
-                    if (fbaFilterVal) {
-                        let rowSelect = document.querySelector(
-                            `select[data-sku="${data.sku}"][data-field="FBA"]`
-                        );
-                        let rowVal = rowSelect ? rowSelect.value : "";
-                        if (!rowVal) rowVal = data.FBA || "";
-
-                        if (rowVal !== fbaFilterVal) return false;
                     }
 
                     return true;
@@ -676,7 +542,7 @@
                     table.setFilter(combinedFilter);
                 });
 
-                $("#status-filter, #inv-filter, #nrl-filter, #nra-filter, #fba-filter").on("change", function() {
+                $("#status-filter, #inv-filter,#nra-filter,").on("change", function() {
                     table.setFilter(combinedFilter);
                 });
 
@@ -687,7 +553,7 @@
                 if (e.target.classList.contains("toggle-cols-btn")) {
                     let btn = e.target;
 
-                    let colsToToggle = ["INV", "L30", "DIL %", "A_L30", "A DIL %", "NRL", "NR", "FBA"];
+                    let colsToToggle = ["INV", "L30", "DIL %", "NR"];
 
                     colsToToggle.forEach(colName => {
                         let col = table.getColumn(colName);
@@ -713,8 +579,7 @@
                 });
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
-
-                fetch('/update-amazon-sp-targets-bid-price', {
+                fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -739,7 +604,7 @@
 
             function updateBid(aprBid, campaignId) {
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
-                fetch('/update-amazon-sp-targets-bid-price', {
+                fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -761,6 +626,7 @@
                 })
                 .catch(err => console.error(err));
             }
+
 
             document.body.style.zoom = "78%";
         });

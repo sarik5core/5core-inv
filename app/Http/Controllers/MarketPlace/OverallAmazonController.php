@@ -35,12 +35,10 @@ class OverallAmazonController extends Controller
         $price = $request["price"];
         $sID = env('AMAZON_SELLER_ID');
 
-        $price = app(AmazonSpApiService::class)->updatePriceBySku($sID, $sku, $price, 'USD');
+        $price = app(AmazonSpApiService::class)->updateAmazonPriceUS($sID, $sku, $price,"SPEAKERS", 'USD');
 
         return response()->json(['status' => 200, 'data' => $price]);
     }
-
-
 
 
     public function overallAmazon(Request $request)
@@ -48,13 +46,14 @@ class OverallAmazonController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        // Get fresh data from database instead of cache for immediate updates
         $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
 
         $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
         $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
-
+        // app(AmazonSpApiService::class)->updateAmazonPriceUS('WF 10 140 PP 4OHM', 48.99, env('AMAZON_SELLER_ID'));
+        // app(AmazonSpApiService::class)->getAmazonListingUS('WF 10 140 PP 4OHM', env('AMAZON_SELLER_ID'));
+        app(AmazonSpApiService::class)->getAmazonPriceUS('B0FF7RBKLF');
         return view('market-places.overallAmazon', [
             'mode' => $mode,
             'demo' => $demo,
