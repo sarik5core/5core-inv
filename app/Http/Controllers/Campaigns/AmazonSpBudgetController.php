@@ -252,16 +252,18 @@ class AmazonSpBudgetController extends Controller
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
             $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
 
-            $row['NR']  = '';
-            $row['NRA'] = '';
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
                     $raw = json_decode($raw, true);
                 }
                 if (is_array($raw)) {
-                    $row['NR']  = $raw['NR'] ?? null;
-                    $row['NRA'] = $raw['NRA'] ?? null;
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 
@@ -360,16 +362,18 @@ class AmazonSpBudgetController extends Controller
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
             $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
 
-            $row['NR']  = '';
-            $row['NRA'] = '';
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
                     $raw = json_decode($raw, true);
                 }
                 if (is_array($raw)) {
-                    $row['NR']  = $raw['NR'] ?? null;
-                    $row['NRA'] = $raw['NRA'] ?? null;
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 
@@ -413,6 +417,33 @@ class AmazonSpBudgetController extends Controller
             'status' => 404,
         ]);
     }
+
+    public function updateNrNRLFba(Request $request)
+    {
+        $sku   = $request->input('sku');
+        $field = $request->input('field');
+        $value = $request->input('value');
+
+        $amazonDataView = AmazonDataView::where('sku', $sku)->first();
+
+        $jsonData = $amazonDataView && $amazonDataView->value ? $amazonDataView->value : [];
+
+        $jsonData[$field] = $value;
+
+        $amazonDataView = AmazonDataView::updateOrCreate(
+            ['sku' => $sku],
+            ['value' => $jsonData]
+        );
+
+        return response()->json([
+            'status' => 200,
+            'message' => "...",
+            'updated_json' => $jsonData
+        ]);
+
+    }
+
+
 
 
 
