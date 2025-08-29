@@ -714,7 +714,7 @@
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
 
-                fetch('/update-keywords-bid-price', {
+                fetch('/update-amazon-sp-targets-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -739,7 +739,7 @@
 
             function updateBid(aprBid, campaignId) {
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
-                fetch('/update-keywords-bid-price', {
+                fetch('/update-amazon-sp-targets-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

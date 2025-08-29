@@ -94,25 +94,27 @@ class AmazonSpBudgetController extends Controller
         $accessToken = $this->getAccessToken();
         $client = new Client();
 
-        $url = 'https://advertising-api.amazon.com/sp/targets/list';
         $payload = [
-            'campaignIdFilter' => ['include' => [$campaignId]],
+            'campaignIdFilter' => [
+                'include' => is_array($campaignId) ? $campaignId : [$campaignId],
+            ],
         ];
 
-        $response = $client->post($url, [
+        $response = $client->post('https://advertising-api.amazon.com/sp/targets/list', [
             'headers' => [
                 'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Amazon-Advertising-API-Scope' => $this->profileId,
-                'Content-Type' => 'application/vnd.spTarget.v3+json',
-                'Accept' => 'application/vnd.spTarget.v3+json',
+                'Content-Type' => 'application/vnd.spTargetingClause.v3+json',
+                'Accept' => 'application/vnd.spTargetingClause.v3+json',
             ],
             'json' => $payload,
         ]);
 
         $data = json_decode($response->getBody(), true);
-        return $data['targets'] ?? [];
+        return $data['targetingClauses'] ?? [];
     }
+
 
     public function updateCampaignKeywordsBid(Request $request)
     {
@@ -192,6 +194,88 @@ class AmazonSpBudgetController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error updating keywords bid',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+    }
+
+    public function updateCampaignTargetsBid()
+    {
+
+        $campaignIds = request('campaign_ids', []);
+        $newBids = request('bids', []);
+
+        if (empty($campaignIds) || empty($newBids)) {
+            return response()->json([
+                'message' => 'Campaign IDs and new bids are required',
+                'status' => 400
+            ]);
+        }
+
+        $allTargets = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBid = floatval($newBids[$index] ?? 0);
+
+            AmazonSpCampaignReport::where('campaign_id', $campaignId)
+                ->where('ad_type', 'SPONSORED_PRODUCTS')
+                ->whereIn('report_date_range', ['L7', 'L1'])
+                ->update([
+                    'apprSbid' => "approved"
+                ]);
+
+            $adTargets = $this->getTargetsAdByCampaign([$campaignId]);
+            if (empty($adTargets)) continue;
+
+            foreach ($adTargets as $adTarget) {
+                $allTargets[] = [
+                    'bid' => $newBid,
+                    'targetId' => $adTarget['targetId'],
+                ];
+            }
+        }
+
+        if (empty($allTargets)) {
+            return response()->json([
+                'message' => 'No targets found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sp/targets';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allTargets, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.spTargetingClause.v3+json',
+                        'Accept' => 'application/vnd.spTargetingClause.v3+json',
+                    ],
+                    'json' => [
+                        'targetingClauses' => $chunk
+                    ],
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+
+            return response()->json([
+                'message' => 'Targets bid updated successfully',
+                'data' => $results,
+                'status' => 200,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating targets bid',
                 'error' => $e->getMessage(),
                 'status' => 500,
             ]);
