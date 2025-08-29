@@ -1565,7 +1565,12 @@
                                         <li>
                                             <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
                                         </li>
-
+                                        <li>
+                                            <a href="{{ route('ebay-over-utilized-bgt-kw') }}">EBAY > UTILIZED BGT KW</a>
+                                        </li>
+                                        {{-- <li>
+                                            <a href="{{ route('ebay-over-utilized-bgt-pt') }}">EBAY < UTILIZED BGT KW</a>
+                                        </li> --}}
 
                                     </ul>
                                 </div>

@@ -89,6 +89,31 @@ class AmazonSpBudgetController extends Controller
         return $data['keywords'] ?? [];
     }
 
+    public function getTargetsAdByCampaign($campaignId)
+    {
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+
+        $url = 'https://advertising-api.amazon.com/sp/targets/list';
+        $payload = [
+            'campaignIdFilter' => ['include' => [$campaignId]],
+        ];
+
+        $response = $client->post($url, [
+            'headers' => [
+                'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                'Authorization' => 'Bearer ' . $accessToken,
+                'Amazon-Advertising-API-Scope' => $this->profileId,
+                'Content-Type' => 'application/vnd.spTarget.v3+json',
+                'Accept' => 'application/vnd.spTarget.v3+json',
+            ],
+            'json' => $payload,
+        ]);
+
+        $data = json_decode($response->getBody(), true);
+        return $data['targets'] ?? [];
+    }
+
     public function updateCampaignKeywordsBid(Request $request)
     {
         $campaignIds = $request->input('campaign_ids', []);
