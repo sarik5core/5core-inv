@@ -160,6 +160,7 @@ use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
+use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
 use App\Http\Controllers\PurchaseMaster\PurchaseController;
@@ -748,7 +749,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::any('/update-ebay-sku-pricing', [EbayController::class, 'updateEbayPricing'])->name('ebay.priceUpdate');
     Route::any('/update-ebay2-sku-pricing', [EbayTwoController::class, 'updateEbayPricing'])->name('ebay2.priceUpdate');
-    Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
+    // Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
     Route::get('/check-amazon-auth', [OverallAmazonController::class, 'checkAmazonAuth']);
 
     Route::post('/update-fba-status-ebay', [EbayController::class, 'updateFbaStatusEbay'])
@@ -1545,6 +1546,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
         Route::get('/amazon-sp/amz-utilized-bgt-pt', 'amzUtilizedBgtPt')->name('amazon-sp.amz-utilized-bgt-pt');
         Route::get('/amazon-sp/get-amz-utilized-bgt-pt', 'getAmzUtilizedBgtPt');
+        Route::put('/update-amazon-sp-targets-bid-price', 'updateCampaignTargetsBid');
+        Route::post('/update-amazon-nr-nrl-fba', 'updateNrNRLFba');
     });
 
     Route::controller(AmazonSbBudgetController::class)->group(function () {
@@ -1566,6 +1569,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
         Route::get('/amazon-sp/amz-under-utilized-bgt-pt', 'amzUnderUtilizedBgtPt')->name('amazon-sp.amz-under-utilized-bgt-pt');
         Route::get('/amazon-sp/get-amz-under-utilized-bgt-pt', 'getAmzUnderUtilizedBgtPt');
+    });
+
+    Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
+        Route::get('/ebay-over-utilized-bgt-kw', 'ebayOverUtilizedBgtKw')->name('ebay-over-utilized-bgt-kw');
+        Route::get('/ebay-over-utilized-bgt-kw/data', 'getEbayOverUtilizedBgtKwData')->name('ebay-over-utilized-bgt-kw-data');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {

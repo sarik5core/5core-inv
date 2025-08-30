@@ -23,4 +23,14 @@ class EbayGeneralReport extends Model
         'ctr',
         'channels',
     ];
+
+    protected $casts = [
+        'impressions' => 'integer',
+        'clicks' => 'integer',
+        'ad_fees' => 'float',
+        'sales' => 'integer',
+        'sale_amount' => 'float',
+        'ctr' => 'float',
+        'avg_cost_per_sale' => 'float',
+    ];
 }

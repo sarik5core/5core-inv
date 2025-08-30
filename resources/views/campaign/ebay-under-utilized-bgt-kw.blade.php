@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Amazon - UTILIZED BGT KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED BGT PT', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Amazon - Budget',
-        'sub_title' => 'Amazon - Budget',
+        'page_title' => 'Ebay - OVER UTILIZED BGT PT',
+        'sub_title' => 'Ebay - OVER UTILIZED BGT PT',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Utilized BGT KW
+                           Ebay - OVER UTILIZED BGT PT
                         </h4>
 
                         <!-- Filters Row -->
@@ -312,51 +312,29 @@
                         },
                         visible: false
                     },
-                    {
-                        title: "AL 30",
-                        field: "A_L30",
-                        visible: false
-                    },
-                    {
-                        title: "A DIL %",
-                        field: "A DIL %",
-                        formatter: function(cell) {
-                            const data = cell.getData();
-                            const al30 = parseFloat(data.A_L30);
-                            const inv = parseFloat(data.INV);
-
-                            if (!isNaN(al30) && !isNaN(inv) && inv !== 0) {
-                                const dilDecimal = (al30 / inv);
-                                const color = getDilColor(dilDecimal);
-                                return `<div class="text-center"><span class="dil-percent-value ${color}">${Math.round(dilDecimal * 100)}%</span></div>`;
-                            }
-                            return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
-                        },
-                        visible: false
-                    },
+                    // {
+                    //     title: "NRL",
+                    //     field: "NRL",
+                    //     formatter: function(cell) {
+                    //         const row = cell.getRow();
+                    //         const sku = row.getData().sku;
+                    //         const value = cell.getValue();
+                    //         const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
+                    //         return `
+                    //             <select class="form-select form-select-sm editable-select" 
+                    //                     data-sku="${sku}" 
+                    //                     data-field="NRL"
+                    //                     style="width: 90px;">
+                    //                 <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
+                    //                 <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
+                    //             </select>
+                    //         `;
+                    //     },
+                    //     visible: false,
+                    //     hozAlign: "center"
+                    // },
                     {
                         title: "NRL",
-                        field: "NRL",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="NRL"
-                                        style="width: 90px;">
-                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
-                                    <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
-                                </select>
-                            `;
-                        },
-                        visible: false,
-                        hozAlign: "center"
-                    },
-                    {
-                        title: "NRA",
                         field: "NR",
                         formatter: function(cell) {
                             const row = cell.getRow();
@@ -377,28 +355,28 @@
                         hozAlign: "center",
                         visible: false
                     },
-                    {
-                        title: "FBA",
-                        field: "FBA",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="FBA"
-                                        style="width: 90px;">
-                                    <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
-                                    <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
-                                    <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
-                                </select>
-                            `;
-                        },
-                        hozAlign: "center",
-                        visible: false
-                    },
+                    // {
+                    //     title: "FBA",
+                    //     field: "FBA",
+                    //     formatter: function(cell) {
+                    //         const row = cell.getRow();
+                    //         const sku = row.getData().sku;
+                    //         const value = cell.getValue();
+                    //         const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
+                    //         return `
+                    //             <select class="form-select form-select-sm editable-select" 
+                    //                     data-sku="${sku}" 
+                    //                     data-field="FBA"
+                    //                     style="width: 90px;">
+                    //                 <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
+                    //                 <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
+                    //                 <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                    //             </select>
+                    //         `;
+                    //     },
+                    //     hozAlign: "center",
+                    //     visible: false
+                    // },
                     {
                         title: "CAMPAIGN",
                         field: "campaignName"

@@ -71,7 +71,6 @@ class EbayZeroController extends Controller
             if ($shopify && !empty($shopify->image_src)) {
                 $imagePath = $shopify->image_src;
             } else {
-                // Try to get image_path from ProductMaster->Values (if it's a JSON array)
                 $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
                 if (isset($values['image_path'])) {
                     $imagePath = $values['image_path'];
@@ -93,6 +92,7 @@ class EbayZeroController extends Controller
                 'eBay L60' => 0,
                 'eBay Price' => 0,
                 'OV CLICKS L30' => 0,
+                'views' => 0,
                 'image' => $imagePath,
                 'A_Z_Reason' => '',
                 'A_Z_ActionRequired' => '',
@@ -108,9 +108,9 @@ class EbayZeroController extends Controller
                 $item->{'eBay L30'} = $ebayMetric->ebay_l30;
                 $item->{'eBay L60'} = $ebayMetric->ebay_l60;
                 $item->{'eBay Price'} = $ebayMetric->ebay_price;
+                $item->{'views'} = $ebayMetric->views ?? 0;
                 $inv = $shopify->inv ?? 0;
                 $eBayL30 = $item->{'eBay L30'} ?? 0;
-
                 $item->{'E Dil%'} = ($inv > 0) ? round($eBayL30 / $inv, 2) : 0;
             }
 
@@ -121,21 +121,18 @@ class EbayZeroController extends Controller
             $item->{'A_Z_ActionRequired'} = $value['A_Z_ActionRequired'] ?? '';
             $item->{'A_Z_ActionTaken'} = $value['A_Z_ActionTaken'] ?? '';
             $item->{'NR'} = $value['NR'] ?? 'REQ';
-            
 
             $processedData[] = $item;
         }
 
-        // Apply additional filters
+        // Filter: Only show rows with 0 views
         $filteredResults = array_filter($processedData, function ($item) {
             $childSku = $item->{'(Child) sku'} ?? '';
             $inv = $item->INV ?? 0;
-            $ovClicksL30 = $item->{'OV CLICKS L30'} ?? 1;
-
-            return stripos($childSku, 'PARENT') === false && $inv > 0 && $ovClicksL30 == 0;
+            $views = $item->views ?? 1;
+            return stripos($childSku, 'PARENT') === false && $inv > 0 && intval($views) === 0;
         });
 
-        // Return the processed data
         return response()->json([
             'message' => 'Data fetched successfully',
             'data' => array_values($filteredResults),
@@ -174,50 +171,25 @@ class EbayZeroController extends Controller
 
     public function getZeroViewCount()
     {
-        // Replicate the filtering logic from getVieweBayZeroData
+        // Use the same logic as getVieweBayZeroData: INV > 0, views == 0, not parent SKU
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
             ->orderBy('sku', 'asc')
             ->get();
 
-        $response = $this->apiController->fetchEbayListingData();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $zeroCount = 0;
-        if ($response->getStatusCode() === 200) {
-            $sheetData = $response->getData();
-            $sheetSkuMap = [];
-            foreach ($sheetData->data as $item) {
-                $sku = $item->{'(Child) sku'} ?? '';
-                if (!empty($sku)) {
-                    $sheetSkuMap[$sku] = $item;
-                }
+        foreach ($productMasters as $pm) {
+            $sku = $pm->sku;
+            $isParent = stripos($sku, 'PARENT') !== false;
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $views = $ebayMetrics[$sku]->views ?? 0;
+            if (!$isParent && $inv > 0 && intval($views) === 0) {
+                $zeroCount++;
             }
-            $skus = $productMasters->pluck('sku')->unique()->toArray();
-            $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-            $processedData = [];
-            foreach ($productMasters as $pm) {
-                $sku = $pm->sku;
-                $item = $sheetSkuMap[$sku] ?? null;
-                if (!$item) {
-                    $item = (object) [
-                        'Parent' => $pm->parent,
-                        '(Child) sku' => $sku,
-                    ];
-                }
-                $item->INV = $shopifyData->has($sku) ? $shopifyData[$sku]->inv : 0;
-                $item->{'OV CLICKS L30'} = $item->{'OV CLICKS L30'} ?? 0;
-                $processedData[] = $item;
-            }
-            $filteredResults = array_filter($processedData, function ($item) {
-                $childSku = $item->{'(Child) sku'} ?? '';
-                $inv = $item->INV ?? 0;
-                $ovClicksL30 = $item->{'OV CLICKS L30'} ?? 1;
-                return
-                    stripos($childSku, 'PARENT') === false &&
-                    $inv > 0 &&
-                    $ovClicksL30 == 0;
-            });
-            $zeroCount = count($filteredResults);
         }
         return $zeroCount;
     }
@@ -285,7 +257,6 @@ class EbayZeroController extends Controller
         $zeroInvOfListed = 0;
         $liveCount = 0;
         $zeroViewCount = 0;
-        $zeroViewNRCount = 0;
 
         foreach ($productMasters as $item) {
             $sku = trim($item->sku);
@@ -297,7 +268,6 @@ class EbayZeroController extends Controller
             if (is_string($status)) {
                 $status = json_decode($status, true);
             }
-            $nr = $status['NR'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
             $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
             $live = $status['live'] ?? null;
 
@@ -314,23 +284,19 @@ class EbayZeroController extends Controller
                 $liveCount++;
             }
 
-            // Zero view: INV > 0, sessions_l30 == 0 (try EbayMetric->ebay_l30 as sessions_l30 equivalent)
-            $sess30 = $ebayMetrics[$sku]->ebay_l30 ?? null;
-            if (floatval($inv) > 0 && $sess30 !== null && intval($sess30) === 0) {
+            // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
+            $views = $ebayMetrics[$sku]->views ?? null;
+            if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
                 $zeroViewCount++;
-                if ($nr === 'NR') {
-                    $zeroViewNRCount++;
-                }
             }
         }
 
         // live pending = listed - 0-inv of listed - live
         $livePending = $listedCount - $zeroInvOfListed - $liveCount;
-        $zeroViewFinal = $zeroViewCount - $zeroViewNRCount;
 
         return [
             'live_pending' => $livePending,
-            'zero_view' => $zeroViewFinal,
+            'zero_view' => $zeroViewCount,
         ];
     }
 }

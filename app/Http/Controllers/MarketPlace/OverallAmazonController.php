@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\JungleScoutProductData;
 use App\Http\Controllers\ApiController;
 use App\Jobs\UpdateAmazonSPriceJob;
-use App\Models\AmazonDatasheet; // Add this at the top with other use statements
+use App\Models\AmazonDatasheet;
 use App\Models\ChannelMaster;
 use Illuminate\Support\Facades\DB;
 
@@ -27,20 +27,15 @@ class OverallAmazonController extends Controller
         $this->apiController = $apiController;
     }
 
-
-
     public function updatePrice(Request $request)
     {
         $sku = $request["sku"];
         $price = $request["price"];
-        $sID = env('AMAZON_SELLER_ID');
 
-        $price = app(AmazonSpApiService::class)->updatePriceBySku($sID, $sku, $price, 'USD');
+        $price = app(AmazonSpApiService::class)->updateAmazonPriceUS($sku, $price);
 
         return response()->json(['status' => 200, 'data' => $price]);
     }
-
-
 
 
     public function overallAmazon(Request $request)
@@ -48,12 +43,10 @@ class OverallAmazonController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        // Get fresh data from database instead of cache for immediate updates
         $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
 
         $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
         $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
-
 
         return view('market-places.overallAmazon', [
             'mode' => $mode,
@@ -83,7 +76,6 @@ class OverallAmazonController extends Controller
             'amazonAdUpdates' => $adUpdates
         ]);
     }
-
 
 
     public function updateFbaStatus(Request $request)
@@ -450,7 +442,7 @@ class OverallAmazonController extends Controller
         // Decode value column safely
         $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
 
-        $changeAmzPrice = UpdateAmazonSPriceJob::dispatch($sID, $sku, $price)->delay(now()->addMinutes(3));
+        // $changeAmzPrice = UpdateAmazonSPriceJob::dispatch($sku, $price)->delay(now()->addMinutes(3));
 
         // Merge new sprice data
         $merged = array_merge($existing, [
@@ -462,7 +454,7 @@ class OverallAmazonController extends Controller
         $amazonDataView->value = $merged;
         $amazonDataView->save();
 
-        return response()->json(['message' => 'Data saved successfully.', 'data' => $changeAmzPrice]);
+        return response()->json(['message' => 'Data saved successfully.', 'data' => $price]);
     }
 
 
