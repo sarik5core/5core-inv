@@ -2701,11 +2701,18 @@
                     if (Number(item['PmtClkL30']) > 0) {
                         scvrValue = (Number(item['eBay L30']) / Number(item['PmtClkL30'])) * 100;
                     }
+                    let ebayL30 = Number(item['eBay L30']) || 0;
+                    let ebaySess30 = Number(item['PmtClkL30']) || 0;
+
+                    let ebayCvrPercent = 0;
+                    if (ebaySess30 > 0) {
+                        ebayCvrPercent = (ebayL30 / ebaySess30) * 1000 / 10; // 15 / 441 = 0.034 → 34%
+                    }
+
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getCvrColor(scvrValue/100)}">${Math.round(scvrValue)}%</span>
-                        <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
-                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
-                            data-item='${JSON.stringify(item.raw_data)}'></i>`
+                        `<span class="dil-percent-value" style="color: ${getCvrColor(ebayCvrPercent)}">
+                            ${ebayCvrPercent.toFixed(0)}%
+                        </span>`
                     ));
 
 

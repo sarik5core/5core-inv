@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED BGT KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - UTILIZED ACOS RED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - OVER UTILIZED BGT KW',
-        'sub_title' => 'Ebay - OVER UTILIZED BGT KW',
+        'page_title' => 'Ebay - UTILIZED ACOS RED',
+        'sub_title' => 'Ebay - UTILIZED ACOS RED',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                           Ebay - OVER UTILIZED BGT KW
+                           Ebay - UTILIZED ACOS RED
                         </h4>
 
                         <!-- Filters Row -->
@@ -227,7 +227,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-over-utilized-bgt-kw/data",
+                ajaxURL: "/ebay-over-uti-acos-pink/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -326,49 +326,62 @@
                         formatter: (cell) => parseFloat(cell.getValue() || 0)
                     },
                     {
+                        title: "ACOS",
+                        field: "acos",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var acos = parseFloat(row.acos) || 0;
+
+                            var td = cell.getElement();
+                            td.classList.remove('green-bg', 'pink-bg', 'red-bg');
+
+                            if (acos < 7) {
+                                td.classList.add('pink-bg'); 
+                            } else if (acos >= 7 && acos <= 14) {
+                                td.classList.add('green-bg'); 
+                            } else if (acos > 14) {
+                                td.classList.add('red-bg'); 
+                            }
+
+                            return acos.toFixed(2) + "%";
+                        }
+                    },
+                    {
                         title: "7 UB%",
                         field: "l7_spend",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l7_spend = parseFloat(row.l7_spend) || 0;
-                            var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
-
+                            var acos = parseFloat(row.acos) || 0;
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 70 && ub7 <= 90) {
+                            if (acos >= 70 && acos <= 90) {
                                 td.classList.add('green-bg');
-                            } else if (ub7 > 90) {
+                            } else if (acos > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub7 < 70) {
+                            } else if (acos < 70) {
                                 td.classList.add('red-bg');
                             }
-
-                            return ub7.toFixed(0) + "%";
+                            return acos.toFixed(0) + "%";
                         }
-                    },
-                    {
+                    }, {
                         title: "1 UB%",
                         field: "l1_spend",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l1_spend = parseFloat(row.l1_spend) || 0;
-                            var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
-
+                            var acos = parseFloat(row.acos) || 0;
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub1 >= 70 && ub1 <= 90) {
+                            if (acos >= 70 && acos <= 90) {
                                 td.classList.add('green-bg');
-                            } else if (ub1 > 90) {
+                            } else if (acos > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub1 < 70) {
+                            } else if (acos < 70) {
                                 td.classList.add('red-bg');
                             }
-
-                            return ub1.toFixed(0) + "%";
+                            return acos.toFixed(0) + "%";
                         }
                     },
                     {
@@ -449,32 +462,31 @@
                 }
             });
 
-            // document.addEventListener("change", function(e){
-            //     if(e.target.classList.contains("editable-select")){
-            //         let sku   = e.target.getAttribute("data-sku");
-            //         let field = e.target.getAttribute("data-field");
-            //         let value = e.target.value;
+            document.addEventListener("change", function(e){
+                if(e.target.classList.contains("editable-select")){
+                    let sku   = e.target.getAttribute("data-sku");
+                    let field = e.target.getAttribute("data-field");
+                    let value = e.target.value;
 
-            //         fetch('/update-amazon-nr-nrl-fba', {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            //             },
-            //             body: JSON.stringify({
-            //                 sku: sku,
-            //                 field: field,
-            //                 value: value
-            //             })
-            //         })
-            //         .then(res => res.json())
-            //         .then(data => {
-            //             console.log(data);
-            //         })
-            //         .catch(err => console.error(err));
-            //     }
-            // });
-
+                    fetch('/update-ebay-nr-data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            sku: sku,
+                            field: field,
+                            value: value
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(err => console.error(err));
+                }
+            });
 
             table.on("tableBuilt", function() {
 
@@ -486,7 +498,7 @@
                     var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    if (!(ub7 > 90 && ub1 > 90)) return false;
+                    // if (!(ub7 > 90 && ub1 > 90)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
@@ -542,7 +554,7 @@
                     table.setFilter(combinedFilter);
                 });
 
-                $("#status-filter, #inv-filter,#nra-filter,").on("change", function() {
+                $("#status-filter, #inv-filter, #nra-filter").on("change", function() {
                     table.setFilter(combinedFilter);
                 });
 

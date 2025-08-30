@@ -214,6 +214,9 @@
                                 <li>
                                     <a href="{{ url('pricing-master.pricing_master') }}">Pricing masters</a>
                                 </li>
+                                <li>
+                                    <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters clone</a>
+                                </li>
                             @endif
                             @if (isset($permissions['listing_analysis']) && in_array('view', $permissions['listing_analysis']))
                                 <li>
@@ -1566,11 +1569,23 @@
                                             <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('ebay-over-utilized-bgt-kw') }}">EBAY > UTILIZED BGT KW</a>
+                                            <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
                                         </li>
-                                        {{-- <li>
-                                            <a href="{{ route('ebay-over-utilized-bgt-pt') }}">EBAY < UTILIZED BGT KW</a>
-                                        </li> --}}
+                                        <li>
+                                            <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > UTI ACOS RED</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < UTI ACOS PINK</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < UTI ACOS GREEN</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < UTI ACOS RED</a>
+                                        </li>
 
                                     </ul>
                                 </div>

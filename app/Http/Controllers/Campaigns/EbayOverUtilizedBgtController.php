@@ -12,11 +12,31 @@ use Illuminate\Support\Facades\Http;
 
 class EbayOverUtilizedBgtController extends Controller
 {
-    public function ebayOverUtilizedBgtKw(){
-        return view('campaign.ebay-over-utilized-bgt-kw');
+    public function ebayOverUtiAcosPink(){
+        return view('campaign.ebay-over-uti-acos-pink');
     }
 
-    public function getEbayOverUtilizedBgtKwData()
+    public function ebayOverUtiAcosGreen(){
+        return view('campaign.ebay-over-uti-acos-green');
+    }
+
+    public function ebayOverUtiAcosRed(){
+        return view('campaign.ebay-over-uti-acos-red');
+    }
+
+    public function ebayUnderUtiAcosPink(){
+        return view('campaign.ebay-under-uti-acos-pink');
+    }
+
+    public function ebayUnderUtiAcosGreen(){
+        return view('campaign.ebay-under-uti-acos-green');
+    }
+
+    public function ebayUnderUtiAcosRed(){
+        return view('campaign.ebay-under-uti-acos-red');
+    }
+
+    public function getEbayOverUtiAcosPinkData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -45,13 +65,20 @@ class EbayOverUtilizedBgtController extends Controller
             })
             ->get();
 
+        $ebayCampaignReportsL30 = EbayPriorityReport::where('report_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
         $result = [];
 
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
             $parent = $pm->parent;
 
-            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
@@ -62,6 +89,14 @@ class EbayOverUtilizedBgtController extends Controller
                 return stripos($item->campaign_name, $sku) !== false;
             });
 
+            $matchedCampaignL30 = $ebayCampaignReportsL30->first(function ($item) use ($sku) {
+                return stripos($item->campaign_name, $sku) !== false;
+            });
+
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
+            }
+
             $row = [];
             $row['parent'] = $parent;
             $row['sku']    = $pm->sku;
@@ -69,26 +104,27 @@ class EbayOverUtilizedBgtController extends Controller
             $row['L30']    = $shopify->quantity ?? 0;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
-            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaign_budget_amount ?? ($matchedCampaignL1->campaign_budget_amount ?? '');
-            // $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
-            // $row['crnt_bid'] = $matchedCampaignL7->currentSpBidPrice ?? ($matchedCampaignL1->currentSpBidPrice ?? '');
-            // $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
-            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
-            // $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
-            $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
+            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
 
-            $row['NRL']  = '';
+            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $sales    = (float) $matchedCampaignL30->cpc_attributed_sales;
+
+            $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
+            $row['acos'] = $acos;
+
+            $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
+            $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
+            $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
+
             $row['NR'] = '';
-            $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
                     $raw = json_decode($raw, true);
                 }
                 if (is_array($raw)) {
-                    $row['NRL']  = $raw['NRL'] ?? null;
                     $row['NR'] = $raw['NR'] ?? null;
-                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 
@@ -102,7 +138,28 @@ class EbayOverUtilizedBgtController extends Controller
         ]);
     }
 
-    // public function ebayOverUtilizedBgtPt(){
-    //     return view('campaign.ebay-over-utilized-bgt-pt');
-    // }
+    public function updateNrData(Request $request)
+    {
+        $sku   = $request->input('sku');
+        $field = $request->input('field');
+        $value = $request->input('value');
+
+        $ebayDataView = EbayDataView::where('sku', $sku)->first();
+
+        $jsonData = $ebayDataView && $ebayDataView->value ? $ebayDataView->value : [];
+
+        $jsonData[$field] = $value;
+
+        $ebayDataView = EbayDataView::updateOrCreate(
+            ['sku' => $sku],
+            ['value' => $jsonData]
+        );
+
+        return response()->json([
+            'status' => 200,
+            'message' => "...",
+            'updated_json' => $jsonData
+        ]);
+
+    }
 }

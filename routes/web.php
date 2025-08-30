@@ -202,6 +202,7 @@ use App\Http\Controllers\MarketPlace\SheinController;
 use App\Http\Controllers\MarketPlace\TiktokShopController;
 use App\Http\Controllers\PurchaseMaster\LedgerMasterController;
 use App\Http\Controllers\PricingIncDsc\MasterIncDscController;
+use App\Http\Controllers\PricingMaster\PricingMasterViewsController;
 use App\Http\Controllers\PurchaseMaster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
@@ -748,7 +749,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::any('/update-ebay-sku-pricing', [EbayController::class, 'updateEbayPricing'])->name('ebay.priceUpdate');
     Route::any('/update-ebay2-sku-pricing', [EbayTwoController::class, 'updateEbayPricing'])->name('ebay2.priceUpdate');
-    Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
+    // Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
     Route::get('/check-amazon-auth', [OverallAmazonController::class, 'checkAmazonAuth']);
 
     Route::post('/update-fba-status-ebay', [EbayController::class, 'updateFbaStatusEbay'])
@@ -1017,8 +1018,22 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::get('/pricing-master.pricing_master', [PricingMasterController::class, 'pricingMaster']);
     Route::get('/pricing-analysis-data-view', [PricingMasterController::class, 'getViewPricingAnalysisData']);
+    Route::get('/pricing-analysis-data-view', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
 
+
+
+
+    Route::get('/pricing-masters.pricing_masters', [PricingMasterViewsController::class, 'pricingMaster']);
+    Route::get('/pricing-analysis-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+    Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
+    
+    // Analysis routes
+    Route::get('/pricing-master/l30-analysis', [PricingMasterViewsController::class, 'getL30Analysis']);
+    Route::get('/pricing-master/site-analysis', [PricingMasterViewsController::class, 'getSiteAnalysis']);
+    Route::get('/pricing-master/profit-analysis', [PricingMasterViewsController::class, 'getProfitAnalysis']);
+    Route::get('/pricing-master/roi-analysis', [PricingMasterViewsController::class, 'getRoiAnalysis']);
 
     //ebay db save routes
     Route::post('/ebay/save-nr', [EbayController::class, 'saveNrToDatabase']);
@@ -1557,8 +1572,18 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
-        Route::get('/ebay-over-utilized-bgt-kw', 'ebayOverUtilizedBgtKw')->name('ebay-over-utilized-bgt-kw');
-        Route::get('/ebay-over-utilized-bgt-kw/data', 'getEbayOverUtilizedBgtKwData')->name('ebay-over-utilized-bgt-kw-data');
+        Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
+        Route::get('/ebay-over-uti-acos-green', 'ebayOverUtiAcosGreen')->name('ebay-over-uti-acos-green');
+        Route::get('/ebay-over-uti-acos-red', 'ebayOverUtiAcosRed')->name('ebay-over-uti-acos-red');
+
+        Route::get('/ebay-under-uti-acos-pink', 'ebayUnderUtiAcosPink')->name('ebay-under-uti-acos-pink');
+        Route::get('/ebay-under-uti-acos-green', 'ebayUnderUtiAcosGreen')->name('ebay-under-uti-acos-green');
+        Route::get('/ebay-under-uti-acos-red', 'ebayUnderUtiAcosRed')->name('ebay-under-uti-acos-red');
+
+        Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
+        Route::post('/update-ebay-nr-data', 'updateNrData');
+
+
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {

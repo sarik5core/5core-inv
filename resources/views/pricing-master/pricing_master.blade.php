@@ -1300,9 +1300,10 @@
                         <table class="custom-resizable-table" id="amazon-table">
                             <thead>
                                 <tr>
-                                    <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th>
+                                    {{-- <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th> --}}
                                     <th data-field="sl_no">Image. <span class="sort-arrow">↓</span></th>
-                                    <th data-field="parent" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="parent"
+                                        style="vertical-align: middle; white-space: nowrap; width:25px!important ">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center sortable-header">
                                                 Parent <span class="sort-arrow">↓</span>
@@ -1359,13 +1360,7 @@
                                             <div class="metric-total" id="l30-total">0</div>
                                         </div>
                                     </th>
-                                    <th data-field="analytics" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Analytics<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
+
 
                                     <th data-field="dil_pct" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1376,36 +1371,19 @@
                                         </div>
                                     </th>
 
-                                    <th data-field="msrp" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                MSRP<span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="inv-total">0</div>
-                                        </div>
-                                    </th>
 
-
-                                    <th data-field="mapp" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                MAP<span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="inv-total">0</div>
-                                        </div>
-                                    </th>
                                     <th data-field="av_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                AVG PRICE <span class="sort-arrow">↓</span>
+                                                APRC <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
                                     </th>
 
-                                       <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                SPRICE<span class="sort-arrow">↓</span>
+                                                SPRC<span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
                                     </th>
@@ -1414,7 +1392,7 @@
                                     <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                SPROFIT<span class="sort-arrow">↓</span>
+                                                SPFT<span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
                                     </th>
@@ -1439,10 +1417,13 @@
                                     <!--        </div>-->
                                     <!--    </div>-->
                                     <!--</th>-->
+
+
+
                                     <th data-field="av_pft" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                AVG PFT%
+                                                AVG <br>PFT%
                                                 <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
@@ -1450,16 +1431,33 @@
                                     <th data-field="av_roi" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                AVG ROI %<span class="sort-arrow">↓</span>
+                                                AVG <br> ROI %<span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
                                     </th>
 
 
 
+                                    <th data-field="msrp" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                MSRP<span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div class="metric-total" id="inv-total">0</div>
+                                        </div>
+                                    </th>
 
 
+                                    <th data-field="mapp" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                MAP<span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div class="metric-total" id="inv-total">0</div>
+                                        </div>
+                                    </th>
 
+                                    {{-- 
                                     <th data-field="amz_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -1543,28 +1541,9 @@
                                                 Macy-ROI <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th>
-                                    {{-- <th data-field="Macy_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                NeweeggB2C-P <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="Macy_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                NeweeggB2C-PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="Macy_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                NeweeggB2C-ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
                                     </th> --}}
+                                    {{-- <th data-field="Macy_p" style="vertical-align: middle; white-space: nowrap;">
+                                  
                                     <th data-field="reverb_p" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
@@ -1729,7 +1708,7 @@
                                                 Walmart ROI <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
-                                    </th>
+                                    </th> --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -1819,8 +1798,6 @@
                 </div>
             </div>
         </div>
-
-
 
 
 
@@ -2220,19 +2197,29 @@
                     const slNo = ((currentPage - 1) * rowsPerPage) + index + 1;
                     if (item.is_parent) $row.addClass('parent-row');
 
-                    $row.append($('<td>').text(slNo));
+                    // $row.append($('<td>').text(slNo));
                     $row.append($('<td>').html(`
-    <div class="image-wrapper">
-        <img 
-            src="${item.shopifyb2c_image || 'https://skala.or.id/wp-content/uploads/2024/01/dummy-post-square-1-1.jpg'}" 
-            alt="Product Image" 
-            class="zoom-image"
-        >
-    </div>
-`));
+                        <div class="image-wrapper">
+                            <img 
+                                src="${item.shopifyb2c_image || 'https://skala.or.id/wp-content/uploads/2024/01/dummy-post-square-1-1.jpg'}" 
+                                alt="Product Image" 
+                                class="zoom-image"
+                            >
+                        </div>
+                    `));
 
-                    $row.append($('<td>').text(item.Parent || ''));
-                    $row.append($('<td>').text(item['SKU'] || ''));
+                    $row.append(
+                        $('<td>')
+                        .text((item.Parent || '').substring(0, 6) + (item.Parent && item.Parent.length >
+                            10 ? '…' : ''))
+                        .attr('title', item.Parent || '')
+                    );
+                    $row.append(
+                        $('<td>')
+                        .text((item['SKU'] || '').substring(0, 25) + (item['SKU'] && item['SKU']
+                            .length > 8 ? '…' : ''))
+                        .attr('title', item['SKU'] || '')
+                    );
 
 
 
@@ -2241,7 +2228,7 @@
                         eBay: parseFloat(item.ebay_price) || Infinity,
                         Shopify: parseFloat(item.shopifyb2c_price) || Infinity,
                         Macy: parseFloat(item.macy_price) || Infinity,
-                        // Newegg: parseFloat(item.neweegb2c_price) || Infinity,
+                      
                         Reverb: parseFloat(item.reverb_price) || Infinity,
                         doba: parseFloat(item.doba_price) || Infinity,
                         temu: parseFloat(item.temu_price) || Infinity,
@@ -2251,7 +2238,7 @@
                         walmart: parseFloat(item.walmart_price) || Infinity
                     };
 
-
+                    
                     // Find the channel with the minimum price
                     let minChannel = '';
                     let minPrice = Infinity;
@@ -2276,179 +2263,94 @@
                     ${
                         !item.is_parent
                             ? `<i class="fa fa-eye text-primary ms-2"  style="cursor: pointer;" data-inv="${item.INV || 0}" 
-                                                                                            data-l30='${JSON.stringify({
-                                                                                                Amazon: {
-                                                                                                    price: item.amz_price,
-                                                                                                    l30: item.amz_l30,
-                                                                                                    pft: item.amz_pft,
-                                                                                                    roi: item.amz_roi
-                                                                                                },
-                                                                                                eBay: {
-                                                                                                    price: item.ebay_price,
-                                                                                                    l30: item.ebay_l30,
-                                                                                                    pft: item.ebay_pft,
-                                                                                                    roi: item.ebay_roi
-                                                                                                },
-                                                                                                Shopify: {
-                                                                                                    price: item.shopifyb2c_price,
-                                                                                                    l30: item.shopifyb2c_l30,
-                                                                                                    pft: item.shopifyb2c_pft,
-                                                                                                    roi: item.shopifyb2c_roi
-                                                                                                },
-                                                                                                Macy: {
-                                                                                                    price: item.macy_price,
-                                                                                                    l30: item.macy_l30,
-                                                                                                    pft: item.macy_pft,
-                                                                                                    roi: item.macy_roi
-                                                                                                },
-                                                                                                // Newegg: {
-                                                                                                //     price: item.neweegb2c_price,
-                                                                                                //     l30: item.neweegb2c_l30,
-                                                                                                //     pft: item.neweegb2c_pft,
-                                                                                                //     roi: item.neweegb2c_roi
-                                                                                                // },
-                                                                                                Reverb: {
-                                                                                                    price: item.reverb_price,
-                                                                                                    l30: item.reverb_l30,
-                                                                                                    pft: item.reverb_pft,
-                                                                                                    roi: item.reverb_roi
-                                                                                                }
-                                                                                                ,
-                                                                                                doba: {
-                                                                                                    price: item.doba_price,
-                                                                                                    l30: item.doba_l30,
-                                                                                                    pft: item.doba_pft,
-                                                                                                    roi: item.doba_roi
-                                                                                                }
-                                                                                                ,
-                                                                                                temu: {
-                                                                                                    price: item.temu_price,
-                                                                                                    l30: item.temu_l30,
-                                                                                                    pft: item.temu_pft,
-                                                                                                    roi: item.temu_roi
-                                                                                                }
-                                                                                                ,
-                                                                                                wayfair: {
-                                                                                                    price: item.wayfair_price,
-                                                                                                    l30: item.wayfair_l30,
-                                                                                                    pft: item.wayfair_pft,
-                                                                                                    roi: item.wayfair_roi
-                                                                                                }
-                                                                                                ,
-                                                                                                ebay3: {
-                                                                                                    price: item.ebay3_price,
-                                                                                                    l30: item.ebay3_l30,
-                                                                                                    pft: item.ebay3_pft,
-                                                                                                    roi: item.ebay3_roi
-                                                                                                }
-                                                                                                ,
-                                                                                                ebay2: {
-                                                                                                    price: item.ebay2_price,
-                                                                                                    l30: item.ebay2_l30,
-                                                                                                    pft: item.ebay2_pft,
-                                                                                                    roi: item.ebay2_roi
-                                                                                                }
-                                                                                                ,
-                                                                                                walmart: {
-                                                                                                    price: item.walmart_price,
-                                                                                                    l30: item.walmart_l30,
-                                                                                                    pft: item.walmart_pft,
-                                                                                                    roi: item.walmart_roi
-                                                                                                }
+                                                                                                            data-l30='${JSON.stringify({
+                                                                                                                Amazon: {
+                                                                                                                    price: item.amz_price,
+                                                                                                                    l30: item.amz_l30,
+                                                                                                                    pft: item.amz_pft,
+                                                                                                                    roi: item.amz_roi
+                                                                                                                },
+                                                                                                                eBay: {
+                                                                                                                    price: item.ebay_price,
+                                                                                                                    l30: item.ebay_l30,
+                                                                                                                    pft: item.ebay_pft,
+                                                                                                                    roi: item.ebay_roi
+                                                                                                                },
+                                                                                                                Shopify: {
+                                                                                                                    price: item.shopifyb2c_price,
+                                                                                                                    l30: item.shopifyb2c_l30,
+                                                                                                                    pft: item.shopifyb2c_pft,
+                                                                                                                    roi: item.shopifyb2c_roi
+                                                                                                                },
+                                                                                                                Macy: {
+                                                                                                                    price: item.macy_price,
+                                                                                                                    l30: item.macy_l30,
+                                                                                                                    pft: item.macy_pft,
+                                                                                                                    roi: item.macy_roi
+                                                                                                                },
+                                                                                                                // Newegg: {
+                                                                                                                //     price: item.neweegb2c_price,
+                                                                                                                //     l30: item.neweegb2c_l30,
+                                                                                                                //     pft: item.neweegb2c_pft,
+                                                                                                                //     roi: item.neweegb2c_roi
+                                                                                                                // },
+                                                                                                                Reverb: {
+                                                                                                                    price: item.reverb_price,
+                                                                                                                    l30: item.reverb_l30,
+                                                                                                                    pft: item.reverb_pft,
+                                                                                                                    roi: item.reverb_roi
+                                                                                                                }
+                                                                                                                ,
+                                                                                                                doba: {
+                                                                                                                    price: item.doba_price,
+                                                                                                                    l30: item.doba_l30,
+                                                                                                                    pft: item.doba_pft,
+                                                                                                                    roi: item.doba_roi
+                                                                                                                }
+                                                                                                                ,
+                                                                                                                temu: {
+                                                                                                                    price: item.temu_price,
+                                                                                                                    l30: item.temu_l30,
+                                                                                                                    pft: item.temu_pft,
+                                                                                                                    roi: item.temu_roi
+                                                                                                                }
+                                                                                                                ,
+                                                                                                                wayfair: {
+                                                                                                                    price: item.wayfair_price,
+                                                                                                                    l30: item.wayfair_l30,
+                                                                                                                    pft: item.wayfair_pft,
+                                                                                                                    roi: item.wayfair_roi
+                                                                                                                }
+                                                                                                                ,
+                                                                                                                ebay3: {
+                                                                                                                    price: item.ebay3_price,
+                                                                                                                    l30: item.ebay3_l30,
+                                                                                                                    pft: item.ebay3_pft,
+                                                                                                                    roi: item.ebay3_roi
+                                                                                                                }
+                                                                                                                ,
+                                                                                                                ebay2: {
+                                                                                                                    price: item.ebay2_price,
+                                                                                                                    l30: item.ebay2_l30,
+                                                                                                                    pft: item.ebay2_pft,
+                                                                                                                    roi: item.ebay2_roi
+                                                                                                                }
+                                                                                                                ,
+                                                                                                                walmart: {
+                                                                                                                    price: item.walmart_price,
+                                                                                                                    l30: item.walmart_l30,
+                                                                                                                    pft: item.walmart_pft,
+                                                                                                                    roi: item.walmart_roi
+                                                                                                                }
 
-                                                                                            })}'
-                                                                                            onclick="showL30Modal(this)">
-                                                                                            </i>`
+                                                                                                            })}'
+                                                                                                            onclick="showL30Modal(this)">
+                                                                                                            </i>`
                                                 : ''
                                         }
                                     `));
 
 
-
-
-                    $row.append($('<td>').html(`
-                                        ${item.is_parent ? '--' : `
-                                                                                    <button class="btn btn-outline-success btn-sm" 
-                                                                                            style="padding: 2px 6px;" 
-                                                                                            data-analysis='${JSON.stringify({
-                                                                                                Amazon: {
-                                                                                                    price: item.amz_price,
-                                                                                                    l30: item.amz_l30,
-                                                                                                    pft: item.amz_pft,
-                                                                                                    roi: item.amz_roi
-                                                                                                },
-                                                                                                eBay: {
-                                                                                                    price: item.ebay_price,
-                                                                                                    l30: item.ebay_l30,
-                                                                                                    pft: item.ebay_pft,
-                                                                                                    roi: item.ebay_roi
-                                                                                                },
-                                                                                                Shopify: {
-                                                                                                    price: item.shopifyb2c_price,
-                                                                                                    l30: item.shopifyb2c_l30,
-                                                                                                    pft: item.shopifyb2c_pft,
-                                                                                                    roi: item.shopifyb2c_roi
-                                                                                                },
-                                                                                                Macy: {
-                                                                                                    price: item.macy_price,
-                                                                                                    l30: item.macy_l30,
-                                                                                                    pft: item.macy_pft,
-                                                                                                    roi: item.macy_roi
-                                                                                                },
-                                                                                                // Newegg: {
-                                                                                                //     price: item.neweegb2c_price,
-                                                                                                //     l30: item.neweegb2c_l30,
-                                                                                                //     pft: item.neweegb2c_pft,
-                                                                                                //     roi: item.neweegb2c_roi
-                                                                                                // },
-                                                                                                Reverb: {
-                                                                                                    price: item.reverb_price,
-                                                                                                    l30: item.reverb_l30,
-                                                                                                    pft: item.reverb_pft,
-                                                                                                    roi: item.reverb_roi
-                                                                                                },
-                                                                                                Doba: {
-                                                                                                    price: item.doba_price,
-                                                                                                    l30: item.doba_l30,
-                                                                                                    pft: item.doba_pft,
-                                                                                                    roi: item.doba_roi
-                                                                                                },
-                                                                                                Temu: {
-                                                                                                    price: item.temu_price,
-                                                                                                    l30: item.temu_l30,
-                                                                                                    pft: item.temu_pft,
-                                                                                                    roi: item.temu_roi
-                                                                                                }
-                                                                                                , Wayfair: {
-                                                                                                    price: item.wayfair_price,
-                                                                                                    l30: item.wayfair_l30,
-                                                                                                    pft: item.wayfair_pft,
-                                                                                                    roi: item.wayfair_roi
-                                                                                                },
-                                                                                                ebay3: {
-                                                                                                    price: item.ebay3_price,
-                                                                                                    l30: item.ebay3_l30,
-                                                                                                    pft: item.ebay3_pft,
-                                                                                                    roi: item.ebay3_roi
-                                                                                                }
-                                                                                                , ebay2: {
-                                                                                                    price: item.ebay2_price,
-                                                                                                    l30: item.ebay2_l30,
-                                                                                                    pft: item.ebay2_pft,
-                                                                                                    roi: item.ebay2_roi
-                                                                                                },
-                                                                                                walmart: {
-                                                                                                    price: item.walmart_price,
-                                                                                                    l30: item.walmart_l30,
-                                                                                                    pft: item.walmart_pft,
-                                                                                                    roi: item.walmart_roi
-                                                                                                }
-                                                                                            })}'
-                                                                                            onclick="openSiteAnalysisModal(this)">
-                                                                                        <i class="fa fa-bar-chart"></i>
-                                                                                    </button>
-                                                                                `}
-                                    `));
 
 
 
@@ -2466,17 +2368,6 @@
                     }
 
 
-
-                    // MSRP PRICE
-                    $row.append($('<td>').text(
-                        item.is_parent ?
-                        '---' :
-                        (item.MSRP !== null && item.MSRP !== undefined ? parseInt(item.MSRP) : '0')
-                    ));
-
-                    // MAP PRICE
-                    const mapValue = (minPrice !== Infinity) ? `${minPrice.toFixed(2)}` : '0';
-                    $row.append($('<td>').text(item.is_parent ? '---' : mapValue));
 
 
                     // Average Price
@@ -2539,7 +2430,7 @@
                         (walmartPriceVal * walmartL30Val); // ✅ Add Walmart
 
                     const totalL30 =
-                        amzL30Val + ebayL30Val + shopifyL30Val + macyL30Val  +
+                        amzL30Val + ebayL30Val + shopifyL30Val + macyL30Val +
                         reverbL30Val + dobaL30Val + temuL30Val + wayfairL30Val + ebay3L30Val +
                         ebay2L30Val + walmartL30Val; // ✅ Add Walmart
 
@@ -2615,8 +2506,8 @@
 
 
                     // Site-wise profit per unit × L30 = total profit per site
-                    const amzProfit = ((amzPriceVal * 0.71) - LP - SHIP) * amzL30Val;
-                    const ebayProfit = ((ebayPriceVal * 0.77) - LP - SHIP) * ebayL30Val;
+                    const amzProfit = ((amzPriceVal * 0.80 - LP - SHIP) * amzL30Val);
+                    const ebayProfit = ((ebayPriceVal * 0.74) - LP - SHIP) * ebayL30Val;
                     const shopifyProfit = ((shopifyPriceVal * 0.75) - LP - SHIP) * shopifyL30Val;
                     const macyProfit = ((macyPriceVal * 0.77) - LP - SHIP) * macyL30Val;
                     const reverbProfit = ((reverbPriceVal * 0.84) - LP - SHIP) * reverbL30Val;
@@ -2630,7 +2521,7 @@
 
                     // ✅ Now correct totalProfit (includes L30 × per-unit profit)
                     const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                        dobaProfit  + temuProfit + wayfairProfit + ebay3Profit +
+                        dobaProfit + temuProfit + wayfairProfit + ebay3Profit +
                         ebay2Profit + walmartProfit;
 
 
@@ -2722,27 +2613,23 @@
                     };
 
 
-                    
+
                     // Append with span styling
                     $row.append(
                         $('<td>').html(
                             item.is_parent ?
                             `--` :
                             `
-                                    <span style="background-color:${pftBgColor}; color:white; padding:2px 6px; border-radius:4px;">
-                                        <strong>${avgPftPercent}%</strong>
-                                    </span>
-                                    <i class="fa fa-eye text-primary ms-2" 
-                                    style="cursor: pointer;" 
-                                    data-profit='${JSON.stringify(profitData)}'
-                                    onclick="showProfitModal(this)">
-                                    </i>
-                                `
+                <span style="background-color:${pftBgColor}; color:white; padding:2px 6px; border-radius:4px;">
+                    <strong>${Math.round(avgPftPercent)}%</strong>
+                </span>
+               
+            `
                         )
                     );
 
 
-                    
+
 
 
 
@@ -2822,236 +2709,244 @@
                             `--` :
                             `
                 <span style="background-color:${roiBgColor}; color:white; padding:2px 6px; border-radius:4px;">
-                    <strong>${avgRoiPercent}%</strong>
+                    <strong>${Math.round(avgRoiPercent)}%</strong>
                 </span>
-                <i class="fa fa-eye text-primary ms-2" 
-                   style="cursor: pointer;" 
-                   data-roi='${JSON.stringify(roiData)}'
-                   onclick="showRoiModal(this)">
-                </i>
+               
             `
                         )
                     );
 
 
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (amzBuyerLink || amzL30 || amzDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${amzPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${amzBuyerLink ? `<div class="sku-link"><a href="${amzBuyerLink}" target="_blank" rel="noopener noreferrer">Amazon Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(amzL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(amzDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(amzPrice));
-                    }
-
-
-
-                    const getPftColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent < 10) return 'red';
-                        if (percent >= 10 && percent < 15) return 'yellow';
-                        if (percent >= 15 && percent < 20) return 'blue';
-                        if (percent >= 20 && percent <= 40) return 'green';
-                        return 'pink';
-                    };
-
-                    $row.append($('<td>').html(
-                        typeof item.amz_pft === 'number' && !isNaN(item.amz_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getPftColor(item.amz_pft)}">${Math.round(item.amz_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.amz_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
+                    // MSRP PRICE
+                    $row.append($('<td>').text(
+                        item.is_parent ?
+                        '---' :
+                        (item.MSRP !== null && item.MSRP !== undefined ? parseInt(item.MSRP) : '0')
                     ));
 
-
-                    const getRoiColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent >= 0 && percent < 50) return 'red';
-                        if (percent >= 50 && percent < 75) return 'yellow';
-                        if (percent >= 75 && percent <= 100) return 'green';
-                        return 'pink';
-                    };
-                    $row.append($('<td>').html(
-                        typeof item.amz_roi === 'number' && !isNaN(item.amz_roi) ?
-                        `<span class="dil-percent-value ${getRoiColor(item.amz_roi)}">${Math.round(item.amz_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // MAP PRICE
+                    const mapValue = (minPrice !== Infinity) ? `${minPrice.toFixed(2)}` : '0';
+                    $row.append($('<td>').text(item.is_parent ? '---' : mapValue));
 
 
-                    // eBay Price
-                    const ebayPrice = item.ebay_price !== null ? '$' + parseFloat(item.ebay_price).toFixed(
-                        2) : '0';
-                    const ebayBuyerLink = item.ebay_buy_link || '';
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (amzBuyerLink || amzL30 || amzDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${amzPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${amzBuyerLink ? `<div class="sku-link"><a href="${amzBuyerLink}" target="_blank" rel="noopener noreferrer">Amazon Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(amzL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(amzDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(amzPrice));
+                    // }
 
 
-                    const ebayL30 = item.ebay_l30 || 0;
-                    const ebayDil = item.INV !== 0 ? (ebayL30 / item.INV).toFixed(2) : '0.00';
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (ebayBuyerLink || ebayL30 || ebayDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${ebayPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${ebayBuyerLink ? `<div class="sku-link"><a href="${ebayBuyerLink}" target="_blank" rel="noopener noreferrer">eBay Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(ebayL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(ebayDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(ebayPrice));
-                    }
+                    // const getPftColor = (value) => {
+                    //     const percent = parseFloat(value) * 100;
+                    //     if (percent < 10) return 'red';
+                    //     if (percent >= 10 && percent < 15) return 'yellow';
+                    //     if (percent >= 15 && percent < 20) return 'blue';
+                    //     if (percent >= 20 && percent <= 40) return 'green';
+                    //     return 'pink';
+                    // };
+
+                    // $row.append($('<td>').html(
+                    //     typeof item.amz_pft === 'number' && !isNaN(item.amz_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getPftColor(item.amz_pft)}">${Math.round(item.amz_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.amz_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
+
+
+                    // const getRoiColor = (value) => {
+                    //     const percent = parseFloat(value) * 100;
+                    //     if (percent >= 0 && percent < 50) return 'red';
+                    //     if (percent >= 50 && percent < 75) return 'yellow';
+                    //     if (percent >= 75 && percent <= 100) return 'green';
+                    //     return 'pink';
+                    // };
+                    // $row.append($('<td>').html(
+                    //     typeof item.amz_roi === 'number' && !isNaN(item.amz_roi) ?
+                    //     `<span class="dil-percent-value ${getRoiColor(item.amz_roi)}">${Math.round(item.amz_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
+
+
+                    // // eBay Price
+                    // const ebayPrice = item.ebay_price !== null ? '$' + parseFloat(item.ebay_price).toFixed(
+                    //     2) : '0';
+                    // const ebayBuyerLink = item.ebay_buy_link || '';
+
+
+                    // const ebayL30 = item.ebay_l30 || 0;
+                    // const ebayDil = item.INV !== 0 ? (ebayL30 / item.INV).toFixed(2) : '0.00';
+
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (ebayBuyerLink || ebayL30 || ebayDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${ebayPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${ebayBuyerLink ? `<div class="sku-link"><a href="${ebayBuyerLink}" target="_blank" rel="noopener noreferrer">eBay Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(ebayL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(ebayDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(ebayPrice));
+                    // }
 
                     // eBay Metrics
 
-                    const getebayRoiColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent < 50) return 'red';
-                        if (percent >= 50 && percent < 75) return 'yellow';
-                        if (percent >= 75 && percent <= 125) return 'green';
-                        return 'pink';
-                    };
+                    // const getebayRoiColor = (value) => {
+                    //     const percent = parseFloat(value) * 100;
+                    //     if (percent < 50) return 'red';
+                    //     if (percent >= 50 && percent < 75) return 'yellow';
+                    //     if (percent >= 75 && percent <= 125) return 'green';
+                    //     return 'pink';
+                    // };
 
                     // eBay Metrics
                     // $row.append($('<td>').text(formatPercentage(item.ebay_pft)));
 
-                    const getebayPftColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent < 10) return 'red';
-                        if (percent >= 10 && percent < 15) return 'yellow';
-                        if (percent >= 15 && percent < 20) return 'blue';
-                        if (percent >= 20 && percent <= 40) return 'green';
-                        return 'pink';
-                    };
+                    // const getebayPftColor = (value) => {
+                    //     const percent = parseFloat(value) * 100;
+                    //     if (percent < 10) return 'red';
+                    //     if (percent >= 10 && percent < 15) return 'yellow';
+                    //     if (percent >= 15 && percent < 20) return 'blue';
+                    //     if (percent >= 20 && percent <= 40) return 'green';
+                    //     return 'pink';
+                    // };
 
-                    $row.append($('<td>').html(
-                        typeof item.ebay_pft === 'number' && !isNaN(item.ebay_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getebayPftColor(item.ebay_pft)}">${Math.round(item.ebay_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.ebay_pft === 'number' && !isNaN(item.ebay_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getebayPftColor(item.ebay_pft)}">${Math.round(item.ebay_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
 
 
-                    $row.append($('<td>').html(
-                        typeof item.ebay_roi === 'number' && !isNaN(item.ebay_roi) ?
-                        `<span class="dil-percent-value ${getebayRoiColor(item.ebay_roi)}">${Math.round(item.ebay_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.ebay_roi === 'number' && !isNaN(item.ebay_roi) ?
+                    //     `<span class="dil-percent-value ${getebayRoiColor(item.ebay_roi)}">${Math.round(item.ebay_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
                     // Shopify Price
-                    const shopifyPrice = item.shopifyb2c_price !== null ? '$' + parseFloat(item
-                        .shopifyb2c_price).toFixed(2) : '0';
-                    const shopifyBuyerLink = item.shopiyb2c_buy_link || '';
+                    // const shopifyPrice = item.shopifyb2c_price !== null ? '$' + parseFloat(item
+                    //     .shopifyb2c_price).toFixed(2) : '0';
+                    // const shopifyBuyerLink = item.shopiyb2c_buy_link || '';
 
 
-                    const shopifyL30 = item.shopiyb2c_l30 || 0;
-                    const shopifyDil = item.INV !== 0 ? (shopifyL30 / item.INV).toFixed(2) : '0.00';
+                    // const shopifyL30 = item.shopiyb2c_l30 || 0;
+                    // const shopifyDil = item.INV !== 0 ? (shopifyL30 / item.INV).toFixed(2) : '0.00';
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (shopifyBuyerLink || shopifyL30 || shopifyDil) {
-                        $row.append($('<td>').html(`
-                        <div class="sku-tooltip-container">
-                            <span class="price-text">${shopifyPrice}</span>
-                            <div class="sku-tooltip">
-                                ${shopifyBuyerLink ? `<div class="sku-link"><a href="${shopifyBuyerLink}" target="_blank" rel="noopener noreferrer">Shopify Buyer Link</a></div>` : ''}
-                                <div class="sku-link"><strong>L30: ${parseFloat(shopifyL30 || 0).toFixed(2)}</strong></div>
-                                <div class="sku-link"><strong>DIL: ${parseFloat(shopifyDil || 0).toFixed(2)}%</strong></div>
-                            </div>
-                        </div>
-                    `));
-                    } else {
-                        $row.append($('<td>').text(shopifyPrice));
-                    }
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (shopifyBuyerLink || shopifyL30 || shopifyDil) {
+                    //     $row.append($('<td>').html(`
+                //     <div class="sku-tooltip-container">
+                //         <span class="price-text">${shopifyPrice}</span>
+                //         <div class="sku-tooltip">
+                //             ${shopifyBuyerLink ? `<div class="sku-link"><a href="${shopifyBuyerLink}" target="_blank" rel="noopener noreferrer">Shopify Buyer Link</a></div>` : ''}
+                //             <div class="sku-link"><strong>L30: ${parseFloat(shopifyL30 || 0).toFixed(2)}</strong></div>
+                //             <div class="sku-link"><strong>DIL: ${parseFloat(shopifyDil || 0).toFixed(2)}%</strong></div>
+                //         </div>
+                //     </div>
+                // `));
+                    // } else {
+                    //     $row.append($('<td>').text(shopifyPrice));
+                    // }
 
                     // Shopify Metrics
 
-                    const getshopifyPftColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent < 10) return 'red';
-                        if (percent >= 10 && percent < 15) return 'yellow';
-                        if (percent >= 15 && percent < 20) return 'blue';
-                        if (percent >= 20 && percent <= 40) return 'green';
-                        return 'pink';
-                    };
+                    // const getshopifyPftColor = (value) => {
+                    //     const percent = parseFloat(value) * 100;
+                    //     if (percent < 10) return 'red';
+                    //     if (percent >= 10 && percent < 15) return 'yellow';
+                    //     if (percent >= 15 && percent < 20) return 'blue';
+                    //     if (percent >= 20 && percent <= 40) return 'green';
+                    //     return 'pink';
+                    // };
 
-                    const getshopifyRoiColor = (value) => {
-                        const percent = parseFloat(value) * 100;
-                        if (percent >= 0 && percent < 50) return 'red';
-                        if (percent >= 50 && percent < 75) return 'yellow';
-                        if (percent >= 75 && percent <= 100) return 'green';
-                        return 'pink';
-                    };
+                    // const getshopifyRoiColor = (value) => {
+                    //     const percent = parseFloat(value) * 100;
+                    //     if (percent >= 0 && percent < 50) return 'red';
+                    //     if (percent >= 50 && percent < 75) return 'yellow';
+                    //     if (percent >= 75 && percent <= 100) return 'green';
+                    //     return 'pink';
+                    // };
                     // Shopify Metrics
 
-                    $row.append($('<td>').html(
-                        typeof item.shopifyb2c_pft === 'number' && !isNaN(item.shopifyb2c_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.shopifyb2c_pft)}">${Math.round(item.shopifyb2c_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.shopifyb2c_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.shopifyb2c_pft === 'number' && !isNaN(item.shopifyb2c_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.shopifyb2c_pft)}">${Math.round(item.shopifyb2c_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.shopifyb2c_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
 
 
-                    $row.append($('<td>').html(
-                        typeof item.shopifyb2c_roi === 'number' && !isNaN(item.shopifyb2c_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.shopifyb2c_roi)}">${Math.round(item.shopifyb2c_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.shopifyb2c_roi === 'number' && !isNaN(item.shopifyb2c_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.shopifyb2c_roi)}">${Math.round(item.shopifyb2c_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
                     // Macy Price
-                    const macyPrice = item.macy_price !== null ? '$' + parseFloat(item.macy_price).toFixed(
-                        2) : '0';
-                    const macyBuyerLink = item.macy_buy_link || '';
+                    // const macyPrice = item.macy_price !== null ? '$' + parseFloat(item.macy_price).toFixed(
+                    //     2) : '0';
+                    // const macyBuyerLink = item.macy_buy_link || '';
 
 
-                    const macyL30 = item.macy_l30 || 0;
-                    const macyDil = item.INV !== 0 ? (macyL30 / item.INV).toFixed(2) : '0.00';
+                    // const macyL30 = item.macy_l30 || 0;
+                    // const macyDil = item.INV !== 0 ? (macyL30 / item.INV).toFixed(2) : '0.00';
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (macyBuyerLink || macyL30 || macyDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${macyPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${macyBuyerLink ? `<div class="sku-link"><a href="${macyBuyerLink}" target="_blank" rel="noopener noreferrer">Macy Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(macyL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(macyDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(macyPrice));
-                    }
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (macyBuyerLink || macyL30 || macyDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${macyPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${macyBuyerLink ? `<div class="sku-link"><a href="${macyBuyerLink}" target="_blank" rel="noopener noreferrer">Macy Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(macyL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(macyDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(macyPrice));
+                    // }
 
-                    // Macy's Metrics
-                    $row.append($('<td>').html(
-                        typeof item.macy_pft === 'number' && !isNaN(item.macy_pft) ?
-                        `<div>
-                        <span class="dil-percent-value ${getshopifyPftColor(item.macy_pft)}">${Math.round(item.macy_pft * 100)}%</span>
-                        <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.macy_l30 || 0).toFixed(2)})</small>
-                    </div>` : ''
-                    ));
+                    // // Macy's Metrics
+                    // $row.append($('<td>').html(
+                    //     typeof item.macy_pft === 'number' && !isNaN(item.macy_pft) ?
+                    //     `<div>
+                //     <span class="dil-percent-value ${getshopifyPftColor(item.macy_pft)}">${Math.round(item.macy_pft * 100)}%</span>
+                //     <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.macy_l30 || 0).toFixed(2)})</small>
+                // </div>` : ''
+                    // ));
 
-                    $row.append($('<td>').html(
-                        typeof item.macy_roi === 'number' && !isNaN(item.macy_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.macy_roi)}">${Math.round(item.macy_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.macy_roi === 'number' && !isNaN(item.macy_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.macy_roi)}">${Math.round(item.macy_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
                     // Newegg Price
                     // const neweggPrice = item.neweegb2c_price !== null ? '$' + parseFloat(item
@@ -3065,15 +2960,15 @@
                     //     $row.append($('<td>').text('--'));
                     // } else if (neweggBuyerLink || neweggL30 || neweggDil) {
                     //     $row.append($('<td>').html(`
-                    //     <div class="sku-tooltip-container">
-                    //         <span class="price-text">${neweggPrice}</span>
-                    //         <div class="sku-tooltip">
-                    //             ${neweggBuyerLink ? `<div class="sku-link"><a href="${neweggBuyerLink}" target="_blank" rel="noopener noreferrer">Newegg Buyer Link</a></div>` : ''}
-                    //             <div class="sku-link"><strong>L30: ${parseFloat(neweggL30 || 0).toFixed(2)}</strong></div>
-                    //             <div class="sku-link"><strong>DIL: ${parseFloat(neweggDil || 0).toFixed(2)}%</strong></div>
-                    //         </div>
-                    //     </div>
-                    // `));
+                //     <div class="sku-tooltip-container">
+                //         <span class="price-text">${neweggPrice}</span>
+                //         <div class="sku-tooltip">
+                //             ${neweggBuyerLink ? `<div class="sku-link"><a href="${neweggBuyerLink}" target="_blank" rel="noopener noreferrer">Newegg Buyer Link</a></div>` : ''}
+                //             <div class="sku-link"><strong>L30: ${parseFloat(neweggL30 || 0).toFixed(2)}</strong></div>
+                //             <div class="sku-link"><strong>DIL: ${parseFloat(neweggDil || 0).toFixed(2)}%</strong></div>
+                //         </div>
+                //     </div>
+                // `));
                     // } else {
                     //     $row.append($('<td>').text(neweggPrice));
                     // }
@@ -3082,103 +2977,103 @@
                     // $row.append($('<td>').html(
                     //     typeof item.neweegb2c_pft === 'number' && !isNaN(item.neweegb2c_pft) ?
                     //     `<div>
-                    //             <span class="dil-percent-value ${getshopifyPftColor(item.neweegb2c_pft)}">
-                    //                 ${Math.round(item.neweegb2c_pft * 100)}%
-                    //             </span>
-                    //             <small style="margin-left: 6px; color: #555;">
-                    //                 (L30: ${parseFloat(item.neweegb2c_l30 || 0).toFixed(2)})
-                    //             </small>
-                    //         </div>` : ''
+                //             <span class="dil-percent-value ${getshopifyPftColor(item.neweegb2c_pft)}">
+                //                 ${Math.round(item.neweegb2c_pft * 100)}%
+                //             </span>
+                //             <small style="margin-left: 6px; color: #555;">
+                //                 (L30: ${parseFloat(item.neweegb2c_l30 || 0).toFixed(2)})
+                //             </small>
+                //         </div>` : ''
                     // ));
 
 
                     // $row.append($('<td>').html(
                     //     typeof item.neweegb2c_roi === 'number' && !isNaN(item.neweegb2c_roi) ?
                     //     `<span class="dil-percent-value ${getshopifyRoiColor(item.neweegb2c_roi)}">
-                    //             ${Math.round(item.neweegb2c_roi * 100)}%
-                    //         </span>` : ''
+                //             ${Math.round(item.neweegb2c_roi * 100)}%
+                //         </span>` : ''
                     // ));
 
                     // Newegg Metrics
 
-                    const reverbPrice = item.reverb_price !== null ? '$' + parseFloat(item.reverb_price)
-                        .toFixed(2) : '0';
-                    const reverbBuyerLink = item.reverb_buy_link || '';
+                    // const reverbPrice = item.reverb_price !== null ? '$' + parseFloat(item.reverb_price)
+                    //     .toFixed(2) : '0';
+                    // const reverbBuyerLink = item.reverb_buy_link || '';
 
-                    const reverbL30 = item.reverb_l30 || 0;
-                    const reverbDil = item.INV !== 0 ? (reverbL30 / item.INV).toFixed(2) : '0.00';
+                    // const reverbL30 = item.reverb_l30 || 0;
+                    // const reverbDil = item.INV !== 0 ? (reverbL30 / item.INV).toFixed(2) : '0.00';
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (reverbBuyerLink || reverbL30 || reverbDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${reverbPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${reverbBuyerLink ? `<div class="sku-link"><a href="${reverbBuyerLink}" target="_blank" rel="noopener noreferrer">Reverb Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(reverbL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(reverbDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(reverbPrice));
-                    }
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (reverbBuyerLink || reverbL30 || reverbDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${reverbPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${reverbBuyerLink ? `<div class="sku-link"><a href="${reverbBuyerLink}" target="_blank" rel="noopener noreferrer">Reverb Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(reverbL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(reverbDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(reverbPrice));
+                    // }
 
-                    $row.append($('<td>').html(
-                        typeof item.reverb_pft === 'number' && !isNaN(item.reverb_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.reverb_pft)}">${Math.round(item.reverb_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.reverb_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.reverb_pft === 'number' && !isNaN(item.reverb_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.reverb_pft)}">${Math.round(item.reverb_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.reverb_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
 
-                    $row.append($('<td>').html(
-                        typeof item.reverb_roi === 'number' && !isNaN(item.reverb_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.reverb_roi)}">${Math.round(item.reverb_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.reverb_roi === 'number' && !isNaN(item.reverb_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.reverb_roi)}">${Math.round(item.reverb_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
                     // Doba Metrics
 
-                    const dobaPrice = item.doba_price !== null ? '$' + parseFloat(item.doba_price).toFixed(
-                        2) : '0';
-                    const dobaBuyerLink = item.doba_buy_link || '';
+                    // const dobaPrice = item.doba_price !== null ? '$' + parseFloat(item.doba_price).toFixed(
+                    //     2) : '0';
+                    // const dobaBuyerLink = item.doba_buy_link || '';
 
-                    const dobaL30 = item.doba_l30 || 0;
-                    const dobaDil = item.INV !== 0 ? (dobaL30 / item.INV).toFixed(2) : '0.00';
+                    // const dobaL30 = item.doba_l30 || 0;
+                    // const dobaDil = item.INV !== 0 ? (dobaL30 / item.INV).toFixed(2) : '0.00';
 
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (dobaBuyerLink || dobaL30 || dobaDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${dobaPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${dobaBuyerLink ? `<div class="sku-link"><a href="${dobaBuyerLink}" target="_blank" rel="noopener noreferrer">Doba Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(dobaL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(dobaDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(dobaPrice));
-                    }
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (dobaBuyerLink || dobaL30 || dobaDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${dobaPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${dobaBuyerLink ? `<div class="sku-link"><a href="${dobaBuyerLink}" target="_blank" rel="noopener noreferrer">Doba Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(dobaL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(dobaDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(dobaPrice));
+                    // }
 
-                    $row.append($('<td>').html(
-                        typeof item.doba_pft === 'number' && !isNaN(item.doba_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.doba_pft)}">${Math.round(item.doba_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.doba_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.doba_pft === 'number' && !isNaN(item.doba_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.doba_pft)}">${Math.round(item.doba_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.doba_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
 
-                    $row.append($('<td>').html(
-                        typeof item.doba_roi === 'number' && !isNaN(item.doba_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.doba_roi)}">${Math.round(item.doba_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.doba_roi === 'number' && !isNaN(item.doba_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.doba_roi)}">${Math.round(item.doba_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
 
@@ -3186,188 +3081,188 @@
 
 
                     // Temu Metrics
-                    const temuPrice = item.temu_price !== null ? '$' + parseFloat(item.temu_price).toFixed(
-                        2) : '0';
-                    const temuBuyerLink = item.temu_buy_link || '';
-                    const temuL30 = item.temu_l30 || 0;
-                    const temuDil = item.INV !== 0 ? (temuL30 / item.INV).toFixed(2) : '0.00';
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (temuBuyerLink || temuL30 || temuDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${temuPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${temuBuyerLink ? `<div class="sku-link"><a href="${temuBuyerLink}" target="_blank" rel="noopener noreferrer">Temu Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(temuL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(temuDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(temuPrice));
-                    }
+                    // const temuPrice = item.temu_price !== null ? '$' + parseFloat(item.temu_price).toFixed(
+                    //     2) : '0';
+                    // const temuBuyerLink = item.temu_buy_link || '';
+                    // const temuL30 = item.temu_l30 || 0;
+                    // const temuDil = item.INV !== 0 ? (temuL30 / item.INV).toFixed(2) : '0.00';
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (temuBuyerLink || temuL30 || temuDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${temuPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${temuBuyerLink ? `<div class="sku-link"><a href="${temuBuyerLink}" target="_blank" rel="noopener noreferrer">Temu Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(temuL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(temuDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(temuPrice));
+                    // }
 
-                    $row.append($('<td>').html(
-                        typeof item.temu_pft === 'number' && !isNaN(item.temu_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.temu_pft)}">${Math.round(item.temu_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.temu_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
-                    $row.append($('<td>').html(
-                        typeof item.temu_roi === 'number' && !isNaN(item.temu_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.temu_roi)}">${Math.round(item.temu_roi * 100)}%</span>` :
-                        ''
-                    ));
-
-
-                    // Wayfair Metrics
-                    const wayfairPrice = item.wayfair_price !== null ? '$' + parseFloat(item.wayfair_price)
-                        .toFixed(2) : '0';
-                    const wayfairBuyerLink = item.wayfair_buy_link || '';
-                    const wayfairL30 = item.wayfair_l30 || 0;
-                    const wayfairDil = item.INV !== 0 ? (wayfairL30 / item.INV).toFixed(2) : '0.00';
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (wayfairBuyerLink || wayfairL30 || wayfairDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text">${wayfairPrice}</span>
-                                <div class="sku-tooltip">
-                                    ${wayfairBuyerLink ? `<div class="sku-link"><a href="${wayfairBuyerLink}" target="_blank" rel="noopener noreferrer">Wayfair Buyer Link</a></div >` : ''}        
-                                    <div class="sku-link"><strong>L30: ${parseFloat(wayfairL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(wayfairDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(wayfairPrice));
-                    }
-
-                    $row.append($('<td>').html(
-                        typeof item.wayfair_pft === 'number' && !isNaN(item.wayfair_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.wayfair_pft)}">${Math.round(item.wayfair_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.wayfair_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
-
-                    $row.append($('<td>').html(
-                        typeof item.wayfair_roi === 'number' && !isNaN(item.wayfair_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.wayfair_roi)}">${Math.round(item.wayfair_roi * 100)}%</span>` :
-                        ''
-                    ));
-
-                    const ebay3BuyerLink = item.ebay3_buy_link || '';
-                    const ebay3L30 = item.ebay3_l30 || 0;
-                    const ebay3Dil = item.INV !== 0 ? (ebay3L30 / item.INV).toFixed(2) : '0.00';
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (ebay3BuyerLink || ebay3L30 || ebay3Dil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text
-                                    ">${item.ebay3_price !== null ? '$' + parseFloat(item.ebay3_price).toFixed(2) : '0'}</span>
-                                <div class="sku-tooltip">
-                                    ${ebay3BuyerLink ? `<div class="sku-link"><a href="${ebay3BuyerLink}" target="_blank" rel="noopener noreferrer">eBay3 Buyer Link</  a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(ebay3L30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(ebay3Dil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(item.ebay3_price !== null ? '$' + parseFloat(item
-                            .ebay3_price).toFixed(2) : '0'));
-                    }
-
-                    $row.append($('<td>').html(
-                        typeof item.ebay3_pft === 'number' && !isNaN(item.ebay3_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.ebay3_pft)}">${Math.round(item.ebay3_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay3_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
-
-                    $row.append($('<td>').html(
-                        typeof item.ebay3_roi === 'number' && !isNaN(item.ebay3_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.ebay3_roi)}">${Math.round(item.ebay3_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.temu_pft === 'number' && !isNaN(item.temu_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.temu_pft)}">${Math.round(item.temu_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.temu_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.temu_roi === 'number' && !isNaN(item.temu_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.temu_roi)}">${Math.round(item.temu_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
-                    const ebay2BuyerLink = item.ebay2_buy_link || '';
-                    const ebay2L30 = item.ebay2_l30 || 0;
-                    const ebay2Dil = item.INV !== 0 ? (ebay2L30 / item.INV).toFixed(2) : '0.00';
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (ebay2BuyerLink || ebay2L30 || ebay2Dil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text
-                                    ">${item.ebay2_price !== null ? '$' + parseFloat(item.ebay2_price).toFixed(2) : '0'}</span>
-                                <div class="sku-tooltip">
-                                    ${ebay2BuyerLink ? `<div class="sku-link"><a href="${ebay2BuyerLink}" target="_blank" rel="noopener noreferrer">eBay2 Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(ebay2L30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(ebay2Dil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(item.ebay2_price !== null ? '$' + parseFloat(item
-                            .ebay2_price).toFixed(2) : '0'));
-                    }
+                    // // Wayfair Metrics
+                    // const wayfairPrice = item.wayfair_price !== null ? '$' + parseFloat(item.wayfair_price)
+                    //     .toFixed(2) : '0';
+                    // const wayfairBuyerLink = item.wayfair_buy_link || '';
+                    // const wayfairL30 = item.wayfair_l30 || 0;
+                    // const wayfairDil = item.INV !== 0 ? (wayfairL30 / item.INV).toFixed(2) : '0.00';
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (wayfairBuyerLink || wayfairL30 || wayfairDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text">${wayfairPrice}</span>
+                //             <div class="sku-tooltip">
+                //                 ${wayfairBuyerLink ? `<div class="sku-link"><a href="${wayfairBuyerLink}" target="_blank" rel="noopener noreferrer">Wayfair Buyer Link</a></div >` : ''}        
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(wayfairL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(wayfairDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(wayfairPrice));
+                    // }
 
-                    $row.append($('<td>').html(
-                        typeof item.ebay2_pft === 'number' && !isNaN(item.ebay2_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.ebay2_pft)}">${Math.round(item.ebay2_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay2_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.wayfair_pft === 'number' && !isNaN(item.wayfair_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.wayfair_pft)}">${Math.round(item.wayfair_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.wayfair_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
 
-                    $row.append($('<td>').html(
-                        typeof item.ebay2_roi === 'number' && !isNaN(item.ebay2_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.ebay2_roi)}">${Math.round(item.ebay2_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.wayfair_roi === 'number' && !isNaN(item.wayfair_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.wayfair_roi)}">${Math.round(item.wayfair_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
+
+                    // const ebay3BuyerLink = item.ebay3_buy_link || '';
+                    // const ebay3L30 = item.ebay3_l30 || 0;
+                    // const ebay3Dil = item.INV !== 0 ? (ebay3L30 / item.INV).toFixed(2) : '0.00';
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (ebay3BuyerLink || ebay3L30 || ebay3Dil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text
+                //                 ">${item.ebay3_price !== null ? '$' + parseFloat(item.ebay3_price).toFixed(2) : '0'}</span>
+                //             <div class="sku-tooltip">
+                //                 ${ebay3BuyerLink ? `<div class="sku-link"><a href="${ebay3BuyerLink}" target="_blank" rel="noopener noreferrer">eBay3 Buyer Link</  a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(ebay3L30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(ebay3Dil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(item.ebay3_price !== null ? '$' + parseFloat(item
+                    //         .ebay3_price).toFixed(2) : '0'));
+                    // }
+
+                    // $row.append($('<td>').html(
+                    //     typeof item.ebay3_pft === 'number' && !isNaN(item.ebay3_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.ebay3_pft)}">${Math.round(item.ebay3_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay3_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
+
+                    // $row.append($('<td>').html(
+                    //     typeof item.ebay3_roi === 'number' && !isNaN(item.ebay3_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.ebay3_roi)}">${Math.round(item.ebay3_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
-                    const walmartBuyerLink = item.walmart_buy_link || '';
-                    const walmartL30 = item.walmart_l30 || 0;
-                    const walmartDil = item.INV !== 0 ? (walmartL30 / item.INV).toFixed(2) : '0.00';
-                    if (item.is_parent) {
-                        $row.append($('<td>').text('--'));
-                    } else if (walmartBuyerLink || walmartL30 || walmartDil) {
-                        $row.append($('<td>').html(`
-                            <div class="sku-tooltip-container">
-                                <span class="price-text
-                                    ">${item.walmart_price !== null ? '$' + parseFloat(item.walmart_price).toFixed(2) : '0'}</span>
-                                <div class="sku-tooltip">
-                                    ${walmartBuyerLink ? `<div class="sku-link"><a href="${walmartBuyerLink}" target="_blank" rel="noopener noreferrer">Walmart Buyer Link</a></div>` : ''}
-                                    <div class="sku-link"><strong>L30: ${parseFloat(walmartL30 || 0).toFixed(2)}</strong></div>
-                                    <div class="sku-link"><strong>DIL: ${parseFloat(walmartDil || 0).toFixed(2)}%</strong></div>
-                                </div>
-                            </div>
-                        `));
-                    } else {
-                        $row.append($('<td>').text(item.walmart_price !== null ? '$' + parseFloat(item
-                            .walmart_price).toFixed(2) : '0'));
-                    }
+                    // const ebay2BuyerLink = item.ebay2_buy_link || '';
+                    // const ebay2L30 = item.ebay2_l30 || 0;
+                    // const ebay2Dil = item.INV !== 0 ? (ebay2L30 / item.INV).toFixed(2) : '0.00';
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (ebay2BuyerLink || ebay2L30 || ebay2Dil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text
+                //                 ">${item.ebay2_price !== null ? '$' + parseFloat(item.ebay2_price).toFixed(2) : '0'}</span>
+                //             <div class="sku-tooltip">
+                //                 ${ebay2BuyerLink ? `<div class="sku-link"><a href="${ebay2BuyerLink}" target="_blank" rel="noopener noreferrer">eBay2 Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(ebay2L30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(ebay2Dil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(item.ebay2_price !== null ? '$' + parseFloat(item
+                    //         .ebay2_price).toFixed(2) : '0'));
+                    // }
 
-                    $row.append($('<td>').html(
-                        typeof item.walmart_pft === 'number' && !isNaN(item.walmart_pft) ?
-                        `<div>
-                            <span class="dil-percent-value ${getshopifyPftColor(item.walmart_pft)}">${Math.round(item.walmart_pft * 100)}%</span>
-                            <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.walmart_l30 || 0).toFixed(2)})</small>
-                        </div>` : ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.ebay2_pft === 'number' && !isNaN(item.ebay2_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.ebay2_pft)}">${Math.round(item.ebay2_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay2_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
 
-                    $row.append($('<td>').html(
-                        typeof item.walmart_roi === 'number' && !isNaN(item.walmart_roi) ?
-                        `<span class="dil-percent-value ${getshopifyRoiColor(item.walmart_roi)}">${Math.round(item.walmart_roi * 100)}%</span>` :
-                        ''
-                    ));
+                    // $row.append($('<td>').html(
+                    //     typeof item.ebay2_roi === 'number' && !isNaN(item.ebay2_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.ebay2_roi)}">${Math.round(item.ebay2_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
+
+
+                    // const walmartBuyerLink = item.walmart_buy_link || '';
+                    // const walmartL30 = item.walmart_l30 || 0;
+                    // const walmartDil = item.INV !== 0 ? (walmartL30 / item.INV).toFixed(2) : '0.00';
+                    // if (item.is_parent) {
+                    //     $row.append($('<td>').text('--'));
+                    // } else if (walmartBuyerLink || walmartL30 || walmartDil) {
+                    //     $row.append($('<td>').html(`
+                //         <div class="sku-tooltip-container">
+                //             <span class="price-text
+                //                 ">${item.walmart_price !== null ? '$' + parseFloat(item.walmart_price).toFixed(2) : '0'}</span>
+                //             <div class="sku-tooltip">
+                //                 ${walmartBuyerLink ? `<div class="sku-link"><a href="${walmartBuyerLink}" target="_blank" rel="noopener noreferrer">Walmart Buyer Link</a></div>` : ''}
+                //                 <div class="sku-link"><strong>L30: ${parseFloat(walmartL30 || 0).toFixed(2)}</strong></div>
+                //                 <div class="sku-link"><strong>DIL: ${parseFloat(walmartDil || 0).toFixed(2)}%</strong></div>
+                //             </div>
+                //         </div>
+                //     `));
+                    // } else {
+                    //     $row.append($('<td>').text(item.walmart_price !== null ? '$' + parseFloat(item
+                    //         .walmart_price).toFixed(2) : '0'));
+                    // }
+
+                    // $row.append($('<td>').html(
+                    //     typeof item.walmart_pft === 'number' && !isNaN(item.walmart_pft) ?
+                    //     `<div>
+                //         <span class="dil-percent-value ${getshopifyPftColor(item.walmart_pft)}">${Math.round(item.walmart_pft * 100)}%</span>
+                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.walmart_l30 || 0).toFixed(2)})</small>
+                //     </div>` : ''
+                    // ));
+
+                    // $row.append($('<td>').html(
+                    //     typeof item.walmart_roi === 'number' && !isNaN(item.walmart_roi) ?
+                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.walmart_roi)}">${Math.round(item.walmart_roi * 100)}%</span>` :
+                    //     ''
+                    // ));
 
 
                     $tbody.append($row);
@@ -4105,19 +4000,19 @@
             const inv = parseFloat(icon.getAttribute('data-inv')) || 0;
 
             let modalContent = `
-    <h5 class="mb-3">Sitewise L30, Price, Profit %, ROI %</h5>
-    <table class="table table-bordered" id="l30DynamicTable">
-    <thead>
-        <tr>
-            <th>Site</th>
-            <th>L30</th>
-            <th>Price</th>
-            <th>Pft %</th>
-            <th>ROI %</th>
-        </tr>
-    </thead>
-    <tbody>
-`;
+
+            <table class="table table-bordered" id="l30DynamicTable">
+            <thead style="background-color:#eefcff">
+                <tr style="font-weight:20px">
+                    <th class="fw-bold">Site</th>
+                    <th>L30</th>
+                    <th>Price</th>
+                    <th>Pft %</th>
+                    <th>ROI %</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
 
             let totalL30 = 0;
             let totalWeightedProfit = 0;

@@ -22,22 +22,18 @@ class UpdateAmazonSPriceJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct($sellerId, $sku, $price, $currency = 'USD')
+    public function __construct($sku, $price)
     {
-        $this->sellerId = $sellerId;
         $this->sku = $sku;
         $this->price = $price;
-        $this->currency = $currency;
     }
 
     public function handle(AmazonSpApiService $amazonService)
     {
         try {
-            $response = $amazonService->updatePriceBySku(
-                $this->sellerId,
+            $response = $amazonService->updateAmazonPriceUS(
                 $this->sku,
-                $this->price,
-                $this->currency
+                $this->price
             );
 
             Log::info('Amazon Price Update Response', [
