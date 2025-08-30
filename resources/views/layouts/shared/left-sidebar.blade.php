@@ -1566,11 +1566,23 @@
                                             <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('ebay-over-utilized-bgt-kw') }}">EBAY > UTILIZED BGT KW</a>
+                                            <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
                                         </li>
-                                        {{-- <li>
-                                            <a href="{{ route('ebay-over-utilized-bgt-pt') }}">EBAY < UTILIZED BGT KW</a>
-                                        </li> --}}
+                                        <li>
+                                            <a href="">EBAY > UTI ACOS GREEN</a>
+                                        </li>
+                                        <li>
+                                            <a href="">EBAY > UTI ACOS RED</a>
+                                        </li>
+                                        <li>
+                                            <a href="">EBAY < UTI ACOS PINK</a>
+                                        </li>
+                                        <li>
+                                            <a href="">EBAY < UTI ACOS GREEN</a>
+                                        </li>
+                                        <li>
+                                            <a href="">EBAY < UTI ACOS RED</a>
+                                        </li>
 
                                     </ul>
                                 </div>

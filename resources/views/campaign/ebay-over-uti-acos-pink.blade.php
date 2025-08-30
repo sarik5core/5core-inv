@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED BGT KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - UTILIZED ACOS PINK', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - OVER UTILIZED BGT KW',
-        'sub_title' => 'Ebay - OVER UTILIZED BGT KW',
+        'page_title' => 'Ebay - UTILIZED ACOS PINK',
+        'sub_title' => 'Ebay - UTILIZED ACOS PINK',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                           Ebay - OVER UTILIZED BGT KW
+                           Ebay - UTILIZED ACOS PINK
                         </h4>
 
                         <!-- Filters Row -->
@@ -227,7 +227,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-over-utilized-bgt-kw/data",
+                ajaxURL: "/ebay-over-uti-acos-pink/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -449,32 +449,31 @@
                 }
             });
 
-            // document.addEventListener("change", function(e){
-            //     if(e.target.classList.contains("editable-select")){
-            //         let sku   = e.target.getAttribute("data-sku");
-            //         let field = e.target.getAttribute("data-field");
-            //         let value = e.target.value;
+            document.addEventListener("change", function(e){
+                if(e.target.classList.contains("editable-select")){
+                    let sku   = e.target.getAttribute("data-sku");
+                    let field = e.target.getAttribute("data-field");
+                    let value = e.target.value;
 
-            //         fetch('/update-amazon-nr-nrl-fba', {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            //             },
-            //             body: JSON.stringify({
-            //                 sku: sku,
-            //                 field: field,
-            //                 value: value
-            //             })
-            //         })
-            //         .then(res => res.json())
-            //         .then(data => {
-            //             console.log(data);
-            //         })
-            //         .catch(err => console.error(err));
-            //     }
-            // });
-
+                    fetch('/update-ebay-nr-data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            sku: sku,
+                            field: field,
+                            value: value
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(err => console.error(err));
+                }
+            });
 
             table.on("tableBuilt", function() {
 

@@ -1557,8 +1557,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
-        Route::get('/ebay-over-utilized-bgt-kw', 'ebayOverUtilizedBgtKw')->name('ebay-over-utilized-bgt-kw');
-        Route::get('/ebay-over-utilized-bgt-kw/data', 'getEbayOverUtilizedBgtKwData')->name('ebay-over-utilized-bgt-kw-data');
+        Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
+        Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
+        Route::post('/update-ebay-nr-data', 'updateNrData');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {

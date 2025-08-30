@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Http;
 
 class EbayOverUtilizedBgtController extends Controller
 {
-    public function ebayOverUtilizedBgtKw(){
-        return view('campaign.ebay-over-utilized-bgt-kw');
+    public function ebayOverUtiAcosPink(){
+        return view('campaign.ebay-over-uti-acos-pink');
     }
 
-    public function getEbayOverUtilizedBgtKwData()
+    public function getEbayOverUtiAcosPinkData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -100,7 +100,28 @@ class EbayOverUtilizedBgtController extends Controller
         ]);
     }
 
-    // public function ebayOverUtilizedBgtPt(){
-    //     return view('campaign.ebay-over-utilized-bgt-pt');
-    // }
+    public function updateNrData(Request $request)
+    {
+        $sku   = $request->input('sku');
+        $field = $request->input('field');
+        $value = $request->input('value');
+
+        $ebayDataView = EbayDataView::where('sku', $sku)->first();
+
+        $jsonData = $ebayDataView && $ebayDataView->value ? $ebayDataView->value : [];
+
+        $jsonData[$field] = $value;
+
+        $ebayDataView = EbayDataView::updateOrCreate(
+            ['sku' => $sku],
+            ['value' => $jsonData]
+        );
+
+        return response()->json([
+            'status' => 200,
+            'message' => "...",
+            'updated_json' => $jsonData
+        ]);
+
+    }
 }
