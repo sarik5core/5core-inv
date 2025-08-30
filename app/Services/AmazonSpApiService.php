@@ -44,18 +44,20 @@ class AmazonSpApiService
         ]);
 
         $data = json_decode($response->getBody(), true);
-        Log::info('Fetched access token.');
         return $data['access_token'];
     }
 
-    public function updateAmazonPriceUS($sku, $price, $sellerId)
+    public function updateAmazonPriceUS($sku, $price)
     {
+        $sellerId = env('AMAZON_SELLER_ID');
         $accessToken = $this->getAccessToken();
+
+        $productType = $this->getAmazonProductType($sku);
 
         $endpoint = "https://sellingpartnerapi-na.amazon.com/listings/2021-08-01/items/{$sellerId}/" . rawurlencode($sku) . "?marketplaceIds=ATVPDKIKX0DER";
 
         $body = [
-            "productType" => "SPEAKERS",
+            "productType" => $productType,
             "patches" => [[
                 "op" => "replace",
                 "path" => "/attributes/purchasable_offer",
@@ -80,12 +82,12 @@ class AmazonSpApiService
             ])
             ->patch($endpoint, $body);
 
-        Log::info("Amazon Price Update Request", [
-            "sku" => $sku,
-            "price" => $price,
-            "endpoint" => $endpoint,
-            "body" => $body
-        ]);
+        // Log::info("Amazon Price Update Request", [
+        //     "sku" => $sku,
+        //     "price" => $price,
+        //     "endpoint" => $endpoint,
+        //     "body" => $body
+        // ]);
 
         if ($response->failed()) {
             Log::error("Amazon Price Update Failed", [
@@ -100,49 +102,25 @@ class AmazonSpApiService
         return $response->json();
     }
 
-    public function getAmazonListingUS($sku, $sellerId)
+    public function getAmazonProductType($sku)
     {
+        $sellerId = env('AMAZON_SELLER_ID');
         $accessToken = $this->getAccessToken();
 
-        $endpoint = "https://sellingpartnerapi-na.amazon.com/listings/2021-08-01/items/{$sellerId}/" . rawurlencode($sku) . "?marketplaceIds=ATVPDKIKX0DER";
+        $url = "https://sellingpartnerapi-na.amazon.com/listings/2021-08-01/items/{$sellerId}/" . rawurlencode($sku) . "?marketplaceIds=ATVPDKIKX0DER";
 
-        $response = Http::withToken($accessToken)
-            ->withHeaders([
-                'x-amz-access-token' => $accessToken,
-                'accept' => 'application/json',
-            ])
-            ->get($endpoint);
-
-        Log::info("Amazon Get Listing Response", [
-            "sku" => $sku,
-            "endpoint" => $endpoint,
-            "response" => $response->json()
-        ]);
-
-        return $response->json();
-    }
-
-    public function getAmazonPriceUS($asin)
-{
-    $accessToken = $this->getAccessToken();
-
-    $endpoint = "https://sellingpartnerapi-na.amazon.com/products/pricing/v0/listings/{$asin}/offers?MarketplaceId=ATVPDKIKX0DER&ItemCondition=New";
-
-    $response = Http::withToken($accessToken)
-        ->withHeaders([
+        $response = Http::withHeaders([
             'x-amz-access-token' => $accessToken,
-            'accept' => 'application/json',
-        ])
-        ->get($endpoint);
+            'Content-Type' => 'application/json',
+        ])->get($url);
 
-    Log::info("Amazon Get Price Response", [
-        "asin" => $asin,
-        "endpoint" => $endpoint,
-        "response" => $response->json()
-    ]);
+        if ($response->failed()) {
+            return null;
+        }
 
-    return $response->json();
-}
+        $data = $response->json();
+        return $data['summaries'][0]['productType'] ?? null;
+    }
 
 
 

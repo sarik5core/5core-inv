@@ -51,7 +51,6 @@ class EbayOverUtilizedBgtController extends Controller
             $sku = strtoupper($pm->sku);
             $parent = $pm->parent;
 
-            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
@@ -62,6 +61,10 @@ class EbayOverUtilizedBgtController extends Controller
                 return stripos($item->campaign_name, $sku) !== false;
             });
 
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
+            }
+
             $row = [];
             $row['parent'] = $parent;
             $row['sku']    = $pm->sku;
@@ -69,26 +72,21 @@ class EbayOverUtilizedBgtController extends Controller
             $row['L30']    = $shopify->quantity ?? 0;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
-            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaign_budget_amount ?? ($matchedCampaignL1->campaign_budget_amount ?? '');
+            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
             // $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
-            // $row['crnt_bid'] = $matchedCampaignL7->currentSpBidPrice ?? ($matchedCampaignL1->currentSpBidPrice ?? '');
-            // $row['l7_spend'] = $matchedCampaignL7->spend ?? 0;
-            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
-            // $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
-            $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
+            $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
+            $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
+            $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
 
-            $row['NRL']  = '';
             $row['NR'] = '';
-            $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
                     $raw = json_decode($raw, true);
                 }
                 if (is_array($raw)) {
-                    $row['NRL']  = $raw['NRL'] ?? null;
                     $row['NR'] = $raw['NR'] ?? null;
-                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 

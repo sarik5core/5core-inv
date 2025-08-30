@@ -748,7 +748,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::any('/update-ebay-sku-pricing', [EbayController::class, 'updateEbayPricing'])->name('ebay.priceUpdate');
     Route::any('/update-ebay2-sku-pricing', [EbayTwoController::class, 'updateEbayPricing'])->name('ebay2.priceUpdate');
-    Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
+    // Route::post('/update-amazon-pricing', [OverallAmazonController::class, 'updatePrice'])->name('amazon.priceUpdate');
     Route::get('/check-amazon-auth', [OverallAmazonController::class, 'checkAmazonAuth']);
 
     Route::post('/update-fba-status-ebay', [EbayController::class, 'updateFbaStatusEbay'])

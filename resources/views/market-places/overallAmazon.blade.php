@@ -2450,7 +2450,6 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            console.log(response.data, 'dataaa');
 
                             tableData = response.data.map((item, index) => {
 
@@ -6160,6 +6159,22 @@
                             }
                         });
                         renderTable();
+
+                        $.ajax({
+                            url: '/update-amazon-price',
+                            type: 'POST',
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr('content'),
+                                sku: sku,
+                                price: sprice
+                            },
+                            success: function(resp) {
+                                console.log('Amazon price update response:', resp);
+                            },
+                            error: function(err) {
+                                console.error('Error updating Amazon price:', err.responseText);
+                            }
+                        });
                     },
                     error: function(xhr) {
                         alert('Error saving SPRICE.');
