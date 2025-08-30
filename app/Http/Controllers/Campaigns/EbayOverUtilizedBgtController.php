@@ -45,6 +45,14 @@ class EbayOverUtilizedBgtController extends Controller
             })
             ->get();
 
+        $ebayCampaignReportsL30 = EbayPriorityReport::where('report_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
         $result = [];
 
         foreach ($productMasters as $pm) {
@@ -61,6 +69,10 @@ class EbayOverUtilizedBgtController extends Controller
                 return stripos($item->campaign_name, $sku) !== false;
             });
 
+            $matchedCampaignL30 = $ebayCampaignReportsL30->first(function ($item) use ($sku) {
+                return stripos($item->campaign_name, $sku) !== false;
+            });
+
             if (!$matchedCampaignL7 && !$matchedCampaignL1) {
                 continue;
             }
@@ -73,7 +85,13 @@ class EbayOverUtilizedBgtController extends Controller
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
-            // $row['sbid'] = $matchedCampaignL7->sbid ?? ($matchedCampaignL1->sbid ?? '');
+
+            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $sales    = (float) $matchedCampaignL30->cpc_attributed_sales;
+
+            $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
+            $row['acos'] = $acos;
+
             $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
             $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
             $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);

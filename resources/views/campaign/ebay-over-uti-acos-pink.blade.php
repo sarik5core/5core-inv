@@ -326,26 +326,31 @@
                         formatter: (cell) => parseFloat(cell.getValue() || 0)
                     },
                     {
+                        title: "ACOS",
+                        field: "acos",
+                        hozAlign: "right",
+                        formatter: (cell) => parseFloat(cell.getValue().toFixed(0) || 0)
+                    },
+                    {
                         title: "7 UB%",
                         field: "l7_spend",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l7_spend = parseFloat(row.l7_spend) || 0;
-                            var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
+                            var acos = parseFloat(row.acos) || 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 70 && ub7 <= 90) {
-                                td.classList.add('green-bg');
-                            } else if (ub7 > 90) {
-                                td.classList.add('pink-bg');
-                            } else if (ub7 < 70) {
-                                td.classList.add('red-bg');
+
+                            if (acos < 7) {
+                                td.classList.add('pink-bg');   // less than 7%
+                            } else if (acos >= 7 && acos <= 14) {
+                                td.classList.add('green-bg');  // 7% - 14%
+                            } else if (acos > 14) {
+                                td.classList.add('red-bg');    // greater than 14%
                             }
 
-                            return ub7.toFixed(0) + "%";
+                            return acos.toFixed(2) + "%";
                         }
                     },
                     {
@@ -354,21 +359,20 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l1_spend = parseFloat(row.l1_spend) || 0;
-                            var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
+                            var acos = parseFloat(row.acos) || 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub1 >= 70 && ub1 <= 90) {
-                                td.classList.add('green-bg');
-                            } else if (ub1 > 90) {
-                                td.classList.add('pink-bg');
-                            } else if (ub1 < 70) {
-                                td.classList.add('red-bg');
+
+                            if (acos < 7) {
+                                td.classList.add('pink-bg');   // less than 7%
+                            } else if (acos >= 7 && acos <= 14) {
+                                td.classList.add('green-bg');  // 7% - 14%
+                            } else if (acos > 14) {
+                                td.classList.add('red-bg');    // greater than 14%
                             }
 
-                            return ub1.toFixed(0) + "%";
+                            return acos.toFixed(2) + "%";
                         }
                     },
                     {
@@ -485,7 +489,7 @@
                     var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    if (!(ub7 > 90 && ub1 > 90)) return false;
+                    // if (!(ub7 > 90 && ub1 > 90)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
