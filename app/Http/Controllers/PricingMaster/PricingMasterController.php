@@ -15,6 +15,8 @@ use App\Models\ReverbProduct;
 use Illuminate\Support\Facades\Log;
 use App\Models\PricingMaster;
 use App\Models\DobaMetric;
+use App\Models\Ebay2Metric;
+use App\Models\Ebay3Metric;
 use App\Models\TemuProductSheet;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -160,8 +162,8 @@ class PricingMasterController extends Controller
         $neweggLookup = NeweeggProductSheet::all()->keyBy('sku');
         $wayfairLookup = WaifairProductSheet::all()->keyBy('sku');
         $walmartLookup = WalmartProductSheet::all()->keyBy('sku');
-        $ebay2Lookup = EbayTwoProductSheet::all()->keyBy('sku');
-        $ebay3Lookup = EbayThreeProductSheet::all()->keyBy('sku');
+        $ebay2Lookup = Ebay2Metric::all()->keyBy('sku');
+        $ebay3Lookup = Ebay3Metric::all()->keyBy('sku');
 
 
 
@@ -183,6 +185,7 @@ class PricingMasterController extends Controller
             }
 
             $msrp = (float) ($values['msrp'] ?? 0);
+            $map = (float) ($values['map'] ?? 0);  // Here's the MAP processing
             $lp = (float) ($values['lp'] ?? 0);
             $ship = (float) ($values['ship'] ?? 0);
 
@@ -204,6 +207,7 @@ class PricingMasterController extends Controller
                 'Values' => $product->Values,
                 'is_parent' => $isParent,
                 'MSRP' => $msrp,
+                 'MAP' => $map,
                 'LP' => $lp,
                 'SHIP' => $ship,
             ];

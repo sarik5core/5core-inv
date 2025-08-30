@@ -2761,6 +2761,8 @@
                             data-item='${JSON.stringify(item.raw_data)}'
                             style="cursor:pointer"><i class="fas fa-eye"></i></span>`
                     ));
+
+                    
                     let al30 = Number(item['A L30']) || 0;
                     let sess30 = Number(item.Sess30) || 0;
 
@@ -2835,16 +2837,16 @@
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
                             'PFT_percentage']) ?
                         `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
-        ${Math.round(item['PFT_percentage'])}%
-    </span>
-    <span class="tooltip-container" style="margin-left:8px">
-        <i class="fas fa-tag text-warning price-view-trigger" 
-            style="transform:translateY(1px)"
-            data-bs-toggle="tooltip" 
-            data-bs-placement="top-end" 
-            title="Pricing view"
-            data-item='${JSON.stringify(item.raw_data)}'></i>
-    </span>` :
+                     ${Math.round(item['PFT_percentage'])}%
+                    </span>
+                    <span class="tooltip-container" style="margin-left:8px">
+                        <i class="fas fa-tag text-warning price-view-trigger" 
+                            style="transform:translateY(1px)"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top-end" 
+                            title="Pricing view"
+                            data-item='${JSON.stringify(item.raw_data)}'></i>
+                    </span>` :
                         ''
                     ));
 
