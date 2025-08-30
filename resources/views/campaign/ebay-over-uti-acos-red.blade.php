@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - UTILIZED ACOS PINK', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - UTILIZED ACOS RED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - UTILIZED ACOS PINK',
-        'sub_title' => 'Ebay - UTILIZED ACOS PINK',
+        'page_title' => 'Ebay - UTILIZED ACOS RED',
+        'sub_title' => 'Ebay - UTILIZED ACOS RED',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Ebay - UTILIZED ACOS PINK
+                           Ebay - UTILIZED ACOS RED
                         </h4>
 
                         <!-- Filters Row -->
@@ -189,8 +189,8 @@
                             <div class="col-md-6">
                                 <div class="d-flex gap-2">
                                     <div class="input-group">
-                                        <input type="text" id="global-search" class="form-control form-control-md"
-                                            placeholder="Search campaign...">
+                                        <input type="text" id="global-search" class="form-control form-control-md" 
+                                               placeholder="Search campaign...">
                                     </div>
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
@@ -241,7 +241,8 @@
                         row.getElement().classList.add("parent-row");
                     }
                 },
-                columns: [{
+                columns: [
+                    {
                         formatter: "rowSelection",
                         titleFormatter: "rowSelection",
                         hozAlign: "center",
@@ -453,38 +454,37 @@
                 }
             });
 
-            table.on("rowSelectionChanged", function(data, rows) {
-                if (data.length > 0) {
+            table.on("rowSelectionChanged", function(data, rows){
+                if(data.length > 0){
                     document.getElementById("apr-all-sbid-btn").classList.remove("d-none");
                 } else {
                     document.getElementById("apr-all-sbid-btn").classList.add("d-none");
                 }
             });
 
-            document.addEventListener("change", function(e) {
-                if (e.target.classList.contains("editable-select")) {
-                    let sku = e.target.getAttribute("data-sku");
+            document.addEventListener("change", function(e){
+                if(e.target.classList.contains("editable-select")){
+                    let sku   = e.target.getAttribute("data-sku");
                     let field = e.target.getAttribute("data-field");
                     let value = e.target.value;
 
                     fetch('/update-ebay-nr-data', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .getAttribute('content')
-                            },
-                            body: JSON.stringify({
-                                sku: sku,
-                                field: field,
-                                value: value
-                            })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            sku: sku,
+                            field: field,
+                            value: value
                         })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log(data);
-                        })
-                        .catch(err => console.error(err));
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                    })
+                    .catch(err => console.error(err));
                 }
             });
 
@@ -492,7 +492,11 @@
 
                 function combinedFilter(data) {
                     var budget = parseFloat(data.campaignBudgetAmount) || 0;
-                    var acos = parseFloat(data.acos || 0);
+                    var l7_spend = parseFloat(data.l7_spend || 0);
+                    var l1_spend = parseFloat(data.l1_spend || 0);
+
+                    var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
+                    var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
                     // if (!(ub7 > 90 && ub1 > 90)) return false;
 
@@ -572,13 +576,13 @@
                 }
             });
 
-            document.getElementById("apr-all-sbid-btn").addEventListener("click", function() {
-                var filteredData = table.getData("active");
-
+            document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
+                var filteredData = table.getData("active"); 
+                
                 var campaignIds = [];
                 var bids = [];
 
-                filteredData.forEach(function(rowData) {
+                filteredData.forEach(function(rowData){
                     var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
                     var sbid = (l1_cpc * 0.9).toFixed(2);
 
@@ -588,53 +592,51 @@
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
                 fetch('/update-keywords-bid-price', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            campaign_ids: campaignIds,
-                            bids: bids
-                        })
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        campaign_ids: campaignIds,
+                        bids: bids
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("Backend response:", data);
-                        if (data.status === 200) {
-                            alert("Keywords updated successfully!");
-                        } else {
-                            alert("Something went wrong: " + data.message);
-                        }
-                    })
-                    .catch(err => console.error(err));
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Backend response:", data);
+                    if(data.status === 200){
+                        alert("Keywords updated successfully!");
+                    } else {
+                        alert("Something went wrong: " + data.message);
+                    }
+                })
+                .catch(err => console.error(err));
             });
 
             function updateBid(aprBid, campaignId) {
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
                 fetch('/update-keywords-bid-price', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                'content')
-                        },
-                        body: JSON.stringify({
-                            campaign_ids: [campaignId],
-                            bids: [aprBid]
-                        })
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        campaign_ids: [campaignId],
+                        bids: [aprBid]
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("Backend response:", data);
-                        if (data.status === 200) {
-                            alert("Keywords updated successfully!");
-                        } else {
-                            alert("Something went wrong: " + data.message);
-                        }
-                    })
-                    .catch(err => console.error(err));
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Backend response:", data);
+                    if(data.status === 200){
+                        alert("Keywords updated successfully!");
+                    } else {
+                        alert("Something went wrong: " + data.message);
+                    }
+                })
+                .catch(err => console.error(err));
             }
 
 

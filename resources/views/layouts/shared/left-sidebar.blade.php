@@ -1572,19 +1572,19 @@
                                             <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
                                         </li>
                                         <li>
-                                            <a href="">EBAY > UTI ACOS GREEN</a>
+                                            <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
                                         </li>
                                         <li>
-                                            <a href="">EBAY > UTI ACOS RED</a>
+                                            <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > UTI ACOS RED</a>
                                         </li>
                                         <li>
-                                            <a href="">EBAY < UTI ACOS PINK</a>
+                                            <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < UTI ACOS PINK</a>
                                         </li>
                                         <li>
-                                            <a href="">EBAY < UTI ACOS GREEN</a>
+                                            <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < UTI ACOS GREEN</a>
                                         </li>
                                         <li>
-                                            <a href="">EBAY < UTI ACOS RED</a>
+                                            <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < UTI ACOS RED</a>
                                         </li>
 
                                     </ul>

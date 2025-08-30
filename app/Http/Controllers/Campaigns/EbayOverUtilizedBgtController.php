@@ -16,6 +16,26 @@ class EbayOverUtilizedBgtController extends Controller
         return view('campaign.ebay-over-uti-acos-pink');
     }
 
+    public function ebayOverUtiAcosGreen(){
+        return view('campaign.ebay-over-uti-acos-green');
+    }
+
+    public function ebayOverUtiAcosRed(){
+        return view('campaign.ebay-over-uti-acos-red');
+    }
+
+    public function ebayUnderUtiAcosPink(){
+        return view('campaign.ebay-under-uti-acos-pink');
+    }
+
+    public function ebayUnderUtiAcosGreen(){
+        return view('campaign.ebay-under-uti-acos-green');
+    }
+
+    public function ebayUnderUtiAcosRed(){
+        return view('campaign.ebay-under-uti-acos-red');
+    }
+
     public function getEbayOverUtiAcosPinkData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
