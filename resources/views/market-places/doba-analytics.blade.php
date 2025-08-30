@@ -1090,7 +1090,7 @@
                         </div>
 
                         <!-- CVR Filter -->
-                        {{-- <div class="dropdown manual-dropdown-container">
+                        <div class="dropdown manual-dropdown-container">
                             <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
                                 <span class="status-circle default"></span> SCVR
                             </button>
@@ -1114,7 +1114,7 @@
                                         data-color="blue">
                                         <span class="status-circle blue"></span> Low SCVR</a></li>
                             </ul>
-                        </div> --}}
+                        </div>
 
                         <!-- Task Board Button -->
                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"

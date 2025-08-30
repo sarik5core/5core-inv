@@ -202,6 +202,7 @@ use App\Http\Controllers\MarketPlace\SheinController;
 use App\Http\Controllers\MarketPlace\TiktokShopController;
 use App\Http\Controllers\PurchaseMaster\LedgerMasterController;
 use App\Http\Controllers\PricingIncDsc\MasterIncDscController;
+use App\Http\Controllers\PricingMaster\PricingMasterViewsController;
 use App\Http\Controllers\PurchaseMaster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
@@ -1017,8 +1018,22 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::get('/pricing-master.pricing_master', [PricingMasterController::class, 'pricingMaster']);
     Route::get('/pricing-analysis-data-view', [PricingMasterController::class, 'getViewPricingAnalysisData']);
+    Route::get('/pricing-analysis-data-view', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
 
+
+
+
+    Route::get('/pricing-masters.pricing_masters', [PricingMasterViewsController::class, 'pricingMaster']);
+    Route::get('/pricing-analysis-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+    Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
+    
+    // Analysis routes
+    Route::get('/pricing-master/l30-analysis', [PricingMasterViewsController::class, 'getL30Analysis']);
+    Route::get('/pricing-master/site-analysis', [PricingMasterViewsController::class, 'getSiteAnalysis']);
+    Route::get('/pricing-master/profit-analysis', [PricingMasterViewsController::class, 'getProfitAnalysis']);
+    Route::get('/pricing-master/roi-analysis', [PricingMasterViewsController::class, 'getRoiAnalysis']);
 
     //ebay db save routes
     Route::post('/ebay/save-nr', [EbayController::class, 'saveNrToDatabase']);
