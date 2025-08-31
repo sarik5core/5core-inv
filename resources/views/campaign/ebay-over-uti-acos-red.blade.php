@@ -356,11 +356,11 @@
                             var acos = parseFloat(row.acos) || 0;
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (acos >= 70 && acos <= 90) {
+                            if (acos >= 20 && acos <= 40) {
                                 td.classList.add('green-bg');
-                            } else if (acos > 90) {
+                            } else if (acos > 40) {
                                 td.classList.add('pink-bg');
-                            } else if (acos < 70) {
+                            } else if (acos < 20) {
                                 td.classList.add('red-bg');
                             }
                             return acos.toFixed(0) + "%";
@@ -374,11 +374,11 @@
                             var acos = parseFloat(row.acos) || 0;
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (acos >= 70 && acos <= 90) {
+                            if (acos >= 20 && acos <= 40) {
                                 td.classList.add('green-bg');
-                            } else if (acos > 90) {
+                            } else if (acos > 40) {
                                 td.classList.add('pink-bg');
-                            } else if (acos < 70) {
+                            } else if (acos < 20) {
                                 td.classList.add('red-bg');
                             }
                             return acos.toFixed(0) + "%";

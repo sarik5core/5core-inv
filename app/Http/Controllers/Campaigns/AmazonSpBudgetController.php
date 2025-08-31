@@ -304,6 +304,28 @@ class AmazonSpBudgetController extends Controller
 
         $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
+        $amazonSpCampaignReportsL30 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->where('campaignName', 'NOT LIKE', '%PT')
+            ->where('campaignName', 'NOT LIKE', '%PT.')
+            ->get();
+
+        $amazonSpCampaignReportsL15 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L15')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->where('campaignName', 'NOT LIKE', '%PT')
+            ->where('campaignName', 'NOT LIKE', '%PT.')
+            ->get();
+
         $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
@@ -360,6 +382,29 @@ class AmazonSpBudgetController extends Controller
             $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
             $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
+
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                return stripos($item->campaignName, $sku) !== false;
+            });
+            $matchedCampaignL15 = $amazonSpCampaignReportsL15->first(function ($item) use ($sku) {
+                return stripos($item->campaignName, $sku) !== false;
+            });
+            
+            $row['acos_L30'] = $matchedCampaignL30
+                ? round(($matchedCampaignL30->spend / max(($matchedCampaignL30->sales30d ?? 0.01), 0.01)) * 100, 2)
+                : 0;
+
+            $row['acos_L15'] = $matchedCampaignL15
+                ? round(($matchedCampaignL15->spend / max(($matchedCampaignL15->sales14d ?? 0.01), 0.01)) * 100, 2)
+                : 0;
+
+            $row['acos_L7'] = $matchedCampaignL7
+                ? round(($matchedCampaignL7->spend / max(($matchedCampaignL7->sales7d ?? 0.01), 0.01)) * 100, 2)
+                : 0;
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+            $row['clicks_L15'] = $matchedCampaignL15->clicks ?? 0;
+            $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
             $row['NR'] = '';
@@ -408,6 +453,24 @@ class AmazonSpBudgetController extends Controller
 
         $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
+        $amazonSpCampaignReportsL30 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $amazonSpCampaignReportsL15 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L15')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
         $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
@@ -470,6 +533,41 @@ class AmazonSpBudgetController extends Controller
             $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
             $row['l1_spend'] = $matchedCampaignL1->spend ?? 0;
             $row['l1_cpc'] = $matchedCampaignL1->costPerClick ?? 0;
+
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+
+                return (
+                    (str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.'))
+                    && strtoupper($item->campaignStatus) === 'ENABLED'
+                );
+            });
+
+            $matchedCampaign15 = $amazonSpCampaignReportsL15->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+
+                return (
+                    (str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.'))
+                    && strtoupper($item->campaignStatus) === 'ENABLED'
+                );
+            });
+            
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaignL30->sales30d ?? 0) > 0)
+                ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2)
+                : null;
+
+            $row['acos_L15'] = ($matchedCampaign15 && ($matchedCampaign15->sales14d ?? 0) > 0)
+                ? round(($matchedCampaign15->spend / $matchedCampaign15->sales14d) * 100, 2)
+                : null;
+
+            $row['acos_L7'] = ($matchedCampaignL7 && ($matchedCampaignL7->sales7d ?? 0) > 0)
+                ? round(($matchedCampaignL7->spend / $matchedCampaignL7->sales7d) * 100, 2)
+                : null;
+
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+            $row['clicks_L15'] = $matchedCampaign15->clicks ?? 0;
+            $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
             $row['NR'] = '';

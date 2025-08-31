@@ -1589,6 +1589,17 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::controller(AmazonACOSController::class)->group(function () {
         Route::get('/amazon-acos-control/data', 'index')->name('amazon.acos.index');
         Route::get('/amazon-acos-data', 'getAmzonAcOSData');
+
+        Route::get('/amazon-acos-kw-control', 'amazonAcosKwControl')->name('amazon.acos.kw.control');
+        Route::get('/amazon-acos-kw-control-data', 'amazonAcosKwControlData')->name('amazon.acos.kw.control.data');
+        Route::get('/amazon-acos-hl-control', 'amazonAcosHlControl')->name('amazon.acos.hl.control');
+        Route::get('/amazon-acos-hl-control-data', 'amazonAcosHlControlData')->name('amazon.acos.hl.control.data');
+        Route::get('/amazon-acos-pt-control', 'amazonAcosPtControl')->name('amazon.acos.pt.control');
+        Route::get('/amazon-acos-pt-control-data', 'amazonAcosPtControlData')->name('amazon.acos.pt.control.data');
+
+        Route::put('/update-amazon-campaign-bgt-price', 'updateAmazonCampaignBgt');
+        Route::put('/update-amazon-sb-campaign-bgt-price', 'updateAmazonSbCampaignBgt');
+
     });
 
     Route::controller(EbayACOSController::class)->group(function () {

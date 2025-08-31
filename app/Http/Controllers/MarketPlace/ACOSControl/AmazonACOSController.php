@@ -3,11 +3,180 @@
 namespace App\Http\Controllers\MarketPlace\ACOSControl;
 
 use App\Http\Controllers\Controller;
+use App\Models\AmazonDatasheet;
+use App\Models\AmazonDataView;
+use App\Models\AmazonSbCampaignReport;
+use App\Models\AmazonSpCampaignReport;
+use App\Models\ProductMaster;
+use App\Models\ShopifySku;
+use AWS\CRT\Log;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log as FacadesLog;
 
 class AmazonACOSController extends Controller
 {
+    protected $profileId;
+
+    public function __construct()
+    {
+        $this->profileId = "4216505535403428";
+    }
+
+    public function getAccessToken()
+    {
+        $client = new Client();
+        $response = $client->post('https://api.amazon.com/auth/o2/token', [
+            'form_params' => [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
+                'client_id' => env('AMAZON_ADS_CLIENT_ID'),
+                'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
+            ]
+        ]);
+
+        $data = json_decode($response->getBody(), true);
+        return $data['access_token'];
+    }
+
+    public function updateAmazonCampaignBgt(Request $request){
+        $campaignIds = $request->input('campaign_ids', []);
+        $newBgts = $request->input('bgts', []);
+
+        if (empty($campaignIds) || empty($newBgts)) {
+            return response()->json([
+                'message' => 'Campaign IDs and new budgets are required',
+                'status' => 400
+            ]);
+        }
+
+        $allCampaigns = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBgt = floatval($newBgts[$index] ?? 0);
+
+            $allCampaigns[] = [
+                'campaignId' => $campaignId,
+                'budget' => [
+                    'budget' => $newBgt,
+                    'budgetType' => 'DAILY'
+                ]
+            ];
+        }
+
+        if (empty($allCampaigns)) {
+            return response()->json([
+                'message' => 'No campaigns found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sp/campaigns';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allCampaigns, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.spCampaign.v3+json',
+                        'Accept' => 'application/vnd.spCampaign.v3+json',
+                    ],
+                    'json' => [
+                        'campaigns' => $chunk
+                    ]
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+            return response()->json([
+                'message' => 'Campaign budget updated successfully',
+                'data' => $results,
+                'status' => 200,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating campaign budgets',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+    }
+
+    public function updateAmazonSbCampaignBgt(Request $request){
+        $campaignIds = $request->input('campaign_ids', []);
+        $newBgts = $request->input('bgts', []);
+
+        if (empty($campaignIds) || empty($newBgts)) {
+            return response()->json([
+                'message' => 'Campaign IDs and new budgets are required',
+                'status' => 400
+            ]);
+        }
+
+        $allCampaigns = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBgt = floatval($newBgts[$index] ?? 0);
+
+            $allCampaigns[] = [
+                'campaignId' => $campaignId,
+                'budget' => $newBgt,
+            ];
+        }
+
+        if (empty($allCampaigns)) {
+            return response()->json([
+                'message' => 'No campaigns found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sb/v4/campaigns';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allCampaigns, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.sbcampaignresource.v4+json',
+                        'Accept' => 'application/vnd.sbcampaignresource.v4+json',
+                    ],
+                    'json' => [
+                        'campaigns' => $chunk
+                    ]
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+            return response()->json([
+                'message' => 'Campaign budget updated successfully',
+                'data' => $results,
+                'status' => 200,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error updating campaign budgets',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ]);
+        }
+    }
+
     public function index(){
         return view('market-places.acos-control.amazon-acos-control');
     }
@@ -127,4 +296,332 @@ class AmazonACOSController extends Controller
 
         return response()->json($data);
     }
+
+    public function amazonAcosKwControl(){
+        return view('market-places.acos-control.amazon-acos-kw-control');
+    }
+
+    public function amazonAcosKwControlData(){
+
+        $productMasters = ProductMaster::orderBy('parent', 'asc')
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy('sku', 'asc')
+            ->get();
+
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+        $amazonSpCampaignReportsL30 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->where('campaignName', 'NOT LIKE', '%PT')
+            ->where('campaignName', 'NOT LIKE', '%PT.')
+            ->get();
+
+        $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L7')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->where('campaignName', 'NOT LIKE', '%PT')
+            ->where('campaignName', 'NOT LIKE', '%PT.')
+            ->get();
+
+        $result = [];
+
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
+
+            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+            $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                return stripos($item->campaignName, $sku) !== false;
+            });
+
+            $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
+                return stripos($item->campaignName, $sku) !== false;
+            });
+
+            $row = [];
+            $row['parent'] = $parent;
+            $row['sku']    = $pm->sku;
+            $row['INV']    = $shopify->inv ?? 0;
+            $row['L30']    = $shopify->quantity ?? 0;
+            $row['fba']    = $pm->fba ?? null;
+            $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
+            $row['campaign_id'] = $matchedCampaignL30->campaign_id ??  '';
+            $row['campaignName'] = $matchedCampaignL30->campaignName ?? '';
+            $row['campaignStatus'] = $matchedCampaignL30->campaignStatus ?? '';
+            $row['campaignBudgetAmount'] = $matchedCampaignL30->campaignBudgetAmount ?? '';
+            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
+            
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaignL30->sales30d ?? 0) > 0)
+                ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2)
+                : null;
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
+            if (isset($nrValues[$pm->sku])) {
+                $raw = $nrValues[$pm->sku];
+                if (!is_array($raw)) {
+                    $raw = json_decode($raw, true);
+                }
+                if (is_array($raw)) {
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
+                }
+            }
+
+            $result[] = (object) $row;
+        }
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data'    => $result,
+            'status'  => 200,
+        ]);
+    }
+
+    public function amazonAcosHlControl(){
+        return view('market-places.acos-control.amazon-acos-hl-control');
+    }
+
+    public function amazonAcosHlControlData(){
+
+        $productMasters = ProductMaster::orderBy('parent', 'asc')
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy('sku', 'asc')
+            ->get();
+
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+        $amazonSpCampaignReportsL30 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $amazonSpCampaignReportsL7 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L7')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $result = [];
+
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
+
+            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+            $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
+
+            $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
+
+
+            $row = [];
+            $row['parent'] = $parent;
+            $row['sku']    = $pm->sku;
+            $row['INV']    = $shopify->inv ?? 0;
+            $row['L30']    = $shopify->quantity ?? 0;
+            $row['fba']    = $pm->fba ?? null;
+            $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
+            $row['campaign_id'] = $matchedCampaignL30->campaign_id ??  '';
+            $row['campaignName'] = $matchedCampaignL30->campaignName ?? '';
+            $row['campaignStatus'] = $matchedCampaignL30->campaignStatus ?? '';
+            $row['campaignBudgetAmount'] = $matchedCampaignL30->campaignBudgetAmount ?? '';
+            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
+            
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaignL30->sales30d ?? 0) > 0)
+                ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2)
+                : null;
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
+            if (isset($nrValues[$pm->sku])) {
+                $raw = $nrValues[$pm->sku];
+                if (!is_array($raw)) {
+                    $raw = json_decode($raw, true);
+                }
+                if (is_array($raw)) {
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
+                }
+            }
+
+            $result[] = (object) $row;
+        }
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data'    => $result,
+            'status'  => 200,
+        ]);
+    }
+
+    public function amazonAcosPtControl(){
+        return view('market-places.acos-control.amazon-acos-pt-control');
+    }
+
+    public function amazonAcosPtControlData(){
+
+        $productMasters = ProductMaster::orderBy('parent', 'asc')
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy('sku', 'asc')
+            ->get();
+
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+        $amazonSpCampaignReportsL30 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
+        $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
+            ->where('report_date_range', 'L7')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
+        $result = [];
+
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
+
+            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+            $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL30 = $this->matchCampaign($sku, $amazonSpCampaignReportsL30);
+            $matchedCampaignL7  = $this->matchCampaign($sku, $amazonSpCampaignReportsL7);
+
+            $row = [];
+            $row['parent'] = $parent;
+            $row['sku']    = $pm->sku;
+            $row['INV']    = $shopify->inv ?? 0;
+            $row['L30']    = $shopify->quantity ?? 0;
+            $row['fba']    = $pm->fba ?? null;
+            $row['A_L30']  = $amazonSheet->units_ordered_l30 ?? 0;
+            $row['campaign_id'] = $matchedCampaignL30->campaign_id ??  '';
+            $row['campaignName'] = $matchedCampaignL30->campaignName ?? '';
+            $row['campaignStatus'] = $matchedCampaignL30->campaignStatus ?? '';
+            $row['campaignBudgetAmount'] = $matchedCampaignL30->campaignBudgetAmount ?? '';
+            $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
+            
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaignL30->sales30d ?? 0) > 0)
+                ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2)
+                : null;
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+
+            $row['NRL']  = '';
+            $row['NR'] = '';
+            $row['FBA'] = '';
+            if (isset($nrValues[$pm->sku])) {
+                $raw = $nrValues[$pm->sku];
+                if (!is_array($raw)) {
+                    $raw = json_decode($raw, true);
+                }
+                if (is_array($raw)) {
+                    $row['NRL']  = $raw['NRL'] ?? null;
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
+                }
+            }
+
+            $result[] = (object) $row;
+        }
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data'    => $result,
+            'status'  => 200,
+        ]);
+    }
+
+    function matchCampaign($sku, $campaignReports) {
+        $skuClean = preg_replace('/\s+/', ' ', strtoupper(trim($sku)));
+
+        $expected1 = $skuClean . ' PT';
+        $expected2 = $skuClean . ' PT.';
+
+        return $campaignReports->first(function ($item) use ($expected1, $expected2) {
+            $campaignName = preg_replace('/\s+/', ' ', strtoupper(trim($item->campaignName)));
+
+            return in_array($campaignName, [$expected1, $expected2], true)
+                && strtoupper($item->campaignStatus) === 'ENABLED';
+        });
+    }
+
+
+
+
 }

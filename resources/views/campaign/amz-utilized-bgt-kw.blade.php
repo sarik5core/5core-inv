@@ -222,6 +222,20 @@
             </div>
         </div>
     </div>
+
+    <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-3" style="color: white; font-size: 1.2rem; font-weight: 500;">
+                Updating campaigns...
+            </div>
+            <div style="color: #a3e635; font-size: 0.9rem; margin-top: 0.5rem;">
+                Please wait while we process your request
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -408,6 +422,67 @@
                         field: "campaignBudgetAmount",
                         hozAlign: "right",
                         formatter: (cell) => parseFloat(cell.getValue() || 0)
+                    },
+                    {
+                        title: "ACOS L30",
+                        field: "acos_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${cell.getValue().toFixed(0) + "%"}</span>
+                                <i class="fa fa-info-circle text-primary toggle-acos-cols-btn"
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                            
+                        }
+                    },
+                    {
+                        title: "ACOS L15",
+                        field: "acos_L15",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0) + "%";
+                        }
+                    },
+                    {
+                        title: "ACOS L7",
+                        field: "acos_L7",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0) + "%";
+                        }
+                    },
+                    {
+                        title: "Clicks L30",
+                        field: "clicks_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${cell.getValue().toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary toggle-clicks-cols-btn"
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
+                    },
+                    {
+                        title: "Clicks L15",
+                        field: "clicks_L15",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0);
+                        }
+                    },
+                    {
+                        title: "Clicks L7",
+                        field: "clicks_L7",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0);
+                        }
                     },
                     {
                         title: "7 UB%",
@@ -703,7 +778,37 @@
                 }
             });
 
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("toggle-acos-cols-btn")) {
+                    let colsToToggle = ["acos_L15", "acos_L7"]; 
+
+                    colsToToggle.forEach(colField => {
+                        let col = table.getColumn(colField);
+                        if (col) {
+                            col.toggle();
+                        }
+                    });
+                }
+            });
+
+
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("toggle-clicks-cols-btn")) {
+                    let colsToToggle = ["clicks_L15", "clicks_L7"]; 
+
+                    colsToToggle.forEach(colField => {
+                        let col = table.getColumn(colField);
+                        if (col) {
+                            col.toggle();
+                        }
+                    });
+                }
+            });
+
             document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
                 var filteredData = table.getData("active"); 
                 
                 var campaignIds = [];
@@ -738,10 +843,16 @@
                         alert("Something went wrong: " + data.message);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
             });
 
             function updateBid(aprBid, campaignId) {
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
@@ -763,7 +874,10 @@
                         alert("Something went wrong: " + data.message);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
             }
 
 

@@ -1454,7 +1454,24 @@
                                             <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('amazon.acos.index') }}">Amazon ACOS Control</a>
+                                            <a data-bs-toggle="collapse" href="#amazonACOS" aria-expanded="false"
+                                                aria-controls="amazonACOS">
+                                                <span>Amazon ACOS Control</span>
+                                                <span class="menu-arrow"></span>
+                                            </a>
+                                            <div class="collapse" id="amazonACOS">
+                                                <ul class="side-nav-fourth-level">
+                                                    <li>
+                                                        <a href="{{ route('amazon.acos.kw.control') }}">Amazon ACOS KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.acos.hl.control') }}">Amazon ACOS HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.acos.pt.control') }}">Amazon ACOS PT</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </li>
                                         <li>
                                             <a data-bs-toggle="collapse" href="#amazonBudget" aria-expanded="false"
