@@ -793,13 +793,23 @@ class ZeroVisibilityMasterController extends Controller
 
         $data = [];
 
-        foreach ($channels as $channel) {
-            // Build dynamic controller name
-            $controllerClass = "\\App\\Http\\Controllers\\MarketPlace\\" . ucfirst($channel) . "ZeroController";
 
+        // Mapping for special channel/controller names
+        $controllerMap = [
+            'ebaythree' => 'Ebay3ZeroController',
+            // Add more mappings as needed
+        ];
+
+        foreach ($channels as $channel) {
             $livePending = 0;
             $zeroViews = 0;
 
+            $key = strtolower(str_replace([' ', '-', '&', '/'], '', trim($channel)));
+            if (isset($controllerMap[$key])) {
+                $controllerClass = "App\\Http\\Controllers\\MarketPlace\\ZeroViewMarketPlace\\" . $controllerMap[$key];
+            } else {
+                $controllerClass = "App\\Http\\Controllers\\MarketPlace\\" . ucfirst($channel) . "ZeroController";
+            }
 
             if (class_exists($controllerClass)) {
                 $controller = app($controllerClass);
