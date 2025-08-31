@@ -119,12 +119,18 @@ class PricingMasterViewsController extends Controller
                 'amz_price' => $amazon ? ($amazon->price ?? 0) : 0,
                 'amz_l30'   => $amazon ? ($amazon->units_ordered_l30 ?? 0) : 0,
                 'amz_l60'   => $amazon ? ($amazon->units_ordered_l60 ?? 0) : 0,
+                'sessions_l30' => $amazon ? ($amazon->sessions_l30 ?? 0) : 0,
+                'amz_cvr'   => $amazon ? $this->calculateCVR($amazon->units_ordered_l30 ?? 0, $amazon->sessions_l30 ?? 0) : null,
+                'price_lmpa' => $amazon ? ($amazon->price_lmpa ?? 0) : 0,
                 'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.85 - $lp - $ship) / $amazon->price) : 0,
                 'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.85 - $lp - $ship) / $lp) : 0,
 
                 // eBay
                 'ebay_price' => $ebay ? ($ebay->ebay_price ?? 0) : 0,
                 'ebay_l30'   => $ebay ? ($ebay->ebay_l30 ?? 0) : 0,
+                'price_lmpa'   => $ebay ? ($ebay->price_lmpa ?? 0) : 0,
+                'views'      => $ebay ? ($ebay->views ?? 0) : 0,
+                'ebay_cvr'   => $ebay ? $this->calculateCVR($ebay->ebay_l30 ?? 0, $ebay->views ?? 0) : null,
                 'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.87 - $lp - $ship) / $ebay->ebay_price) : 0,
                 'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.87 - $lp - $ship) / $lp) : 0,
 
@@ -184,7 +190,7 @@ class PricingMasterViewsController extends Controller
             // Add shopifyb2c fields after $item is created
             $shopify = $shopifyData[trim(strtoupper($sku))] ?? null;
             $item->shopifyb2c_price = $shopify ? $shopify->price : 0;
-            $item->shopifyb2c_l30 = $shopify ? $shopify->shopify_l30 : 0;
+            $item->shopifyb2c_l30 = $shopify ? $shopify->quantity : 0;
             $item->shopifyb2c_image = $shopify ? $shopify->image_src : null;
             $item->shopifyb2c_pft = $item->shopifyb2c_price > 0 ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $item->shopifyb2c_price) : 0;
             $item->shopifyb2c_roi = ($lp > 0 && $item->shopifyb2c_price > 0) ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $lp) : 0;
@@ -297,6 +303,15 @@ class PricingMasterViewsController extends Controller
         });
     }
 
+
+    protected function calculateCVR($l30, $views) {
+        if (!$views) return null;
+        $cvr = ($l30 / $views) * 100;
+        return [
+            'value' => number_format($cvr, 2),
+            'color' => $cvr <= 7 ? 'blue' : ($cvr <= 13 ? 'green' : 'red')
+        ];
+    }
 
     protected function getDistinctValues($data)
     {
