@@ -569,8 +569,16 @@
                         },
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
+                                var rowData = cell.getRow().getData();
                                 var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                                var sbid = (l1_cpc * 1.05).toFixed(2);
+                                var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+                                var sbid;
+
+                                if(l1_cpc > l7_cpc) {
+                                    sbid = (l1_cpc * 1.05).toFixed(2);
+                                }else{
+                                    sbid = (l7_cpc * 1.05).toFixed(2);
+                                }
                                 updateBid(sbid, rowData.campaign_id);
                             }
                         }
@@ -803,18 +811,30 @@
                 const overlay = document.getElementById("progress-overlay");
                 overlay.style.display = "flex";
                 
-                var filteredData = table.getData("active"); 
+                var filteredData = table.getSelectedRows();
                 
                 var campaignIds = [];
                 var bids = [];
 
-                filteredData.forEach(function(rowData){
-                    var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                    var sbid = (l1_cpc * 1.05).toFixed(2);
+                filteredData.forEach(function(row){
+                    var rowEl = row.getElement();
+                    if(rowEl && rowEl.offsetParent !== null){
+                        var rowData = row.getData();
+                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                        var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+                        var sbid;
 
-                    campaignIds.push(rowData.campaign_id);
-                    bids.push(sbid);
+                        if(l1_cpc > l7_cpc) {
+                            sbid = (l1_cpc * 1.05).toFixed(2);
+                        }else{
+                            sbid = (l7_cpc * 1.05).toFixed(2);
+                        }
+
+                        campaignIds.push(rowData.campaign_id);
+                        bids.push(sbid);
+                    }
                 });
+
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
 

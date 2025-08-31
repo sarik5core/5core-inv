@@ -576,10 +576,16 @@
                         },
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
-                                var rowData = cell.getRow().getData();
-                                var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
-                                var sbid = (l7_cpc * 1.05).toFixed(2);
-                                updateBid(sbid, rowData.campaign_id);
+                                var row = cell.getRow().getData();
+                                var l1_cpc = parseFloat(row.l1_cpc) || 0;
+                                var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                                var sbid;
+                                if(l1_cpc > l7_cpc) {
+                                    sbid = (l1_cpc * 1.05).toFixed(2);
+                                }else{
+                                    sbid = (l7_cpc * 1.05).toFixed(2);
+                                }
+                                updateBid(sbid, row.campaign_id);
                             }
                         }
                     },
@@ -620,6 +626,7 @@
                     var row = cell.getRow();
                     var rowData = row.getData();
                     var newCrntBid = parseFloat(rowData.crnt_bid) || 0;
+
 
                     row.update({
                         sbid: (newCrntBid * 1.05).toFixed(2)
@@ -807,17 +814,31 @@
             });
 
             document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
-                var filteredData = table.getData("active"); 
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
+                var filteredData = table.getSelectedRows();
                 
                 var campaignIds = [];
                 var bids = [];
 
-                filteredData.forEach(function(rowData){
-                    var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
-                    var sbid = (l7_cpc * 1.05).toFixed(2);
+                filteredData.forEach(function(row){
+                    var rowEl = row.getElement();
+                    if(rowEl && rowEl.offsetParent !== null){
+                        var rowData = row.getData();
+                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                        var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+                        var sbid;
 
-                    campaignIds.push(rowData.campaign_id);
-                    bids.push(sbid);
+                        if(l1_cpc > l7_cpc) {
+                            sbid = (l1_cpc * 1.05).toFixed(2);
+                        }else{
+                            sbid = (l7_cpc * 1.05).toFixed(2);
+                        }
+
+                        campaignIds.push(rowData.campaign_id);
+                        bids.push(sbid);
+                    }
                 });
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
@@ -842,10 +863,16 @@
                         alert("Something went wrong: " + data.message);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
             });
 
             function updateBid(aprBid, campaignId) {
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
                 console.log("Campaign IDs:", [campaignId]);
                 console.log("Bids:", [aprBid]);
                 fetch('/update-keywords-bid-price', {
@@ -868,7 +895,10 @@
                         alert("Something went wrong: " + data.message);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
             }
 
             document.body.style.zoom = "78%";

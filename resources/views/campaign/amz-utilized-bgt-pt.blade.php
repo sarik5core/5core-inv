@@ -423,7 +423,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             return `
-                                <span>${cell.getValue().toFixed(0) + "%"}</span>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
                                 <i class="fa fa-info-circle text-primary toggle-acos-cols-btn"
                                 style="cursor:pointer; margin-left:8px;"></i>
                             `;
@@ -454,7 +454,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             return `
-                                <span>${cell.getValue().toFixed(0)}</span>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
                                 <i class="fa fa-info-circle text-primary toggle-clicks-cols-btn"
                                 style="cursor:pointer; margin-left:8px;"></i>
                             `;
@@ -804,17 +804,21 @@
                 const overlay = document.getElementById("progress-overlay");
                 overlay.style.display = "flex";
 
-                var filteredData = table.getData("active"); 
+                var filteredData = table.getSelectedRows();
                 
                 var campaignIds = [];
                 var bids = [];
 
-                filteredData.forEach(function(rowData){
-                    var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                    var sbid = (l1_cpc * 0.9).toFixed(2);
+                filteredData.forEach(function(row){
+                    var rowEl = row.getElement();
+                    if(rowEl && rowEl.offsetParent !== null){
+                        var rowData = row.getData();
+                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                        var sbid = (l1_cpc * 0.9).toFixed(2);
 
-                    campaignIds.push(rowData.campaign_id);
-                    bids.push(sbid);
+                        campaignIds.push(rowData.campaign_id);
+                        bids.push(sbid);
+                    }
                 });
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
