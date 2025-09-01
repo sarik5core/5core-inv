@@ -1021,6 +1021,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/pricing-analysis-data-view', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
 
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
+    Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
 
 
 
