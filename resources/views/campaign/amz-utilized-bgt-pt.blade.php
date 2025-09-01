@@ -222,6 +222,20 @@
             </div>
         </div>
     </div>
+
+    <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-3" style="color: white; font-size: 1.2rem; font-weight: 500;">
+                Updating campaigns...
+            </div>
+            <div style="color: #a3e635; font-size: 0.9rem; margin-top: 0.5rem;">
+                Please wait while we process your request
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -241,9 +255,9 @@
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
                 ajaxURL: "/amazon-sp/get-amz-utilized-bgt-pt",
-                layout: "fitData",
+                layout: "fitDataFill",
                 pagination: "local",
-                paginationSize: 50,
+                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
@@ -402,6 +416,67 @@
                         field: "campaignBudgetAmount",
                         hozAlign: "right",
                         formatter: (cell) => parseFloat(cell.getValue() || 0)
+                    },
+                    {
+                        title: "ACOS L30",
+                        field: "acos_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                                <i class="fa fa-info-circle text-primary toggle-acos-cols-btn"
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                            
+                        }
+                    },
+                    {
+                        title: "ACOS L15",
+                        field: "acos_L15",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0) + "%";
+                        }
+                    },
+                    {
+                        title: "ACOS L7",
+                        field: "acos_L7",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0) + "%";
+                        }
+                    },
+                    {
+                        title: "Clicks L30",
+                        field: "clicks_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                                <i class="fa fa-info-circle text-primary toggle-clicks-cols-btn"
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
+                    },
+                    {
+                        title: "Clicks L15",
+                        field: "clicks_L15",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0);
+                        }
+                    },
+                    {
+                        title: "Clicks L7",
+                        field: "clicks_L7",
+                        hozAlign: "right",
+                        visible: false,
+                        formatter: function(cell) {
+                            return parseFloat(cell.getValue() || 0).toFixed(0);
+                        }
                     },
                     {
                         title: "7 UB%",
@@ -698,18 +773,52 @@
                 }
             });
 
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("toggle-acos-cols-btn")) {
+                    let colsToToggle = ["acos_L15", "acos_L7"]; 
+
+                    colsToToggle.forEach(colField => {
+                        let col = table.getColumn(colField);
+                        if (col) {
+                            col.toggle();
+                        }
+                    });
+                }
+            });
+
+
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("toggle-clicks-cols-btn")) {
+                    let colsToToggle = ["clicks_L15", "clicks_L7"]; 
+
+                    colsToToggle.forEach(colField => {
+                        let col = table.getColumn(colField);
+                        if (col) {
+                            col.toggle();
+                        }
+                    });
+                }
+            });
+
             document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
-                var filteredData = table.getData("active"); 
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
+                var filteredData = table.getSelectedRows();
                 
                 var campaignIds = [];
                 var bids = [];
 
-                filteredData.forEach(function(rowData){
-                    var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                    var sbid = (l1_cpc * 0.9).toFixed(2);
+                filteredData.forEach(function(row){
+                    var rowEl = row.getElement();
+                    if(rowEl && rowEl.offsetParent !== null){
+                        var rowData = row.getData();
+                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                        var sbid = (l1_cpc * 0.9).toFixed(2);
 
-                    campaignIds.push(rowData.campaign_id);
-                    bids.push(sbid);
+                        campaignIds.push(rowData.campaign_id);
+                        bids.push(sbid);
+                    }
                 });
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
@@ -734,10 +843,16 @@
                         alert("Something went wrong: " + data.message);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
             });
 
             function updateBid(aprBid, campaignId) {
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
                 fetch('/update-amazon-sp-targets-bid-price', {
                     method: 'PUT',
@@ -759,7 +874,10 @@
                         alert("Something went wrong: " + data.message);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
             }
 
             document.body.style.zoom = "78%";

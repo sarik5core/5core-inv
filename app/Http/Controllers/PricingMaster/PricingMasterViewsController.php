@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PricingMaster;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Models\AmazonDatasheet;
+use App\Models\AmazonDataView;
 use App\Models\DobaMetric;
 use App\Models\EbayMetric;
 use App\Models\PricingMaster;
@@ -16,6 +17,7 @@ use App\Models\TemuProductSheet;
 use App\Models\WalmartDataView;
 use App\Models\Ebay2Metric;
 use App\Models\Ebay3Metric;
+use App\Models\EbayDataView;
 use Illuminate\Http\Request;
 
 class PricingMasterViewsController extends Controller
@@ -119,14 +121,21 @@ class PricingMasterViewsController extends Controller
                 'amz_price' => $amazon ? ($amazon->price ?? 0) : 0,
                 'amz_l30'   => $amazon ? ($amazon->units_ordered_l30 ?? 0) : 0,
                 'amz_l60'   => $amazon ? ($amazon->units_ordered_l60 ?? 0) : 0,
-                'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.85 - $lp - $ship) / $amazon->price) : 0,
-                'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.85 - $lp - $ship) / $lp) : 0,
+                'sessions_l30' => $amazon ? ($amazon->sessions_l30 ?? 0) : 0,
+                'amz_cvr'   => $amazon ? $this->calculateCVR($amazon->units_ordered_l30 ?? 0, $amazon->sessions_l30 ?? 0) : null,
+                'price_lmpa' => $amazon ? ($amazon->price_lmpa ?? 0) : 0,
+                'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.80 - $lp - $ship) / $amazon->price) : 0,
+                'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.80 - $lp - $ship) / $lp) : 0,
 
                 // eBay
                 'ebay_price' => $ebay ? ($ebay->ebay_price ?? 0) : 0,
                 'ebay_l30'   => $ebay ? ($ebay->ebay_l30 ?? 0) : 0,
-                'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.87 - $lp - $ship) / $ebay->ebay_price) : 0,
-                'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.87 - $lp - $ship) / $lp) : 0,
+                'ebay_l60'   => $ebay ? ($ebay->ebay_l60 ?? 0) : 0,
+                'price_lmpa'   => $ebay ? ($ebay->price_lmpa ?? 0) : 0,
+                'ebay_views' => $ebay ? ($ebay->views ?? 0) : 0,
+                'ebay_cvr'   => $ebay ? $this->calculateCVR($ebay->ebay_l30 ?? 0, $ebay->views ?? 0) : null,
+                'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.73 - $lp - $ship) / $ebay->ebay_price) : 0,
+                'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.73 - $lp - $ship) / $lp) : 0,
 
                 // Doba
                 'doba_price' => $doba ? ($doba->anticipated_income ?? 0) : 0,
@@ -171,7 +180,9 @@ class PricingMasterViewsController extends Controller
                 // eBay3
                 'ebay3_price' => $ebay3 ? (float) ($ebay3->{'ebay_price'} ?? 0) : 0,
                 'ebay3_l30'   => $ebay3 ? (float) ($ebay3->{'ebay_l30'} ?? 0) : 0,
+                'ebay3_views' => $ebay3 ? ($ebay3->views ?? 0) : 0,
                 'ebay3_dil'   => $ebay3 ? (float) ($ebay3->{'dil'} ?? 0) : 0,
+                'ebay3_cvr'   => $ebay3 ? $this->calculateCVR($ebay3->ebay_l30 ?? 0, $ebay3->views ?? 0) : null,
                 'ebay3_pft'   => $ebay3 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.87 - $lp - $ship) / $ebay3->ebay_price) : 0,
                 'ebay3_roi'   => $ebay3 && $lp > 0 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.87 - $lp - $ship) / $lp) : 0,
 
@@ -184,7 +195,7 @@ class PricingMasterViewsController extends Controller
             // Add shopifyb2c fields after $item is created
             $shopify = $shopifyData[trim(strtoupper($sku))] ?? null;
             $item->shopifyb2c_price = $shopify ? $shopify->price : 0;
-            $item->shopifyb2c_l30 = $shopify ? $shopify->shopify_l30 : 0;
+            $item->shopifyb2c_l30 = $shopify ? $shopify->quantity : 0;
             $item->shopifyb2c_image = $shopify ? $shopify->image_src : null;
             $item->shopifyb2c_pft = $item->shopifyb2c_price > 0 ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $item->shopifyb2c_price) : 0;
             $item->shopifyb2c_roi = ($lp > 0 && $item->shopifyb2c_price > 0) ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $lp) : 0;
@@ -298,6 +309,16 @@ class PricingMasterViewsController extends Controller
     }
 
 
+    protected function calculateCVR($l30, $views)
+    {
+        if (!$views) return null;
+        $cvr = ($l30 / $views) * 100;
+        return [
+            'value' => number_format($cvr, 2),
+            'color' => $cvr <= 7 ? 'blue' : ($cvr <= 13 ? 'green' : 'red')
+        ];
+    }
+
     protected function getDistinctValues($data)
     {
         $parents = [];
@@ -318,300 +339,51 @@ class PricingMasterViewsController extends Controller
         ];
     }
 
-    public function getL30Analysis(Request $request)
+    public function saveSprice(Request $request)
     {
-        $sku = $request->input('sku');
-        $processedData = $this->processPricingData();
+        $data = $request->validate([
+            'sku' => 'required|string',
+            'type' => 'required|string',
+            'sprice' => 'required|numeric',
+        ]);
 
-        $item = collect($processedData)->firstWhere('SKU', $sku);
-        if (!$item) {
-            return response()->json([
-                'message' => 'SKU not found',
-                'status' => 404
-            ]);
+        $sku = $data['sku'];
+        $type = $data['type'];
+        $sprice = $data['sprice'];
+
+        switch ($type) {
+            case 'amz':
+                // Amazon logic
+                $amazonDataView = AmazonDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
+                $existing['SPRICE'] = $sprice;
+                $amazonDataView->value = $existing;
+                $amazonDataView->save();
+                break;
+
+            case 'ebay':
+                // eBay logic
+                $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($ebayDataView->value) ? $ebayDataView->value : (json_decode($ebayDataView->value, true) ?: []);
+                $existing['SPRICE'] = $sprice;
+                $ebayDataView->value = $existing;
+                $ebayDataView->save();
+                break;
+
+            default:
+                return response()->json([
+                    'message' => 'Unknown marketplace type',
+                    'status' => 400
+                ]);
         }
 
-        $analysis = [
-            'amazon' => [
-                'l30' => $item->amz_l30,
-                'l60' => $item->amz_l60,
-                'profit' => $item->amz_price > 0 ? ($item->amz_price * 0.85 - $item->LP - $item->SHIP) / $item->amz_price : 0,
-                'roi' => $item->LP > 0 ? ($item->amz_price * 0.85 - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'ebay' => [
-                'l30' => $item->ebay_l30,
-                'profit' => $item->ebay_price > 0 ? ($item->ebay_price * 0.87 - $item->LP - $item->SHIP) / $item->ebay_price : 0,
-                'roi' => $item->LP > 0 ? ($item->ebay_price * 0.87 - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'doba' => [
-                'l30' => $item->doba_l30,
-                'l60' => $item->doba_l60,
-                'profit' => $item->doba_price > 0 ? ($item->doba_price - $item->LP - $item->SHIP) / $item->doba_price : 0,
-                'roi' => $item->LP > 0 ? ($item->doba_price - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'macy' => [
-                'l30' => $item->macy_l30,
-                'profit' => $item->macy_pft,
-                'roi' => $item->macy_roi
-            ],
-            'reverb' => [
-                'l30' => $item->reverb_l30,
-                'profit' => $item->reverb_pft,
-                'roi' => $item->reverb_roi
-            ],
-            'temu' => [
-                'l30' => $item->temu_l30,
-                'profit' => $item->temu_pft,
-                'roi' => $item->temu_roi
-            ],
-            'walmart' => [
-                'l30' => $item->walmart_l30,
-                'profit' => $item->walmart_pft,
-                'roi' => $item->walmart_roi
-            ],
-            'ebay2' => [
-                'l30' => $item->ebay2_l30,
-                'profit' => $item->ebay2_pft,
-                'roi' => $item->ebay2_roi
-            ],
-            'ebay3' => [
-                'l30' => $item->ebay3_l30,
-                'profit' => $item->ebay3_pft,
-                'roi' => $item->ebay3_roi
-            ]
-        ];
-
         return response()->json([
-            'data' => $analysis,
+            'message' => "$type S Price saved successfully",
+            'data' => $data,
             'status' => 200
         ]);
     }
 
-    public function getSiteAnalysis(Request $request)
-    {
-        $sku = $request->input('sku');
-        $processedData = $this->processPricingData();
+    
 
-        $item = collect($processedData)->firstWhere('SKU', $sku);
-        if (!$item) {
-            return response()->json([
-                'message' => 'SKU not found',
-                'status' => 404
-            ]);
-        }
-
-        $analysis = [
-            'amazon' => [
-                'price' => $item->amz_price,
-                'l30' => $item->amz_l30,
-                'profit' => $item->amz_price > 0 ? ($item->amz_price * 0.85 - $item->LP - $item->SHIP) / $item->amz_price : 0,
-                'roi' => $item->LP > 0 ? ($item->amz_price * 0.85 - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'ebay' => [
-                'price' => $item->ebay_price,
-                'l30' => $item->ebay_l30,
-                'profit' => $item->ebay_price > 0 ? ($item->ebay_price * 0.87 - $item->LP - $item->SHIP) / $item->ebay_price : 0,
-                'roi' => $item->LP > 0 ? ($item->ebay_price * 0.87 - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'doba' => [
-                'price' => $item->doba_price,
-                'l30' => $item->doba_l30,
-                'profit' => $item->doba_price > 0 ? ($item->doba_price - $item->LP - $item->SHIP) / $item->doba_price : 0,
-                'roi' => $item->LP > 0 ? ($item->doba_price - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'macy' => [
-                'price' => $item->macy_price,
-                'l30' => $item->macy_l30,
-                'profit' => $item->macy_pft,
-                'roi' => $item->macy_roi
-            ],
-            'reverb' => [
-                'price' => $item->reverb_price,
-                'l30' => $item->reverb_l30,
-                'profit' => $item->reverb_pft,
-                'roi' => $item->reverb_roi
-            ],
-            'temu' => [
-                'price' => $item->temu_price,
-                'l30' => $item->temu_l30,
-                'profit' => $item->temu_pft,
-                'roi' => $item->temu_roi
-            ],
-            'walmart' => [
-                'price' => $item->walmart_price,
-                'l30' => $item->walmart_l30,
-                'profit' => $item->walmart_pft,
-                'roi' => $item->walmart_roi
-            ],
-            'ebay2' => [
-                'price' => $item->ebay2_price,
-                'l30' => $item->ebay2_l30,
-                'profit' => $item->ebay2_pft,
-                'roi' => $item->ebay2_roi
-            ],
-            'ebay3' => [
-                'price' => $item->ebay3_price,
-                'l30' => $item->ebay3_l30,
-                'profit' => $item->ebay3_pft,
-                'roi' => $item->ebay3_roi
-            ]
-        ];
-
-        return response()->json([
-            'data' => $analysis,
-            'status' => 200
-        ]);
-    }
-
-    public function getProfitAnalysis(Request $request)
-    {
-        $sku = $request->input('sku');
-        $processedData = $this->processPricingData();
-
-        $item = collect($processedData)->firstWhere('SKU', $sku);
-        if (!$item) {
-            return response()->json([
-                'message' => 'SKU not found',
-                'status' => 404
-            ]);
-        }
-
-        $analysis = [
-            'amazon' => [
-                'price' => $item->amz_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->amz_price * 0.85 - $item->LP - $item->SHIP,
-                'margin' => $item->amz_price > 0 ? ($item->amz_price * 0.85 - $item->LP - $item->SHIP) / $item->amz_price : 0
-            ],
-            'ebay' => [
-                'price' => $item->ebay_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->ebay_price * 0.87 - $item->LP - $item->SHIP,
-                'margin' => $item->ebay_price > 0 ? ($item->ebay_price * 0.87 - $item->LP - $item->SHIP) / $item->ebay_price : 0
-            ],
-            'doba' => [
-                'price' => $item->doba_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->doba_price - $item->LP - $item->SHIP,
-                'margin' => $item->doba_price > 0 ? ($item->doba_price - $item->LP - $item->SHIP) / $item->doba_price : 0
-            ],
-            'macy' => [
-                'price' => $item->macy_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->macy_price * 0.77 - $item->LP - $item->SHIP,
-                'margin' => $item->macy_pft
-            ],
-            'reverb' => [
-                'price' => $item->reverb_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->reverb_price * 0.77 - $item->LP - $item->SHIP,
-                'margin' => $item->reverb_pft
-            ],
-            'temu' => [
-                'price' => $item->temu_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->temu_price * $item->temu_pft,
-                'margin' => $item->temu_pft
-            ],
-            'walmart' => [
-                'price' => $item->walmart_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->walmart_price * $item->walmart_pft,
-                'margin' => $item->walmart_pft
-            ],
-            'ebay2' => [
-                'price' => $item->ebay2_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->ebay2_price * $item->ebay2_pft,
-                'margin' => $item->ebay2_pft
-            ],
-            'ebay3' => [
-                'price' => $item->ebay3_price,
-                'cost' => $item->LP + $item->SHIP,
-                'profit' => $item->ebay3_price * $item->ebay3_pft,
-                'margin' => $item->ebay3_pft
-            ]
-        ];
-
-        return response()->json([
-            'data' => $analysis,
-            'status' => 200
-        ]);
-    }
-
-    public function getRoiAnalysis(Request $request)
-    {
-        $sku = $request->input('sku');
-        $processedData = $this->processPricingData();
-
-        $item = collect($processedData)->firstWhere('SKU', $sku);
-        if (!$item) {
-            return response()->json([
-                'message' => 'SKU not found',
-                'status' => 404
-            ]);
-        }
-
-        $analysis = [
-            'amazon' => [
-                'revenue' => $item->amz_price * $item->amz_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->amz_l30,
-                'return' => $item->amz_price * 0.85 * $item->amz_l30 - ($item->LP + $item->SHIP) * $item->amz_l30,
-                'roi' => $item->LP > 0 ? ($item->amz_price * 0.85 - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'ebay' => [
-                'revenue' => $item->ebay_price * $item->ebay_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->ebay_l30,
-                'return' => $item->ebay_price * 0.87 * $item->ebay_l30 - ($item->LP + $item->SHIP) * $item->ebay_l30,
-                'roi' => $item->LP > 0 ? ($item->ebay_price * 0.87 - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'doba' => [
-                'revenue' => $item->doba_price * $item->doba_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->doba_l30,
-                'return' => $item->doba_price * $item->doba_l30 - ($item->LP + $item->SHIP) * $item->doba_l30,
-                'roi' => $item->LP > 0 ? ($item->doba_price - $item->LP - $item->SHIP) / $item->LP : 0
-            ],
-            'macy' => [
-                'revenue' => $item->macy_price * $item->macy_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->macy_l30,
-                'return' => $item->macy_price * 0.77 * $item->macy_l30 - ($item->LP + $item->SHIP) * $item->macy_l30,
-                'roi' => $item->macy_roi
-            ],
-            'reverb' => [
-                'revenue' => $item->reverb_price * $item->reverb_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->reverb_l30,
-                'return' => $item->reverb_price * 0.77 * $item->reverb_l30 - ($item->LP + $item->SHIP) * $item->reverb_l30,
-                'roi' => $item->reverb_roi
-            ],
-            'temu' => [
-                'revenue' => $item->temu_price * $item->temu_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->temu_l30,
-                'return' => $item->temu_price * $item->temu_l30 * $item->temu_pft,
-                'roi' => $item->temu_roi
-            ],
-            'walmart' => [
-                'revenue' => $item->walmart_price * $item->walmart_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->walmart_l30,
-                'return' => $item->walmart_price * $item->walmart_l30 * $item->walmart_pft,
-                'roi' => $item->walmart_roi
-            ],
-            'ebay2' => [
-                'revenue' => $item->ebay2_price * $item->ebay2_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->ebay2_l30,
-                'return' => $item->ebay2_price * $item->ebay2_l30 * $item->ebay2_pft,
-                'roi' => $item->ebay2_roi
-            ],
-            'ebay3' => [
-                'revenue' => $item->ebay3_price * $item->ebay3_l30,
-                'investment' => ($item->LP + $item->SHIP) * $item->ebay3_l30,
-                'return' => $item->ebay3_price * $item->ebay3_l30 * $item->ebay3_pft,
-                'roi' => $item->ebay3_roi
-            ]
-        ];
-
-        return response()->json([
-            'data' => $analysis,
-            'status' => 200
-        ]);
-    }
 }

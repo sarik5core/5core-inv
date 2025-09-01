@@ -63,7 +63,7 @@
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .cell-with-tooltip:hover .cell-tooltip {
@@ -220,7 +220,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        
+
 
         /* Modal enhancements */
         .modal-xl .modal-body {
@@ -261,8 +261,8 @@
         }
 
         .market-summary {
-            background-color: rgba(0,0,0,0.02);
-            border-bottom: 1px solid rgba(0,0,0,0.08);
+            background-color: rgba(0, 0, 0, 0.02);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .summary-stats .badge {
@@ -284,13 +284,13 @@
 
         .modal-actions .btn-light-secondary {
             color: white;
-            background-color: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.2s;
         }
 
         .modal-actions .btn-light-secondary:hover {
-            background-color: rgba(255,255,255,0.2);
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         #ovl30Modal .table {
@@ -309,13 +309,13 @@
 
         #ovl30Modal .table tbody tr {
             background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
             transition: transform 0.2s;
         }
 
         #ovl30Modal .table tbody tr:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         }
 
         #ovl30Modal .table tbody td {
@@ -471,13 +471,15 @@
                     <h5 class="modal-title d-flex align-items-center text-dark">
                         <i class="bi bi-bar-chart-line-fill me-2"></i>
                         OVL30 Analysis
-                        <span id="ovl30SkuLabel" class="badge bg-info text-dark ms-2 animate__animated animate__fadeIn"></span>
+                        <span id="ovl30SkuLabel"
+                            class="badge bg-info text-dark ms-2 animate__animated animate__fadeIn"></span>
                     </h5>
                     <div class="modal-actions">
                         <button class="btn btn-sm btn-light-secondary me-2">
                             <i class="bi bi-download"></i> Export
                         </button>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="modal-body p-0">
@@ -486,7 +488,8 @@
                             <div class="market-summary p-3 bg-light border-bottom">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="summary-stats">
-                                        <span class="badge bg-success me-2">Active Markets: <span id="activeMarketsCount">0</span></span>
+                                        <span class="badge bg-success me-2">Active Markets: <span
+                                                id="activeMarketsCount">0</span></span>
                                         <span class="badge bg-info me-2">Avg L30: <span id="avgL30">0</span></span>
                                         <span class="badge bg-warning">Avg Profit: <span id="avgProfit">0%</span></span>
                                     </div>
@@ -513,6 +516,7 @@
     </div>
 @endsection
 @section('script')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.body.style.zoom = "95%";
@@ -538,19 +542,32 @@
             const SHIP = parseFloat(data.SHIP) || 0;
 
             // Calculate profits
-            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) * (parseFloat(data.amz_l30) || 0) : 0;
-            const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.74) - LP - SHIP) * (parseFloat(data.ebay_l30) || 0) : 0;
-            const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * (parseFloat(data.shopifyb2c_l30) || 0) : 0;
-            const macyProfit = data.macy_price ? ((parseFloat(data.macy_price) * 0.77) - LP - SHIP) * (parseFloat(data.macy_l30) || 0) : 0;
-            const reverbProfit = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * (parseFloat(data.reverb_l30) || 0) : 0;
-            const dobaProfit = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * (parseFloat(data.doba_l30) || 0) : 0;
-            const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.95) - LP - SHIP) * (parseFloat(data.temu_l30) || 0) : 0;
-            const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) * (parseFloat(data.wayfair_l30) || 0) : 0;
-            const ebay3Profit = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.76) - LP - SHIP) * (parseFloat(data.ebay3_l30) || 0) : 0;
-            const ebay2Profit = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.88) - LP - SHIP) * (parseFloat(data.ebay2_l30) || 0) : 0;
-            const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.70) - LP - SHIP) * (parseFloat(data.walmart_l30) || 0) : 0;
+            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) * (parseFloat(data
+                .amz_l30) || 0) : 0;
+            const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.73) - LP - SHIP) * (parseFloat(data
+                .ebay_l30) || 0) : 0;
+            const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * (
+                parseFloat(data.shopifyb2c_l30) || 0) : 0;
+            const macyProfit = data.macy_price ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) * (parseFloat(data
+                .macy_l30) || 0) : 0;
+            const reverbProfit = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * (parseFloat(data
+                .reverb_l30) || 0) : 0;
+            const dobaProfit = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * (parseFloat(data
+                .doba_l30) || 0) : 0;
+            const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.90) - LP - SHIP) * (parseFloat(data
+                .temu_l30) || 0) : 0;
+            const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) * (parseFloat(
+                data.wayfair_l30) || 0) : 0;
+            const ebay3Profit = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.72) - LP - SHIP) * (parseFloat(data
+                .ebay3_l30) || 0) : 0;
+            const ebay2Profit = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.81) - LP - SHIP) * (parseFloat(data
+                .ebay2_l30) || 0) : 0;
+            const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) * (parseFloat(
+                data.walmart_l30) || 0) : 0;
 
-            const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit + 
+
+
+            const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
                 dobaProfit + temuProfit + wayfairProfit + ebay3Profit + ebay2Profit + walmartProfit;
 
             return totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
@@ -562,18 +579,57 @@
             const SHIP = parseFloat(data.SHIP) || 0;
 
             // Calculate profits and revenue for each marketplace
-            const marketplaces = [
-                { price: data.amz_price, l30: data.amz_l30, percent: 0.71 },
-                { price: data.ebay_price, l30: data.ebay_l30, percent: 0.77 },
-                { price: data.shopifyb2c_price, l30: data.shopifyb2c_l30, percent: 0.75 },
-                { price: data.macy_price, l30: data.macy_l30, percent: 0.77 },
-                { price: data.reverb_price, l30: data.reverb_l30, percent: 0.84 },
-                { price: data.doba_price, l30: data.doba_l30, percent: 0.95 },
-                { price: data.temu_price, l30: data.temu_l30, percent: 0.95 },
-                { price: data.wayfair_price, l30: data.wayfair_l30, percent: 0.90 },
-                { price: data.ebay3_price, l30: data.ebay3_l30, percent: 0.76 },
-                { price: data.ebay2_price, l30: data.ebay2_l30, percent: 0.88 },
-                { price: data.walmart_price, l30: data.walmart_l30, percent: 0.70 }
+            const marketplaces = [{
+                    price: data.amz_price,
+                    l30: data.amz_l30,
+                    percent: 0.80
+                },
+                {
+                    price: data.ebay_price,
+                    l30: data.ebay_l30,
+                    percent: 0.73
+                },
+                {
+                    price: data.shopifyb2c_price,
+                    l30: data.shopifyb2c_l30,
+                    percent: 0.75
+                },
+                {
+                    price: data.macy_price,
+                    l30: data.macy_l30,
+                    percent: 0.76
+                },
+                {
+                    price: data.reverb_price,
+                    l30: data.reverb_l30,
+                    percent: 0.84
+                },
+                {
+                    price: data.doba_price,
+                    l30: data.doba_l30,
+                    percent: 0.95
+                },
+                {
+                    price: data.temu_price,
+                    l30: data.temu_l30,
+                    percent: 0.90
+                },
+              
+                {
+                    price: data.ebay3_price,
+                    l30: data.ebay3_l30,
+                    percent: 0.72
+                },
+                {
+                    price: data.ebay2_price,
+                    l30: data.ebay2_l30,
+                    percent: 0.81
+                },
+                {
+                    price: data.walmart_price,
+                    l30: data.walmart_l30,
+                    percent: 0.80
+                }
             ];
 
             let totalProfit = 0;
@@ -690,16 +746,16 @@
                     formatter: function(cell) {
                         const value = cell.getValue() || 0;
                         const element = document.createElement('div');
-                        element.className = 'inventory-cell cell-with-tooltip ' + 
+                        element.className = 'inventory-cell cell-with-tooltip ' +
                             (value < 10 ? 'low' : value < 30 ? 'medium' : 'high');
                         element.textContent = value;
-                        
+
                         const tooltip = document.createElement('div');
                         tooltip.className = 'cell-tooltip';
-                        tooltip.textContent = value < 10 ? 'Low Stock!' : 
-                                            value < 30 ? 'Medium Stock' : 'Good Stock Level';
+                        tooltip.textContent = value < 10 ? 'Low Stock!' :
+                            value < 30 ? 'Medium Stock' : 'Good Stock Level';
                         element.appendChild(tooltip);
-                        
+
                         return element;
                     }
                 },
@@ -710,16 +766,16 @@
                     formatter: function(cell) {
                         const value = cell.getValue() || 0;
                         const element = document.createElement('div');
-                        element.className = 'dil-cell cell-with-tooltip ' + 
+                        element.className = 'dil-cell cell-with-tooltip ' +
                             (value > 0.5 ? 'warning' : value > 0 ? 'good' : '');
                         element.textContent = (value * 100).toFixed(2) + '%';
-                        
+
                         const tooltip = document.createElement('div');
                         tooltip.className = 'cell-tooltip';
-                        tooltip.textContent = value > 0.5 ? 'High DIL Rate!' : 
-                                            value > 0 ? 'Good DIL Rate' : 'No DIL';
+                        tooltip.textContent = value > 0.5 ? 'High DIL Rate!' :
+                            value > 0 ? 'Good DIL Rate' : 'No DIL';
                         element.appendChild(tooltip);
-                        
+
                         return element;
                     }
                 },
@@ -765,21 +821,53 @@
                     hozAlign: "right",
                     formatter: function(cell) {
                         const data = cell.getRow().getData();
-                        
+
                         // Calculate weighted average price
                         const calculateAvgPrice = () => {
-                            const marketplaces = [
-                                { price: data.amz_price, l30: data.amz_l30 },
-                                { price: data.ebay_price, l30: data.ebay_l30 },
-                                { price: data.macy_price, l30: data.macy_l30 },
-                                { price: data.reverb_price, l30: data.reverb_l30 },
-                                { price: data.doba_price, l30: data.doba_l30 },
-                                { price: data.temu_price, l30: data.temu_l30 },
-                                { price: data.wayfair_price, l30: data.wayfair_l30 },
-                                { price: data.ebay3_price, l30: data.ebay3_l30 },
-                                { price: data.ebay2_price, l30: data.ebay2_l30 },
-                                { price: data.walmart_price, l30: data.walmart_l30 },
-                                { price: data.shopify_price, l30: data.shopify_l30 }
+                            const marketplaces = [{
+                                    price: data.amz_price,
+                                    l30: data.amz_l30
+                                },
+                                {
+                                    price: data.ebay_price,
+                                    l30: data.ebay_l30
+                                },
+                                {
+                                    price: data.macy_price,
+                                    l30: data.macy_l30
+                                },
+                                {
+                                    price: data.reverb_price,
+                                    l30: data.reverb_l30
+                                },
+                                {
+                                    price: data.doba_price,
+                                    l30: data.doba_l30
+                                },
+                                {
+                                    price: data.temu_price,
+                                    l30: data.temu_l30
+                                },
+                                {
+                                    price: data.wayfair_price,
+                                    l30: data.wayfair_l30
+                                },
+                                {
+                                    price: data.ebay3_price,
+                                    l30: data.ebay3_l30
+                                },
+                                {
+                                    price: data.ebay2_price,
+                                    l30: data.ebay2_l30
+                                },
+                                {
+                                    price: data.walmart_price,
+                                    l30: data.walmart_l30
+                                },
+                                {
+                                    price: data.shopify_price,
+                                    l30: data.shopify_l30
+                                }
                             ];
 
                             let totalWeightedPrice = 0;
@@ -840,7 +928,7 @@
                     formatter: function(cell) {
                         const data = cell.getRow().getData();
                         const l30 = data.shopifyb2c_l30 || 0;
-                        
+
                         // Determine button color based on L30 value
                         let btnClass;
                         if (l30 === 0) {
@@ -852,7 +940,7 @@
                         } else {
                             btnClass = 'btn-success'; // green for good
                         }
-                        
+
                         return `<button class="btn btn-sm ${btnClass} rounded-pill px-3">
                             <i class="bi bi-bar-chart-line me-1"></i>${l30}
                         </button>`;
@@ -863,80 +951,7 @@
                 },
 
                 /* === MARKETPLACE COLUMNS (HIDDEN, but kept for modal data) === */
-                {
-                    title: "Amazon Price",
-                    field: "amz_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "AMZ L30",
-                    field: "amz_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "AMZ L60",
-                    field: "amz_l60",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-
-                {
-                    title: "eBay Price",
-                    field: "ebay_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "eBay L30",
-                    field: "ebay_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-
-                {
-                    title: "Doba Price",
-                    field: "doba_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "Doba L30",
-                    field: "doba_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "Doba L60",
-                    field: "doba_l60",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-
-                {
-                    title: "Profit %",
-                    field: "sprofit_percent",
-                    hozAlign: "right",
-                    visible: false
-                },
+               
                 {
                     title: "AVG ROI %",
                     field: "avgRoi",
@@ -966,25 +981,29 @@
                             (parseFloat(data.walmart_l30) || 0);
 
                         // Calculate profit for each marketplace
-                        const SHIP = parseFloat(data.SHIP) || 0;
-                        const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) * (parseFloat(data.amz_l30) || 0) : 0;
-                        const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.74) - LP - SHIP) * (parseFloat(data.ebay_l30) || 0) : 0;
-                        const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * (parseFloat(data.shopifyb2c_l30) || 0) : 0;
-                        const macyProfit = data.macy_price ? ((parseFloat(data.macy_price) * 0.77) - LP - SHIP) * (parseFloat(data.macy_l30) || 0) : 0;
-                        const reverbProfit = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * (parseFloat(data.reverb_l30) || 0) : 0;
-                        const dobaProfit = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * (parseFloat(data.doba_l30) || 0) : 0;
-                        const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.95) - LP - SHIP) * (parseFloat(data.temu_l30) || 0) : 0;
-                        const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) * (parseFloat(data.wayfair_l30) || 0) : 0;
-                        const ebay3Profit = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.76) - LP - SHIP) * (parseFloat(data.ebay3_l30) || 0) : 0;
-                        const ebay2Profit = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.88) - LP - SHIP) * (parseFloat(data.ebay2_l30) || 0) : 0;
-                        const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.70) - LP - SHIP) * (parseFloat(data.walmart_l30) || 0) : 0;
+                       const SHIP = parseFloat(data.SHIP) || 0;
 
-                        const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit + 
-                            dobaProfit + temuProfit + wayfairProfit + ebay3Profit + ebay2Profit + walmartProfit;
+                    const amzProfit     = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) : 0;
+                    const ebayProfit    = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.73) - LP - SHIP) : 0;
+                    const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) : 0;
+                    const macyProfit    = data.macy_price ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) : 0;
+                    const reverbProfit  = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) : 0;
+                    const dobaProfit    = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) : 0;
+                    const temuProfit    = data.temu_price ? ((parseFloat(data.temu_price) * 0.90) - LP - SHIP) : 0;
+                    const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) : 0;
+                    const ebay3Profit   = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.72) - LP - SHIP) : 0;
+                    const ebay2Profit   = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.81) - LP - SHIP) : 0;
+                    const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) : 0;
+
+
+                        const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
+                            reverbProfit +
+                            dobaProfit + temuProfit + wayfairProfit + ebay3Profit + ebay2Profit +
+                            walmartProfit;
 
                         // Calculate ROI: (Total Profit / Total L30) / LP
                         const roi = totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
-                        
+
                         // Style based on ROI percentage
                         let bgColor, textColor;
                         if (roi < 15) {
@@ -1009,7 +1028,7 @@
                         element.style.borderRadius = '4px';
                         element.style.fontWeight = '600';
                         element.style.textAlign = 'center';
-                        
+
                         return element;
                     },
                     visible: true
@@ -1037,11 +1056,11 @@
                     },
                     formatter: function(cell) {
                         const data = cell.getRow().getData();
-                        
+
                         // Calculate profits per site using L30
                         const LP = parseFloat(data.LP) || 0;
                         const SHIP = parseFloat(data.SHIP) || 0;
-                        
+
                         // Get price and L30 values for each marketplace
                         const amzPrice = parseFloat(data.amz_price) || 0;
                         const ebayPrice = parseFloat(data.ebay_price) || 0;
@@ -1054,7 +1073,7 @@
                         const ebay3Price = parseFloat(data.ebay3_price) || 0;
                         const ebay2Price = parseFloat(data.ebay2_price) || 0;
                         const walmartPrice = parseFloat(data.walmart_price) || 0;
-                        
+
                         const amzL30 = parseFloat(data.amz_l30) || 0;
                         const ebayL30 = parseFloat(data.ebay_l30) || 0;
                         const shopifyL30 = parseFloat(data.shopifyb2c_l30) || 0;
@@ -1068,25 +1087,27 @@
                         const walmartL30 = parseFloat(data.walmart_l30) || 0;
 
                         // Calculate profit for each marketplace
-                        const amzProfit = ((amzPrice * 0.80) - LP - SHIP) * amzL30;
-                        const ebayProfit = ((ebayPrice * 0.74) - LP - SHIP) * ebayL30;
-                        const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) * shopifyL30;
-                        const macyProfit = ((macyPrice * 0.77) - LP - SHIP) * macyL30;
-                        const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) * reverbL30;
-                        const dobaProfit = ((dobaPrice * 0.95) - LP - SHIP) * dobaL30;
-                        const temuProfit = ((temuPrice * 0.95) - LP - SHIP) * temuL30;
-                        const wayfairProfit = ((wayfairPrice * 0.90) - LP - SHIP) * wayfairL30;
-                        const ebay3Profit = ((ebay3Price * 0.76) - LP - SHIP) * ebay3L30;
-                        const ebay2Profit = ((ebay2Price * 0.88) - LP - SHIP) * ebay2L30;
-                        const walmartProfit = ((walmartPrice * 0.70) - LP - SHIP) * walmartL30;
+                        const amzProfit = ((amzPrice * 0.80) - LP - SHIP) ;
+                        const ebayProfit = ((ebayPrice * 0.73) - LP - SHIP) ;
+                        const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) ;
+                        const macyProfit = ((macyPrice * 0.76) - LP - SHIP) ;
+                        const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) ;
+                        const dobaProfit = ((dobaPrice * 0.95) - LP - SHIP) ;
+                        const temuProfit = ((temuPrice * 0.90) - LP - SHIP);
+                        const ebay3Profit = ((ebay3Price * 0.72) - LP - SHIP);
+                        const ebay2Profit = ((ebay2Price * 0.81) - LP - SHIP) ;
+                        const walmartProfit = ((walmartPrice * 0.80) - LP - SHIP) ;
+
+
+
 
                         // Calculate total profit
-                        const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + 
-                            reverbProfit + dobaProfit + temuProfit + wayfairProfit + 
+                        const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
+                            reverbProfit + dobaProfit + temuProfit  +
                             ebay3Profit + ebay2Profit + walmartProfit;
 
                         // Calculate total revenue
-                        const totalRevenue = 
+                        const totalRevenue =
                             (amzPrice * amzL30) +
                             (ebayPrice * ebayL30) +
                             (shopifyPrice * shopifyL30) +
@@ -1094,14 +1115,13 @@
                             (reverbPrice * reverbL30) +
                             (dobaPrice * dobaL30) +
                             (temuPrice * temuL30) +
-                            (wayfairPrice * wayfairL30) +
                             (ebay3Price * ebay3L30) +
                             (ebay2Price * ebay2L30) +
                             (walmartPrice * walmartL30);
 
                         // Calculate average profit percentage and round to nearest integer
-                        const avgPftPercent = totalRevenue > 0 ? 
-                            Math.round((totalProfit / totalRevenue) * 100) : 0;
+                     const avgPftPercent = Math.round((totalProfit / totalRevenue) * 100) || 0;
+
 
                         // Style based on profit percentage
                         let bgColor, textColor;
@@ -1127,185 +1147,12 @@
                         element.style.borderRadius = '4px';
                         element.style.fontWeight = '600';
                         element.style.textAlign = 'center';
-                        
+
                         return element;
                     }
                 },
 
-                {
-                    title: "Macy Price",
-                    field: "macy_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "Macy L30",
-                    field: "macy_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "Macy PFT%",
-                    field: "macy_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
-                {
-                    title: "Macy ROI%",
-                    field: "macy_roi",
-                    hozAlign: "right",
-                    visible: false
-                },
-
-                {
-                    title: "Reverb Price",
-                    field: "reverb_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "Reverb L30",
-                    field: "reverb_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "Reverb PFT%",
-                    field: "reverb_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
-
-                {
-                    title: "Temu Price",
-                    field: "temu_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "Temu L30",
-                    field: "temu_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "Temu PFT%",
-                    field: "temu_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
-
-                {
-                    title: "Walmart Price",
-                    field: "walmart_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "Walmart L30",
-                    field: "walmart_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "Walmart PFT%",
-                    field: "walmart_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
-
-                {
-                    title: "eBay2 Price",
-                    field: "ebay2_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "eBay2 L30",
-                    field: "ebay2_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "eBay2 PFT%",
-                    field: "ebay2_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
-
-                {
-                    title: "eBay3 Price",
-                    field: "ebay3_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "eBay3 L30",
-                    field: "ebay3_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "eBay3 PFT%",
-                    field: "ebay3_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
-
-
-                {
-                    title: "Shopify Price",
-                    field: "shopifyb2c_price",
-                    hozAlign: "right",
-                    formatter: "money",
-                    formatterParams: {
-                        precision: 2
-                    },
-                    visible: false
-                },
-                {
-                    title: "Shopify L30",
-                    field: "shopifyb2c_l30",
-                    hozAlign: "right",
-                    formatter: "number",
-                    visible: false
-                },
-                {
-                    title: "shopify PFT%",
-                    field: "shopifyb2c_pft",
-                    hozAlign: "right",
-                    visible: false
-                },
+             
             ],
 
             ajaxResponse: function(url, params, response) {
@@ -1391,388 +1238,6 @@
         document.addEventListener("DOMContentLoaded", function() {
             buildColumnDropdown();
 
-            // Initialize Chart.js for analysis charts
-            function initializeCharts(profitData, roiData) {
-                const profitCtx = document.getElementById('profitChart').getContext('2d');
-                const roiCtx = document.getElementById('roiChart').getContext('2d');
-
-                new Chart(profitCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(profitData),
-                        datasets: [{
-                            label: 'Profit %',
-                            data: Object.values(profitData),
-                            backgroundColor: '#28a745',
-                            borderColor: '#218838',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Profit Percentage'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                new Chart(roiCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(roiData),
-                        datasets: [{
-                            label: 'ROI %',
-                            data: Object.values(roiData),
-                            backgroundColor: '#007bff',
-                            borderColor: '#0056b3',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'ROI Percentage'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            // Utility: percent formatting (0.23 -> "23.00%")
-            function fmtPct(v) {
-                if (v === null || v === undefined || v === "") return "-";
-                const num = parseFloat(v);
-                if (isNaN(num)) return "-";
-                // if already in 0-1 form like 0.23:
-                if (Math.abs(num) <= 1) return (num * 100).toFixed(2) + "%";
-                // if already percent like 23:
-                return num.toFixed(2) + "%";
-            }
-
-            // Utility: money formatting
-            function fmtMoney(v) {
-                if (v === null || v === undefined || v === "") return "-";
-                const num = parseFloat(v);
-                if (isNaN(num)) return "-";
-                return "$" + num.toFixed(2);
-            }
-
-            // Build an HTML table for all marketplaces from row data
-            function buildOVL30Table(data) {
-                const rows = [{
-                        label: "Amazon",
-                        prefix: "amz",
-                        fields: {
-                            price: "amz_price",
-                            l30: "amz_l30",
-                            l60: "amz_l60",
-                            pft: "amz_pft",
-                            roi: "amz_roi"
-                        }
-                    },
-                    {
-                        label: "eBay",
-                        prefix: "ebay",
-                        fields: {
-                            price: "ebay_price",
-                            l30: "ebay_l30",
-                            l60: "ebay_l60",
-                            pft: "ebay_pft",
-                            roi: "ebay_roi"
-                        }
-                    },
-                    {
-                        label: "Doba",
-                        prefix: "doba",
-                        fields: {
-                            price: "doba_price",
-                            l30: "doba_l30",
-                            l60: "doba_l60",
-                            pft: "doba_pft",
-                            roi: "doba_roi"
-                        }
-                    },
-                    {
-                        label: "Macy",
-                        prefix: "macy",
-                        fields: {
-                            price: "macy_price",
-                            l30: "macy_l30",
-                            l60: "macy_l60",
-                            pft: "macy_pft",
-                            roi: "macy_roi"
-                        }
-                    },
-                    {
-                        label: "Reverb",
-                        prefix: "reverb",
-                        fields: {
-                            price: "reverb_price",
-                            l30: "reverb_l30",
-                            l60: "reverb_l60",
-                            pft: "reverb_pft",
-                            roi: "reverb_roi"
-                        }
-                    },
-                    {
-                        label: "Temu",
-                        prefix: "temu",
-                        fields: {
-                            price: "temu_price",
-                            l30: "temu_l30",
-                            l60: "temu_l60",
-                            pft: "temu_pft",
-                            roi: "temu_roi"
-                        }
-                    },
-                    {
-                        label: "Walmart",
-                        prefix: "walmart",
-                        fields: {
-                            price: "walmart_price",
-                            l30: "walmart_l30",
-                            l60: "walmart_l60",
-                            pft: "walmart_pft",
-                            roi: "walmart_roi"
-                        }
-                    },
-                    {
-                        label: "eBay2",
-                        prefix: "ebay2",
-                        fields: {
-                            price: "ebay2_price",
-                            l30: "ebay2_l30",
-                            l60: "ebay2_l60",
-                            pft: "ebay2_pft",
-                            roi: "ebay2_roi"
-                        }
-                    },
-                    {
-                        label: "eBay3",
-                        prefix: "ebay3",
-                        fields: {
-                            price: "ebay3_price",
-                            l30: "ebay3_l30",
-                            l60: "ebay3_l60",
-                            pft: "ebay3_pft",
-                            roi: "ebay3_roi"
-                        }
-                    },
-
-                    {
-                        label: "Shopify B2C",
-                        prefix: "shopifyb2c",
-                        fields: {
-                            price: "shopifyb2c_price",
-                            l30: "shopifyb2c_l30",
-                            l60: "shopifyb2c_l60",
-                            pft: "shopifyb2c_pft",
-                            roi: "shopifyb2c_roi"
-                        }
-                    }
-                ];
-
-                let html = `
-                    <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Marketplace</th>
-                            <th>Price</th>
-                            <th>L30</th>
-                            <th>L60</th>
-                            <th>PFT%</th>
-                            <th>ROI%</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                rows.forEach(r => {
-                    const price = data[r.fields.price];
-                    const l30 = data[r.fields.l30];
-                    const l60 = data[r.fields.l60];
-                    const pft = data[r.fields.pft];
-                    const roi = data[r.fields.roi];
-
-                    // Skip completely empty marketplace rows (no price and no L30/L60)
-                    const hasAny = price != null || l30 != null || l60 != null || pft != null || roi !=
-                        null;
-                    if (!hasAny) return;
-
-                    html += `
-                <tr>
-                    <td class="fw-semibold">${r.label}</td>
-                    <td>${fmtMoney(price)}</td>
-                    <td>${l30 ?? "-"}</td>
-                    <td>${l60 ?? "-"}</td>
-                    <td>${fmtPct(pft)}</td>
-                    <td>${fmtPct(roi)}</td>
-                </tr>
-                `;
-                });
-
-                html += `</tbody></table></div>`;
-                return html;
-            }
-
-            function showOVL30Modal(row) {
-                const data = row.getData();
-                document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `SKU: ${data.SKU}` : "";
-                document.getElementById('ovl30Content').innerHTML = buildOVL30Table(data);
-                const modal = new bootstrap.Modal(document.getElementById('ovl30Modal'));
-                modal.show();
-            }
-
-            // Show L30 Analysis Modal
-            window.showL30Modal = function(row) {
-                const data = row.getData();
-                const modalContent = generateL30Analysis(data);
-                document.getElementById('l30ModalBody').innerHTML = modalContent;
-                const modal = new bootstrap.Modal(document.getElementById('l30Modal'));
-                modal.show();
-            };
-
-            // Show Site Analysis Modal
-            window.showSiteAnalysisModal = function(row) {
-                const data = row.getData();
-                const analysisData = generateSiteAnalysis(data);
-                document.getElementById('siteAnalysisTable').innerHTML = analysisData.tableContent;
-                initializeCharts(analysisData.profitData, analysisData.roiData);
-                const modal = new bootstrap.Modal(document.getElementById('siteAnalysisModal'));
-                modal.show();
-            };
-
-            // Show Profit Analysis Modal
-            window.showProfitModal = function(row) {
-                const data = row.getData();
-                const modalContent = generateProfitAnalysis(data);
-                document.getElementById('profitModalBody').innerHTML = modalContent;
-                const modal = new bootstrap.Modal(document.getElementById('profitModal'));
-                modal.show();
-            };
-
-            // Show ROI Analysis Modal
-            window.showRoiModal = function(row) {
-                const data = row.getData();
-                const modalContent = generateRoiAnalysis(data);
-                document.getElementById('roiModalBody').innerHTML = modalContent;
-                const modal = new bootstrap.Modal(document.getElementById('roiModal'));
-                modal.show();
-            };
-
-            // Helper function to generate L30 analysis content
-            function generateL30Analysis(data) {
-                // Generate L30 analysis table content
-                let content = '<table class="table table-bordered"><thead><tr>';
-                content +=
-                    '<th>Channel</th><th>L30</th><th>L60</th><th>Profit %</th><th>ROI %</th></tr></thead><tbody>';
-
-                // Add rows for each channel
-                const channels = ['Amazon', 'eBay', 'Doba', 'Macy', 'Reverb', 'Temu', 'Walmart', 'eBay2', 'eBay3 ',
-                    'Shopify B2C'
-                ];
-                channels.forEach(channel => {
-                    const prefix = channel.toLowerCase().replace(/\d+$/, '');
-                    if (data[`${prefix}_l30`] || data[`${prefix}_l60`]) {
-                        content += `<tr>
-                        <td>${channel}</td>
-                        <td>${data[`${prefix}_l30`] || 0}</td>
-                        <td>${data[`${prefix}_l60`] || 0}</td>
-                        <td>${formatPercent(data[`${prefix}_pft`])}</td>
-                        <td>${formatPercent(data[`${prefix}_roi`])}</td>
-                    </tr>`;
-                    }
-                });
-
-                content += '</tbody></table>';
-                return content;
-            }
-
-
-
-            // Helper function to generate site analysis data
-            function generateSiteAnalysis(data) {
-                const channels = ['Amazon', 'eBay', 'Doba', 'Macy', 'Reverb', 'Temu', 'Walmart', 'eBay2', 'eBay3 ',
-                    'Shopify B2C'
-                ];
-                let tableContent = '<table class="table table-bordered"><thead><tr>';
-                tableContent +=
-                    '<th>Channel</th><th>Price</th><th>Sales L30</th><th>Profit</th><th>ROI</th></tr></thead><tbody>';
-
-                const profitData = {};
-                const roiData = {};
-
-                channels.forEach(channel => {
-                    const prefix = channel.toLowerCase().replace(/\d+$/, '');
-                    if (data[`${prefix}_price`]) {
-                        tableContent += `<tr>
-                        <td>${channel}</td>
-                        <td>$${data[`${prefix}_price`].toFixed(2)}</td>
-                        <td>${data[`${prefix}_l30`] || 0}</td>
-                        <td>${formatPercent(data[`${prefix}_pft`])}</td>
-                        <td>${formatPercent(data[`${prefix}_roi`])}</td>
-                    </tr>`;
-
-                        if (data[`${prefix}_pft`]) profitData[channel] = data[`${prefix}_pft`] * 100;
-                        if (data[`${prefix}_roi`]) roiData[channel] = data[`${prefix}_roi`] * 100;
-                    }
-                });
-
-                tableContent += '</tbody></table>';
-
-                return {
-                    tableContent,
-                    profitData,
-                    roiData
-                };
-            }
-
-
-            // Add click handlers for the table cells
-            table.on("cellClick", function(e, cell) {
-                const column = cell.getColumn();
-                const row = cell.getRow();
-
-                if (column.getField().includes('l30')) {
-                    showL30Modal(row);
-                } else if (column.getField().includes('pft')) {
-                    showProfitModal(row);
-                } else if (column.getField().includes('roi')) {
-                    showRoiModal(row);
-                }
-            });
-
-
-
-            // Toggle column from dropdown
-            document.getElementById("column-dropdown-menu").addEventListener("change", function(e) {
-                if (e.target.type === "checkbox") {
-                    const field = e.target.value;
-                    const col = table.getColumn(field);
-                    if (col) {
-                        if (e.target.checked) {
-                            col.show();
-                        } else {
-                            col.hide();
-                        }
-                    }
-                }
-            });
-
-
-
-
 
             // Play button functionality
             document.getElementById('play-auto').addEventListener('click', () => {
@@ -1811,13 +1276,15 @@
 
     <script>
         // Helper: percent formatting
-        function fmtPct(v) {
-            if (v === null || v === undefined || v === "") return "-";
-            const num = parseFloat(v);
-            if (isNaN(num)) return "-";
-            if (Math.abs(num) <= 1) return (num * 100).toFixed(2) + "%";
-            return num.toFixed(2) + "%";
-        }
+function fmtPct(v) {
+    if (v === null || v === undefined || v === "") return "-";
+    const num = parseFloat(v);
+    if (isNaN(num)) return "-";
+
+    // हमेशा ×100 करके round करें
+    return Math.round(num * 100) + "%";
+}
+
 
         // Helper: money formatting
         function fmtMoney(v) {
@@ -1871,17 +1338,25 @@
                 }
             ];
 
-                    let html = `
+            let html = `
             <div class="table-responsive">
             <table class="table table-sm table-bordered align-middle">
                 <thead class="table-light">
                 <tr>
                     <th>Marketplace</th>
                     <th>Price</th>
+                    <th>LMP</th>
                     <th>L30</th>
                     <th>L60</th>
+                    <th>Views L30</th>
+                    <th>CVR</th>
                     <th>Profit %</th>
                     <th>ROI %</th>
+                    <th>S Price </th>
+                    <th>S PFT %</th>
+                    <th>S ROI %</th>
+                    <th>Action</th>
+                  
                 </tr>
                 </thead>
                 <tbody>
@@ -1893,23 +1368,23 @@
                 const l60 = data[`${r.prefix}_l60`];
                 const pft = data[`${r.prefix}_pft`];
                 const roi = data[`${r.prefix}_roi`];
+                const cvr = data[`${r.prefix}_cvr`];
 
-                // अगर उस marketplace का कोई data नहीं है तो skip
                 const hasAny = price != null || l30 != null || l60 != null || pft != null || roi != null;
                 if (!hasAny) return;
 
                 const getTrendIndicator = (current, previous) => {
-                if (!current || !previous) return '';
-                const trend = current > previous ? 'positive' : current < previous ? 'negative' : 'neutral';
-                const arrow = trend === 'positive' ? '↑' : trend === 'negative' ? '↓' : '→';
-                return `<span class="trend ${trend}">${arrow}</span>`;
-            };
+                    if (!current || !previous) return '';
+                    const trend = current > previous ? 'positive' : current < previous ? 'negative' : 'neutral';
+                    const arrow = trend === 'positive' ? '↑' : trend === 'negative' ? '↓' : '→';
+                    return `<span class="trend ${trend}">${arrow}</span>`;
+                };
 
-            const l30Trend = getTrendIndicator(l30, l60);
-            const pftClass = pft > 20 ? 'positive' : pft < 10 ? 'negative' : 'neutral';
-            const roiClass = roi > 30 ? 'positive' : roi < 15 ? 'negative' : 'neutral';
+                const l30Trend = getTrendIndicator(l30, l60);
+                const pftClass = pft > 20 ? 'positive' : pft < 10 ? 'negative' : 'neutral';
+                const roiClass = roi > 30 ? 'positive' : roi < 15 ? 'negative' : 'neutral';
 
-            html += `
+                html += `
           <tr>
             <td>
                 <div class="d-flex align-items-center">
@@ -1924,6 +1399,11 @@
             </td>
             <td>
                 <div class="value-indicator">
+                    ${r.prefix === 'amz' || r.prefix === 'ebay' ? fmtMoney(data.price_lmpa) : '-'}
+                </div>
+            </td>
+            <td>
+                <div class="value-indicator">
                     ${l30 ?? "-"}
                     ${l30Trend}
                 </div>
@@ -1934,6 +1414,27 @@
                 </div>
             </td>
             <td>
+                <div class="value-indicator">
+                    ${r.prefix === 'amz' ? (data.sessions_l30 ?? "-") : r.prefix === 'ebay' ? (data.ebay_views ?? "-") : r.prefix === 'ebay3' ? (data.ebay3_views ?? "-") : "-"}
+                </div>
+            </td>
+            <td>
+                <div class="value-indicator">
+                    ${(() => {
+                        if (r.prefix === 'amz' && cvr) {
+                            return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                        } else if (r.prefix === 'ebay' && cvr) {
+                            return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                        } else if (r.prefix === 'ebay3' && cvr) {
+                            return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                        }
+
+                        return "No Views";
+                    })()} 
+                </div>
+            </td>
+
+            <td>
                 <div class="value-indicator ${pftClass}">
                     ${fmtPct(pft)}
                 </div>
@@ -1941,6 +1442,27 @@
             <td>
                 <div class="value-indicator ${roiClass}">
                     ${fmtPct(roi)}
+                </div>
+            </td>
+
+            <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" class="form-control form-control-sm s-price" value="${data.sprice}" style="width: 65px;" step="any"
+                         data-sku="${data.SKU}" data-type="${r.prefix}">
+                        <button class="btn btn-primary btn-sm d-flex align-items-center saveSpriceMarketPlace" type="button"
+                         data-sku="${data.SKU}" data-type="${r.prefix}" data-sprice="${data.sprice}">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </td>
+             <td>
+                <div class="value-indicator ${roiClass}">
+                  
+                </div>
+            </td>
+             <td>
+                <div class="value-indicator ${roiClass}">
+                   
                 </div>
             </td>
           </tr>
@@ -2006,5 +1528,39 @@
 
             modal.show();
         }
+
+        $(document).on('blur', '.s-price', function() {
+            const sprice = parseInt($(this).val()) || 0;
+            const sku = $(this).data('sku');
+            const type = $(this).data('type');
+
+            if (!sku || !type) return;
+
+            $.ajax({
+                url: '/pricing-master/save-sprice',
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    sku: sku,
+                    type: type,
+                    sprice: sprice
+                },
+                success: function(res) {
+                    if(res.status === 200) {
+                        alert('S Price saved successfully');
+                    } else {
+                        alert('Error saving S Price:', res.message);
+                    }
+                },
+                error: function(err) {
+                    console.error('Error saving S Price:', err);
+                }
+            });
+        });
+
+        $(document).on('click', '.saveSpriceMarketPlace', function (){
+            alert('Please click outside the input box to save the S Price.');
+        });
+
     </script>
 @endsection

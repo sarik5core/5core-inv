@@ -22,18 +22,21 @@ class AmazonSbBudgetController extends Controller
 
     public function getAccessToken()
     {
-        $client = new Client();
-        $response = $client->post('https://api.amazon.com/auth/o2/token', [
-            'form_params' => [
-                'grant_type' => 'refresh_token',
-                'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
-                'client_id' => env('AMAZON_ADS_CLIENT_ID'),
-                'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
-            ]
-        ]);
+        return cache()->remember('amazon_ads_access_token', 55 * 60, function () {
+            $client = new Client();
 
-        $data = json_decode($response->getBody(), true);
-        return $data['access_token'];
+            $response = $client->post('https://api.amazon.com/auth/o2/token', [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
+                    'client_id' => env('AMAZON_ADS_CLIENT_ID'),
+                    'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
+                ]
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return $data['access_token'];
+        });
     }
 
     public function getAdGroupsByCampaigns(array $campaignIds)
@@ -87,6 +90,9 @@ class AmazonSbBudgetController extends Controller
 
     public function updateCampaignKeywordsBid(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $campaignIds = $request->input('campaign_ids', []);
         $newBids = $request->input('bids', []);
 
@@ -133,6 +139,12 @@ class AmazonSbBudgetController extends Controller
             ]);
         }
 
+        $allKeywords = collect($allKeywords)
+            ->unique('keywordId')
+            ->values()
+            ->toArray();
+
+
         $accessToken = $this->getAccessToken();
         $client = new Client();
         $url = 'https://advertising-api.amazon.com/sb/keywords';
@@ -149,6 +161,8 @@ class AmazonSbBudgetController extends Controller
                         'Content-Type' => 'application/json',
                     ],
                     'json' => $chunk,
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);
@@ -318,6 +332,24 @@ class AmazonSbBudgetController extends Controller
 
         $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
+        $amazonSpCampaignReportsL30 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $amazonSpCampaignReportsL15 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L15')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
         $amazonSpCampaignReportsL7 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
@@ -344,6 +376,24 @@ class AmazonSbBudgetController extends Controller
 
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
+
+            $matchedCampaignL15 = $amazonSpCampaignReportsL15->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
                 $cleanName = strtoupper(trim($item->campaignName));
@@ -394,6 +444,23 @@ class AmazonSbBudgetController extends Controller
             $row['l7_cpc']   = $costPerClick7;
             $row['l1_spend'] = $matchedCampaignL1->cost ?? 0;
             $row['l1_cpc']   = $costPerClick1;
+
+
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaign30->sales ?? 0) > 0)
+                ? round(($matchedCampaignL30->cost / $matchedCampaignL30->sales) * 100, 2)
+                : null;
+
+            $row['acos_L15'] = ($matchedCampaignL15 && ($matchedCampaignL15->sales ?? 0) > 0)
+                ? round(($matchedCampaignL15->cost / $matchedCampaignL15->sales) * 100, 2)
+                : null;
+
+            $row['acos_L7'] = ($matchedCampaignL7 && ($matchedCampaignL7->sales ?? 0) > 0)
+                ? round(($matchedCampaignL7->cost / $matchedCampaignL7->sales) * 100, 2)
+                : null;
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+            $row['clicks_L15'] = $matchedCampaignL15->clicks ?? 0;
+            $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
             $row['NR'] = '';
