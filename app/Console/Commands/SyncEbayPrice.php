@@ -28,25 +28,20 @@ class SyncEbayPrice extends Command
                 ->where('price', '>', 0)
                 ->groupBy('sku');
 
+            $subQuery = DB::table('5core_repricer.lmp_data')
+                ->select('sku', DB::raw('MIN(price) as price'))
+                ->groupBy('sku');
+
             $updated = DB::table('5coreinventory.ebay_metrics as a')
                 ->joinSub($subQuery, 'l', function ($join) {
                     $join->on('a.sku', '=', 'l.sku');
                 })
-                ->where(function ($q) {
-                    $q->whereColumn('a.price_lmpa', '<>', 'l.price')
-                        ->orWhere(function ($sub) {
-                            $sub->whereNull('a.price_lmpa')
-                                ->whereNotNull('l.price');
-                        })
-                        ->orWhere(function ($sub) {
-                            $sub->whereNotNull('a.price_lmpa')
-                                ->whereNull('l.price');
-                        });
-                })
                 ->update([
-                    'a.price_lmpa' => DB::raw('l.price'),
-                    'a.updated_at' => now(),
+                    'price_lmpa' => DB::raw('l.price'),
+                    'updated_at' => now(),
                 ]);
+
+
 
             if ($updated) {
                 $this->info("✅ {$updated} rows updated successfully.");

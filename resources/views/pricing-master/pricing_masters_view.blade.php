@@ -516,6 +516,7 @@
     </div>
 @endsection
 @section('script')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.body.style.zoom = "95%";
@@ -581,12 +582,12 @@
             const marketplaces = [{
                     price: data.amz_price,
                     l30: data.amz_l30,
-                    percent: 0.71
+                    percent: 0.80
                 },
                 {
                     price: data.ebay_price,
                     l30: data.ebay_l30,
-                    percent: 0.77
+                    percent: 0.73
                 },
                 {
                     price: data.shopifyb2c_price,
@@ -596,7 +597,7 @@
                 {
                     price: data.macy_price,
                     l30: data.macy_l30,
-                    percent: 0.77
+                    percent: 0.76
                 },
                 {
                     price: data.reverb_price,
@@ -611,27 +612,23 @@
                 {
                     price: data.temu_price,
                     l30: data.temu_l30,
-                    percent: 0.95
-                },
-                {
-                    price: data.wayfair_price,
-                    l30: data.wayfair_l30,
                     percent: 0.90
                 },
+              
                 {
                     price: data.ebay3_price,
                     l30: data.ebay3_l30,
-                    percent: 0.76
+                    percent: 0.72
                 },
                 {
                     price: data.ebay2_price,
                     l30: data.ebay2_l30,
-                    percent: 0.88
+                    percent: 0.81
                 },
                 {
                     price: data.walmart_price,
                     l30: data.walmart_l30,
-                    percent: 0.70
+                    percent: 0.80
                 }
             ];
 
@@ -984,29 +981,20 @@
                             (parseFloat(data.walmart_l30) || 0);
 
                         // Calculate profit for each marketplace
-                        const SHIP = parseFloat(data.SHIP) || 0;
-                        const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP -
-                            SHIP) * (parseFloat(data.amz_l30) || 0) : 0;
-                        const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.73) - LP -
-                            SHIP) * (parseFloat(data.ebay_l30) || 0) : 0;
-                        const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) *
-                            0.75) - LP - SHIP) * (parseFloat(data.shopifyb2c_l30) || 0) : 0;
-                        const macyProfit = data.macy_price ? ((parseFloat(data.macy_price) * 0.76) - LP -
-                            SHIP) * (parseFloat(data.macy_l30) || 0) : 0;
-                        const reverbProfit = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) -
-                            LP - SHIP) * (parseFloat(data.reverb_l30) || 0) : 0;
-                        const dobaProfit = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP -
-                            SHIP) * (parseFloat(data.doba_l30) || 0) : 0;
-                        const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.90) - LP -
-                            SHIP) * (parseFloat(data.temu_l30) || 0) : 0;
-                        const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) *
-                            0.90) - LP - SHIP) * (parseFloat(data.wayfair_l30) || 0) : 0;
-                        const ebay3Profit = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.72) - LP -
-                            SHIP) * (parseFloat(data.ebay3_l30) || 0) : 0;
-                        const ebay2Profit = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.81) - LP -
-                            SHIP) * (parseFloat(data.ebay2_l30) || 0) : 0;
-                        const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) *
-                            0.80) - LP - SHIP) * (parseFloat(data.walmart_l30) || 0) : 0;
+                       const SHIP = parseFloat(data.SHIP) || 0;
+
+                    const amzProfit     = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) : 0;
+                    const ebayProfit    = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.73) - LP - SHIP) : 0;
+                    const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) : 0;
+                    const macyProfit    = data.macy_price ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) : 0;
+                    const reverbProfit  = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) : 0;
+                    const dobaProfit    = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) : 0;
+                    const temuProfit    = data.temu_price ? ((parseFloat(data.temu_price) * 0.90) - LP - SHIP) : 0;
+                    const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) : 0;
+                    const ebay3Profit   = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.72) - LP - SHIP) : 0;
+                    const ebay2Profit   = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.81) - LP - SHIP) : 0;
+                    const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) : 0;
+
 
                         const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
                             reverbProfit +
@@ -1099,24 +1087,23 @@
                         const walmartL30 = parseFloat(data.walmart_l30) || 0;
 
                         // Calculate profit for each marketplace
-                        const amzProfit = ((amzPrice * 0.80) - LP - SHIP) * amzL30;
-                        const ebayProfit = ((ebayPrice * 0.73) - LP - SHIP) * ebayL30;
-                        const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) * shopifyL30;
-                        const macyProfit = ((macyPrice * 0.76) - LP - SHIP) * macyL30;
-                        const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) * reverbL30;
-                        const dobaProfit = ((dobaPrice * 0.95) - LP - SHIP) * dobaL30;
-                        const temuProfit = ((temuPrice * 0.90) - LP - SHIP) * temuL30;
-                        const wayfairProfit = ((wayfairPrice * 0.90) - LP - SHIP) * wayfairL30;
-                        const ebay3Profit = ((ebay3Price * 0.72) - LP - SHIP) * ebay3L30;
-                        const ebay2Profit = ((ebay2Price * 0.81) - LP - SHIP) * ebay2L30;
-                        const walmartProfit = ((walmartPrice * 0.80) - LP - SHIP) * walmartL30;
+                        const amzProfit = ((amzPrice * 0.80) - LP - SHIP) ;
+                        const ebayProfit = ((ebayPrice * 0.73) - LP - SHIP) ;
+                        const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) ;
+                        const macyProfit = ((macyPrice * 0.76) - LP - SHIP) ;
+                        const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) ;
+                        const dobaProfit = ((dobaPrice * 0.95) - LP - SHIP) ;
+                        const temuProfit = ((temuPrice * 0.90) - LP - SHIP);
+                        const ebay3Profit = ((ebay3Price * 0.72) - LP - SHIP);
+                        const ebay2Profit = ((ebay2Price * 0.81) - LP - SHIP) ;
+                        const walmartProfit = ((walmartPrice * 0.80) - LP - SHIP) ;
 
 
 
 
                         // Calculate total profit
                         const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
-                            reverbProfit + dobaProfit + temuProfit + wayfairProfit +
+                            reverbProfit + dobaProfit + temuProfit  +
                             ebay3Profit + ebay2Profit + walmartProfit;
 
                         // Calculate total revenue
@@ -1128,14 +1115,13 @@
                             (reverbPrice * reverbL30) +
                             (dobaPrice * dobaL30) +
                             (temuPrice * temuL30) +
-                            (wayfairPrice * wayfairL30) +
                             (ebay3Price * ebay3L30) +
                             (ebay2Price * ebay2L30) +
                             (walmartPrice * walmartL30);
 
                         // Calculate average profit percentage and round to nearest integer
-                        const avgPftPercent = totalRevenue > 0 ?
-                            Math.round((totalProfit / totalRevenue) * 100) : 0;
+                     const avgPftPercent = Math.round((totalProfit / totalRevenue) * 100) || 0;
+
 
                         // Style based on profit percentage
                         let bgColor, textColor;
@@ -1252,84 +1238,6 @@
         document.addEventListener("DOMContentLoaded", function() {
             buildColumnDropdown();
 
-            // Initialize Chart.js for analysis charts
-            function initializeCharts(profitData, roiData) {
-                const profitCtx = document.getElementById('profitChart').getContext('2d');
-                const roiCtx = document.getElementById('roiChart').getContext('2d');
-
-                new Chart(profitCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(profitData),
-                        datasets: [{
-                            label: 'Profit %',
-                            data: Object.values(profitData),
-                            backgroundColor: '#28a745',
-                            borderColor: '#218838',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Profit Percentage'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                new Chart(roiCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(roiData),
-                        datasets: [{
-                            label: 'ROI %',
-                            data: Object.values(roiData),
-                            backgroundColor: '#007bff',
-                            borderColor: '#0056b3',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'ROI Percentage'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            // Utility: percent formatting (0.23 -> "23.00%")
-            function fmtPct(v) {
-                if (v === null || v === undefined || v === "") return "-";
-                const num = parseFloat(v);
-                if (isNaN(num)) return "-";
-                // if already in 0-1 form like 0.23:
-                if (Math.abs(num) <= 1) return (num * 100).toFixed(2) + "%";
-                // if already percent like 23:
-                return num.toFixed(2) + "%";
-            }
-
-            // Utility: money formatting
-            function fmtMoney(v) {
-                if (v === null || v === undefined || v === "") return "-";
-                const num = parseFloat(v);
-                if (isNaN(num)) return "-";
-                return "$" + num.toFixed(2);
-            }
-
-
-
 
             // Play button functionality
             document.getElementById('play-auto').addEventListener('click', () => {
@@ -1368,13 +1276,15 @@
 
     <script>
         // Helper: percent formatting
-        function fmtPct(v) {
-            if (v === null || v === undefined || v === "") return "-";
-            const num = parseFloat(v);
-            if (isNaN(num)) return "-";
-            if (Math.abs(num) <= 1) return (num * 100).toFixed(2) + "%";
-            return num.toFixed(2) + "%";
-        }
+function fmtPct(v) {
+    if (v === null || v === undefined || v === "") return "-";
+    const num = parseFloat(v);
+    if (isNaN(num)) return "-";
+
+    // हमेशा ×100 करके round करें
+    return Math.round(num * 100) + "%";
+}
+
 
         // Helper: money formatting
         function fmtMoney(v) {
@@ -1439,9 +1349,13 @@
                     <th>L30</th>
                     <th>L60</th>
                     <th>Views L30</th>
-                      <th>CVR</th>
+                    <th>CVR</th>
                     <th>Profit %</th>
                     <th>ROI %</th>
+                    <th>S Price </th>
+                    <th>S PFT %</th>
+                    <th>S ROI %</th>
+                    <th>Action</th>
                   
                 </tr>
                 </thead>
@@ -1501,32 +1415,25 @@
             </td>
             <td>
                 <div class="value-indicator">
-                    ${r.prefix === 'amz' ? (data.sessions_l30 ?? "-") : r.prefix === 'ebay' ? (data.views ?? "-") : "-"}
+                    ${r.prefix === 'amz' ? (data.sessions_l30 ?? "-") : r.prefix === 'ebay' ? (data.ebay_views ?? "-") : r.prefix === 'ebay3' ? (data.ebay3_views ?? "-") : "-"}
                 </div>
             </td>
             <td>
                 <div class="value-indicator">
                     ${(() => {
-                    if (r.prefix === 'amz' && cvr) {
-                        return `<span style="color: ${cvr.color}">${cvr.value}%</span>`;
-                    } else if (r.prefix === 'ebay') {
-                        const views = data.views || 0;
-                        const l30 = data.ebay_l30 || 0;
-                        const cvr = views > 0 ? (l30/views) * 100 : 0;
-                        let color;
-                        if (cvr <= 7) {
-                            color = '#007bff';
-                        } else if (cvr > 7 && cvr <= 13) {
-                            color = '#28a745';
-                        } else {
-                            color = '#dc3545';
+                        if (r.prefix === 'amz' && cvr) {
+                            return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                        } else if (r.prefix === 'ebay' && cvr) {
+                            return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                        } else if (r.prefix === 'ebay3' && cvr) {
+                            return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
                         }
-                        return `<span style="color: ${color}">${cvr.toFixed(2)}%</span>`;
-                    }
-                    return "-";
-                })()} 
+
+                        return "No Views";
+                    })()} 
                 </div>
             </td>
+
             <td>
                 <div class="value-indicator ${pftClass}">
                     ${fmtPct(pft)}
@@ -1535,6 +1442,27 @@
             <td>
                 <div class="value-indicator ${roiClass}">
                     ${fmtPct(roi)}
+                </div>
+            </td>
+
+            <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" class="form-control form-control-sm s-price" value="${data.sprice}" style="width: 65px;" step="any"
+                         data-sku="${data.SKU}" data-type="${r.prefix}">
+                        <button class="btn btn-primary btn-sm d-flex align-items-center saveSpriceMarketPlace" type="button"
+                         data-sku="${data.SKU}" data-type="${r.prefix}" data-sprice="${data.sprice}">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </td>
+             <td>
+                <div class="value-indicator ${roiClass}">
+                  
+                </div>
+            </td>
+             <td>
+                <div class="value-indicator ${roiClass}">
+                   
                 </div>
             </td>
           </tr>
@@ -1600,5 +1528,39 @@
 
             modal.show();
         }
+
+        $(document).on('blur', '.s-price', function() {
+            const sprice = parseInt($(this).val()) || 0;
+            const sku = $(this).data('sku');
+            const type = $(this).data('type');
+
+            if (!sku || !type) return;
+
+            $.ajax({
+                url: '/pricing-master/save-sprice',
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    sku: sku,
+                    type: type,
+                    sprice: sprice
+                },
+                success: function(res) {
+                    if(res.status === 200) {
+                        alert('S Price saved successfully');
+                    } else {
+                        alert('Error saving S Price:', res.message);
+                    }
+                },
+                error: function(err) {
+                    console.error('Error saving S Price:', err);
+                }
+            });
+        });
+
+        $(document).on('click', '.saveSpriceMarketPlace', function (){
+            alert('Please click outside the input box to save the S Price.');
+        });
+
     </script>
 @endsection
