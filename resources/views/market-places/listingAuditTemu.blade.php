@@ -1506,7 +1506,7 @@
 
                 // First filter out all rows with INV <= 0 (except parent rows)
                 const filteredRows = filteredData.filter(item => {
-                    return item.is_parent || (parseFloat(item.INV) > 0);
+                    return item.is_parent || (parseFloat(item.INV) >= 0);
                 });
 
                 // Group data by parent
@@ -1527,9 +1527,8 @@
                 sortedParents.forEach(parent => {
                     const items = groupedData[parent];
 
-                    // Count children with INV > 0 for this parent
-                    const validChildren = items.filter(item => !item.is_parent && parseFloat(item.INV) >
-                        0);
+                    // Count children with INV >= 0 for this parent
+                    const validChildren = items.filter(item => !item.is_parent && parseFloat(item.INV) >= 0);
 
                     // Only show this group if it has valid children
                     if (validChildren.length > 0) {
