@@ -26,21 +26,28 @@ class AmazonACOSController extends Controller
 
     public function getAccessToken()
     {
-        $client = new Client();
-        $response = $client->post('https://api.amazon.com/auth/o2/token', [
-            'form_params' => [
-                'grant_type' => 'refresh_token',
-                'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
-                'client_id' => env('AMAZON_ADS_CLIENT_ID'),
-                'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
-            ]
-        ]);
+        return cache()->remember('amazon_ads_access_token', 55 * 60, function () {
+            $client = new Client();
 
-        $data = json_decode($response->getBody(), true);
-        return $data['access_token'];
+            $response = $client->post('https://api.amazon.com/auth/o2/token', [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
+                    'client_id' => env('AMAZON_ADS_CLIENT_ID'),
+                    'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
+                ]
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return $data['access_token'];
+        });
     }
 
-    public function updateAmazonCampaignBgt(Request $request){
+    public function updateAmazonCampaignBgt(Request $request)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $campaignIds = $request->input('campaign_ids', []);
         $newBgts = $request->input('bgts', []);
 
@@ -90,7 +97,9 @@ class AmazonACOSController extends Controller
                     ],
                     'json' => [
                         'campaigns' => $chunk
-                    ]
+                    ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);
@@ -110,7 +119,11 @@ class AmazonACOSController extends Controller
         }
     }
 
-    public function updateAmazonSbCampaignBgt(Request $request){
+    public function updateAmazonSbCampaignBgt(Request $request)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+        
         $campaignIds = $request->input('campaign_ids', []);
         $newBgts = $request->input('bgts', []);
 
@@ -157,7 +170,9 @@ class AmazonACOSController extends Controller
                     ],
                     'json' => [
                         'campaigns' => $chunk
-                    ]
+                    ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);

@@ -22,18 +22,21 @@ class AmazonSbBudgetController extends Controller
 
     public function getAccessToken()
     {
-        $client = new Client();
-        $response = $client->post('https://api.amazon.com/auth/o2/token', [
-            'form_params' => [
-                'grant_type' => 'refresh_token',
-                'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
-                'client_id' => env('AMAZON_ADS_CLIENT_ID'),
-                'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
-            ]
-        ]);
+        return cache()->remember('amazon_ads_access_token', 55 * 60, function () {
+            $client = new Client();
 
-        $data = json_decode($response->getBody(), true);
-        return $data['access_token'];
+            $response = $client->post('https://api.amazon.com/auth/o2/token', [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
+                    'client_id' => env('AMAZON_ADS_CLIENT_ID'),
+                    'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
+                ]
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return $data['access_token'];
+        });
     }
 
     public function getAdGroupsByCampaigns(array $campaignIds)
@@ -87,6 +90,9 @@ class AmazonSbBudgetController extends Controller
 
     public function updateCampaignKeywordsBid(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $campaignIds = $request->input('campaign_ids', []);
         $newBids = $request->input('bids', []);
 
@@ -133,6 +139,12 @@ class AmazonSbBudgetController extends Controller
             ]);
         }
 
+        $allKeywords = collect($allKeywords)
+            ->unique('keywordId')
+            ->values()
+            ->toArray();
+
+
         $accessToken = $this->getAccessToken();
         $client = new Client();
         $url = 'https://advertising-api.amazon.com/sb/keywords';
@@ -149,6 +161,8 @@ class AmazonSbBudgetController extends Controller
                         'Content-Type' => 'application/json',
                     ],
                     'json' => $chunk,
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);

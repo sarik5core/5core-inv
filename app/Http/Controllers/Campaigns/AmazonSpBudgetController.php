@@ -24,18 +24,21 @@ class AmazonSpBudgetController extends Controller
 
     public function getAccessToken()
     {
-        $client = new Client();
-        $response = $client->post('https://api.amazon.com/auth/o2/token', [
-            'form_params' => [
-                'grant_type' => 'refresh_token',
-                'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
-                'client_id' => env('AMAZON_ADS_CLIENT_ID'),
-                'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
-            ]
-        ]);
+        return cache()->remember('amazon_ads_access_token', 55 * 60, function () {
+            $client = new Client();
 
-        $data = json_decode($response->getBody(), true);
-        return $data['access_token'];
+            $response = $client->post('https://api.amazon.com/auth/o2/token', [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => env('AMAZON_ADS_REFRESH_TOKEN'),
+                    'client_id' => env('AMAZON_ADS_CLIENT_ID'),
+                    'client_secret' => env('AMAZON_ADS_CLIENT_SECRET'),
+                ]
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            return $data['access_token'];
+        });
     }
 
     public function getAdGroupsByCampaigns(array $campaignIds)
@@ -118,6 +121,9 @@ class AmazonSpBudgetController extends Controller
 
     public function updateCampaignKeywordsBid(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $campaignIds = $request->input('campaign_ids', []);
         $newBids = $request->input('bids', []);
 
@@ -161,6 +167,11 @@ class AmazonSpBudgetController extends Controller
             ]);
         }
 
+        $allKeywords = collect($allKeywords)
+            ->unique('keywordId')
+            ->values()
+            ->toArray();
+
         $accessToken = $this->getAccessToken();
         $client = new Client();
         $url = 'https://advertising-api.amazon.com/sp/keywords';
@@ -180,6 +191,8 @@ class AmazonSpBudgetController extends Controller
                     'json' => [
                         'keywords' => $chunk
                     ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);
@@ -202,6 +215,8 @@ class AmazonSpBudgetController extends Controller
 
     public function updateCampaignTargetsBid()
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
 
         $campaignIds = request('campaign_ids', []);
         $newBids = request('bids', []);
@@ -243,6 +258,11 @@ class AmazonSpBudgetController extends Controller
             ]);
         }
 
+        $allTargets = collect($allTargets)
+            ->unique('targetId')
+            ->values()
+            ->toArray();
+
         $accessToken = $this->getAccessToken();
         $client = new Client();
         $url = 'https://advertising-api.amazon.com/sp/targets';
@@ -262,6 +282,8 @@ class AmazonSpBudgetController extends Controller
                     'json' => [
                         'targetingClauses' => $chunk
                     ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
                 ]);
 
                 $results[] = json_decode($response->getBody(), true);
@@ -390,17 +412,21 @@ class AmazonSpBudgetController extends Controller
                 return stripos($item->campaignName, $sku) !== false;
             });
             
-            $row['acos_L30'] = $matchedCampaignL30
-                ? round(($matchedCampaignL30->spend / max(($matchedCampaignL30->sales30d ?? 0.01), 0.01)) * 100, 2)
+            // ACOS L30
+            $row['acos_L30'] = ($matchedCampaignL30 && $matchedCampaignL30->sales30d > 0)
+                ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2)
                 : 0;
 
-            $row['acos_L15'] = $matchedCampaignL15
-                ? round(($matchedCampaignL15->spend / max(($matchedCampaignL15->sales14d ?? 0.01), 0.01)) * 100, 2)
+            // ACOS L15
+            $row['acos_L15'] = ($matchedCampaignL15 && $matchedCampaignL15->sales14d > 0)
+                ? round(($matchedCampaignL15->spend / $matchedCampaignL15->sales14d) * 100, 2)
                 : 0;
 
-            $row['acos_L7'] = $matchedCampaignL7
-                ? round(($matchedCampaignL7->spend / max(($matchedCampaignL7->sales7d ?? 0.01), 0.01)) * 100, 2)
+            // ACOS L7
+            $row['acos_L7'] = ($matchedCampaignL7 && $matchedCampaignL7->sales7d > 0)
+                ? round(($matchedCampaignL7->spend / $matchedCampaignL7->sales7d) * 100, 2)
                 : 0;
+
 
             $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
             $row['clicks_L15'] = $matchedCampaignL15->clicks ?? 0;

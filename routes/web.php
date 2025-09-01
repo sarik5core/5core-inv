@@ -1567,6 +1567,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon-sp/get-amz-under-utilized-bgt-kw', 'getAmzUnderUtilizedBgtKw');
         Route::post('/update-amazon-under-utilized-sp-bid-price', 'updateAmazonSpBidPrice');
         Route::put('/update-keywords-bid-price', 'updateCampaignKeywordsBid');
+        Route::put('/update-amz-under-targets-bid-price', 'updateCampaignTargetsBid');
 
         Route::get('/amazon-sp/amz-under-utilized-bgt-pt', 'amzUnderUtilizedBgtPt')->name('amazon-sp.amz-under-utilized-bgt-pt');
         Route::get('/amazon-sp/get-amz-under-utilized-bgt-pt', 'getAmzUnderUtilizedBgtPt');
