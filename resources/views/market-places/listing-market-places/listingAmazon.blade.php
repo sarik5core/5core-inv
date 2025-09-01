@@ -1061,9 +1061,9 @@
             /* Red */
             color: white;
         }
-        .nr-hide{
+        /* .nr-hide{
             display: none !important;
-        }
+        } */
     </style>
 @endsection
 
@@ -1545,9 +1545,9 @@
                     $row.addClass('parent-row');
                 }
 
-                if(item.nr_req === 'NR'){
-                    $row.addClass('nr-hide');
-                }
+                // if(item.nr_req === 'NR'){
+                //     $row.addClass('nr-hide');
+                // }
 
                 $row.append($('<td>').text(index)); // SL No.
                 $row.append($('<td>').text(item.Parent)); // Parent

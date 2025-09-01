@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MarketplacePercentage extends Model
 {
-    protected $fillable = ['marketplace', 'percentage'];
+    use SoftDeletes;
+
+    protected $fillable = ['marketplace', 'percentage','deleted_at'];
 }

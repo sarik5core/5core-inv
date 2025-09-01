@@ -2233,7 +2233,7 @@
                                 </div>
                             </li>
                             <!-- eBay Variation -->
-                            <li class="side-nav-item">
+                            {{-- <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarEbayVariation" aria-expanded="false"
                                     aria-controls="sidebarEbayVariation">
                                     <span>eBay Variation</span>
@@ -2255,7 +2255,7 @@
                                         @endif
                                     </ul>
                                 </div>
-                            </li>
+                            </li> --}}
                             <!-- Shopify wholesale/DS -->
                             <li class="side-nav-item">
                                 <a data-bs-toggle="collapse" href="#sidebarShopifyWholesale" aria-expanded="false"
