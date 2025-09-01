@@ -244,7 +244,7 @@ class EbayZeroController extends Controller
         ];
     }
 
-     public function getLivePendingAndZeroViewCounts()
+    public function getLivePendingAndZeroViewCounts()
     {
         $productMasters = ProductMaster::whereNull('deleted_at')->get();
         $skus = $productMasters->pluck('sku')->unique()->toArray();

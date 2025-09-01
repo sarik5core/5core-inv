@@ -1573,13 +1573,34 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
-        Route::get('/ebay-over-utilized-bgt-kw', 'ebayOverUtilizedBgtKw')->name('ebay-over-utilized-bgt-kw');
-        Route::get('/ebay-over-utilized-bgt-kw/data', 'getEbayOverUtilizedBgtKwData')->name('ebay-over-utilized-bgt-kw-data');
+        Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
+        Route::get('/ebay-over-uti-acos-green', 'ebayOverUtiAcosGreen')->name('ebay-over-uti-acos-green');
+        Route::get('/ebay-over-uti-acos-red', 'ebayOverUtiAcosRed')->name('ebay-over-uti-acos-red');
+
+        Route::get('/ebay-under-uti-acos-pink', 'ebayUnderUtiAcosPink')->name('ebay-under-uti-acos-pink');
+        Route::get('/ebay-under-uti-acos-green', 'ebayUnderUtiAcosGreen')->name('ebay-under-uti-acos-green');
+        Route::get('/ebay-under-uti-acos-red', 'ebayUnderUtiAcosRed')->name('ebay-under-uti-acos-red');
+
+        Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
+        Route::post('/update-ebay-nr-data', 'updateNrData');
+
+
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
         Route::get('/amazon-acos-control/data', 'index')->name('amazon.acos.index');
         Route::get('/amazon-acos-data', 'getAmzonAcOSData');
+
+        Route::get('/amazon-acos-kw-control', 'amazonAcosKwControl')->name('amazon.acos.kw.control');
+        Route::get('/amazon-acos-kw-control-data', 'amazonAcosKwControlData')->name('amazon.acos.kw.control.data');
+        Route::get('/amazon-acos-hl-control', 'amazonAcosHlControl')->name('amazon.acos.hl.control');
+        Route::get('/amazon-acos-hl-control-data', 'amazonAcosHlControlData')->name('amazon.acos.hl.control.data');
+        Route::get('/amazon-acos-pt-control', 'amazonAcosPtControl')->name('amazon.acos.pt.control');
+        Route::get('/amazon-acos-pt-control-data', 'amazonAcosPtControlData')->name('amazon.acos.pt.control.data');
+
+        Route::put('/update-amazon-campaign-bgt-price', 'updateAmazonCampaignBgt');
+        Route::put('/update-amazon-sb-campaign-bgt-price', 'updateAmazonSbCampaignBgt');
+
     });
 
     Route::controller(EbayACOSController::class)->group(function () {

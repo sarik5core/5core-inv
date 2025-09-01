@@ -17,5 +17,6 @@ class Ebay3Metric extends Model
         'ebay_l30',
         'ebay_l60',
         'ebay_price',
+        'views',
     ];    
 }

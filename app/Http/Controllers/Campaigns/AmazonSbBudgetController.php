@@ -318,6 +318,24 @@ class AmazonSbBudgetController extends Controller
 
         $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
+        $amazonSpCampaignReportsL30 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $amazonSpCampaignReportsL15 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
+            ->where('report_date_range', 'L15')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
         $amazonSpCampaignReportsL7 = AmazonSbCampaignReport::where('ad_type', 'SPONSORED_BRANDS')
             ->where('report_date_range', 'L7')
             ->where(function ($q) use ($skus) {
@@ -344,6 +362,24 @@ class AmazonSbBudgetController extends Controller
 
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
+
+            $matchedCampaignL15 = $amazonSpCampaignReportsL15->first(function ($item) use ($sku) {
+                $cleanName = strtoupper(trim($item->campaignName));
+                $expected1 = $sku;                
+                $expected2 = $sku . ' HEAD';      
+
+                return ($cleanName === $expected1 || $cleanName === $expected2)
+                    && strtoupper($item->campaignStatus) === 'ENABLED';
+            });
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
                 $cleanName = strtoupper(trim($item->campaignName));
@@ -394,6 +430,23 @@ class AmazonSbBudgetController extends Controller
             $row['l7_cpc']   = $costPerClick7;
             $row['l1_spend'] = $matchedCampaignL1->cost ?? 0;
             $row['l1_cpc']   = $costPerClick1;
+
+
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaign30->sales ?? 0) > 0)
+                ? round(($matchedCampaignL30->cost / $matchedCampaignL30->sales) * 100, 2)
+                : null;
+
+            $row['acos_L15'] = ($matchedCampaignL15 && ($matchedCampaignL15->sales ?? 0) > 0)
+                ? round(($matchedCampaignL15->cost / $matchedCampaignL15->sales) * 100, 2)
+                : null;
+
+            $row['acos_L7'] = ($matchedCampaignL7 && ($matchedCampaignL7->sales ?? 0) > 0)
+                ? round(($matchedCampaignL7->cost / $matchedCampaignL7->sales) * 100, 2)
+                : null;
+
+            $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
+            $row['clicks_L15'] = $matchedCampaignL15->clicks ?? 0;
+            $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
             $row['NR'] = '';

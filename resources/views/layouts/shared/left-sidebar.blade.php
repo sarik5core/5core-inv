@@ -1454,7 +1454,24 @@
                                             <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('amazon.acos.index') }}">Amazon ACOS Control</a>
+                                            <a data-bs-toggle="collapse" href="#amazonACOS" aria-expanded="false"
+                                                aria-controls="amazonACOS">
+                                                <span>Amazon ACOS Control</span>
+                                                <span class="menu-arrow"></span>
+                                            </a>
+                                            <div class="collapse" id="amazonACOS">
+                                                <ul class="side-nav-fourth-level">
+                                                    <li>
+                                                        <a href="{{ route('amazon.acos.kw.control') }}">Amazon ACOS KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.acos.hl.control') }}">Amazon ACOS HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.acos.pt.control') }}">Amazon ACOS PT</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </li>
                                         <li>
                                             <a data-bs-toggle="collapse" href="#amazonBudget" aria-expanded="false"
@@ -1569,11 +1586,23 @@
                                             <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('ebay-over-utilized-bgt-kw') }}">EBAY > UTILIZED BGT KW</a>
+                                            <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
                                         </li>
-                                        {{-- <li>
-                                            <a href="{{ route('ebay-over-utilized-bgt-pt') }}">EBAY < UTILIZED BGT KW</a>
-                                        </li> --}}
+                                        <li>
+                                            <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > UTI ACOS RED</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < UTI ACOS PINK</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < UTI ACOS GREEN</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < UTI ACOS RED</a>
+                                        </li>
 
                                     </ul>
                                 </div>

@@ -64,12 +64,15 @@ class AmazonSpApiService
                 "value" => [[
                     "marketplaceId" => "ATVPDKIKX0DER",
                     "currency" => "USD",
-                    "listingPrices" => [[
-                        "valueWithTax" => [
-                            "amount" => (string) $price,
-                            "currencyCode" => "USD"
+                    "our_price" => [
+                        [
+                            "schedule" => [
+                                [
+                                    "value_with_tax" => (float) $price
+                                ]
+                            ]
                         ]
-                    ]]
+                    ]
                 ]]
             ]]
         ];
@@ -121,8 +124,4 @@ class AmazonSpApiService
         $data = $response->json();
         return $data['summaries'][0]['productType'] ?? null;
     }
-
-
-
-
 }

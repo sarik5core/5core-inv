@@ -20,6 +20,11 @@ return [
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
         'scheme' => 'https',
     ],
+    'macy' => [
+        'client_id' => env('MACY_CLIENT_ID'),
+        'client_secret' => env('MACY_CLIENT_SECRET'),
+        'company_id' => env('MACY_COMPANY_ID'),
+    ],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
