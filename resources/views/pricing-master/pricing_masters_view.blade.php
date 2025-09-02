@@ -484,7 +484,7 @@
                                         <span class="badge bg-danger me-2">Avg Price: <span id="formattedAvgPrice">0%</span></span>
                                          <span class="badge bg-info me-2">Profit % : <span id="formattedProfitPercentage">0%</span></span>
                                           <span class="badge bg-success me-2">ROI % : <span id="formattedRoiPercentage">0%</span></span>
-                                          <span class="badge me-2" style="background-color: purple">INV % : <span id="ovl30InvLabel">0%</span></span>
+                                          <span class="badge me-2" style="background-color: purple">INV : <span id="ovl30InvLabel">0%</span></span>
                                            <span class="badge bg-warning  text-dark">OV L30  : <span id="ovl30">0%</span></span>
 
 
