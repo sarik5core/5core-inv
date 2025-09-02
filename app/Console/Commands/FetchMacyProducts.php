@@ -59,7 +59,7 @@ class FetchMacyProducts extends Command
 
             foreach ($products as $product) {
                 $sku = $product['id'] ?? null;
-                $price = $product['standard_prices'][0]['price']['amount'] ?? null;
+                $price = $product['discount_prices'][0]['price']['amount'] ?? null;
 
                 if (!$sku || $price === null) continue;
 

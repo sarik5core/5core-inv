@@ -258,7 +258,7 @@
                 ajaxURL: "/amazon-sp/get-amz-under-utilized-bgt-kw",
                 layout: "fitData",
                 pagination: "local",
-                paginationSize: 50,
+                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
@@ -589,12 +589,6 @@
                             }
                         }
                     },
-                    // {
-                    //     title: "CRNT BID",
-                    //     field: "crnt_bid",
-                    //     hozAlign: "center",
-                    //     editor: "input"
-                    // },
                     {
                         title: "SBGT",
                         field: "sbgt",

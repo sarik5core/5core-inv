@@ -258,7 +258,7 @@
                 ajaxURL: "/amazon-sp/get-amz-under-utilized-bgt-pt",
                 layout: "fitData",
                 pagination: "local",
-                paginationSize: 50,
+                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
@@ -845,7 +845,7 @@
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
 
-                fetch('/update-keywords-bid-price', {
+                fetch('/update-amz-under-targets-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -875,7 +875,10 @@
                 const overlay = document.getElementById("progress-overlay");
                 overlay.style.display = "flex";
 
-                fetch('/update-keywords-bid-price', {
+                console.log("Campaign IDs:", campaignId);
+                console.log("Bids:", aprBid);
+
+                fetch('/update-amz-under-targets-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',

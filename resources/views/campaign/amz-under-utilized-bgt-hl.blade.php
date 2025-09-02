@@ -257,7 +257,7 @@
                 ajaxURL: "/amazon-sb/get-amz-under-utilized-bgt-hl",
                 layout: "fitData",
                 pagination: "local",
-                paginationSize: 50,
+                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
