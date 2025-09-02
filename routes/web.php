@@ -505,7 +505,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/rfq-form/store', 'storeRFQForm')->name('rfq-form.store');
     });
 
-    //Sourcing
+    //Sourcingƒvies
     Route::controller(SourcingController::class)->group(function () {
         Route::get('/sourcing/list', 'index')->name('sourcing.index');
         Route::get('/sourcing-data/list', 'getSourcingData')->name('sourcing.list');
@@ -1019,6 +1019,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/pricing-master.pricing_master', [PricingMasterController::class, 'pricingMaster']);
     Route::get('/pricing-analysis-data-view', [PricingMasterController::class, 'getViewPricingAnalysisData']);
     Route::get('/pricing-analysis-data-view', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+    Route::post('/update-amazon-price', action: [PricingMasterViewsController::class, 'updatePrice'])->name('amazon.priceChange');
+    Route::post('/push-shopify-price', action: [PricingMasterViewsController::class, 'pushShopifyPriceBySku'])->name('shopify.priceChange');
 
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
     Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
