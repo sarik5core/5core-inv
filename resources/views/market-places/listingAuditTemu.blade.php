@@ -1656,7 +1656,7 @@
                         let value = item[f.key] ?? '';
                         const $container = $(
                             '<div class="na-edit-container d-flex align-items-center"></div>');
-                        if (item.INV > 0) {
+                        if (item.INV >= 0) {
                             const $checkbox = $('<input type="checkbox" class="na-checkbox" />')
                                 .prop('checked', value === true || value === 'true' || value === 1)
                                 .data('field', f.key)
