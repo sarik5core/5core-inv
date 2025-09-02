@@ -1576,14 +1576,14 @@
                 const $linkCell = $('<td>');
 
                 // Buyer Link
-                if (parseFloat(item.INV) > 0 && item.buyer_link) {
+                if (item.buyer_link) {
                     $linkCell.append(
                         `<a href="${item.buyer_link}" target="_blank" style="color:#007bff;text-decoration:underline;margin-right:8px;">Buyer</a>`
                     );
                 }
 
                 // Seller Link
-                if (parseFloat(item.INV) > 0 && item.seller_link) {
+                if (item.seller_link) {
                     $linkCell.append(
                         `<a href="${item.seller_link}" target="_blank" style="color:#007bff;text-decoration:underline;margin-right:8px;">Seller</a>`
                     );

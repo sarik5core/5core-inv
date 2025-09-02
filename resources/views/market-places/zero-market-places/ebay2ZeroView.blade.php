@@ -2065,6 +2065,7 @@
                                     units_ordered_l60: item.units_ordered_l60 || 0,
                                     'A Dil%': aDil,
                                     Sess30: item.Sess30 || 0,
+                                    views: item.views || 0,
                                     price: Number(item.price) || 0,
                                     COMP: item.COMP || 0,
                                     min_price: item.scout_data ? item.scout_data.min_price : 0,
@@ -2088,7 +2089,8 @@
                             });
 
                             console.log('Data loaded successfully:', tableData);
-                            filteredData = [...tableData];
+                            // filteredData = [...tableData];
+                            filteredData = tableData.filter(row => parseInt(row.views) === 0);
 
                         }
                     },
@@ -2304,9 +2306,9 @@
                         $row.append($('<td>').append($select));
                     }
 
-                    // Sess30 with tooltip icon (no color coding)
+                    // views with tooltip icon (no color coding)
                     $row.append($('<td>').html(
-                        `<span>${Math.round(item.Sess30)}</span>
+                        `<span>${Math.round(item.views)}</span>
                             <span class="text-info tooltip-icon ad-view-trigger" 
                                 data-bs-toggle="tooltip" 
                                 data-bs-placement="left" 
@@ -4065,7 +4067,7 @@
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['A L30']) || 0;
                         metrics.eDilTotal += parseFloat(item['A Dil%']) || 0;
-                        let views = parseFloat(item.Sess30) || 0;
+                        let views = parseFloat(item.views) || 0;
                         if (item.NR !== 'NR') {
                             metrics.viewsTotal += views;
                         }

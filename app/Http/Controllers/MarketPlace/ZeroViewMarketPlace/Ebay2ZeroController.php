@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MarketPlace\ZeroViewMarketPlace;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ebay2Metric;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use App\Models\EbayTwoDataView;
@@ -34,8 +35,11 @@ class Ebay2ZeroController extends Controller
         // 2. Fetch ShopifySku for those SKUs
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
+        $ebayMetrics = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+
+
         // 3. Fetch DobaDataView for those SKUs
-        $dobaDataViews = EbayTwoDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebay2DataViews = EbayTwoDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $result = [];
         foreach ($productMasters as $pm) {
@@ -47,27 +51,53 @@ class Ebay2ZeroController extends Controller
             $ov_l30 = $shopify ? $shopify->quantity : 0;
             $ov_dil = ($inv > 0) ? round($ov_l30 / $inv, 4) : 0;
 
+              // Only include rows where inv > 0, SKU exists in Ebay3Metric, and views == 0
+            if ($inv > 0 && isset($ebayMetrics[$sku])) {
+                $views = $ebayMetrics[$sku]->views ?? 0;
+                if (intval($views) === 0) {
+                    // Fetch DobaDataView values
+                    $dobaView = $ebay2DataViews[$sku] ?? null;
+                    $value = $dobaView ? $dobaView->value : [];
+                    if (is_string($value)) {
+                        $value = json_decode($value, true) ?: [];
+                    }
+
+                    $row = [
+                        'parent' => $parent,
+                        'sku' => $sku,
+                        'inv' => $inv,
+                        'ov_l30' => $ov_l30,
+                        'ov_dil' => $ov_dil,
+                        'views' => $views,
+                        'NR' => isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ',
+                        'A_Z_Reason' => $value['A_Z_Reason'] ?? '',
+                        'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? '',
+                        'A_Z_ActionTaken' => $value['A_Z_ActionTaken'] ?? '',
+                    ];
+                    $result[] = $row;
+
+
             // Only include rows where inv > 0
-            if ($inv > 0) {
-                // Fetch DobaDataView values
-                $dobaView = $dobaDataViews[$sku] ?? null;
-                $value = $dobaView ? $dobaView->value : [];
-                if (is_string($value)) {
-                    $value = json_decode($value, true) ?: [];
+            // if ($inv > 0) {
+            //     // Fetch DobaDataView values
+            //     $dobaView = $ebayMetrics[$sku] ?? null;
+            //     $value = $dobaView ? $dobaView->value : [];
+            //     if (is_string($value)) {
+            //         $value = json_decode($value, true) ?: [];
                 }
 
-                $row = [
-                    'parent' => $parent,
-                    'sku' => $sku,
-                    'inv' => $inv,
-                    'ov_l30' => $ov_l30,
-                    'ov_dil' => $ov_dil,
-                    'NR' => isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ',
-                    'A_Z_Reason' => $value['A_Z_Reason'] ?? '',
-                    'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? '',
-                    'A_Z_ActionTaken' => $value['A_Z_ActionTaken'] ?? '',
-                ];
-                $result[] = $row;
+                // $row = [
+                //     'parent' => $parent,
+                //     'sku' => $sku,
+                //     'inv' => $inv,
+                //     'ov_l30' => $ov_l30,
+                //     'ov_dil' => $ov_dil,
+                //     'NR' => isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ',
+                //     'A_Z_Reason' => $value['A_Z_Reason'] ?? '',
+                //     'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? '',
+                //     'A_Z_ActionTaken' => $value['A_Z_ActionTaken'] ?? '',
+                // ];
+                // $result[] = $row;
             }
         }
 
@@ -170,6 +200,63 @@ class Ebay2ZeroController extends Controller
         })->count();
 
         return $zeroViewCount;
+    }
+
+
+    public function getLivePendingAndZeroViewCounts()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataViews = EbayTwoDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $listedCount = 0;
+        $zeroInvOfListed = 0;
+        $liveCount = 0;
+        $zeroViewCount = 0;
+
+        foreach ($productMasters as $item) {
+            $sku = trim($item->sku);
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $isParent = stripos($sku, 'PARENT') !== false;
+            if ($isParent) continue;
+
+            $status = $ebayDataViews[$sku]->value ?? null;
+            if (is_string($status)) {
+                $status = json_decode($status, true);
+            }
+            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $live = $status['live'] ?? null;
+
+            // Listed count (for live pending)
+            if ($listed === 'Listed') {
+                $listedCount++;
+                if (floatval($inv) <= 0) {
+                    $zeroInvOfListed++;
+                }
+            }
+
+            // Live count
+            if ($live === 'Live') {
+                $liveCount++;
+            }
+
+            // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
+            $views = $ebayMetrics[$sku]->views ?? null;
+            if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
+                $zeroViewCount++;
+            }
+        }
+
+        // live pending = listed - 0-inv of listed - live
+        $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+
+        return [
+            'live_pending' => $livePending,
+            'zero_view' => $zeroViewCount,
+        ];
     }
 
 }
