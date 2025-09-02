@@ -797,6 +797,7 @@ class ZeroVisibilityMasterController extends Controller
         // Mapping for special channel/controller names
         $controllerMap = [
             'ebaythree' => 'Ebay3ZeroController',
+            'ebaytwo'   => 'Ebay2ZeroController',
             // Add more mappings as needed
         ];
 
