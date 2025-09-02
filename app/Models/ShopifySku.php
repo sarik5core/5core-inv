@@ -12,6 +12,7 @@ class ShopifySku extends Model
     protected $table = 'shopify_skus';
     
     protected $fillable = [
+        'variant_id',
         'sku',
         'inv',
         'quantity',

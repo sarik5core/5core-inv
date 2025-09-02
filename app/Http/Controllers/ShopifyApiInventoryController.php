@@ -716,6 +716,7 @@ class ShopifyApiInventoryController extends Controller
         // Initialize all SKUs with inventory data
         foreach ($inventoryData as $sku => $data) {
             $groupedData[$sku] = [
+                'variant_id' => $data['variant_id'],
                 'sku' => $sku,
                 'quantity' => 0,
                 'inventory' => $data['inventory'],
@@ -757,6 +758,7 @@ class ShopifyApiInventoryController extends Controller
                         ['sku' => $item['sku']],
                         [
                             'quantity' => $item['quantity'],
+                            'variant_id' => $item['variant_id'],
                             'inv' => $item['inventory'],
                             'price' => $item['price'],
                             'image_src' => $item['image_src'],
