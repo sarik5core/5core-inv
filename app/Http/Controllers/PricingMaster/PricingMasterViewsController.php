@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PricingMaster;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UpdatePriceApiController;
 use App\Models\AmazonDatasheet;
 use App\Models\AmazonDataView;
 use App\Models\DobaMetric;
@@ -18,7 +19,10 @@ use App\Models\WalmartDataView;
 use App\Models\Ebay2Metric;
 use App\Models\Ebay3Metric;
 use App\Models\EbayDataView;
+use App\Models\Shopifyb2cDataView;
+use App\Services\AmazonSpApiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PricingMasterViewsController extends Controller
 {
@@ -67,6 +71,9 @@ class PricingMasterViewsController extends Controller
         $walmartLookup = WalmartDataView::all()->keyBy('sku');
         $ebay2Lookup = Ebay2Metric::all()->keyBy('sku');
         $ebay3Lookup = Ebay3Metric::all()->keyBy('sku');
+        $amazonDataView = AmazonDataView::all()->keyBy('sku');
+        $ebayDataView = EbayDataView::all()->keyBy('sku');
+        $shopifyb2cDataView = Shopifyb2cDataView::all()->keyBy('sku');
 
         $processedData = [];
 
@@ -102,14 +109,17 @@ class PricingMasterViewsController extends Controller
             // Get Shopify data for L30 and INV
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
             $inv = $shopifyItem ? ($shopifyItem->inv ?? 0) : 0;
-            $l30 = $shopifyItem ? ($shopifyItem->shopify_l30 ?? 0) : 0;
+            $l30 = $shopifyItem ? ($shopifyItem->quantity ?? 0) : 0;
 
             $item = (object) [
+
+                
                 'SKU'     => $sku,
                 'Parent'  => $product->parent,
                 'L30'     => $l30,
                 'INV'     => $inv,
-                'Dil%'    => $inv > 0 ? round($l30 / $inv, 2) : 0,
+                'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 100 ) : 0 ,
+                //  'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 1) : 0,
                 'MSRP'    => $msrp,
                 'MAP'     => $map,
                 'LP'      => $lp,
@@ -126,6 +136,7 @@ class PricingMasterViewsController extends Controller
                 'price_lmpa' => $amazon ? ($amazon->price_lmpa ?? 0) : 0,
                 'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.80 - $lp - $ship) / $amazon->price) : 0,
                 'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.80 - $lp - $ship) / $lp) : 0,
+
 
                 // eBay
                 'ebay_price' => $ebay ? ($ebay->ebay_price ?? 0) : 0,
@@ -186,10 +197,38 @@ class PricingMasterViewsController extends Controller
                 'ebay3_pft'   => $ebay3 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.87 - $lp - $ship) / $ebay3->ebay_price) : 0,
                 'ebay3_roi'   => $ebay3 && $lp > 0 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.87 - $lp - $ship) / $lp) : 0,
 
-                // Pricing
-                'sprice'          => $pricing->sprice ?? null,
-                'sprofit_percent' => $pricing->sprofit_percent ?? null,
-                'sroi_percent'    => $pricing->sroi_percent ?? null
+                // Amazon DataView values
+                'amz_sprice' => isset($amazonDataView[$sku]) ?
+                    (is_array($amazonDataView[$sku]->value) ?
+                        ($amazonDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($amazonDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'amz_spft' => isset($amazonDataView[$sku]) ?
+                    (is_array($amazonDataView[$sku]->value) ?
+                        ($amazonDataView[$sku]->value['SPFT'] ?? null) : (json_decode($amazonDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'amz_sroi' => isset($amazonDataView[$sku]) ?
+                    (is_array($amazonDataView[$sku]->value) ?
+                        ($amazonDataView[$sku]->value['SROI'] ?? null) : (json_decode($amazonDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+                'shopifyb2c_sprice' => isset($shopifyb2cDataView[$sku]) ?
+                    (is_array($shopifyb2cDataView[$sku]->value) ?
+                        ($shopifyb2cDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($shopifyb2cDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'shopifyb2c_spft' => isset($shopifyb2cDataView[$sku]) ?
+                    (is_array($shopifyb2cDataView[$sku]->value) ?
+                        ($shopifyb2cDataView[$sku]->value['SPFT'] ?? null) : (json_decode($shopifyb2cDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'shopifyb2c_sroi' => isset($shopifyb2cDataView[$sku]) ?
+                    (is_array($shopifyb2cDataView[$sku]->value) ?
+                        ($shopifyb2cDataView[$sku]->value['SROI'] ?? null) : (json_decode($shopifyb2cDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+                // eBay DataView values
+                'ebay_sprice' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'ebay_spft' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SPFT'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'ebay_sroi' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SROI'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SROI'] ?? null)) : null
+
             ];
 
             // Add shopifyb2c fields after $item is created
@@ -264,23 +303,23 @@ class PricingMasterViewsController extends Controller
             if ($dilFilter !== 'all') {
                 $dilPercent = ($item->{'Dil%'} ?? 0) * 100;
                 switch ($dilFilter) {
-                    case 'red':
+                    case 'yellow':
                         if ($dilPercent >= 16.66) {
                             return false;
                         }
                         break;
                     case 'yellow':
-                        if ($dilPercent < 16.66 || $dilPercent >= 25) {
+                        if ($dilPercent < 0 || $dilPercent >= 0) {
                             return false;
                         }
                         break;
                     case 'green':
-                        if ($dilPercent < 25 || $dilPercent >= 50) {
+                        if ($dilPercent < 0 || $dilPercent >= 0) {
                             return false;
                         }
                         break;
-                    case 'pink':
-                        if ($dilPercent < 50) {
+                    case 'blue':
+                        if ($dilPercent < 0) {
                             return false;
                         }
                         break;
@@ -339,24 +378,46 @@ class PricingMasterViewsController extends Controller
         ];
     }
 
+
+    public function updatePrice(Request $request)
+    {
+        $sku = $request["sku"];
+        $price = $request["price"];
+
+        $price = app(AmazonSpApiService::class)->updateAmazonPriceUS($sku, $price);
+
+        return response()->json(['status' => 200, 'data' => $price]);
+    }
+
     public function saveSprice(Request $request)
     {
         $data = $request->validate([
             'sku' => 'required|string',
             'type' => 'required|string',
             'sprice' => 'required|numeric',
+            'LP' => 'required|numeric',    // cost price
+            'SHIP' => 'required|numeric',  // shipping cost
         ]);
 
         $sku = $data['sku'];
         $type = $data['type'];
         $sprice = $data['sprice'];
+        $lp = $data['LP'];
+        $ship = $data['SHIP'];
 
         switch ($type) {
             case 'amz':
                 // Amazon logic
                 $amazonDataView = AmazonDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
-                $existing['SPRICE'] = $sprice;
+
+                $spft = $sprice > 0 ? ((($sprice * 0.80) - $lp - $ship) / $sprice) * 100 : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.80) - $lp - $ship) / $lp) * 100 : 0;
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+
                 $amazonDataView->value = $existing;
                 $amazonDataView->save();
                 break;
@@ -365,10 +426,40 @@ class PricingMasterViewsController extends Controller
                 // eBay logic
                 $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($ebayDataView->value) ? $ebayDataView->value : (json_decode($ebayDataView->value, true) ?: []);
-                $existing['SPRICE'] = $sprice;
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.73) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.73) - $lp - $ship) / $lp) * 100 : 0;
+
+                // Round and store as string
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+
+
                 $ebayDataView->value = $existing;
                 $ebayDataView->save();
                 break;
+
+            case 'shopifyb2c':
+                $shopifyDataView = Shopifyb2cDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($shopifyDataView->value) ? $shopifyDataView->value : (json_decode($shopifyDataView->value, true) ?: []);
+
+                // Shopify fee example: 10% (0.90 multiplier)
+                $spft = $sprice > 0 ? ((($sprice * 0.75) - $lp - $ship) / $sprice) * 100 : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.75) - $lp - $ship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+
+                $shopifyDataView->value = $existing;
+                $shopifyDataView->save();
+
+                $this->pushShopifyPriceBySku($sku, $sprice);
+                break;
+
 
             default:
                 return response()->json([
@@ -378,12 +469,46 @@ class PricingMasterViewsController extends Controller
         }
 
         return response()->json([
-            'message' => "$type S Price saved successfully",
-            'data' => $data,
+            'message' => "$type S Price, SPFT & SROI saved successfully",
+            'data' => [
+                'SPRICE' => $sprice,
+                'SPFT' => $spft,
+                'SROI' => $sroi
+            ],
             'status' => 200
         ]);
     }
 
-    
+    public function pushShopifyPriceBySku(Request $request)
+    {
+        $sku = $request->input('sku');
+        $price = $request->input('price');
+
+        $variantId = ShopifySku::where('sku', $sku)->value('variant_id');
+
+        if (!$variantId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Variant ID not found for SKU: {$sku}"
+            ], 404);
+        }
+
+        $result = UpdatePriceApiController::updateShopifyVariantPrice($variantId, $price);
+
+        if ($result['status'] === 'success') {
+            return response()->json([
+                'status' => 'success',
+                'message' => "Price updated successfully for SKU {$sku}",
+                'data' => $result['data']
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => $result['message'] ?? 'Unknown error occurred',
+                'code' => $result['code'] ?? 500,
+            ], 500);
+        }
+    }
+
 
 }
