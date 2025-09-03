@@ -1410,7 +1410,7 @@
                 },
                 {
                     label: "Shopify B2C",
-                    prefix: "shopify"
+                    prefix: "shopifyb2c"
                 }
             ];
 
@@ -1441,7 +1441,7 @@
 
             rows.forEach(r => {
                 const price = data[`${r.prefix}_price`];
-                const l30 = data[`${r.prefix}_l30`];
+                const l30 = r.prefix === 'shopifyb2c' ? data['shopify_l30'] : data[`${r.prefix}_l30`];
                 const l60 = data[`${r.prefix}_l60`];
                 const pft = data[`${r.prefix}_pft`];
                 const roi = data[`${r.prefix}_roi`];
