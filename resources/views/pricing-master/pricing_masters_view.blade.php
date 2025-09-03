@@ -623,7 +623,7 @@
             const marketplaces = [{
                     price: data.amz_price,
                     l30: data.amz_l30,
-                    percent: 0.80
+                    percent: 0.68
                 },
                 {
                     price: data.ebay_price,
