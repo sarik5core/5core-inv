@@ -804,18 +804,8 @@
                         const l30 = data.shopifyb2c_l30 || 0;
 
                         // Determine button color based on L30 value
-                        let btnClass;
-                        if (l30 === 0) {
-                            btnClass = 'btn-primary'; // gray for zero
-                        } else if (l30 < 10) {
-                            btnClass = 'btn-warning'; // red for low
-                        } else if (l30 < 30) {
-                            btnClass = 'btn-warning'; // yellow for medium
-                        } else {
-                            btnClass = 'btn-success'; // green for good
-                        }
-
-                        return `<button class="btn btn-sm ${btnClass} rounded-pill px-3 text-dark">
+                       
+                        return `<button class="btn btn-outline-dark rounded-pill px-3 text-dark" style="cursor:default !important; background-color: #fff !important">
                             <i class="bi bi-bar-chart-line me-1"></i>${l30}
                         </button>`;
                     },
