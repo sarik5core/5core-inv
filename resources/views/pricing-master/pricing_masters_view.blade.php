@@ -64,21 +64,22 @@
 
 
 
-
-
         .tabulator .tabulator-header {
-            background-color: #000000;
-            border-bottom: 2px solid #000;
-            color: #ffffff;
+            background-color: #8adaf9;
+            border-bottom: 2px solid #8adaf9;
+            color: #000000;
             font-weight: bold;
             text-transform: uppercase;
+            color: rgba(0, 0, 0, .5);
+
         }
 
         .tabulator .tabulator-header .tabulator-col {
-            background-color: #000000;
-            border-right: 1px solid #373b3e;
+            background-color:#8adaf9;
+            border-right: 1px solid #8adaf9;
             padding: 12px 8px;
             vertical-align: middle;
+            color: #000000;
         }
 
         .tabulator .tabulator-header .tabulator-col-content {
@@ -91,7 +92,7 @@
         }
 
         .tabulator .tabulator-header .tabulator-col-title {
-            color: #ffffff;
+            color: #060101;
             font-size: 14px;
             font-weight: bold;
         }
@@ -217,6 +218,7 @@
         .modal-xl .modal-body {
             max-height: 80vh;
             overflow-y: auto;
+           
         }
 
         .analysis-table th {
@@ -232,8 +234,8 @@
             margin: 0;
             pointer-events: all;
             position: fixed;
-            left: 50%;
-            top: 50%;
+            /* left: 50%;
+            top: 50%; */
             transform: translate(-50%, -50%);
         }
 
@@ -521,12 +523,12 @@
                                     <div class="summary-stats">
                                         
                                         <span class="badge bg-success me-2">Active Markets: <span id="activeMarketsCount">10 </span>
-                                        </span> <span class="badge text-dark fs-4 text-bold me-2">INV : <span id="ovl30InvLabel">0%</span></span>
+                                       <span class="badge text-dark fs-4 text-bold me-2">INV : <span id="ovl30InvLabel">0%</span>
                                          <span class="badge text-dark fs-4 text-bold">OV L30  : <span id="ovl30">0%</span></span> 
                                         <span class="badge text-dark fs-4 text-bold ">Dil : <span id="dilPercentage"> </span> %</span>
                                         <span class="badge me-2 text-dark fs-4 text-bold">Avg Price: <span id="formattedAvgPrice">0%</span></span>
-                                         <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
-                                          <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
+                                        <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
+                                        <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
                                          
 
 
@@ -544,7 +546,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="ovl30Content" class="p-3" style="color: #000000">
+                            <div id="ovl30Content" class="p-3" style="color: #000000; width:100%">
                                 <!-- Marketplace data table will be loaded here -->
                             </div>
                         </div>
@@ -851,7 +853,7 @@
               
                 
                 {
-                    title: "AVG PRICE",
+                    title: "AVG PRC",
                     field: "avgPrice",
                     hozAlign: "right",
                     formatter: function(cell) {
@@ -1412,18 +1414,18 @@
             <table class="table table-sm table-bordered align-middle sortable-table">
                 <thead class="table-light">
                 <tr>
-                    <th data-sort="string">Marketplace <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="string">Channel <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">L60 <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number" class="default-sort">L30 <i class="bi bi-arrow-down"></i></th>
-                    <th data-sort="number">Price <i class="bi bi-arrow-down-up"></i></th>
-                    <th data-sort="number">Profit % <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">PRC <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">PFT % <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">ROI % <i class="bi bi-arrow-down-up"></i></th>
-                    <th data-sort="number">Views L30 <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">V L30 <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">CVR <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">LMP <i class="bi bi-arrow-down-up"></i></th>
                     <th>S Price</th>
-                    <th data-sort="number">S PFT % <i class="bi bi-arrow-down-up"></i></th>
-                    <th data-sort="number">S ROI % <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">S PFT<i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">S ROI<i class="bi bi-arrow-down-up"></i></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -1514,7 +1516,7 @@
                                     return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
                                 }
 
-                                return "No Views";
+                                return "N/A";
                             })()} 
                         </div>
                     </td>

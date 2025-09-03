@@ -5485,7 +5485,7 @@ fieldset:disabled .btn {
   height: calc(100% - var(--tz-modal-margin) * 2);
 }
 .modal-dialog-scrollable .modal-content {
-  max-height: 100%;
+  max-height: 1500px!important;
   overflow: hidden;
 }
 .modal-dialog-scrollable .modal-body {
@@ -8681,14 +8681,12 @@ fieldset:disabled .btn {
 }
 .bg-success {
   --tz-bg-opacity: 1;
-  background-color: rgba(
-    var(--tz-success-rgb),
-    var(--tz-bg-opacity)
-  ) !important;
+  background-color: #8adaf9 !important;
+
 }
 .bg-info {
   --tz-bg-opacity: 1;
-  background-color: rgba(var(--tz-info-rgb), var(--tz-bg-opacity)) !important;
+  background-color: #129dad !important;
 }
 .bg-warning {
   --tz-bg-opacity: 1;
