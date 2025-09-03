@@ -685,17 +685,20 @@
         //global variables for play btn
         let groupedSkuData = {};
 
-        const table = new Tabulator("#forecast-table", {
+       const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-analysis-data-views",
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
             paginationSize: 10,
             initialSort: [{
-                column: "shopifyb2c_l30",
-                dir: "desc"
+                column: "Parent",
+                dir: "asc"
             }],
-
+            groupBy: "Parent",
+            groupHeader: function(value, count, data, group) {
+                return value + ' <span class="badge text-light" style="background-color: purple;">' + count + ' items</span>';
+            },
 
 
 
@@ -1360,7 +1363,7 @@
                 },
                 {
                     label: "Shopify B2C",
-                    prefix: "shopifyb2c"
+                    prefix: "shopify"
                 }
             ];
 
