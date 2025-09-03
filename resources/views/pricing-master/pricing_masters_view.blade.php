@@ -583,7 +583,7 @@
             const SHIP = parseFloat(data.SHIP) || 0;
 
             // Calculate profits
-            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) * (parseFloat(data
+            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.68) - LP - SHIP) * (parseFloat(data
                 .amz_l30) || 0) : 0;
             const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.71) - LP - SHIP) * (parseFloat(data
                 .ebay_l30) || 0) : 0;
@@ -1017,7 +1017,7 @@
                         const walmartL30 = parseFloat(data.walmart_l30) || 0;
 
                         // Calculate profit for each marketplace
-                        const amzProfit = ((amzPrice * 0.80) - LP - SHIP)  ;
+                        const amzProfit = ((amzPrice * 0.68) - LP - SHIP)  ;
                         const ebayProfit = ((ebayPrice * 0.71) - LP - SHIP) ;
                         const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) ;
                         const macyProfit = ((macyPrice * 0.76) - LP - SHIP) ;
@@ -1128,7 +1128,7 @@
                                             ebay3L30 + ebay2L30 + walmartL30;
 
                             // Profit calculations (use parsed *_L30 variables)
-                            const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.80) - LP - SHIP) * amzL30 : 0;
+                            const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.68) - LP - SHIP) * amzL30 : 0;
                             const ebayProfit    = data.ebay_price       ? ((parseFloat(data.ebay_price) * 0.71) - LP - SHIP) * ebayL30 : 0;
                             const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * shopifyL30 : 0;
                             const macyProfit    = data.macy_price       ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) * macyL30 : 0;
