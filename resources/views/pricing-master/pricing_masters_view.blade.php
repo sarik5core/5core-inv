@@ -815,7 +815,7 @@
                             btnClass = 'btn-success'; // green for good
                         }
 
-                        return `<button class="btn btn-sm ${btnClass} rounded-pill px-3">
+                        return `<button class="btn btn-sm ${btnClass} rounded-pill px-3 text-dark">
                             <i class="bi bi-bar-chart-line me-1"></i>${l30}
                         </button>`;
                     },
