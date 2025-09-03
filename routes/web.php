@@ -207,6 +207,7 @@ use App\Http\Controllers\PurchaseMaster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
+use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
 
 /*  
 |--------------------------------------------------------------------------
@@ -1588,6 +1589,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/update-ebay-nr-data', 'updateNrData');
 
 
+    });
+
+
+    //FaceBook Adds Manager 
+    Route::controller(FacebookAddsManagerController::class)->group(function () {
+        Route::get('/facebook-ads-control/data', 'index')->name('facebook.ads.index');
+        // Route::get('/facebook-ads-data', 'getFacebookAdsData');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
