@@ -251,7 +251,97 @@ class ToOrderAnalysisController extends Controller
         }
     }
 
+    public function toOrderAnalysisNew(){
+        return view('purchase-master.to-order-analysis');
+    }
 
+    public function getToOrderAnalysis()
+    {
+        try {
+            // Fetch base data
+            $toOrderRecords = DB::table('to_order_analysis')->get()->keyBy('sku');
+            $productData = DB::table('product_master')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+            $forecastData = DB::table('forecast_analysis')->get()->keyBy(fn($row) => strtoupper(trim($row->sku)));
+
+            // ✅ Shopify image support
+            $shopifySkus = ShopifySku::all()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+
+            $processedData = [];
+
+            foreach ($toOrderRecords as $sku => $toOrder) {
+                $sheetSku = strtoupper(trim($sku));
+                if (empty($sheetSku)) continue;
+
+                $product = $productData->get($sheetSku);
+                $forecast = $forecastData->get($sheetSku);
+                $parent = $toOrder->parent ?? $product->parent ?? '';
+                $supplierName = '';
+
+                // ✅ Find supplier
+                $parentList = explode(',', $parent);
+                foreach ($parentList as $singleParent) {
+                    $singleParent = trim($singleParent);
+                    $supplierRecord = DB::table('suppliers')
+                        ->whereRaw("FIND_IN_SET(?, REPLACE(REPLACE(parent, ' ', ''), '\n', ''))", [str_replace(' ', '', $singleParent)])
+                        ->first();
+
+                    if ($supplierRecord) {
+                        $supplierName = $supplierRecord->name;
+                        break;
+                    }
+                }
+
+                // ✅ Product Values
+                $cbm = 0;
+                $imagePath = null;
+
+                if (!empty($product?->Values)) {
+                    $valuesArray = json_decode($product->Values, true);
+                    if (is_array($valuesArray)) {
+                        $cbm = (float)($valuesArray['cbm'] ?? 0);
+                        $imagePath = $valuesArray['image_path'] ?? null;
+                    }
+                }
+
+                // ✅ Image preference
+                $shopifyImage = $shopifySkus[$sheetSku]->image_src ?? null;
+                $finalImage = $shopifyImage ?: $imagePath;
+
+                $approvedQty = (int)($toOrder->approved_qty ?? 0);
+
+                $processedData[] = [
+                    'Parent'          => $parent,
+                    'SKU'             => $sheetSku,
+                    'approved_qty'    => $approvedQty,
+                    'Date of Appr'    => $toOrder->date_apprvl ?? '',
+                    'Clink'           => $forecast->clink ?? '',
+                    'Supplier'        => $toOrder->supplier_name ?? $supplierName ?? '',
+                    'RFQ Form Link'   => $toOrder->rfq_form_link ?? '',
+                    'sheet_link'      => $toOrder->sheet_link ?? '',
+                    'Rfq Report Link' => $toOrder->rfq_report_link ?? '',
+                    'Stage'           => $toOrder->stage ?? '',
+                    'nrl'             => $toOrder->nrl ?? '',
+                    'Adv date'        => $toOrder->advance_date ?? '',
+                    'order_qty'       => $toOrder->order_qty ?? '',
+                    'is_parent'       => stripos($sheetSku, 'PARENT') !== false,
+                    'cbm'             => $cbm,
+                    'total_cbm'       => $cbm * $approvedQty,
+                    'Image'           => $finalImage,
+                ];
+            }
+
+            // ✅ Return JSON for Tabulator
+            return response()->json([
+                "data" => $processedData
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Something went wrong!',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function updateLink(Request $request)
     {

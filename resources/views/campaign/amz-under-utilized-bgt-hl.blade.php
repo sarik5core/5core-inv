@@ -551,7 +551,14 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var sbid = (l1_cpc * 1.05).toFixed(2);
+                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                            var sbid;
+
+                            if(l1_cpc > l7_cpc) {
+                                sbid = (l1_cpc * 1.05).toFixed(2);
+                            }else{
+                                sbid = (l7_cpc * 1.05).toFixed(2);
+                            }
                             return sbid;
                         },
                     },
