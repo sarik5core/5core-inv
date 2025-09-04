@@ -262,7 +262,7 @@
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
                 ajaxURL: "/amazon-acos-kw-control-data",
-                layout: "fitData",
+                layout: "fitDataFill",
                 pagination: "local",
                 paginationSize: 25,
                 movableColumns: true,

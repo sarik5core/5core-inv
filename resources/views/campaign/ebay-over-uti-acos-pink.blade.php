@@ -358,11 +358,11 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 70 && ub7 <= 90) {
+                            if (ub7 >= 60 && ub7 <= 90) {
                                 td.classList.add('green-bg');
                             } else if (ub7 > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub7 < 70) {
+                            } else if (ub7 < 60) {
                                 td.classList.add('red-bg');
                             }
                             return ub7.toFixed(0) + "%";
@@ -373,20 +373,20 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l7_spend = parseFloat(row.l7_spend) || 0;
+                            var l1_spend = parseFloat(row.l1_spend) || 0;
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
+                            var ub1 = budget > 0 ? (l1_spend / budget ) * 100 : 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 70 && ub7 <= 90) {
+                            if (ub1 >= 60 && ub1 <= 90) {
                                 td.classList.add('green-bg');
-                            } else if (ub7 > 90) {
+                            } else if (ub1 > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub7 < 70) {
+                            } else if (ub1 < 60) {
                                 td.classList.add('red-bg');
                             }
-                            return ub7.toFixed(0) + "%";
+                            return ub1.toFixed(0) + "%";
                         }
                     },
                     {
@@ -497,14 +497,8 @@
             table.on("tableBuilt", function() {
 
                 function combinedFilter(data) {
-                    var budget = parseFloat(data.campaignBudgetAmount) || 0;
-                    var l7_spend = parseFloat(data.l7_spend || 0);
-                    var l1_spend = parseFloat(data.l1_spend || 0);
-
-                    var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
-                    var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
-
-                    // if (!(ub7 > 90 && ub1 > 90)) return false;
+                    var acos = parseFloat(data.acos || 0);
+                    if (!(acos < 7)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
