@@ -65,21 +65,21 @@
 
 
         .tabulator .tabulator-header {
-            background-color: #8adaf9;
-            border-bottom: 2px solid #8adaf9;
-            color: #000000;
+            background: linear-gradient(135deg, #2c6ed5 0%, #1a56b7 100%) !important;
+            border-bottom: 2px solid #1a56b7;
+            color: #ffffff;
             font-weight: bold;
             text-transform: uppercase;
-            color: rgba(0, 0, 0, .5);
-
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .tabulator .tabulator-header .tabulator-col {
-            background-color:#8adaf9;
-            border-right: 1px solid #8adaf9;
-            padding: 12px 8px;
+            background-color: transparent;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 18px;
             vertical-align: middle;
-            color: #000000;
+            color: #ffffff;
+            transition: all 0.2s ease;
         }
 
         .tabulator .tabulator-header .tabulator-col-content {
@@ -89,25 +89,38 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.5px;
         }
 
         .tabulator .tabulator-header .tabulator-col-title {
-            color: #060101;
-            font-size: 14px;
-            font-weight: bold;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
         /* Style for header filter inputs */
         .tabulator .tabulator-header .tabulator-col input {
-            border: 1px solid #373b3e;
-            background-color: #2c3034;
-            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
             border-radius: 4px;
-            padding: 4px 8px;
+            color: #333;
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            width: 100%;
+            transition: all 0.2s;
         }
 
         .tabulator .tabulator-header .tabulator-col input::placeholder {
-            color: #6c757d;
+            color: #8e9ab4;
+            font-style: italic;
+        }
+
+        .tabulator .tabulator-header .tabulator-col input:focus {
+            background-color: white;
+            box-shadow: 0 0 0 2px rgba(26, 86, 183, 0.3);
+            outline: none;
         }
 
         .tabulator .tabulator-row {
@@ -731,10 +744,14 @@
 
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-analysis-data-views",
+            fixedHeader: true,
+            headerFilterLive: true,
+            width: "100%",
+            height: "700px",
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
-            paginationSize: 10,
+            paginationSize: 15,
             initialSort: [{
                 column: "Parent",
                 dir: "asc"
@@ -957,6 +974,8 @@
                         return element;
                     }
                 },
+
+                
 
                 /* === OVL30 button (VISIBLE) === */
                
@@ -1222,52 +1241,59 @@
                 },
              
             ],
+                ajaxResponse: function(url, params, response) {
+                    groupedSkuData = {}; // clear previous
 
-            ajaxResponse: function(url, params, response) {
-                groupedSkuData = {}; // clear previous
+                    // Add calculated fields + mark parent rows
+                    response.data = response.data.map((item, index) => {
+                        const sku = item.SKU || "";
+                        const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
 
-                // Add calculated fields for sorting
-                response.data = response.data.map(item => {
-                    return {
-                        ...item,
-                        calculatedRoi: calculateROI(item),
-                        calculatedProfit: calculateAvgProfit(item)
-                    };
-                });
+                        return {
+                            ...item,
+                            calculatedRoi: calculateROI(item),
+                            calculatedProfit: calculateAvgProfit(item),
+                            sl_no: index + 1,
+                            is_parent: isParent ? 1 : 0,
+                            isParent: isParent,
+                            raw_data: item || {}
+                        };
+                    });
 
-                const processed = response.data.map((item, index) => {
-                    const sku = item.SKU || "";
-                    const parentKey = item.Parent || "";
-                    const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
+                    // Group by Parent
+                    let grouped = {};
+                    response.data.forEach(item => {
+                        const parentKey = item.Parent || "";
+                        if (!grouped[parentKey]) grouped[parentKey] = [];
+                        grouped[parentKey].push(item);
 
-                    const processedItem = {
-                        ...item,
-                        sl_no: index + 1,
-                        is_parent: isParent,
-                        isParent: isParent,
-                        raw_data: item || {}
-                    };
+                        // Group for play button use
+                        if (!groupedSkuData[parentKey]) {
+                            groupedSkuData[parentKey] = [];
+                        }
+                        groupedSkuData[parentKey].push(item);
+                    });
 
-                    // Group for play button use
-                    if (!groupedSkuData[parentKey]) {
-                        groupedSkuData[parentKey] = [];
-                    }
-                    groupedSkuData[parentKey].push(processedItem);
+                    // Sort inside each group: child rows first, parent bottom
+                    let finalData = [];
+                    Object.values(grouped).forEach(rows => {
+                        rows.sort((a, b) => {
+                            if (a.is_parent !== b.is_parent) {
+                                return a.is_parent - b.is_parent; // parent last
+                            }
+                            return (a.SKU || "").localeCompare(b.SKU || "");
+                        });
+                        finalData = finalData.concat(rows);
+                    });
 
-                    return processedItem;
-                });
+                    setTimeout(() => {
+                        setCombinedFilters();
+                    }, 0);
 
-                setTimeout(() => {
-                    setCombinedFilters();
-                }, 0);
+                    console.log("Processed Response:", finalData);
+                    return finalData;
+                },
 
-                // return processed;
-                console.log("Response:", response);
-                return response.data;
-            },
-            ajaxError: function(xhr, textStatus, errorThrown) {
-                console.error("Error loading data:", textStatus);
-            },
         });
 
         let currentParentFilter = null;

@@ -18,6 +18,18 @@ class ProductMaster extends Model
         'Values',
     ];
 
+    public function setTemuShipAttribute($value)
+    {
+        $values = $this->Values ?? [];
+        $values['ship'] = $value;
+        $this->attributes['Values'] = json_encode($values);
+    }
+
+    public function getTemuShipAttribute()
+    {
+        return $this->Values['ship'] ?? null;
+    }
+
     protected $casts = [
         'Values' => 'array',
     ];

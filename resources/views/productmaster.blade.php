@@ -595,6 +595,15 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
+                                                    <label for="temu_ship" class="form-label fw-bold"
+                                                        style="color: #4A5568;">TEMU SHIP</label>
+                                                    <input type="text" class="form-control" id="temu_ship"
+                                                        placeholder="Enter TEMU SHIP"
+                                                        style="border: 2px solid #E2E8F0; border-radius: 6px; padding: 0.75rem; background-color: white;">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
                                                     <label for="w" class="form-label fw-bold"
                                                         style="color: #4A5568;">W*</label>
                                                     <input type="text" class="form-control" id="w"
@@ -900,6 +909,7 @@
                                     <th>CP$</th>
                                     <th>FRGHT</th>
                                     <th>SHIP</th>
+                                    <th>TEMU SHIP</th>
                                     <th>Label QTY</th>
                                     <th>WT ACT</th>
                                     <th>WT DECL</th>
@@ -943,7 +953,7 @@
             // Emails and columns setup
             const emails = @json($emails ?? []);
             const columns = ["INV", "OV L30", "STATUS", "Unit", "LP", "CP$", "FRGHT", "SHIP",
-                "Label QTY", "WT ACT", "WT DECL", "L", "W", "H", "CBM", "L(2)", "Action"
+                "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H", "CBM", "L(2)", "Action"
             ];
             let selectedColumns = [];
             let selectedEmail = '';
@@ -1230,7 +1240,7 @@
                 // All available columns
                 const allColumns = [
                     "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
-                    "FRGHT", "SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
+                    "FRGHT", "SHIP", "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                     "CBM", "L(2)", "Action"
                 ];
 
@@ -1329,6 +1339,9 @@
                                     break;
                                 case "SHIP":
                                     cell.textContent = escapeHtml(item.ship) || '-';
+                                    break;
+                                    case "TEMU SHIP":
+                                    cell.textContent = escapeHtml(item.temu_ship) || '-';
                                     break;
                                 case "Label QTY":
                                     cell.textContent = escapeHtml(item.label_qty) || '0';
@@ -1463,6 +1476,9 @@
                             case "SHIP":
                                 cell.textContent = escapeHtml(item.ship) || '-';
                                 break;
+                            case "TEMU SHIP":
+                                cell.textContent = escapeHtml(item.temu_ship) || '-';
+                                break;
                             case "Label QTY":
                                 cell.textContent = escapeHtml(item.label_qty) || '0';
                                 break;
@@ -1558,7 +1574,7 @@
                 // All available columns
                 const allColumns = [
                     "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
-                    "FRGHT", "SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
+                    "FRGHT", "SHIP", "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                     "CBM", "L(2)", "Action"
                 ];
 
@@ -1878,7 +1894,7 @@
                     const hiddenColumns = getUserHiddenColumns();
                     const allColumns = [
                         "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
-                        "FRGHT", "SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
+                        "FRGHT", "SHIP", "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                         "CBM", "L(2)", "DC", "Pcs/Box", "L1", "B", "H1", "Weight", "MSRP", "MAP", "UPC"
                     ];
 
@@ -1917,6 +1933,10 @@
                         "SHIP": {
                             key: "ship"
                         },
+                        "TEMU SHIP": {
+                            key: "temu_ship"
+                        },
+              
                         "Label QTY": {
                             key: "label_qty"
                         },
@@ -2222,6 +2242,7 @@
                     frght: document.getElementById('freght').value || null,
                     lps: document.getElementById('lps').value || null,
                     ship: document.getElementById('ship').value || null,
+                    temu_ship: document.getElementById('temu_ship').value || null,
                     label_qty: document.getElementById('labelQty').value || null,
                     wt_act: document.getElementById('wtAct').value || null,
                     wt_decl: document.getElementById('wtDecl').value || null,
@@ -2358,6 +2379,7 @@
                     labelQty: product.label_qty || '1',
                     cp: product.cp || '',
                     ship: product.ship || '',
+                    temuShip: product.temu_ship || '',
                     wtAct: product.wt_act || '',
                     wtDecl: product.wt_decl || '',
                     w: product.w || '',
@@ -2370,6 +2392,7 @@
                     h1: product.h1 || '',
                     upc: product.upc || '',
                     unit: product.unit || '',
+                 
                     status: normalizedStatus,
                     cbm: product.cbm || '',
                     dc: product.dc || '',
@@ -2762,6 +2785,10 @@
                     {
                         value: 'ship',
                         text: 'SHIP'
+                    },
+                    {
+                        value: 'temu_ship',
+                        text: 'TEMU SHIP'
                     },
                     {
                         value: 'label_qty',
