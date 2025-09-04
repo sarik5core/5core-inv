@@ -375,11 +375,11 @@ class AmzUnderUtilizedBgtController extends Controller
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
             });
 
             $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
             });
 
             if (!$matchedCampaignL7 && !$matchedCampaignL1) {

@@ -553,11 +553,11 @@
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
                             var l7_cpc = parseFloat(row.l7_cpc) || 0;
-
+                            var sbid;
                             if(l1_cpc > l7_cpc) {
-                                var sbid = (l1_cpc * 1.05).toFixed(2);
+                                sbid = (l1_cpc * 1.05).toFixed(2);
                             }else{
-                                var sbid = (l7_cpc * 1.05).toFixed(2);
+                                sbid = (l7_cpc * 1.05).toFixed(2);
                             }
                             return sbid;
                         },
@@ -869,6 +869,7 @@
 
                 console.log("Campaign IDs:", [campaignId]);
                 console.log("Bids:", [aprBid]);
+                
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
