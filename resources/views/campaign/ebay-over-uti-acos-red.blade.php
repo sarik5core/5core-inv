@@ -353,17 +353,20 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var acos = parseFloat(row.acos) || 0;
+                            var l7_spend = parseFloat(row.l7_spend) || 0;
+                            var budget = parseFloat(row.campaignBudgetAmount) || 0;
+                            var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
+
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (acos >= 20 && acos <= 40) {
+                            if (ub7 >= 10 && ub7 <= 30) {
                                 td.classList.add('green-bg');
-                            } else if (acos > 40) {
+                            } else if (ub7 > 30) {
                                 td.classList.add('pink-bg');
-                            } else if (acos < 20) {
+                            } else if (ub7 < 10) {
                                 td.classList.add('red-bg');
                             }
-                            return acos.toFixed(0) + "%";
+                            return ub7.toFixed(0) + "%";
                         }
                     }, {
                         title: "1 UB%",
@@ -371,17 +374,20 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var acos = parseFloat(row.acos) || 0;
+                            var l1_spend = parseFloat(row.l1_spend) || 0;
+                            var budget = parseFloat(row.campaignBudgetAmount) || 0;
+                            var ub1 = budget > 0 ? (l1_spend / budget ) * 100 : 0;
+
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (acos >= 20 && acos <= 40) {
+                            if (ub1 >= 10 && ub1 <= 30) {
                                 td.classList.add('green-bg');
-                            } else if (acos > 40) {
+                            } else if (ub1 > 30) {
                                 td.classList.add('pink-bg');
-                            } else if (acos < 20) {
+                            } else if (ub1 < 10) {
                                 td.classList.add('red-bg');
                             }
-                            return acos.toFixed(0) + "%";
+                            return ub1.toFixed(0) + "%";
                         }
                     },
                     {
@@ -492,7 +498,6 @@
 
                 function combinedFilter(data) {
                     var acos = parseFloat(data.acos || 0);
-                    var l1_spend = parseFloat(data.l1_spend || 0);
 
                     if (!(acos > 14)) return false;
 

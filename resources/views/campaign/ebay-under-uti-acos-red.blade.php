@@ -492,7 +492,6 @@
 
                 function combinedFilter(data) {
                     var acos = parseFloat(data.acos || 0);
-                    var l1_spend = parseFloat(data.l1_spend || 0);
 
                     if (!(acos > 14)) return false;
 
