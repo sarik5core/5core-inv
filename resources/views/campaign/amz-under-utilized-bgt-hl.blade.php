@@ -876,6 +876,9 @@
                 const overlay = document.getElementById("progress-overlay");
                 overlay.style.display = "flex";
 
+                console.log("Campaign IDs:", campaignId);
+                console.log("Bids:", aprBid);
+
                 fetch('/amazon-sb/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {

@@ -869,6 +869,7 @@
 
                 console.log("Campaign IDs:", [campaignId]);
                 console.log("Bids:", [aprBid]);
+                
                 fetch('/update-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
