@@ -497,14 +497,10 @@
             table.on("tableBuilt", function() {
 
                 function combinedFilter(data) {
-                    var budget = parseFloat(data.campaignBudgetAmount) || 0;
-                    var l7_spend = parseFloat(data.l7_spend || 0);
+                    var acos = parseFloat(data.acos || 0);
                     var l1_spend = parseFloat(data.l1_spend || 0);
 
-                    var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
-                    var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
-
-                    // if (!(ub7 > 90 && ub1 > 90)) return false;
+                    if (!(acos < 7)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {

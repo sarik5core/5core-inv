@@ -184,8 +184,8 @@
                 <p>
                     {{ $from['name'] ?? '5 CORE INC' }}<br>
                     {!! $from['address'] ?? '1221 W.SANDUSKY AVE,<br>BELLEFONTAINE OH43311, USA' !!}<br>
-                    Email: {{ $from['email'] ?? 'president@5core.com' }}<br>
-                    Phone: {{ $from['phone'] ?? '+1(714)249-0848' }}
+                    {{-- Email: {{ $from['email'] ?? 'president@5core.com' }}<br>
+                    Phone: {{ $from['phone'] ?? '+1(714)249-0848' }} --}}
                 </p>
             </div>
             <div class="col-md-6 text-end">
