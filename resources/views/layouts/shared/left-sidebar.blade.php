@@ -1006,12 +1006,12 @@
                         </li>
 
                           <li class="side-nav-item">
-                            <a data-bs-toggle="collapse" href="#video-ads-master" aria-expanded="false"
-                                aria-controls="video-ads-master" class="side-nav-link">
+                            <a data-bs-toggle="collapse" href="#facebook-ads-master" aria-expanded="false"
+                                aria-controls="facebook-ads-master" class="side-nav-link">
                                 <span>Facebook Ads Manager</span>
                                 <span class="menu-arrow"></span>
                             </a>
-                            <div class="collapse" id="video-ads-master">
+                            <div class="collapse" id="facebook-ads-master">
                                 <ul class="side-nav-second-level">
                                     <li>
                                         <a href="{{ route('facebook.ads.index') }}">Image Carousel Ad Running</a>

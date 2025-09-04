@@ -524,8 +524,7 @@
                     // },
                 ],
                 ajaxResponse: function(url, params, response) {
-                    // return response.data;
-                    return null;
+                    return response.data;
                 }
             });
 
