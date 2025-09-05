@@ -1590,8 +1590,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
         Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
         Route::post('/update-ebay-nr-data', 'updateNrData');
-
-
+        Route::put('/update-ebay-keywords-bid-price', 'updateKeywordsBidDynamic');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {

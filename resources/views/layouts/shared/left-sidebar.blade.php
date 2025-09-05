@@ -1508,6 +1508,15 @@
                                                     <li>
                                                         <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-pt') }} ">AMZ < UTILIZED BGT PT</a>
                                                     </li>
+                                                    <li>
+                                                        <a href="">CORRECTLY UTILIZED KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="">CORRECTLY UTILIZED HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="">CORRECTLY UTILIZED PT</a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>
