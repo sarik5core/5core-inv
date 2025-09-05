@@ -484,6 +484,7 @@
                             </div>
                         </div>
 
+
                         <div class="d-flex align-items-center flex-wrap gap-2">
                             <!-- Column Management -->
                             <div class="dropdown">
@@ -740,21 +741,33 @@
 
 
         //global variables for play btn
-        let groupedSkuData = {};
+     function renderGroup(parentKey) {
+    if (!groupedSkuData[parentKey]) return;
+
+    // Update current filter
+    currentParentFilter = parentKey;
+    setCombinedFilters();
+
+    // Apply Tabulator filter for the selected group
+   table.setFilter(function(data) {
+    return data.Parent === parentKey;
+});
+}
+
+
 
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-analysis-data-views",
             fixedHeader: true,
-            headerFilterLive: true,
+         
             width: "100%",
             height: "700px",
-            ajaxConfig: "GET",
-            layout: "fitDataFill",
+          
             pagination: true,
             paginationSize: 15,
             initialSort: [{
                 column: "Parent",
-                dir: "asc"
+                dir: "dsc"
             }],
             groupBy: "Parent",
             groupHeader: function(value, count, data, group) {
@@ -762,12 +775,12 @@
             },
 
 
-
-            rowFormatter: function(row) {
+             rowFormatter: function(row) {
                 const data = row.getData();
-                if (data.is_parent || (data.SKU && data.SKU.toUpperCase().includes('PARENT'))) {
+                const sku = data["SKU"] || '';
+
+                if (sku.toUpperCase().includes("PARENT")) {
                     row.getElement().classList.add("parent-row");
-                    row.getCells().forEach(cell => cell.getElement().style.fontWeight = "700");
                 }
             },
             columns: [{
@@ -1255,6 +1268,7 @@
                             calculatedProfit: calculateAvgProfit(item),
                             sl_no: index + 1,
                             is_parent: isParent ? 1 : 0,
+                             isParent: isParent,
                             isParent: isParent,
                             raw_data: item || {}
                         };
@@ -1324,48 +1338,6 @@
             });
         }
 
-        // Function to format numbers with commas
-        function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            buildColumnDropdown();
-
-
-            // Play button functionality
-            document.getElementById('play-auto').addEventListener('click', () => {
-                const parentKeys = Object.keys(groupedSkuData);
-                let currentIndex = 0;
-                currentParentFilter = parentKeys[currentIndex];
-                setCombinedFilters();
-                document.getElementById('play-pause').style.display = 'inline-block';
-                document.getElementById('play-auto').style.display = 'none';
-            });
-
-            document.getElementById('play-forward').addEventListener('click', () => {
-                const parentKeys = Object.keys(groupedSkuData);
-                let currentIndex = parentKeys.indexOf(currentParentFilter);
-                currentIndex = (currentIndex + 1) % parentKeys.length;
-                currentParentFilter = parentKeys[currentIndex];
-                setCombinedFilters();
-            });
-
-            document.getElementById('play-backward').addEventListener('click', () => {
-                const parentKeys = Object.keys(groupedSkuData);
-                let currentIndex = parentKeys.indexOf(currentParentFilter);
-                currentIndex = (currentIndex - 1 + parentKeys.length) % parentKeys.length;
-                currentParentFilter = parentKeys[currentIndex];
-                setCombinedFilters();
-            });
-
-            document.getElementById('play-pause').addEventListener('click', () => {
-                currentParentFilter = null;
-                setCombinedFilters();
-                document.getElementById('play-pause').style.display = 'none';
-                document.getElementById('play-auto').style.display = 'inline-block';
-            });
-        });
     </script>
 
     <script>
@@ -1820,6 +1792,8 @@
             modal.show();
         }
 
+        
+
         // Table sorting functionality
         function initTableSorting(table) {
             const headers = table.querySelectorAll('th[data-sort]');
@@ -1870,6 +1844,62 @@
                 });
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.documentElement.setAttribute("data-sidenav-size", "condensed");
+            const table = Tabulator.findTable("#forecast-table")[0];
+
+            const parentKeys = () => Object.keys(groupedSkuData);
+            let currentIndex = 0;
+            let isPlaying = false;
+
+            function renderGroup(parentKey) {
+                if (!groupedSkuData[parentKey]) return;
+
+                currentParentFilter = parentKey;
+                setCombinedFilters();
+
+                // Filter table by Parent
+                table.setFilter("Parent", "=", parentKey);
+                console.log("Showing group:", parentKey);
+            }
+
+            // ▶️ Play (activate filter mode, start at first group)
+            document.getElementById('play-auto').addEventListener('click', () => {
+                isPlaying = true;
+                currentIndex = 0;
+                renderGroup(parentKeys()[currentIndex]);
+
+                document.getElementById('play-pause').style.display = 'inline-block';
+                document.getElementById('play-auto').style.display = 'none';
+            });
+
+            // ⏸ Pause (show all data again)
+            document.getElementById('play-pause').addEventListener('click', () => {
+                isPlaying = false;
+                currentParentFilter = null; 
+                setCombinedFilters();
+                table.clearFilter();
+
+                document.getElementById('play-pause').style.display = 'none';
+                document.getElementById('play-auto').style.display = 'inline-block';
+            });
+
+            // ⏩ Forward (manual step)
+            document.getElementById('play-forward').addEventListener('click', () => {
+                if (!isPlaying) return;
+                currentIndex = (currentIndex + 1) % parentKeys().length;
+                renderGroup(parentKeys()[currentIndex]);
+            });
+
+            // ⏪ Backward (manual step)
+            document.getElementById('play-backward').addEventListener('click', () => {
+                if (!isPlaying) return;
+                currentIndex = (currentIndex - 1 + parentKeys().length) % parentKeys().length;
+                renderGroup(parentKeys()[currentIndex]);
+            });
+        });
+
 
         // Push Price
         $(document).on('blur', '.s-price', function() {
