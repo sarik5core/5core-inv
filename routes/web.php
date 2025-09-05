@@ -208,6 +208,7 @@ use App\Http\Controllers\PurchaseMaster\ContainerPlanningController;
 use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
+use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
 
 /*  
 |--------------------------------------------------------------------------
@@ -1033,6 +1034,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/pricing-analysis-data-view', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
     Route::post('/update-amazon-price', action: [PricingMasterViewsController::class, 'updatePrice'])->name('amazon.priceChange');
     Route::post('/push-shopify-price', action: [PricingMasterViewsController::class, 'pushShopifyPriceBySku'])->name('shopify.priceChange');
+    Route::post('/push-ebay-price', action: [PricingMasterViewsController::class, 'pushEbayPriceBySku'])->name('ebay.priceChange');
 
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
     Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
@@ -1600,6 +1602,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/update-ebay-nr-data', 'updateNrData');
 
 
+    });
+
+
+    //FaceBook Adds Manager 
+    Route::controller(FacebookAddsManagerController::class)->group(function () {
+        Route::get('/facebook-ads-control/data', 'index')->name('facebook.ads.index');
+        // Route::get('/facebook-ads-data', 'getFacebookAdsData');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {

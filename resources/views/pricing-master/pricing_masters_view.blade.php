@@ -65,21 +65,21 @@
 
 
         .tabulator .tabulator-header {
-            background-color: #8adaf9;
-            border-bottom: 2px solid #8adaf9;
-            color: #000000;
+            background: linear-gradient(135deg, #2c6ed5 0%, #1a56b7 100%) !important;
+            border-bottom: 2px solid #1a56b7;
+            color: #ffffff;
             font-weight: bold;
             text-transform: uppercase;
-            color: rgba(0, 0, 0, .5);
-
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .tabulator .tabulator-header .tabulator-col {
-            background-color:#8adaf9;
-            border-right: 1px solid #8adaf9;
-            padding: 12px 8px;
+            background-color: transparent;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 18px;
             vertical-align: middle;
-            color: #000000;
+            color: #ffffff;
+            transition: all 0.2s ease;
         }
 
         .tabulator .tabulator-header .tabulator-col-content {
@@ -89,25 +89,38 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.5px;
         }
 
         .tabulator .tabulator-header .tabulator-col-title {
-            color: #060101;
-            font-size: 14px;
-            font-weight: bold;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
         /* Style for header filter inputs */
         .tabulator .tabulator-header .tabulator-col input {
-            border: 1px solid #373b3e;
-            background-color: #2c3034;
-            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
             border-radius: 4px;
-            padding: 4px 8px;
+            color: #333;
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            width: 100%;
+            transition: all 0.2s;
         }
 
         .tabulator .tabulator-header .tabulator-col input::placeholder {
-            color: #6c757d;
+            color: #8e9ab4;
+            font-style: italic;
+        }
+
+        .tabulator .tabulator-header .tabulator-col input:focus {
+            background-color: white;
+            box-shadow: 0 0 0 2px rgba(26, 86, 183, 0.3);
+            outline: none;
         }
 
         .tabulator .tabulator-row {
@@ -471,6 +484,7 @@
                             </div>
                         </div>
 
+
                         <div class="d-flex align-items-center flex-wrap gap-2">
                             <!-- Column Management -->
                             <div class="dropdown">
@@ -727,17 +741,33 @@
 
 
         //global variables for play btn
-        let groupedSkuData = {};
+     function renderGroup(parentKey) {
+    if (!groupedSkuData[parentKey]) return;
+
+    // Update current filter
+    currentParentFilter = parentKey;
+    setCombinedFilters();
+
+    // Apply Tabulator filter for the selected group
+   table.setFilter(function(data) {
+    return data.Parent === parentKey;
+});
+}
+
+
 
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-analysis-data-views",
-            ajaxConfig: "GET",
-            layout: "fitDataFill",
+            fixedHeader: true,
+         
+            width: "100%",
+            height: "700px",
+          
             pagination: true,
-            paginationSize: 10,
+            paginationSize: 15,
             initialSort: [{
                 column: "Parent",
-                dir: "asc"
+                dir: "dsc"
             }],
             groupBy: "Parent",
             groupHeader: function(value, count, data, group) {
@@ -745,12 +775,12 @@
             },
 
 
-
-            rowFormatter: function(row) {
+             rowFormatter: function(row) {
                 const data = row.getData();
-                if (data.is_parent || (data.SKU && data.SKU.toUpperCase().includes('PARENT'))) {
+                const sku = data["SKU"] || '';
+
+                if (sku.toUpperCase().includes("PARENT")) {
                     row.getElement().classList.add("parent-row");
-                    row.getCells().forEach(cell => cell.getElement().style.fontWeight = "700");
                 }
             },
             columns: [{
@@ -957,6 +987,8 @@
                         return element;
                     }
                 },
+
+                
 
                 /* === OVL30 button (VISIBLE) === */
                
@@ -1222,52 +1254,60 @@
                 },
              
             ],
+                ajaxResponse: function(url, params, response) {
+                    groupedSkuData = {}; // clear previous
 
-            ajaxResponse: function(url, params, response) {
-                groupedSkuData = {}; // clear previous
+                    // Add calculated fields + mark parent rows
+                    response.data = response.data.map((item, index) => {
+                        const sku = item.SKU || "";
+                        const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
 
-                // Add calculated fields for sorting
-                response.data = response.data.map(item => {
-                    return {
-                        ...item,
-                        calculatedRoi: calculateROI(item),
-                        calculatedProfit: calculateAvgProfit(item)
-                    };
-                });
+                        return {
+                            ...item,
+                            calculatedRoi: calculateROI(item),
+                            calculatedProfit: calculateAvgProfit(item),
+                            sl_no: index + 1,
+                            is_parent: isParent ? 1 : 0,
+                             isParent: isParent,
+                            isParent: isParent,
+                            raw_data: item || {}
+                        };
+                    });
 
-                const processed = response.data.map((item, index) => {
-                    const sku = item.SKU || "";
-                    const parentKey = item.Parent || "";
-                    const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
+                    // Group by Parent
+                    let grouped = {};
+                    response.data.forEach(item => {
+                        const parentKey = item.Parent || "";
+                        if (!grouped[parentKey]) grouped[parentKey] = [];
+                        grouped[parentKey].push(item);
 
-                    const processedItem = {
-                        ...item,
-                        sl_no: index + 1,
-                        is_parent: isParent,
-                        isParent: isParent,
-                        raw_data: item || {}
-                    };
+                        // Group for play button use
+                        if (!groupedSkuData[parentKey]) {
+                            groupedSkuData[parentKey] = [];
+                        }
+                        groupedSkuData[parentKey].push(item);
+                    });
 
-                    // Group for play button use
-                    if (!groupedSkuData[parentKey]) {
-                        groupedSkuData[parentKey] = [];
-                    }
-                    groupedSkuData[parentKey].push(processedItem);
+                    // Sort inside each group: child rows first, parent bottom
+                    let finalData = [];
+                    Object.values(grouped).forEach(rows => {
+                        rows.sort((a, b) => {
+                            if (a.is_parent !== b.is_parent) {
+                                return a.is_parent - b.is_parent; // parent last
+                            }
+                            return (a.SKU || "").localeCompare(b.SKU || "");
+                        });
+                        finalData = finalData.concat(rows);
+                    });
 
-                    return processedItem;
-                });
+                    setTimeout(() => {
+                        setCombinedFilters();
+                    }, 0);
 
-                setTimeout(() => {
-                    setCombinedFilters();
-                }, 0);
+                    console.log("Processed Response:", finalData);
+                    return finalData;
+                },
 
-                // return processed;
-                console.log("Response:", response);
-                return response.data;
-            },
-            ajaxError: function(xhr, textStatus, errorThrown) {
-                console.error("Error loading data:", textStatus);
-            },
         });
 
         let currentParentFilter = null;
@@ -1298,48 +1338,6 @@
             });
         }
 
-        // Function to format numbers with commas
-        function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            buildColumnDropdown();
-
-
-            // Play button functionality
-            document.getElementById('play-auto').addEventListener('click', () => {
-                const parentKeys = Object.keys(groupedSkuData);
-                let currentIndex = 0;
-                currentParentFilter = parentKeys[currentIndex];
-                setCombinedFilters();
-                document.getElementById('play-pause').style.display = 'inline-block';
-                document.getElementById('play-auto').style.display = 'none';
-            });
-
-            document.getElementById('play-forward').addEventListener('click', () => {
-                const parentKeys = Object.keys(groupedSkuData);
-                let currentIndex = parentKeys.indexOf(currentParentFilter);
-                currentIndex = (currentIndex + 1) % parentKeys.length;
-                currentParentFilter = parentKeys[currentIndex];
-                setCombinedFilters();
-            });
-
-            document.getElementById('play-backward').addEventListener('click', () => {
-                const parentKeys = Object.keys(groupedSkuData);
-                let currentIndex = parentKeys.indexOf(currentParentFilter);
-                currentIndex = (currentIndex - 1 + parentKeys.length) % parentKeys.length;
-                currentParentFilter = parentKeys[currentIndex];
-                setCombinedFilters();
-            });
-
-            document.getElementById('play-pause').addEventListener('click', () => {
-                currentParentFilter = null;
-                setCombinedFilters();
-                document.getElementById('play-pause').style.display = 'none';
-                document.getElementById('play-auto').style.display = 'inline-block';
-            });
-        });
     </script>
 
     <script>
@@ -1535,6 +1533,8 @@
                                     r.prefix === 'amz' ? (data.amz_sprice || '') 
                                     : r.prefix === 'ebay' ? (data.ebay_sprice || '') 
                                     : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
+                                    : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
+                                    : r.prefix === 'ebay3' ? (data.ebay3_sprice || '') 
                                     : ''
                                 }"
                                 style="width: 65px;" 
@@ -1564,7 +1564,12 @@
                                 value = Math.round(data.ebay_spft);
                             } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_spft) {
                                 value = Math.round(data.shopifyb2c_spft);
+                            } else if (r.prefix === 'ebay2' && data.ebay2_spft) {
+                                value = Math.round(data.ebay2_spft);
+                            } else if (r.prefix === 'ebay3' && data.ebay3_spft) {
+                                value = Math.round(data.ebay3_spft);
                             }
+                            
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -1597,7 +1602,12 @@
                                 value = Math.round(data.ebay_sroi);
                             } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_sroi) {
                                 value = Math.round(data.shopifyb2c_sroi);
+                            } else if (r.prefix === 'ebay2' && data.ebay2_sroi) {
+                                value = Math.round(data.ebay2_sroi);
+                            } else if (r.prefix === 'ebay3' && data.ebay3_sroi) {
+                                value = Math.round(data.ebay3_sroi);
                             }
+                            
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -1794,6 +1804,8 @@
             modal.show();
         }
 
+        
+
         // Table sorting functionality
         function initTableSorting(table) {
             const headers = table.querySelectorAll('th[data-sort]');
@@ -1844,6 +1856,62 @@
                 });
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.documentElement.setAttribute("data-sidenav-size", "condensed");
+            const table = Tabulator.findTable("#forecast-table")[0];
+
+            const parentKeys = () => Object.keys(groupedSkuData);
+            let currentIndex = 0;
+            let isPlaying = false;
+
+            function renderGroup(parentKey) {
+                if (!groupedSkuData[parentKey]) return;
+
+                currentParentFilter = parentKey;
+                setCombinedFilters();
+
+                // Filter table by Parent
+                table.setFilter("Parent", "=", parentKey);
+                console.log("Showing group:", parentKey);
+            }
+
+            // ▶️ Play (activate filter mode, start at first group)
+            document.getElementById('play-auto').addEventListener('click', () => {
+                isPlaying = true;
+                currentIndex = 0;
+                renderGroup(parentKeys()[currentIndex]);
+
+                document.getElementById('play-pause').style.display = 'inline-block';
+                document.getElementById('play-auto').style.display = 'none';
+            });
+
+            // ⏸ Pause (show all data again)
+            document.getElementById('play-pause').addEventListener('click', () => {
+                isPlaying = false;
+                currentParentFilter = null; 
+                setCombinedFilters();
+                table.clearFilter();
+
+                document.getElementById('play-pause').style.display = 'none';
+                document.getElementById('play-auto').style.display = 'inline-block';
+            });
+
+            // ⏩ Forward (manual step)
+            document.getElementById('play-forward').addEventListener('click', () => {
+                if (!isPlaying) return;
+                currentIndex = (currentIndex + 1) % parentKeys().length;
+                renderGroup(parentKeys()[currentIndex]);
+            });
+
+            // ⏪ Backward (manual step)
+            document.getElementById('play-backward').addEventListener('click', () => {
+                if (!isPlaying) return;
+                currentIndex = (currentIndex - 1 + parentKeys().length) % parentKeys().length;
+                renderGroup(parentKeys()[currentIndex]);
+            });
+        });
+
 
         // Push Price
         $(document).on('blur', '.s-price', function() {
@@ -1951,7 +2019,7 @@
                 });
             } else if(type === 'ebay') {
                 $.ajax({
-                    url: '/update-ebay-price',
+                    url: '/push-ebay-price',
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
@@ -1959,7 +2027,7 @@
                         price: sprice
                     },
                     success: function(res) {
-                     alert('eBay price updated successfully!');
+                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
                     },
                     error: function(err) {
                         alert('Error updating eBay price: ' + err);
@@ -1999,8 +2067,45 @@
                         $btn.html('Push to Marketplace');
                     }
                 });
+            }  else if(type === 'ebay2') {
+                $.ajax({
+                    url: '/update-ebay2-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('eBay 2 price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating eBay 2 price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            } else if(type === 'ebay2') {
+                $.ajax({
+                    url: '/update-ebay2-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('eBay 3 price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating eBay 3 price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
             }
-
             // You can add more marketplaces here
         });
 

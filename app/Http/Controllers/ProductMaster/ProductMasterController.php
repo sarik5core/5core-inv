@@ -343,6 +343,8 @@ class ProductMasterController extends Controller
             'CP' => 'cp',
             'FRGHT' => 'frght',
             'SHIP' => 'ship',
+            'SHIP FBA' => 'ship_fba',
+            'SHIP Temu' => 'ship_temu',
             'Label QTY' => 'label_qty',
             'WT ACT' => 'wt_act',
             'WT DECL' => 'wt_decl',
