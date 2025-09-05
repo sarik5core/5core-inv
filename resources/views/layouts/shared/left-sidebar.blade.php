@@ -1533,13 +1533,13 @@
                                                         <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-pt') }} ">AMZ < UTILIZED BGT PT</a>
                                                     </li>
                                                     <li>
-                                                        <a href="">CORRECTLY UTILIZED KW</a>
+                                                        <a href="{{ route('amazon.amz-correctly-utilized-bgt-kw') }}">CORRECTLY UTILIZED KW</a>
                                                     </li>
                                                     <li>
-                                                        <a href="">CORRECTLY UTILIZED HL</a>
+                                                        <a href="{{ route('amazon.amz-correctly-utilized-bgt-hl') }}">CORRECTLY UTILIZED HL</a>
                                                     </li>
                                                     <li>
-                                                        <a href="">CORRECTLY UTILIZED PT</a>
+                                                        <a href="{{ route('amazon.amz-correctly-utilized-bgt-pt') }}">CORRECTLY UTILIZED PT</a>
                                                     </li>
                                                 </ul>
                                             </div>

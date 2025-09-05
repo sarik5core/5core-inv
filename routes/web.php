@@ -158,6 +158,7 @@ use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksCon
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
+use App\Http\Controllers\Campaigns\AmzCorrectlyUtilizedController;
 use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
@@ -1587,6 +1588,18 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
         Route::get('/amazon-sp/amz-under-utilized-bgt-pt', 'amzUnderUtilizedBgtPt')->name('amazon-sp.amz-under-utilized-bgt-pt');
         Route::get('/amazon-sp/get-amz-under-utilized-bgt-pt', 'getAmzUnderUtilizedBgtPt');
+    });
+
+    Route::controller(AmzCorrectlyUtilizedController::class)->group(function(){
+        Route::get('/amazon/correctly-utilized-bgt-kw', 'correctlyUtilizedKw')->name('amazon.amz-correctly-utilized-bgt-kw');
+        Route::get('/get-amz-correctly-utilized-bgt-kw', 'getAmzCorrectlyUtilizedBgtKw');
+
+        Route::get('/amazon/correctly-utilized-bgt-hl', 'correctlyUtilizedHl')->name('amazon.amz-correctly-utilized-bgt-hl');
+        Route::get('/get-amz-correctly-utilized-bgt-hl', 'getAmzCorrectlyUtilizedBgtHl');
+
+        Route::get('/amazon/correctly-utilized-bgt-pt', 'correctlyUtilizedPt')->name('amazon.amz-correctly-utilized-bgt-pt');
+        Route::get('/get-amz-correctly-utilized-bgt-pt', 'getAmzCorrectlyUtilizedBgtPt');
+
     });
 
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
