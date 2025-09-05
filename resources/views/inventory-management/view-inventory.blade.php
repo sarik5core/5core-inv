@@ -1643,7 +1643,7 @@
                 },
 
                 cleanupDragHandlers(modalElement) {
-                    if (!modalElement || !modalElement._dragHandlers) return;
+
 
                     const {
                         downHandler,

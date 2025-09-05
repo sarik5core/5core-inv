@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PricingMaster;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UpdatePriceApiController;
+use App\Jobs\UpdateEbaySPriceJob;
 use App\Models\AmazonDatasheet;
 use App\Models\AmazonDataView;
 use App\Models\DobaMetric;
@@ -19,13 +20,19 @@ use App\Models\WalmartDataView;
 use App\Models\Ebay2Metric;
 use App\Models\Ebay3Metric;
 use App\Models\EbayDataView;
+use App\Models\EbayThreeDataView;
+use App\Models\EbayTwoDataView;
 use App\Models\Shopifyb2cDataView;
 use App\Services\AmazonSpApiService;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session as FacadesSession;
 
 class PricingMasterViewsController extends Controller
 {
+    protected $apiController;
+
     public function __construct(ApiController $apiController)
     {
         $this->apiController = $apiController;
@@ -230,7 +237,28 @@ class PricingMasterViewsController extends Controller
                         ($ebayDataView[$sku]->value['SPFT'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
                 'ebay_sroi' => isset($ebayDataView[$sku]) ?
                     (is_array($ebayDataView[$sku]->value) ?
-                        ($ebayDataView[$sku]->value['SROI'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SROI'] ?? null)) : null
+                        ($ebayDataView[$sku]->value['SROI'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+                'ebay2_sprice' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'ebay2_spft' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SPFT'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'ebay2_sroi' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SROI'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+                'ebay3_sprice' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'ebay3_spft' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SPFT'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'ebay3_sroi' => isset($ebayDataView[$sku]) ?
+                    (is_array($ebayDataView[$sku]->value) ?
+                        ($ebayDataView[$sku]->value['SROI'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
 
             ];
 
@@ -466,7 +494,7 @@ class PricingMasterViewsController extends Controller
 
                     // Save with error logging
                     if (!$shopifyDataView->save()) {
-                        \Log::error("Failed to save ShopifyB2C data for SKU: $sku");
+                        Log::error("Failed to save ShopifyB2C data for SKU: $sku");
                         throw new \Exception("Save failed");
                     }
 
@@ -475,13 +503,46 @@ class PricingMasterViewsController extends Controller
                     $request->merge(['sku' => $sku, 'price' => $sprice]);
                     $this->pushShopifyPriceBySku($request);
                 } catch (\Exception $e) {
-                    \Log::error("Error saving ShopifyB2C price: " . $e->getMessage());
+                    Log::error("Error saving ShopifyB2C price: " . $e->getMessage());
                     return response()->json([
                         'message' => 'Error saving ShopifyB2C price',
                         'error' => $e->getMessage(),
                         'status' => 500
                     ]);
                 }
+                break;
+
+
+            case 'ebay2':
+                // eBay2 logic
+                $ebay2DataView = EbayTwoDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($ebay2DataView->value) ? $ebay2DataView->value : (json_decode($ebay2DataView->value, true) ?: []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.80) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.80) - $lp - $ship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $ebay2DataView->value = $existing;
+                $ebay2DataView->save();
+                break;
+
+            case 'ebay3':
+                // eBay3 logic
+                $ebay3DataView = EbayThreeDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($ebay3DataView->value) ? $ebay3DataView->value : (json_decode($ebay3DataView->value, true) ?: []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.71) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.71) - $lp - $ship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $ebay3DataView->value = $existing;
+                $ebay3DataView->save();
                 break;
 
             default:
@@ -532,5 +593,19 @@ class PricingMasterViewsController extends Controller
                 'code' => $result['code'] ?? 500,
             ], 500);
         }
+    }
+    public function pushEbayPriceBySku(Request $request)
+    {
+        $sku = $request->input('sku');
+        $price = $request->input('price');
+
+        UpdateEbaySPriceJob::dispatch($sku, $price)->delay(now()->addSeconds(3));
+
+        FacadesSession::flash('success', 'Price Change Requested, Will Be Completed after 5 Minutes');
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Price update request queued for SKU {$sku}"
+        ], 200);
     }
 }
