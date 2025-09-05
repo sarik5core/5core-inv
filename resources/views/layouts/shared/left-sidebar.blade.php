@@ -1005,6 +1005,27 @@
                             </div>
                         </li>
 
+                          <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#facebook-ads-master" aria-expanded="false"
+                                aria-controls="facebook-ads-master" class="side-nav-link">
+                                <span>Facebook Ads Manager</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="facebook-ads-master">
+                                <ul class="side-nav-second-level">
+                                    <li>
+                                        <a href="{{ route('facebook.ads.index') }}">Image Carousel Ad Running</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Image Carousel Ad Running</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Image Carousel Ad Running</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
                         @if (
                             (isset($permissions['listing_LQS_masters']) && in_array('view', $permissions['listing_LQS_masters'])) ||
                                 (isset($permissions['cvr_LQS_masters']) && in_array('view', $permissions['cvr_LQS_masters'])))
