@@ -1533,6 +1533,8 @@
                                     r.prefix === 'amz' ? (data.amz_sprice || '') 
                                     : r.prefix === 'ebay' ? (data.ebay_sprice || '') 
                                     : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
+                                    : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
+                                    : r.prefix === 'ebay3' ? (data.ebay3_sprice || '') 
                                     : ''
                                 }"
                                 style="width: 65px;" 
@@ -1562,7 +1564,12 @@
                                 value = Math.round(data.ebay_spft);
                             } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_spft) {
                                 value = Math.round(data.shopifyb2c_spft);
+                            } else if (r.prefix === 'ebay2' && data.ebay2_spft) {
+                                value = Math.round(data.ebay2_spft);
+                            } else if (r.prefix === 'ebay3' && data.ebay3_spft) {
+                                value = Math.round(data.ebay3_spft);
                             }
+                            
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -1595,7 +1602,12 @@
                                 value = Math.round(data.ebay_sroi);
                             } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_sroi) {
                                 value = Math.round(data.shopifyb2c_sroi);
+                            } else if (r.prefix === 'ebay2' && data.ebay2_sroi) {
+                                value = Math.round(data.ebay2_sroi);
+                            } else if (r.prefix === 'ebay3' && data.ebay3_sroi) {
+                                value = Math.round(data.ebay3_sroi);
                             }
+                            
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -2007,7 +2019,7 @@
                 });
             } else if(type === 'ebay') {
                 $.ajax({
-                    url: '/update-ebay-price',
+                    url: '/push-ebay-price',
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
@@ -2015,7 +2027,7 @@
                         price: sprice
                     },
                     success: function(res) {
-                     alert('eBay price updated successfully!');
+                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
                     },
                     error: function(err) {
                         alert('Error updating eBay price: ' + err);
@@ -2055,8 +2067,45 @@
                         $btn.html('Push to Marketplace');
                     }
                 });
+            }  else if(type === 'ebay2') {
+                $.ajax({
+                    url: '/update-ebay2-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('eBay 2 price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating eBay 2 price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            } else if(type === 'ebay2') {
+                $.ajax({
+                    url: '/update-ebay2-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('eBay 3 price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating eBay 3 price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
             }
-
             // You can add more marketplaces here
         });
 

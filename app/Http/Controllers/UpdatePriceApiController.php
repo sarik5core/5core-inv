@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\UpdateEbaySPriceJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class UpdatePriceApiController extends Controller
 {
@@ -50,5 +52,8 @@ class UpdatePriceApiController extends Controller
             ];
         }
     }
+
+
+    
 
 }

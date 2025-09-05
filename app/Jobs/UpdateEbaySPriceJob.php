@@ -29,10 +29,14 @@ class UpdateEbaySPriceJob implements ShouldQueue
     public function handle(EbayApiService $ebayApiService)
     {
         try {
+
+
             $response = $ebayApiService->reviseFixedPriceItem(
                 itemId: $this->itemId,
                 price: $this->price,
             );
+
+            return $response;
         } catch (\Throwable $e) {
 
             // Optional: rethrow to retry
