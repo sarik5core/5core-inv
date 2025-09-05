@@ -365,11 +365,11 @@ class AmazonACOSController extends Controller
             $shopify = $shopifyData[$pm->sku] ?? null;
 
             $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
             });
 
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
             });
 
             $row = [];

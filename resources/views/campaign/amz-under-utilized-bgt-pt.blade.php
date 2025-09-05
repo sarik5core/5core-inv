@@ -860,7 +860,7 @@
                 .then(data => {
                     console.log("Backend response:", data);
                     if(data.status === 200){
-                        alert("Keywords updated successfully!");
+                        alert("Targets bid updated successfully!");
                     } else {
                         alert("Something went wrong: " + data.message);
                     }
@@ -893,7 +893,7 @@
                 .then(data => {
                     console.log("Backend response:", data);
                     if(data.status === 200){
-                        alert("Keywords updated successfully!");
+                        alert("Targets bid updated successfully!");
                     } else {
                         alert("Something went wrong: " + data.message);
                     }

@@ -110,15 +110,17 @@ class PricingMasterViewsController extends Controller
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
             $inv = $shopifyItem ? ($shopifyItem->inv ?? 0) : 0;
             $l30 = $shopifyItem ? ($shopifyItem->quantity ?? 0) : 0;
+            $shopify_l30 = $shopifyItem ? ($shopifyItem->shopify_l30 ?? 0) : 0;
 
             $item = (object) [
 
-                
+
                 'SKU'     => $sku,
                 'Parent'  => $product->parent,
                 'L30'     => $l30,
+                'shopify_l30' => $shopify_l30,
                 'INV'     => $inv,
-                'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 100 ) : 0 ,
+                'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 100) : 0,
                 //  'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 1) : 0,
                 'MSRP'    => $msrp,
                 'MAP'     => $map,
@@ -127,6 +129,7 @@ class PricingMasterViewsController extends Controller
                 'is_parent' => $isParent,
                 'inv' => $shopifyData[trim(strtoupper($sku))]->inv ?? 0,
 
+
                 // Amazon
                 'amz_price' => $amazon ? ($amazon->price ?? 0) : 0,
                 'amz_l30'   => $amazon ? ($amazon->units_ordered_l30 ?? 0) : 0,
@@ -134,8 +137,8 @@ class PricingMasterViewsController extends Controller
                 'sessions_l30' => $amazon ? ($amazon->sessions_l30 ?? 0) : 0,
                 'amz_cvr'   => $amazon ? $this->calculateCVR($amazon->units_ordered_l30 ?? 0, $amazon->sessions_l30 ?? 0) : null,
                 'price_lmpa' => $amazon ? ($amazon->price_lmpa ?? 0) : 0,
-                'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.80 - $lp - $ship) / $amazon->price) : 0,
-                'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.80 - $lp - $ship) / $lp) : 0,
+                'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.68 - $lp - $ship) / $amazon->price) : 0,
+                'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.68 - $lp - $ship) / $lp) : 0,
 
 
                 // eBay
@@ -145,8 +148,8 @@ class PricingMasterViewsController extends Controller
                 'price_lmpa'   => $ebay ? ($ebay->price_lmpa ?? 0) : 0,
                 'ebay_views' => $ebay ? ($ebay->views ?? 0) : 0,
                 'ebay_cvr'   => $ebay ? $this->calculateCVR($ebay->ebay_l30 ?? 0, $ebay->views ?? 0) : null,
-                'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.73 - $lp - $ship) / $ebay->ebay_price) : 0,
-                'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.73 - $lp - $ship) / $lp) : 0,
+                'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.71 - $lp - $ship) / $ebay->ebay_price) : 0,
+                'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.71 - $lp - $ship) / $lp) : 0,
 
                 // Doba
                 'doba_price' => $doba ? ($doba->anticipated_income ?? 0) : 0,
@@ -185,8 +188,8 @@ class PricingMasterViewsController extends Controller
                 'ebay2_price' => $ebay2 ? (float) ($ebay2->{'ebay_price'} ?? 0) : 0,
                 'ebay2_l30'   => $ebay2 ? (float) ($ebay2->{'ebay_l30'} ?? 0) : 0,
                 'ebay2_dil'   => $ebay2 ? (float) ($ebay2->{'dil'} ?? 0) : 0,
-                'ebay2_pft'   => $ebay2 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.87 - $lp - $ship) / $ebay2->ebay_price) : 0,
-                'ebay2_roi'   => $ebay2 && $lp > 0 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.87 - $lp - $ship) / $lp) : 0,
+                'ebay2_pft'   => $ebay2 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.80 - $lp - $ship) / $ebay2->ebay_price) : 0,
+                'ebay2_roi'   => $ebay2 && $lp > 0 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.80 - $lp - $ship) / $lp) : 0,
 
                 // eBay3
                 'ebay3_price' => $ebay3 ? (float) ($ebay3->{'ebay_price'} ?? 0) : 0,
@@ -194,8 +197,8 @@ class PricingMasterViewsController extends Controller
                 'ebay3_views' => $ebay3 ? ($ebay3->views ?? 0) : 0,
                 'ebay3_dil'   => $ebay3 ? (float) ($ebay3->{'dil'} ?? 0) : 0,
                 'ebay3_cvr'   => $ebay3 ? $this->calculateCVR($ebay3->ebay_l30 ?? 0, $ebay3->views ?? 0) : null,
-                'ebay3_pft'   => $ebay3 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.87 - $lp - $ship) / $ebay3->ebay_price) : 0,
-                'ebay3_roi'   => $ebay3 && $lp > 0 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.87 - $lp - $ship) / $lp) : 0,
+                'ebay3_pft'   => $ebay3 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.71 - $lp - $ship) / $ebay3->ebay_price) : 0,
+                'ebay3_roi'   => $ebay3 && $lp > 0 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.71 - $lp - $ship) / $lp) : 0,
 
                 // Amazon DataView values
                 'amz_sprice' => isset($amazonDataView[$sku]) ?
@@ -235,6 +238,7 @@ class PricingMasterViewsController extends Controller
             $shopify = $shopifyData[trim(strtoupper($sku))] ?? null;
             $item->shopifyb2c_price = $shopify ? $shopify->price : 0;
             $item->shopifyb2c_l30 = $shopify ? $shopify->quantity : 0;
+            $item->shopifyb2c_l30_data = $shopify ? $shopify->shopify_l30 : 0;
             $item->shopifyb2c_image = $shopify ? $shopify->image_src : null;
             $item->shopifyb2c_pft = $item->shopifyb2c_price > 0 ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $item->shopifyb2c_price) : 0;
             $item->shopifyb2c_roi = ($lp > 0 && $item->shopifyb2c_price > 0) ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $lp) : 0;
@@ -296,6 +300,7 @@ class PricingMasterViewsController extends Controller
             'status' => 200,
         ]);
     }
+
 
     protected function applyFilters($data, $dilFilter, $dataType, $parentFilter, $skuFilter)
     {
@@ -411,8 +416,8 @@ class PricingMasterViewsController extends Controller
                 $amazonDataView = AmazonDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
 
-                $spft = $sprice > 0 ? ((($sprice * 0.80) - $lp - $ship) / $sprice) * 100 : 0;
-                $sroi = $lp > 0 ? ((($sprice * 0.80) - $lp - $ship) / $lp) * 100 : 0;
+                $spft = $sprice > 0 ? ((($sprice * 0.68) - $lp - $ship) / $sprice) * 100 : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.68) - $lp - $ship) / $lp) * 100 : 0;
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
                 $existing['SPFT'] = number_format($spft, 2, '.', '');
                 $existing['SROI'] = number_format($sroi, 2, '.', '');
@@ -427,8 +432,8 @@ class PricingMasterViewsController extends Controller
                 $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($ebayDataView->value) ? $ebayDataView->value : (json_decode($ebayDataView->value, true) ?: []);
 
-                $spft = $sprice > 0 ? round(((($sprice * 0.73) - $lp - $ship) / $sprice) * 100, 2) : 0;
-                $sroi = $lp > 0 ? ((($sprice * 0.73) - $lp - $ship) / $lp) * 100 : 0;
+                $spft = $sprice > 0 ? round(((($sprice * 0.71) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.71) - $lp - $ship) / $lp) * 100 : 0;
 
                 // Round and store as string
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
@@ -441,25 +446,43 @@ class PricingMasterViewsController extends Controller
                 $ebayDataView->save();
                 break;
 
+
             case 'shopifyb2c':
-                $shopifyDataView = Shopifyb2cDataView::firstOrNew(['sku' => $sku]);
-                $existing = is_array($shopifyDataView->value) ? $shopifyDataView->value : (json_decode($shopifyDataView->value, true) ?: []);
+                try {
+                    $shopifyDataView = Shopifyb2cDataView::firstOrNew(['sku' => $sku]);
+                    $existing = is_array($shopifyDataView->value) ? $shopifyDataView->value : (json_decode($shopifyDataView->value, true) ?: []);
 
-                // Shopify fee example: 10% (0.90 multiplier)
-                $spft = $sprice > 0 ? ((($sprice * 0.75) - $lp - $ship) / $sprice) * 100 : 0;
-                $sroi = $lp > 0 ? ((($sprice * 0.75) - $lp - $ship) / $lp) * 100 : 0;
+                    // Calculate values
+                    $spft = $sprice > 0 ? ((($sprice * 0.75) - $lp - $ship) / $sprice) * 100 : 0;
+                    $sroi = $lp > 0 ? ((($sprice * 0.75) - $lp - $ship) / $lp) * 100 : 0;
 
-                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
-                $existing['SPFT'] = number_format($spft, 2, '.', '');
-                $existing['SROI'] = number_format($sroi, 2, '.', '');
+                    // Format and store values
+                    $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                    $existing['SPFT'] = number_format($spft, 2, '.', '');
+                    $existing['SROI'] = number_format($sroi, 2, '.', '');
 
+                    // Convert to JSON if needed
+                    $shopifyDataView->value = json_encode($existing);
 
-                $shopifyDataView->value = $existing;
-                $shopifyDataView->save();
+                    // Save with error logging
+                    if (!$shopifyDataView->save()) {
+                        \Log::error("Failed to save ShopifyB2C data for SKU: $sku");
+                        throw new \Exception("Save failed");
+                    }
 
-                $this->pushShopifyPriceBySku($sku, $sprice);
+                    // Update Shopify price
+                    $request = new Request();
+                    $request->merge(['sku' => $sku, 'price' => $sprice]);
+                    $this->pushShopifyPriceBySku($request);
+                } catch (\Exception $e) {
+                    \Log::error("Error saving ShopifyB2C price: " . $e->getMessage());
+                    return response()->json([
+                        'message' => 'Error saving ShopifyB2C price',
+                        'error' => $e->getMessage(),
+                        'status' => 500
+                    ]);
+                }
                 break;
-
 
             default:
                 return response()->json([
@@ -478,6 +501,7 @@ class PricingMasterViewsController extends Controller
             'status' => 200
         ]);
     }
+
 
     public function pushShopifyPriceBySku(Request $request)
     {
@@ -509,6 +533,4 @@ class PricingMasterViewsController extends Controller
             ], 500);
         }
     }
-
-
 }

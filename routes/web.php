@@ -924,11 +924,15 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/category/bulk-delete', [CategoryController::class, 'bulkDelete'])->name('category.bulk-delete');
 
     //To Order Analysis routes
-    Route::get('/test', [ToOrderAnalysisController::class, 'test'])->name('test');
-    Route::get('/to-order-analysis', [ToOrderAnalysisController::class, 'index'])->name('to.order.analysis');
-    Route::post('/update-link', [ToOrderAnalysisController::class, 'updateLink'])->name('update.rfq.link');
-    Route::post('/mfrg-progresses/insert', [ToOrderAnalysisController::class, 'storeMFRG'])->name('mfrg.progresses.insert');
-    Route::post('/save-to-order-review', [ToOrderAnalysisController::class, 'storeToOrderReview'])->name('save.to_order_review');
+    Route::controller(ToOrderAnalysisController::class)->group(function () {
+        Route::get('/test', 'test')->name('test');
+        Route::get('/to-order-analysis', 'index')->name('to.order.analysis');
+        Route::get('/to-order-analysis-new', 'toOrderAnalysisNew')->name('to.order.analysis.new');
+        Route::get('/to-order-analysis/data', 'getToOrderAnalysis')->name('to.order.analysis.data');
+        Route::post('/update-link', 'updateLink')->name('update.rfq.link');
+        Route::post('/mfrg-progresses/insert', 'storeMFRG')->name('mfrg.progresses.insert');
+        Route::post('/save-to-order-review', 'storeToOrderReview')->name('save.to_order_review');
+    });
 
     //Movement Analysis
     Route::get('/movement.analysis', action: [MovementAnalysisController::class, 'movementAnalysis'])->name('movement.analysis');

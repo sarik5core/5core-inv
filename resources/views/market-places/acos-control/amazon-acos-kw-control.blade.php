@@ -262,11 +262,15 @@
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
                 ajaxURL: "/amazon-acos-kw-control-data",
-                layout: "fitData",
+                layout: "fitDataFill",
                 pagination: "local",
                 paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                initialSort:[
+                    {column:"parent", dir:"asc"},  
+                    {column:"sku", dir:"asc"},     
+                ],
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
@@ -506,11 +510,19 @@
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
                                 var rowData = cell.getRow().getData();
-                                var sbgtInput = cell.getRow().getElement().querySelector('.sbgt-input');
-                                var sbgtValue = parseFloat(sbgtInput.value) || 0;
-                                updateBid(sbgtValue, rowData.campaign_id);
+                                var acos = parseFloat(rowData.acos_L30) || 0;  
+
+                                if(acos > 0){   
+                                    var sbgtInput = cell.getRow().getElement().querySelector('.sbgt-input');
+                                    var sbgtValue = parseFloat(sbgtInput.value) || 0;
+
+                                    updateBid(sbgtValue, rowData.campaign_id);
+                                } else {
+                                    console.log("Skipped because acos_L30 = 0 for campaign:", rowData.campaign_id);
+                                }
                             }
                         }
+
                     },
                     {
                         title: "TPFT %",
@@ -721,12 +733,16 @@
                 filteredData.forEach(function(row){
                     var rowEl = row.getElement();
                     if(rowEl && rowEl.offsetParent !== null){  
-                        var sbgtInput = rowEl.querySelector('.sbgt-input');
-                        var sbgtValue = sbgtInput ? parseFloat(sbgtInput.value) || 0 : 0;
-
                         var rowData = row.getData();
-                        campaignIds.push(rowData.campaign_id);
-                        bgts.push(sbgtValue);
+                        var acos = parseFloat(rowData.acos_L30) || 0;
+
+                        if(acos > 0){
+                            var sbgtInput = rowEl.querySelector('.sbgt-input');
+                            var sbgtValue = sbgtInput ? parseFloat(sbgtInput.value) || 0 : 0;
+
+                            campaignIds.push(rowData.campaign_id);
+                            bgts.push(sbgtValue);
+                        }
                     }
                 });
 
@@ -748,7 +764,7 @@
                 .then(data => {
                     console.log("Backend response:", data);
                     if(data.status === 200){
-                        alert("Keywords updated successfully!");
+                        alert("Campaign budget updated successfully!");
                     } else {
                         alert("Something went wrong: " + data.message);
                     }
@@ -783,7 +799,7 @@
                 .then(data => {
                     console.log("Backend response:", data);
                     if(data.status === 200){
-                        alert("Keywords updated successfully!");
+                        alert("Campaign budget updated successfully!");
                     } else {
                         alert("Something went wrong: " + data.message);
                     }

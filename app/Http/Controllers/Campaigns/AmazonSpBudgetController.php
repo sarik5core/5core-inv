@@ -379,12 +379,22 @@ class AmazonSpBudgetController extends Controller
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
+            // if (stripos($pm->sku, 'PARENT ') === 0) {
+            //     $childRows = $productMasters->where('parent', $parent);
+
+            //     $inv = $childRows
+            //         ->filter(fn($child) => stripos($child->sku, 'PARENT ') !== 0) 
+            //         ->sum(fn($child) => $shopifyData[$child->sku]->inv ?? 0);
+            // } else {
+            //     $inv = $shopifyData[$pm->sku]->inv ?? 0;
+            // }
+
             $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
             });
 
             $matchedCampaignL1 = $amazonSpCampaignReportsL1->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
             });
 
             $row = [];
