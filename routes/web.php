@@ -191,6 +191,7 @@ use App\Http\Controllers\MarketPlace\EbayTwoController;
 use App\Http\Controllers\MarketPlace\EbayThreeController;
 use App\Http\Controllers\MarketPlace\WalmartControllerMarket;
 use App\Http\Controllers\MarketingMaster\CarouselSalesController;
+use App\Http\Controllers\MarketingMaster\EbayCvrLqsController;
 use App\Http\Controllers\MarketingMaster\ShoppableVideoController;
 use App\Http\Controllers\MarketPlace\ACOSControl\AmazonACOSController;
 use App\Http\Controllers\MarketPlace\ACOSControl\EbayACOSController;
@@ -896,6 +897,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/import-cvr-data', [CvrLQSMasterController::class, 'importCVRData'])->name('import.cvr');
 
     Route::get('/lqs-from-sheet', [ListingLQSMasterController::class, 'getLqsFromGoogleSheet']);
+
+    //ebay lqs cvr
+    Route::get('/ebaycvrLQS.master', action: [EbayCvrLqsController::class, 'cvrLQSMaster'])->name('ebaycvrLQS.master');
+    Route::get('/ebaycvrLQS/view-data', [EbayCvrLqsController::class, 'getViewEbayCvrData'])->name('ebaycvrLQS.viewData');
+    Route::post('/ebay-cvr-lqs/save-action', [EbayCvrLqsController::class, 'saveEbayAction']);
+
+    Route::post('/import-ebay-cvr-data', [EbayCvrLqsController::class, 'importEbayCVRData'])->name('import.ebay.cvr');
 
 
 

@@ -1023,7 +1023,10 @@
                                         @endif
                                         @if (isset($permissions['cvr_LQS_masters']) && in_array('view', $permissions['cvr_LQS_masters']))
                                             <li>
-                                                <a href="{{ route('cvrLQS.master') }}">LQS - CVR</a>
+                                                <a href="{{ route('cvrLQS.master') }}">Amazon LQS - CVR</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('ebaycvrLQS.master') }}">Ebay LQS - CVR</a>
                                             </li>
                                         @endif
                                     </ul>

@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Amazon Cvr LQS Master', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay Cvr LQS Master', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -991,7 +991,7 @@
 
 @section('content')
     @include('layouts.shared/page-title', [
-        'page_title' => 'Amazon Cvr LQS Master',
+        'page_title' => 'Ebay Cvr LQS Master',
         'sub_title' => 'Product Master',
     ])
 
@@ -1331,7 +1331,7 @@
 
                         <div class="modal-body">
 
-                            <a href="{{ asset('sample_excel/sample_cvr_file.csv') }}" download class="btn btn-outline-secondary mb-3">📄 Download Sample File</a>
+                            <a href="{{ asset('sample_excel/sample_cvr_lqs_file.csv') }}" download class="btn btn-outline-secondary mb-3">📄 Download Sample File</a>
 
                             <input type="file" id="importFile" name="file" accept=".xlsx,.xls,.csv" class="form-control" />
                         </div>
@@ -1469,7 +1469,7 @@
                                     <th data-field="al30" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                AMZ SALES L30 <span class="sort-arrow">↓</span>
+                                                E L30 <span class="sort-arrow">↓</span>
                                             </div>
                                             <!-- <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="ovl30-total">0</div> -->
@@ -1478,7 +1478,7 @@
                                     <th data-field="adil" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                AMZ DIL <span class="sort-arrow">↓</span>
+                                                E DIL <span class="sort-arrow">↓</span>
                                             </div>
                                             <!-- <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="ovdil-total">0%</div> -->
@@ -1492,8 +1492,8 @@
                                             <div class="d-flex align-items-center">
                                                 VIEWS <span class="sort-arrow">↓</span>
                                             </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="views-total">0</div>
+                                            {{-- <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div> --}}
+                                            {{-- <div class="metric-total" id="views-total">0</div> --}}
                                         </div>
                                     </th>
                                     <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
@@ -1505,7 +1505,7 @@
                                             <div class="metric-total" id="cvr-total">0</div> -->
                                         </div>
                                     </th>
-                                    <th data-field="lqs_jungle" style="vertical-align: middle; white-space: nowrap;">
+                                    {{-- <th data-field="lqs_jungle" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
                                                 LQS JUNGLE <span class="sort-arrow">↓</span>
@@ -1529,7 +1529,7 @@
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="lqsc-total">0</div>
                                         </div>
-                                    </th>
+                                    </th> --}}
                                     <th data-field="comp"
                                         style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
                                         <div class="d-flex flex-column align-items-center">
@@ -1600,7 +1600,7 @@
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
-                            <div class="loader-text">Loading Amazon Cvr LQS data...</div>
+                            <div class="loader-text">Loading Ebay Cvr LQS data...</div>
                         </div>
                     </div>
                 </div>
@@ -2234,7 +2234,7 @@
             function loadData() {
                 showLoader();
                 return $.ajax({
-                    url: '/cvrLQS/view-data',
+                    url: '/ebaycvrLQS/view-data',
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
@@ -2246,10 +2246,16 @@
 
                                 // Calculate A Dil% as (A L30 / INV), handle division by zero
                                 const inv = Number(item.INV) || 0;
-                                const aL30 = Number(item['A_L30']) || 0;
+                                const aL30 = Number(item['E_L30']) || 0;
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
                                 const aDil = inv > 0 ? aL30 / inv : 0;
+
+                                let scvr = 0;
+                                if (Number(item['PmtClkL30']) > 0) {
+                                    scvr = Number(item['E_L30']) / Number(item[
+                                        'PmtClkL30']);
+                                }
 
                                 return {
                                     sl_no: index + 1,
@@ -2264,7 +2270,7 @@
                                     'A L30': aL30,
                                     units_ordered_l60: item.units_ordered_l60 || 0,
                                     'A Dil%': aDil,
-                                    Sess30: item.Sess30 || 0,
+                                    views: item.views || 0,
                                     price: Number(item.price) || 0,
                                     COMP: item.COMP || 0,
                                     min_price: item.scout_data ? item.scout_data.min_price : 0,
@@ -2283,16 +2289,19 @@
                                     listing_quality_score: item.listing_quality_score || '',
                                     listing_quality_score_c: item.listing_quality_score_c || '',
                                     c_link: item.link || '',
+                                    comp: item.comp || '',
                                     lqs_jungle: item.lqs_jungle || '',
                                     raw_data: item || {},
                                     NR: item.NR !== undefined ? item.NR : '',
                                     status: item.status || (item.value && item.value.status) || 'Pending',
+                                    SCVR: scvr,
 
                                 };
                             });
 
                             // console.log('Data loaded successfully:', tableData);
-                            filteredData = [...tableData];
+                            // filteredData = [...tableData];
+                             filteredData = tableData.filter(row => row.SCVR * 100 < 7);
 
                         }
                     },
@@ -2432,7 +2441,7 @@
 
                     // Views (Sess30) with tooltip icon
                     $row.append($('<td>').html(
-                        `<span>${Math.round(item.Sess30)}</span>
+                        `<span>${Math.round(item.views)}</span>
                             <span class="text-info tooltip-icon ad-view-trigger" 
                                 data-bs-toggle="tooltip" 
                                 data-bs-placement="left" 
@@ -2456,42 +2465,52 @@
                     ));
 
                      // LQS Jungle (read-only)
-                    $row.append($('<td>').html(`
-                        <span>${item.lqs_jungle !== null && item.lqs_jungle !== '' ? item.lqs_jungle : '-'}</span>
-                    `));
+                    // $row.append($('<td>').html(`
+                    //     <span>${item.lqs_jungle !== null && item.lqs_jungle !== '' ? item.lqs_jungle : '-'}</span>
+                    // `));
 
                     // LQS (just show value, adjust as needed)
                     // $row.append($('<td>').text(item.listing_quality_score || ''));
-                    const lqsValue = item.raw_data?.listing_quality_score || '';
+                    // const lqsValue = item.raw_data?.listing_quality_score || '';
                     
-                    $row.append($('<td>').html(`
-                        <input type="number"
-                            class="form-control form-control-sm lqs-input" 
-                            value="${lqsValue}" 
-                            data-sku="${item['(Child) sku']}" 
-                            style="width: 80px;" />
-                    `));
+                    // $row.append($('<td>').html(`
+                    //     <input type="number"
+                    //         class="form-control form-control-sm lqs-input" 
+                    //         value="${lqsValue}" 
+                    //         data-sku="${item['(Child) sku']}" 
+                    //         style="width: 80px;" />
+                    // `));
 
                     //LQSC
-                    const lqscValue = item.raw_data?.listing_quality_score_c || '';
-                    $row.append($('<td>').html(`
-                        <input type="number" 
-                            class="form-control form-control-sm lqsc-input" 
-                            value="${lqscValue}" 
-                            data-sku="${item['(Child) sku']}" 
-                            style="width: 80px;" />
-                    `));
+                    // const lqscValue = item.raw_data?.listing_quality_score_c || '';
+                    // $row.append($('<td>').html(`
+                    //     <input type="number" 
+                    //         class="form-control form-control-sm lqsc-input" 
+                    //         value="${lqscValue}" 
+                    //         data-sku="${item['(Child) sku']}" 
+                    //         style="width: 80px;" />
+                    // `));
 
                     // COMP
                     // $row.append($('<td>').text(item.COMP));
-                    $row.append($('<td>').html(
-                        `<span>$${item.COMP || 0}</span>
-                        <span class="text-info tooltip-icon scouth-products-view-trigger" 
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="left" 
-                            title="Scouth Products View"
-                            data-item='${JSON.stringify(item.raw_data)}'>P</span>`
-                    ));
+                    // $row.append($('<td>').html(
+                    //     `<span>$${item.COMP || 0}</span>
+                    //     <span class="text-info tooltip-icon scouth-products-view-trigger" 
+                    //         data-bs-toggle="tooltip" 
+                    //         data-bs-placement="left" 
+                    //         title="Scouth Products View"
+                    //         data-item='${JSON.stringify(item.raw_data)}'>P</span>`
+                    // ));
+                    const comp = item.raw_data?.comp || '';
+                    $row.append($('<td>').html(`
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <input type="text"
+                                class="form-control form-control-sm clink-input"
+                                value="${comp}"
+                                data-sku="${item['(Child) sku']}"
+                                style="width: 100px;" />
+                        </div>
+                    `));
 
                     //LINK
                     const cLink = item.raw_data?.link || '';
@@ -2590,7 +2609,7 @@
 
                 // Save to backend
                 $.ajax({
-                    url: '/cvr-lqs/save-action',
+                    url: '/ebay-cvr-lqs/save-action',
                     type: 'POST',
                     data: {
                         sku: sku,
@@ -2622,20 +2641,21 @@
                     'A L30': row['A L30'],
                     'A Dil%': (row['A Dil%'] * 100).toFixed(2),
                     'NR': row.NR,
-                    'VIEWS': row.Sess30,
+                    'VIEWS': row.views,
                     'SCVR%': (row.SCVR * 100).toFixed(2),
-                    'lqs_jungle': row.lqs_jungle,
-                    'COMP': row.COMP,
-                    'LQS': row.listing_quality_score,
-                    'LQSC': row.listing_quality_score_c,
-                    'C link': row.c_link
+                    // 'lqs_jungle': row.lqs_jungle,
+                    'COMP': row.comp,
+                    // 'LQS': row.listing_quality_score,
+                    // 'LQSC': row.listing_quality_score_c,
+                    'C link': row.c_link,
+                    'STATUS': row.status,
                 }));
 
                 const worksheet = XLSX.utils.json_to_sheet(exportData);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "CVR Data");
 
-                XLSX.writeFile(workbook, "cvr_data_export.xlsx");
+                XLSX.writeFile(workbook, "ebay_cvr_data_export.xlsx");
             });
 
 
@@ -2722,7 +2742,7 @@
                 formData.append('file', file);
 
                 $.ajax({
-                    url: '/import-cvr-data',
+                    url: '/import-ebay-cvr-data',
                     method: 'POST',
                     data: formData,
                     headers: {
@@ -2797,10 +2817,12 @@
                 // Save handler
                 $modal.off('click', '#save-action-btn').on('click', '#save-action-btn', function() {
                     const newActionValue = $('#action-input-field').val().trim();
+                    console.log("Saving action for SKU:", rowData ? rowData['(Child) sku'] : '', "->", newActionValue);
+                    
                     const sku = rowData ? rowData['(Child) sku'] : '';
 
                     $.ajax({
-                        url: '/cvr-lqs/save-action',
+                        url: '/ebay-cvr-lqs/save-action',
                         type: 'POST',
                         data: {
                             sku: sku,
@@ -5114,7 +5136,7 @@
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['A L30']) || 0;
                         metrics.eDilTotal += parseFloat(item['A Dil%']) || 0;
-                        metrics.viewsTotal += parseFloat(item.Sess30) || 0;
+                        metrics.viewsTotal += parseFloat(item.views) || 0;
                         metrics.tacosTotal += parseFloat(item.Tacos30) || 0;
                         metrics.pftSum += parseFloat(item['PFT_percentage']) || 0;
                         metrics.roiSum += parseFloat(item.ROI_percentage) || 0;

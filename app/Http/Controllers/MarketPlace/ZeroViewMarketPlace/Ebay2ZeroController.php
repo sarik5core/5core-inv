@@ -45,6 +45,9 @@ class Ebay2ZeroController extends Controller
         foreach ($productMasters as $pm) {
             $sku = $pm->sku;
             $parent = $pm->parent;
+
+            if (stripos($sku, 'PARENT') !== false) continue;
+
             $shopify = $shopifyData[$sku] ?? null;
 
             $inv = $shopify ? $shopify->inv : 0;
@@ -53,8 +56,8 @@ class Ebay2ZeroController extends Controller
 
               // Only include rows where inv > 0, SKU exists in Ebay3Metric, and views == 0
             if ($inv > 0 && isset($ebayMetrics[$sku])) {
-                $views = $ebayMetrics[$sku]->views ?? 0;
-                if (intval($views) === 0) {
+                $views = $ebayMetrics[$sku]->views;
+                if ($views !== null && intval($views) === 0 || $views === '') {
                     // Fetch DobaDataView values
                     $dobaView = $ebay2DataViews[$sku] ?? null;
                     $value = $dobaView ? $dobaView->value : [];
