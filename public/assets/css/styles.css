@@ -319,7 +319,7 @@ a.tab-link:hover {
 }
 
 .tabulator-row.parent-row {
-    background-color: #dff0ff !important; /* highlight parent rows */
+    background-color: #bde0ff !important; 
     font-weight: bold;
 }
 .tabulator .tabulator-header-filter input {
@@ -404,5 +404,4 @@ a.tab-link:hover {
 /* parent row background css */
 .parent-row {
     background-color: #dff0ff;
-    font-weight: bold;
 }
