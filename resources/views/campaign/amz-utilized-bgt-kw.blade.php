@@ -586,9 +586,9 @@
                                 var l7_cpc = parseFloat(row.l7_cpc) || 0;
                                 var sbid;
                                 if(l1_cpc > l7_cpc) {
-                                    sbid = (l1_cpc * 1.05).toFixed(2);
+                                    sbid = (l1_cpc * 0.9).toFixed(2);
                                 }else{
-                                    sbid = (l7_cpc * 1.05).toFixed(2);
+                                    sbid = (l7_cpc * 0.9).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }

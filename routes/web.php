@@ -156,6 +156,7 @@ use App\Http\Controllers\AdvertisementMaster\Promoted_Advt\PromotedEbayControlle
 use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingController;
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
+use App\Http\Controllers\Campaigns\AmazonAdRunningController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\Campaigns\AmzCorrectlyUtilizedController;
@@ -1036,7 +1037,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-amazon-price', action: [PricingMasterViewsController::class, 'updatePrice'])->name('amazon.priceChange');
     Route::post('/push-shopify-price', action: [PricingMasterViewsController::class, 'pushShopifyPriceBySku'])->name('shopify.priceChange');
     Route::post('/push-ebay-price', action: [PricingMasterViewsController::class, 'pushEbayPriceBySku'])->name('ebay.priceChange');
-
+    Route::post('/push-ebay2-price', action: [PricingMasterViewsController::class, 'pushEbayTwoPriceBySku'])->name('ebay2.priceChange');
+    Route::post('/push-ebay3-price', action: [PricingMasterViewsController::class, 'pushEbayThreePriceBySku'])->name('ebay3.priceChange');
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
     Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
 
@@ -1600,6 +1602,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon/correctly-utilized-bgt-pt', 'correctlyUtilizedPt')->name('amazon.amz-correctly-utilized-bgt-pt');
         Route::get('/get-amz-correctly-utilized-bgt-pt', 'getAmzCorrectlyUtilizedBgtPt');
 
+    });
+
+    Route::controller(AmazonAdRunningController::class)->group(function(){
+        Route::get('/amazon/ad-running/list', 'index')->name('amazon.ad-running.list');
+        Route::get('/amazon/ad-running/data', 'getAmazonAdRunningData');
     });
 
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){

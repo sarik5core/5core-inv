@@ -1478,6 +1478,9 @@
                                             <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                         </li>
                                         <li>
+                                            <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
+                                        </li>
+                                        <li>
                                             <a data-bs-toggle="collapse" href="#amazonACOS" aria-expanded="false"
                                                 aria-controls="amazonACOS">
                                                 <span>Amazon ACOS Control</span>

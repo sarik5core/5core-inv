@@ -22,6 +22,9 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\LogClear::class,
         \App\Console\Commands\SyncTemuSheet::class,
         \App\Console\Commands\UpdateCampaignBid::class,
+        \App\Console\Commands\AutoUpdateAmazonKwBids::class,
+        \App\Console\Commands\AutoUpdateAmazonPtBids::class,
+        \App\Console\Commands\AutoUpdateAmazonHlBids::class
     ];
 
     /**
@@ -111,12 +114,21 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:ebay2-campaign-reports')
             ->dailyAt('01:15')
             ->timezone('America/Los_Angeles');
-       $schedule->command('update:campaign-bid')
+        $schedule->command('update:campaign-bid')
             ->dailyAt('23:00')
             ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-over-kw-bids')
+            ->dailyAt('17:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-over-pt-bids')
+            ->dailyAt('17:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-over-hl-bids')
+            ->dailyAt('17:00')
+            ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();
-         $schedule->command('sync:ebay-prices')->everyMinute();
-            $schedule->command('sync:sync-temu-sip')->everyMinute();
+        $schedule->command('sync:ebay-prices')->everyMinute();
+        $schedule->command('sync:sync-temu-sip')->everyMinute();
 
     }
 
