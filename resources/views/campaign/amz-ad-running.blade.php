@@ -32,10 +32,6 @@
             transition: background 0.18s;
         }
 
-        .tabulator-row:nth-child(even) {
-            background-color: #f8fafc !important;
-        }
-
         .tabulator .tabulator-cell {
             text-align: center;
             padding: 14px 10px;
@@ -50,15 +46,6 @@
         .tabulator .tabulator-cell:focus {
             outline: 1px solid #262626;
             background: #e0eaff;
-        }
-
-        .tabulator-row:hover {
-            background-color: #dbeafe !important;
-        }
-
-        .parent-row {
-            background-color: #e0eaff !important;
-            font-weight: 700;
         }
 
         #account-health-master .tabulator {
@@ -113,6 +100,10 @@
         .tabulator .tabulator-footer .tabulator-paginator .tabulator-page.active {
             background: #2563eb;
             color: white;
+        }
+
+        .parent-row-bg{
+            background-color: #c3efff !important;
         }
 
         .green-bg {
@@ -236,7 +227,7 @@
             };
 
             var table = new Tabulator("#budget-under-table", {
-                index: "Sku",
+                index: "sku",
                 ajaxURL: "/amazon/ad-running/data",
                 layout: "fitDataFill",
                 pagination: "local",
@@ -245,13 +236,14 @@
                 resizableColumns: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
-                    const sku = data["Sku"] || '';
+                    const sku = (data.sku || "").toLowerCase().trim();
 
-                    if (sku.toUpperCase().includes("PARENT")) {
-                        row.getElement().classList.add("parent-row");
+                    if (sku.includes("parent ")) {
+                        row.getElement().classList.add("parent-row-bg");
                     }
                 },
-                columns: [{
+                columns: [
+                    {
                         title: "Parent",
                         field: "parent"
                     },
@@ -384,33 +376,61 @@
                     },
                     {
                         title: "CLICKS L30",
-                        field: "CLICKS_L30"
+                        field: "CLICKS_L30",
+                        formatter: function(cell) {
+                            let CLICKS_L30 = cell.getValue();
+                            return `
+                                <span>${CLICKS_L30}</span>
+                                <i class="fa fa-info-circle text-primary toggle-clicksL30-btn" 
+                                data-clicks-l30="${CLICKS_L30}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
                     },
                     {
                         title: "CLICKS L7",
-                        field: "CLICKS_L7"
+                        field: "CLICKS_L7",
+                        formatter: function(cell) {
+                            let CLICKS_L7 = cell.getValue();
+                            return `
+                                <span>${CLICKS_L7}</span>
+                                <i class="fa fa-info-circle text-primary toggle-clicksL7-btn" 
+                                data-clicks-l7="${CLICKS_L7}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
                     },
                     {
                         title: "IMP L30",
-                        field: "IMP_L30"
+                        field: "IMP_L30",
+                        formatter: function(cell) {
+                            let IMP_L30 = cell.getValue();
+                            return `
+                                <span>${IMP_L30}</span>
+                                <i class="fa fa-info-circle text-primary toggle-impL30-btn" 
+                                data-clicks-l7="${IMP_L30}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
                     },
                     {
                         title: "IMP L7",
-                        field: "IMP_L7"
+                        field: "IMP_L7",
+                        formatter: function(cell) {
+                            let IMP_L7 = cell.getValue();
+                            return `
+                                <span>${IMP_L7}</span>
+                                <i class="fa fa-info-circle text-primary toggle-impL7-btn" 
+                                data-clicks-l7="${IMP_L7}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
                     },
                     // KW
                     {
                         title: "KW IMP L30",
                         field: "kw_impr_L30",
-                        formatter: function(cell) {
-                            let kw_imp_l30 = cell.getValue();
-                            return `
-                                <span>${kw_imp_l30}</span>
-                                <i class="fa fa-info-circle text-primary toggle-kw-imp-btn" 
-                                data-kw-imp-l30="${kw_imp_l30}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
+                        visible: false,
                     },
                     {
                         title: "KW IMP L7",
@@ -420,15 +440,7 @@
                     {
                         title: "KW Clicks L30",
                         field: "kw_clicks_L30",
-                        formatter: function(cell) {
-                            let kw_clicks_L30 = cell.getValue();
-                            return `
-                                <span>${kw_clicks_L30}</span>
-                                <i class="fa fa-info-circle text-primary toggle-kw-clicks-btn" 
-                                data-kw-clicks-l30="${kw_clicks_L30}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
+                        visible: false
                     },
                     {
                         title: "KW Clicks L7",
@@ -440,15 +452,7 @@
                     {
                         title: "PT IMP L30",
                         field: "pt_impr_L30",
-                        formatter: function(cell) {
-                            let pt_impr_L30 = cell.getValue();
-                            return `
-                                <span>${pt_impr_L30}</span>
-                                <i class="fa fa-info-circle text-primary toggle-pt-imp-btn" 
-                                data-pt-imp-l30="${pt_impr_L30}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
+                        visible: false
                     },
                     {
                         title: "PT IMP L7",
@@ -458,15 +462,7 @@
                     {
                         title: "PT Clicks L30",
                         field: "pt_clicks_L30",
-                        formatter: function(cell) {
-                            let pt_clicks_L30 = cell.getValue();
-                            return `
-                                <span>${pt_clicks_L30}</span>
-                                <i class="fa fa-info-circle text-primary toggle-pt-clicks-btn" 
-                                data-pt-clicks-l30="${pt_clicks_L30}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
+                        visible: false
                     },
                     {
                         title: "PT Clicks L7",
@@ -478,15 +474,7 @@
                     {
                         title: "HL IMP L30",
                         field: "hl_impr_L30",
-                        formatter: function(cell) {
-                            let hl_impr_L30 = cell.getValue();
-                            return `
-                                <span>${hl_impr_L30}</span>
-                                <i class="fa fa-info-circle text-primary toggle-hl-imp-btn" 
-                                data-hl-imp-l30="${hl_impr_L30}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
+                        visible: false
                     },
                     {
                         title: "HL IMP L7",
@@ -496,15 +484,7 @@
                     {
                         title: "HL Clicks L30",
                         field: "hl_clicks_L30",
-                        formatter: function(cell) {
-                            let hl_clicks_L30 = cell.getValue();
-                            return `
-                                <span>${hl_clicks_L30}</span>
-                                <i class="fa fa-info-circle text-primary toggle-hl-clicks-btn" 
-                                data-hl-clicks-l30="${hl_clicks_L30}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
+                        visible: false
                     },
                     {
                         title: "HL Clicks L7",
@@ -534,7 +514,7 @@
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    if (!invFilterVal) {
+                    if (invFilterVal === "ALL") {
                         if (parseFloat(data.INV) === 0) return false;
                     } else if (invFilterVal === "INV_0") {
                         if (parseFloat(data.INV) !== 0) return false;
@@ -625,8 +605,8 @@
             });
 
             document.addEventListener("click", function(e) {
-                if (e.target.classList.contains("toggle-kw-imp-btn")) {
-                    let colsToToggle = ["kw_impr_L7"];
+                if (e.target.classList.contains("toggle-clicksL30-btn")) {
+                    let colsToToggle = ["kw_clicks_L30", "pt_clicks_L30", "hl_clicks_L30"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -635,8 +615,8 @@
                         }
                     });
                 }
-                if (e.target.classList.contains("toggle-kw-clicks-btn")) {
-                    let colsToToggle = ["kw_clicks_L7"];
+                if (e.target.classList.contains("toggle-clicksL7-btn")) {
+                    let colsToToggle = ["kw_clicks_L7", "pt_clicks_L7", "hl_clicks_L7"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -645,8 +625,8 @@
                         }
                     });
                 }
-                if (e.target.classList.contains("toggle-pt-imp-btn")) {
-                    let colsToToggle = ["pt_impr_L7"];
+                if (e.target.classList.contains("toggle-impL30-btn")) {
+                    let colsToToggle = ["kw_impr_L30", "pt_impr_L30", "hl_impr_L30"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -655,27 +635,8 @@
                         }
                     });
                 }
-                if (e.target.classList.contains("toggle-pt-clicks-btn")) {
-                    let colsToToggle = ["pt_clicks_L7"];
-
-                    colsToToggle.forEach(colField => {
-                        let col = table.getColumn(colField);
-                        if (col) {
-                            col.toggle();
-                        }
-                    });
-                }if (e.target.classList.contains("toggle-hl-imp-btn")) {
-                    let colsToToggle = ["hl_impr_L7"];
-
-                    colsToToggle.forEach(colField => {
-                        let col = table.getColumn(colField);
-                        if (col) {
-                            col.toggle();
-                        }
-                    });
-                }
-                if (e.target.classList.contains("toggle-hl-clicks-btn")) {
-                    let colsToToggle = ["hl_clicks_L7"];
+                if (e.target.classList.contains("toggle-impL7-btn")) {
+                    let colsToToggle = ["kw_impr_L7", "pt_impr_L7", "hl_impr_L7"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -687,7 +648,7 @@
                 
             });
 
-            document.body.style.zoom = "80%";
+            document.body.style.zoom = "85%";
         });
     </script>
 @endsection
