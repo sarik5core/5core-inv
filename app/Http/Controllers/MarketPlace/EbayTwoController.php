@@ -49,7 +49,7 @@ class EbayTwoController extends Controller
         $marketplaceData = MarketplacePercentage::where('marketplace', 'EbayTwo')->first();
         $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
 
-        return view('market-places.EbayTwoAnalysis', [
+        return view('market-places.ebayTwoAnalysis', [
             'mode' => $mode,
             'demo' => $demo,
             'ebayTwoPercentage' => $percentage

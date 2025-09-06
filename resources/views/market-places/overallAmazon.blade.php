@@ -2996,7 +2996,7 @@
                     const PFTafterPFT = pftAmt - spend;
                     const adSpend = Number(item['Ad_Spend']) || 0;
                     const tacos = spend / soldAmount;
-                    const totalProfit = (aL30 * price) * rawPft;
+                    const totalProfit = (aL30 * price) * rawPft / 100;
 
 
                     // total profit 
