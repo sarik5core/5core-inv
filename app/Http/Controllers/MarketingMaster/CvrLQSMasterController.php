@@ -239,6 +239,11 @@ class CvrLQSMasterController extends Controller
                 $row['link'] = $lqsActions[$sku]->value['link'];
             }
 
+            $row['status'] = '';
+            if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['status'])) {
+                $row['status'] = $lqsActions[$sku]->value['status'];
+            }
+
             $result[] = (object) $row;
         }
 
@@ -249,6 +254,47 @@ class CvrLQSMasterController extends Controller
         ]);
     }
 
+    // public function saveAction(Request $request)
+    // {
+    //     $request->validate([
+    //         'sku' => 'required|string',
+    //         'action' => 'nullable|string',
+    //         'listing_quality_score' => 'nullable|numeric',
+    //         'listing_quality_score_c' => 'nullable|numeric',
+    //         'link' => 'nullable|string',
+    //         'status' => 'nullable|string',
+    //     ]);
+
+    //     $sku = $request->input('sku');
+    //     $action = $request->input('action');
+    //     $lqs = $request->input('listing_quality_score');
+    //     $lqsc = $request->input('listing_quality_score_c');
+    //     $link = $request->input('link');
+    //     $status = $request->input('status');
+
+    //     // Find or create the record
+    //     $record = CvrLqs::firstOrNew(['sku' => $sku]);
+    //     $value = is_array($record->value) ? $record->value : (json_decode($record->value, true) ?? []);
+    //     // $value = $record->value ?? [];
+    //     // $value['action'] = $action;
+    //     // $value['listing_quality_score'] = $lqs;
+    //     // $value['listing_quality_score_c'] = $lqsc;
+    //     // $value['link'] = $link;
+
+    //     if (!is_null($action)) $value['action'] = $action;
+    //     if (!is_null($lqs)) $value['listing_quality_score'] = $lqs;
+    //     if (!is_null($lqsc)) $value['listing_quality_score_c'] = $lqsc;
+    //     if (!is_null($link)) $value['link'] = $link;
+    //     if (!is_null($status)) $value['status'] = $status; 
+    //     dd($record, $value);
+
+
+    //     $record->value = $value;
+    //     $record->save();
+
+    //     return response()->json(['success' => true, 'data' => $record]);
+    // }
+
     public function saveAction(Request $request)
     {
         $request->validate([
@@ -257,26 +303,41 @@ class CvrLQSMasterController extends Controller
             'listing_quality_score' => 'nullable|numeric',
             'listing_quality_score_c' => 'nullable|numeric',
             'link' => 'nullable|string',
+            'status' => 'nullable|string',
         ]);
 
-        $sku = $request->input('sku');
+        // Normalize SKU (remove extra spaces, unify case)
+        $sku = strtoupper(trim(preg_replace('/\s+/', ' ', $request->input('sku'))));
+
         $action = $request->input('action');
         $lqs = $request->input('listing_quality_score');
         $lqsc = $request->input('listing_quality_score_c');
         $link = $request->input('link');
+        $status = $request->input('status');
 
-        // Find or create the record
-        $record = CvrLqs::firstOrNew(['sku' => $sku]);
-        $value = $record->value ?? [];
-        $value['action'] = $action;
-        $value['listing_quality_score'] = $lqs;
-        $value['listing_quality_score_c'] = $lqsc;
-        $value['link'] = $link;
+        // Find the record strictly by normalized SKU
+        $record = CvrLqs::where('sku', $sku)->first();
+
+        if (!$record) {
+            $record = new CvrLqs();
+            $record->sku = $sku;
+            $value = [];
+        } else {
+            $value = is_array($record->value) ? $record->value : (json_decode($record->value, true) ?? []);
+        }
+
+        if (!is_null($action)) $value['action'] = $action;
+        if (!is_null($lqs)) $value['listing_quality_score'] = $lqs;
+        if (!is_null($lqsc)) $value['listing_quality_score_c'] = $lqsc;
+        if (!is_null($link)) $value['link'] = $link;
+        if (!is_null($status)) $value['status'] = $status;
+
         $record->value = $value;
         $record->save();
 
         return response()->json(['success' => true, 'data' => $record]);
     }
+
 
 
     // public function importCVRData(Request $request)

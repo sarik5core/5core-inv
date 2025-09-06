@@ -1044,7 +1044,10 @@
                                         @endif
                                         @if (isset($permissions['cvr_LQS_masters']) && in_array('view', $permissions['cvr_LQS_masters']))
                                             <li>
-                                                <a href="{{ route('cvrLQS.master') }}">LQS - CVR</a>
+                                                <a href="{{ route('cvrLQS.master') }}">Amazon LQS - CVR</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('ebaycvrLQS.master') }}">Ebay LQS - CVR</a>
                                             </li>
                                         @endif
                                     </ul>
@@ -1475,6 +1478,9 @@
                                             <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                         </li>
                                         <li>
+                                            <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
+                                        </li>
+                                        <li>
                                             <a data-bs-toggle="collapse" href="#amazonACOS" aria-expanded="false"
                                                 aria-controls="amazonACOS">
                                                 <span>Amazon ACOS Control</span>
@@ -1528,6 +1534,15 @@
                                                     </li>
                                                     <li>
                                                         <a href=" {{ route('amazon-sp.amz-under-utilized-bgt-pt') }} ">AMZ < UTILIZED BGT PT</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.amz-correctly-utilized-bgt-kw') }}">CORRECTLY UTILIZED KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.amz-correctly-utilized-bgt-hl') }}">CORRECTLY UTILIZED HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.amz-correctly-utilized-bgt-pt') }}">CORRECTLY UTILIZED PT</a>
                                                     </li>
                                                 </ul>
                                             </div>

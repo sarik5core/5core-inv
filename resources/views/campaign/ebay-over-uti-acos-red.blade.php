@@ -417,7 +417,7 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var sbid = (l1_cpc * 0.9).toFixed(2);
+                            var sbid = (l1_cpc * 0.90).toFixed(2);
                             return sbid;
                         },
                     },

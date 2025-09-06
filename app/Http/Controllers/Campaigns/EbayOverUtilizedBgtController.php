@@ -7,11 +7,205 @@ use App\Models\EbayDataView;
 use App\Models\EbayPriorityReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
+use AWS\CRT\Log;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log as FacadesLog;
 
 class EbayOverUtilizedBgtController extends Controller
 {
+
+    function getEbayAccessToken()
+    {
+        if (Cache::has('ebay_access_token')) {
+            return Cache::get('ebay_access_token');
+        }
+
+        $clientId = env('EBAY_APP_ID');
+        $clientSecret = env('EBAY_CERT_ID');
+        $refreshToken = env('EBAY_REFRESH_TOKEN');
+        $endpoint = "https://api.ebay.com/identity/v1/oauth2/token";
+
+        $postFields = http_build_query([
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $refreshToken,
+            'scope' => 'https://api.ebay.com/oauth/api_scope/sell.marketing'
+        ]);
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $endpoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $postFields,
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/x-www-form-urlencoded",
+                "Authorization: Basic " . base64_encode("$clientId:$clientSecret")
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            throw new Exception(curl_error($ch));
+        }
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        if (isset($data['access_token'])) {
+            $accessToken = $data['access_token'];
+            $expiresIn = $data['expires_in'] ?? 7200;
+
+            Cache::put('ebay_access_token', $accessToken, $expiresIn - 60);
+
+            return $accessToken;
+        }
+
+        throw new Exception("Failed to refresh token: " . json_encode($data));
+    }
+
+    function getAdGroups($campaignId)
+    {
+        $accessToken = $this->getEbayAccessToken();
+        $url = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/ad_group";
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                "Authorization: Bearer {$accessToken}",
+                "Content-Type: application/json",
+                "Accept: application/json",
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            throw new \Exception(curl_error($ch));
+        }
+        curl_close($ch);
+
+        return json_decode($response, true);
+    }
+
+    function getKeywords($campaignId, $adGroupId)
+    {
+        $accessToken = $this->getEbayAccessToken();
+        $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/keyword?ad_group_ids={$adGroupId}";
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $endpoint,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                "Authorization: Bearer {$accessToken}",
+                "Content-Type: application/json",
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            throw new \Exception(curl_error($ch));
+        }
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        if (isset($data['keywords']) && is_array($data['keywords'])) {
+            return collect($data['keywords'])->map(function($k){
+                return $k['keywordId'] ?? $k['id'] ?? null;
+            })->filter()->toArray();
+        }
+
+        return [];
+    }
+
+
+    public function updateKeywordsBidDynamic(Request $request)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+        
+        $campaignIds = $request->input('campaign_ids', []);
+        $newBids = $request->input('bids', []);
+
+        $accessToken = $this->getEbayAccessToken();
+        $results = [];
+        $hasError = false;
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBid = floatval($newBids[$index] ?? 0);
+
+            $adGroups = $this->getAdGroups($campaignId);
+            if (!isset($adGroups['adGroups'])) {
+                continue;
+            }
+
+            foreach ($adGroups['adGroups'] as $adGroup) {
+                $adGroupId = $adGroup['adGroupId'];
+                $keywords = $this->getKeywords($campaignId, $adGroupId);
+
+                foreach ($keywords as $keywordId) {
+                    $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/keyword/{$keywordId}";
+
+                    $payload = [
+                        "bid" => [
+                            "currency" => "USD",
+                            "value"    => $newBid,
+                        ],
+                        "keywordStatus" => "ACTIVE"
+                    ];
+                    
+                    try {
+                        $response = Http::withHeaders([
+                            'Authorization' => "Bearer {$accessToken}",
+                            'Content-Type'  => 'application/json',
+                        ])->put($endpoint, $payload);
+
+                        if ($response->successful()) {
+                            $results[] = [
+                                "campaign_id" => $campaignId,
+                                "ad_group_id" => $adGroupId,
+                                "keyword_id"  => $keywordId,
+                                "status"      => "success",
+                                "message"     => "Keyword bid updated successfully",
+                            ];
+                        } else {
+                            $hasError = true;
+                            $results[] = [
+                                "campaign_id" => $campaignId,
+                                "ad_group_id" => $adGroupId,
+                                "keyword_id"  => $keywordId,
+                                "status"      => "error",
+                                "message"     => $response->json()['errors'][0]['message'] ?? "Unknown error",
+                                "http_code"   => $response->status(),
+                            ];
+                        }
+
+                    } catch (\Exception $e) {
+                        $hasError = true;
+                        $results[] = [
+                            "campaign_id" => $campaignId,
+                            "ad_group_id" => $adGroupId,
+                            "keyword_id"  => $keywordId,
+                            "status"      => "error",
+                            "message"     => $e->getMessage(),
+                        ];
+                    }
+
+                }
+            }
+        }
+        return response()->json([
+            "status" => $hasError ? 207 : 200,
+            "message" => $hasError ? "Some keywords failed to update" : "All keyword bids updated successfully",
+            "data" => $results
+        ]);
+    }
+
     public function ebayOverUtiAcosPink(){
         return view('campaign.ebay-over-uti-acos-pink');
     }

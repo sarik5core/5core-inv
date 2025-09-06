@@ -415,9 +415,16 @@
                         field: "sbid",
                         hozAlign: "center",
                         formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var sbid = (l1_cpc * 0.9).toFixed(2);
+                            var rowData = cell.getRow().getData();
+                            var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                            var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+                            var sbid;
+
+                            if (l1_cpc > l7_cpc) {
+                                sbid = (l1_cpc * 1.05).toFixed(2);
+                            } else {
+                                sbid = (l7_cpc * 0.05).toFixed(2);
+                            }
                             return sbid;
                         },
                     },

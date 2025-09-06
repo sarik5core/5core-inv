@@ -139,15 +139,15 @@
                 <div class="card-body py-3">
                     <div class="mb-4">
                         <!-- Title -->
-                        {{-- <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
+                        <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
                             ACOS CONTROL KW
-                        </h4> --}}
+                        </h4>
 
                         <!-- Filters Row -->
                         <div class="row g-3 mb-3">
                             <!-- Inventory Filters -->
-                            {{-- <div class="col-md-6">
+                            <div class="col-md-6">
                                 <div class="d-flex gap-2">
                                     <select id="clicks-filter" class="form-select form-select-md" style="width: 175px;">
                                         <option value="">Select CLICKS L30</option>
@@ -182,12 +182,11 @@
                                         <option value="FBM">FBM</option>
                                         <option value="BOTH">BOTH</option>
                                     </select>
-
                                 </div>
-                            </div> --}}
+                            </div>
 
                             <!-- Stats -->
-                            {{-- <div class="col-md-6">
+                            <div class="col-md-6">
                                 <div class="d-flex gap-2 justify-content-end">
                                     <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
                                         APR ALL SBID
@@ -201,16 +200,16 @@
                                         of Total: <span id="percentage-campaigns" class="fw-bold ms-1 fs-4">0%</span>
                                     </button>
                                 </div>
-                            </div> --}}
+                            </div>
                         </div>
 
                         <!-- Search and Controls Row -->
-                        {{-- <div class="row g-3">
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="d-flex gap-2">
                                     <div class="input-group">
-                                        <input type="text" id="global-search" class="form-control form-control-md" 
-                                               placeholder="Search campaign...">
+                                        <input type="text" id="global-search" class="form-control form-control-md"
+                                            placeholder="Search campaign...">
                                     </div>
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
@@ -220,7 +219,7 @@
                                     </select>
                                 </div>
                             </div>
-                        </div> --}}
+                        </div>
                     </div>
 
                     <!-- Table Section -->
@@ -230,7 +229,8 @@
         </div>
     </div>
 
-    <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
+    <div id="progress-overlay"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
             <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
                 <span class="visually-hidden">Loading...</span>
@@ -262,11 +262,20 @@
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
                 ajaxURL: "/amazon-acos-kw-control-data",
-                layout: "fitData",
+                layout: "fitDataFill",
                 pagination: "local",
                 paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                initialSort: [{
+                        column: "parent",
+                        dir: "asc"
+                    },
+                    {
+                        column: "sku",
+                        dir: "asc"
+                    }
+                ],
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
@@ -275,8 +284,7 @@
                         row.getElement().classList.add("parent-row");
                     }
                 },
-                columns: [
-                    {
+                columns: [{
                         formatter: "rowSelection",
                         titleFormatter: "rowSelection",
                         hozAlign: "center",
@@ -332,44 +340,44 @@
                         field: "A_L30",
                         visible: false
                     },
-                    // {
-                    //     title: "A DIL %",
-                    //     field: "A DIL %",
-                    //     formatter: function(cell) {
-                    //         const data = cell.getData();
-                    //         const al30 = parseFloat(data.A_L30);
-                    //         const inv = parseFloat(data.INV);
+                    {
+                        title: "A DIL %",
+                        field: "A DIL %",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const al30 = parseFloat(data.A_L30);
+                            const inv = parseFloat(data.INV);
 
-                    //         if (!isNaN(al30) && !isNaN(inv) && inv !== 0) {
-                    //             const dilDecimal = (al30 / inv);
-                    //             const color = getDilColor(dilDecimal);
-                    //             return `<div class="text-center"><span class="dil-percent-value ${color}">${Math.round(dilDecimal * 100)}%</span></div>`;
-                    //         }
-                    //         return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
-                    //     },
-                    //     visible: false
-                    // },
-                    // {
-                    //     title: "NRL",
-                    //     field: "NRL",
-                    //     formatter: function(cell) {
-                    //         const row = cell.getRow();
-                    //         const sku = row.getData().sku;
-                    //         const value = cell.getValue();
-                    //         const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
-                    //         return `
-                    //             <select class="form-select form-select-sm editable-select" 
-                    //                     data-sku="${sku}" 
-                    //                     data-field="NRL"
-                    //                     style="width: 90px;">
-                    //                 <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
-                    //                 <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
-                    //             </select>
-                    //         `;
-                    //     },
-                    //     visible: false,
-                    //     hozAlign: "center"
-                    // },
+                            if (!isNaN(al30) && !isNaN(inv) && inv !== 0) {
+                                const dilDecimal = (al30 / inv);
+                                const color = getDilColor(dilDecimal);
+                                return `<div class="text-center"><span class="dil-percent-value ${color}">${Math.round(dilDecimal * 100)}%</span></div>`;
+                            }
+                            return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
+                        },
+                        visible: false
+                    },
+                    {
+                        title: "NRL",
+                        field: "NRL",
+                        formatter: function(cell) {
+                            const row = cell.getRow();
+                            const sku = row.getData().sku;
+                            const value = cell.getValue();
+                            const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
+                            return `
+                                <select class="form-select form-select-sm editable-select" 
+                                        data-sku="${sku}" 
+                                        data-field="NRL"
+                                        style="width: 90px;">
+                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
+                                    <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
+                                </select>
+                            `;
+                        },
+                        visible: false,
+                        hozAlign: "center"
+                    },
                     {
                         title: "NRA",
                         field: "NR",
@@ -392,180 +400,187 @@
                         hozAlign: "center",
                         visible: false
                     },
-                    // {
-                    //     title: "FBA",
-                    //     field: "FBA",
-                    //     formatter: function(cell) {
-                    //         const row = cell.getRow();
-                    //         const sku = row.getData().sku;
-                    //         const value = cell.getValue();
-                    //         const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
-                    //         return `
-                    //             <select class="form-select form-select-sm editable-select" 
-                    //                     data-sku="${sku}" 
-                    //                     data-field="FBA"
-                    //                     style="width: 90px;">
-                    //                 <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
-                    //                 <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
-                    //                 <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
-                    //             </select>
-                    //         `;
-                    //     },
-                    //     hozAlign: "center",
-                    //     visible: false
-                    // },
-                    // {
-                    //     title: "CAMPAIGN",
-                    //     field: "campaignName"
-                    // },
-                    // {
-                    //     title: "BGT",
-                    //     field: "campaignBudgetAmount",
-                    //     hozAlign: "right",
-                    //     formatter: (cell) => parseFloat(cell.getValue() || 0)
-                    // },
-                    // {
-                    //     title: "ACOS L30",
-                    //     field: "acos_L30",
-                    //     hozAlign: "right",
-                    //     formatter: function(cell) {
-                    //         return `
-                    //             <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
-                    //         `;
-                            
-                    //     }
-                    // },
-                    // {
-                    //     title: "Clicks L30",
-                    //     field: "clicks_L30",
-                    //     hozAlign: "right",
-                    //     formatter: function(cell) {
-                    //         return `
-                    //             <span>${cell.getValue().toFixed(0)}</span>
-                    //         `;
-                    //     }
-                    // },
-                    // {
-                    //     title: "L7 CPC",
-                    //     field: "l7_cpc",
-                    //     hozAlign: "center",
-                    //     formatter: function(cell) {
-                    //         var row = cell.getRow().getData();
-                    //         var l7_cpc = parseFloat(row.l7_cpc) || 0;
-                    //         return l7_cpc.toFixed(2);
-                    //     }
-                    // },
-                    // {
-                    //     title: "SBGT",
-                    //     field: "sbgt",
-                    //     formatter: function(cell) {
-                    //         var row = cell.getRow().getData();
-                    //         var acos = parseFloat(row.acos_L30) || 0;
-                    //         var value;
-                            
-                    //         if(acos >= 100){
-                    //             value = 1;
-                    //         }else if(acos >= 50 && acos <= 100){
-                    //             value = 2;
-                    //         }else if(acos >= 40 && acos <= 50){
-                    //             value = 3;
-                    //         }else if(acos >= 35 && acos <= 40){
-                    //             value = 4;
-                    //         }else if(acos >= 30 && acos <= 35){
-                    //             value = 5;
-                    //         }else if(acos >= 25 && acos <= 30){
-                    //             value = 6;
-                    //         }else if(acos >= 20 && acos <= 25){
-                    //             value = 7;
-                    //         }else if(acos >= 15 && acos <= 20){
-                    //             value = 8;
-                    //         }else if(acos >= 10 && acos <= 15){
-                    //             value = 9;
-                    //         }else if(acos < 10 && acos > 0){
-                    //             value = 10;
-                    //         }else{
-                    //             value = 3;
-                    //         }
-                    //         return `
-                    //             <input type="number" class="form-control form-control-sm text-center sbgt-input"  value="${value}" min="1" max="10"  data-campaign-id="${row.campaign_id}">
-                    //         `;
-                    //     },
-                    // },
-                    // {
-                    //     title: "APR BGT",
-                    //     field: "apr_bgt",
-                    //     hozAlign: "center",
-                    //     formatter: function(cell, formatterParams, onRendered) {
-                    //         var value = cell.getValue() || 0;
-                    //         return `
-                    //             <div style="align-items:center; gap:5px;">
-                    //                 <button class="btn btn-primary update-row-btn">APR BGT</button>
-                    //             </div>
-                    //         `;
-                    //     },
-                    //     cellClick: function(e, cell) {
-                    //         if (e.target.classList.contains("update-row-btn")) {
-                    //             var rowData = cell.getRow().getData();
-                    //             var sbgtInput = cell.getRow().getElement().querySelector('.sbgt-input');
-                    //             var sbgtValue = parseFloat(sbgtInput.value) || 0;
-                    //             updateBid(sbgtValue, rowData.campaign_id);
-                    //         }
-                    //     }
-                    // },
-                    // {
-                    //     title: "TPFT %",
-                    //     field: "tpft",
-                    //     hozAlign: "center"
-                    // },
-                    // {
-                    //     title: "TROI %",
-                    //     field: "troi",
-                    //     hozAlign: "center",
-                    // },
+                    {
+                        title: "FBA",
+                        field: "FBA",
+                        formatter: function(cell) {
+                            const row = cell.getRow();
+                            const sku = row.getData().sku;
+                            const value = cell.getValue();
+                            const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
+                            return `
+                                <select class="form-select form-select-sm editable-select" 
+                                        data-sku="${sku}" 
+                                        data-field="FBA"
+                                        style="width: 90px;">
+                                    <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
+                                    <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
+                                    <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
+                                </select>
+                            `;
+                        },
+                        hozAlign: "center",
+                        visible: false
+                    },
+                    {
+                        title: "CAMPAIGN",
+                        field: "campaignName"
+                    },
+                    {
+                        title: "BGT",
+                        field: "campaignBudgetAmount",
+                        hozAlign: "right",
+                        formatter: (cell) => parseFloat(cell.getValue() || 0)
+                    },
+                    {
+                        title: "ACOS L30",
+                        field: "acos_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                            `;
+                        }
+                    },
+                    {
+                        title: "Clicks L30",
+                        field: "clicks_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${cell.getValue().toFixed(0)}</span>
+                            `;
+                        }
+                    },
+                    {
+                        title: "L7 CPC",
+                        field: "l7_cpc",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                            return l7_cpc.toFixed(2);
+                        }
+                    },
+                    {
+                        title: "SBGT",
+                        field: "sbgt",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var acos = parseFloat(row.acos_L30) || 0;
+                            var value;
+
+                            if (acos >= 100) {
+                                value = 1;
+                            } else if (acos >= 50 && acos <= 100) {
+                                value = 2;
+                            } else if (acos >= 40 && acos <= 50) {
+                                value = 3;
+                            } else if (acos >= 35 && acos <= 40) {
+                                value = 4;
+                            } else if (acos >= 30 && acos <= 35) {
+                                value = 5;
+                            } else if (acos >= 25 && acos <= 30) {
+                                value = 6;
+                            } else if (acos >= 20 && acos <= 25) {
+                                value = 7;
+                            } else if (acos >= 15 && acos <= 20) {
+                                value = 8;
+                            } else if (acos >= 10 && acos <= 15) {
+                                value = 9;
+                            } else if (acos < 10 && acos > 0) {
+                                value = 10;
+                            } else {
+                                value = 3;
+                            }
+                            return `
+                                <input type="number" class="form-control form-control-sm text-center sbgt-input"  value="${value}" min="1" max="10"  data-campaign-id="${row.campaign_id}">
+                            `;
+                        }
+                    },
+                    {
+                        title: "APR BGT",
+                        field: "apr_bgt",
+                        hozAlign: "center",
+                        formatter: function(cell, formatterParams, onRendered) {
+                            var value = cell.getValue() || 0;
+                            return `
+                                <div style="align-items:center; gap:5px;">
+                                    <button class="btn btn-primary update-row-btn">APR BGT</button>
+                                </div>
+                            `;
+                        },
+                        cellClick: function(e, cell) {
+                            if (e.target.classList.contains("update-row-btn")) {
+                                var rowData = cell.getRow().getData();
+                                var acos = parseFloat(rowData.acos_L30) || 0;
+
+                                if (acos > 0) {
+                                    var sbgtInput = cell.getRow().getElement().querySelector(
+                                        '.sbgt-input');
+                                    var sbgtValue = parseFloat(sbgtInput.value) || 0;
+
+                                    updateBid(sbgtValue, rowData.campaign_id);
+                                } else {
+                                    console.log("Skipped because acos_L30 = 0 for campaign:",
+                                        rowData.campaign_id);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        title: "TPFT %",
+                        field: "tpft",
+                        hozAlign: "center"
+                    },
+                    {
+                        title: "TROI %",
+                        field: "troi",
+                        hozAlign: "center"
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
                 }
             });
 
-            table.on("rowSelectionChanged", function(data, rows){
-                if(data.length > 0){
+            table.on("rowSelectionChanged", function(data, rows) {
+                if (data.length > 0) {
                     document.getElementById("apr-all-sbid-btn").classList.remove("d-none");
                 } else {
                     document.getElementById("apr-all-sbid-btn").classList.add("d-none");
                 }
             });
 
-            document.addEventListener("change", function(e){
-                if(e.target.classList.contains("editable-select")){
-                    let sku   = e.target.getAttribute("data-sku");
+            document.addEventListener("change", function(e) {
+                if (e.target.classList.contains("editable-select")) {
+                    let sku = e.target.getAttribute("data-sku");
                     let field = e.target.getAttribute("data-field");
                     let value = e.target.value;
 
                     fetch('/update-amazon-nr-nrl-fba', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            sku: sku,
-                            field: field,
-                            value: value
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                sku: sku,
+                                field: field,
+                                value: value
+                            })
                         })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-                    })
-                    .catch(err => console.error(err));
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log(data);
+                        })
+                        .catch(err => console.error(err));
                 }
             });
 
             table.on("tableBuilt", function() {
-
                 function combinedFilter(data) {
-
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
                         return false;
@@ -578,24 +593,14 @@
 
                     let clicksFilterVal = $("#clicks-filter").val();
                     let clicks_L30 = parseFloat(data.clicks_L30) || 0;
-
-                    if (!clicksFilterVal) {
+                    if (clicksFilterVal === "CLICKS_L30") {
                         if (clicks_L30 <= 25) return false;
-                    } else {
-                        // When user selects a filter from dropdown
-                        if (clicksFilterVal === "CLICKS_L30") {
-                            if (clicks_L30 <= 25) return false;
-                        } else if (clicksFilterVal === "ALL") {
-                            // Show all rows
-                        } else if (clicksFilterVal === "OTHERS") {
-                            if (clicks_L30 > 25) return false;
-                        }
+                    } else if (clicksFilterVal === "OTHERS") {
+                        if (clicks_L30 > 25) return false;
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    if (!invFilterVal) {
-                        if (parseFloat(data.INV) === 0) return false;
-                    } else if (invFilterVal === "INV_0") {
+                    if (invFilterVal === "INV_0") {
                         if (parseFloat(data.INV) !== 0) return false;
                     } else if (invFilterVal === "OTHERS") {
                         if (parseFloat(data.INV) === 0) return false;
@@ -608,7 +613,6 @@
                         );
                         let rowVal = rowSelect ? rowSelect.value : "";
                         if (!rowVal) rowVal = data.NRL || "";
-
                         if (rowVal !== nrlFilterVal) return false;
                     }
 
@@ -619,7 +623,6 @@
                         );
                         let rowVal = rowSelect ? rowSelect.value : "";
                         if (!rowVal) rowVal = data.NR || "";
-
                         if (rowVal !== nraFilterVal) return false;
                     }
 
@@ -630,7 +633,6 @@
                         );
                         let rowVal = rowSelect ? rowSelect.value : "";
                         if (!rowVal) rowVal = data.FBA || "";
-
                         if (rowVal !== fbaFilterVal) return false;
                     }
 
@@ -648,7 +650,7 @@
 
                     let percentage = total > 0 ? ((filtered / total) * 100).toFixed(0) : 0;
 
-                    document.getElementById("total-campaigns").innerText = filtered; 
+                    document.getElementById("total-campaigns").innerText = filtered;
                     document.getElementById("percentage-campaigns").innerText = percentage + "%";
                 }
 
@@ -660,17 +662,17 @@
                     table.setFilter(combinedFilter);
                 });
 
-                $("#status-filter,#clicks-filter,#inv-filter, #nrl-filter, #nra-filter, #fba-filter").on("change", function() {
-                    table.setFilter(combinedFilter);
-                });
+                $("#status-filter,#clicks-filter,#inv-filter, #nrl-filter, #nra-filter, #fba-filter").on(
+                    "change",
+                    function() {
+                        table.setFilter(combinedFilter);
+                    });
 
                 updateCampaignStats();
             });
 
             document.addEventListener("click", function(e) {
                 if (e.target.classList.contains("toggle-cols-btn")) {
-                    let btn = e.target;
-
                     let colsToToggle = ["INV", "L30", "DIL %", "A_L30", "A DIL %", "NRL", "NR", "FBA"];
 
                     colsToToggle.forEach(colName => {
@@ -684,7 +686,7 @@
 
             document.addEventListener("click", function(e) {
                 if (e.target.classList.contains("toggle-acos-cols-btn")) {
-                    let colsToToggle = ["acos_L15", "acos_L7"]; 
+                    let colsToToggle = ["acos_L15", "acos_L7"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -697,7 +699,7 @@
 
             document.addEventListener("click", function(e) {
                 if (e.target.classList.contains("toggle-clicks-cols-btn")) {
-                    let colsToToggle = ["clicks_L15", "clicks_L7"]; 
+                    let colsToToggle = ["clicks_L15", "clicks_L7"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -708,25 +710,28 @@
                 }
             });
 
-            document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
-
+            document.getElementById("apr-all-sbid-btn").addEventListener("click", function() {
                 const overlay = document.getElementById("progress-overlay");
                 overlay.style.display = "flex";
 
-                var filteredData = table.getSelectedRows(); 
-                
+                var filteredData = table.getSelectedRows();
+
                 var campaignIds = [];
                 var bgts = [];
 
-                filteredData.forEach(function(row){
+                filteredData.forEach(function(row) {
                     var rowEl = row.getElement();
-                    if(rowEl && rowEl.offsetParent !== null){  
-                        var sbgtInput = rowEl.querySelector('.sbgt-input');
-                        var sbgtValue = sbgtInput ? parseFloat(sbgtInput.value) || 0 : 0;
-
+                    if (rowEl && rowEl.offsetParent !== null) {
                         var rowData = row.getData();
-                        campaignIds.push(rowData.campaign_id);
-                        bgts.push(sbgtValue);
+                        var acos = parseFloat(rowData.acos_L30) || 0;
+
+                        if (acos > 0) {
+                            var sbgtInput = rowEl.querySelector('.sbgt-input');
+                            var sbgtValue = sbgtInput ? parseFloat(sbgtInput.value) || 0 : 0;
+
+                            campaignIds.push(rowData.campaign_id);
+                            bgts.push(sbgtValue);
+                        }
                     }
                 });
 
@@ -734,32 +739,36 @@
                 console.log("Bids:", bgts);
 
                 fetch('/update-amazon-campaign-bgt-price', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        campaign_ids: campaignIds,
-                        bgts: bgts
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            campaign_ids: campaignIds,
+                            bgts: bgts
+                        })
                     })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Backend response:", data);
-                    if(data.status === 200){
-                        alert("Keywords updated successfully!");
-                    } else {
-                        alert("Something went wrong: " + data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Request failed: " + err.message);
-                })
-                .finally(() => {
-                    overlay.style.display = "none";
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("Backend response:", data);
+                        if (data.status === 200) {
+                            alert("Campaign budget updated successfully!");
+                        } else {
+                            alert("Something went wrong: " + data.message);
+                        }
+                    })
+                    .then(() => {
+                        table.redraw();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Request failed: " + err.message);
+                    })
+                    .finally(() => {
+                        overlay.style.display = "none";
+                    });
             });
 
             function updateBid(sbgtValue, campaignId) {
@@ -769,34 +778,37 @@
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", sbgtValue);
 
                 fetch('/update-amazon-campaign-bgt-price', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        campaign_ids: [campaignId],
-                        bgts: [sbgtValue]
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            campaign_ids: [campaignId],
+                            bgts: [sbgtValue]
+                        })
                     })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Backend response:", data);
-                    if(data.status === 200){
-                        alert("Keywords updated successfully!");
-                    } else {
-                        alert("Something went wrong: " + data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Request failed: " + err.message);
-                })
-                .finally(() => {
-                    overlay.style.display = "none";
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("Backend response:", data);
+                        if (data.status === 200) {
+                            alert("Campaign budget updated successfully!");
+                        } else {
+                            alert("Something went wrong: " + data.message);
+                        }
+                    })
+                    .then(() => {
+                        table.redraw();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Request failed: " + err.message);
+                    })
+                    .finally(() => {
+                        overlay.style.display = "none";
+                    });
             }
-
 
             document.body.style.zoom = "78%";
         });

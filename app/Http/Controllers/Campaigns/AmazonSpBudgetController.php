@@ -118,6 +118,96 @@ class AmazonSpBudgetController extends Controller
         return $data['targetingClauses'] ?? [];
     }
 
+    public function updateAutoCampaignKeywordsBid(array $campaignIds, array $newBids)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        if (empty($campaignIds) || empty($newBids)) {
+            return [
+                'message' => 'Campaign IDs and new bids are required',
+                'status' => 400
+            ];
+        }
+
+        $allKeywords = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBid = floatval($newBids[$index] ?? 0);
+
+            AmazonSpCampaignReport::where('campaign_id', $campaignId)
+                ->where('ad_type', 'SPONSORED_PRODUCTS')
+                ->whereIn('report_date_range', ['L7', 'L1'])
+                ->update([
+                    'apprSbid' => "approved"
+                ]);
+
+            $adGroups = $this->getAdGroupsByCampaigns([$campaignId]);
+            if (empty($adGroups)) continue;
+
+            foreach ($adGroups as $adGroup) {
+                $keywords = $this->getKeywordsByAdGroup($adGroup['adGroupId']);
+                foreach ($keywords as $kw) {
+                    $allKeywords[] = [
+                        'keywordId' => $kw['keywordId'],
+                        'bid' => $newBid,
+                    ];
+                }
+            }
+        }
+
+        if (empty($allKeywords)) {
+            return response()->json([
+                'message' => 'No keywords found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $allKeywords = collect($allKeywords)
+            ->unique('keywordId')
+            ->values()
+            ->toArray();
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sp/keywords';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allKeywords, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.spKeyword.v3+json',
+                        'Accept' => 'application/vnd.spKeyword.v3+json',
+                    ],
+                    'json' => [
+                        'keywords' => $chunk
+                    ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+
+            return [
+                'message' => 'Keywords bid updated successfully',
+                'data' => $results,
+                'status' => 200,
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'message' => 'Error updating keywords bid',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ];
+        }
+    }
 
     public function updateCampaignKeywordsBid(Request $request)
     {
@@ -210,6 +300,90 @@ class AmazonSpBudgetController extends Controller
                 'error' => $e->getMessage(),
                 'status' => 500,
             ]);
+        }
+    }
+
+    public function updateAutoCampaignTargetsBid(array $campaignIds, array $newBids)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        if (empty($campaignIds) || empty($newBids)) {
+            return response()->json([
+                'message' => 'Campaign IDs and new bids are required',
+                'status' => 400
+            ]);
+        }
+
+        $allTargets = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBid = floatval($newBids[$index] ?? 0);
+
+            AmazonSpCampaignReport::where('campaign_id', $campaignId)
+                ->where('ad_type', 'SPONSORED_PRODUCTS')
+                ->whereIn('report_date_range', ['L7', 'L1'])
+                ->update([
+                    'apprSbid' => "approved"
+                ]);
+
+            $adTargets = $this->getTargetsAdByCampaign([$campaignId]);
+            if (empty($adTargets)) continue;
+
+            foreach ($adTargets as $adTarget) {
+                $allTargets[] = [
+                    'bid' => $newBid,
+                    'targetId' => $adTarget['targetId'],
+                ];
+            }
+        }
+
+        if (empty($allTargets)) {
+            return response()->json([
+                'message' => 'No targets found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $allTargets = collect($allTargets)
+            ->unique('targetId')
+            ->values()
+            ->toArray();
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sp/targets';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allTargets, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.spTargetingClause.v3+json',
+                        'Accept' => 'application/vnd.spTargetingClause.v3+json',
+                    ],
+                    'json' => [
+                        'targetingClauses' => $chunk
+                    ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+
+            return  $results;
+
+        } catch (\Exception $e) {
+            return [
+                'message' => 'Error updating target keywords bid',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ];
         }
     }
 
@@ -685,8 +859,6 @@ class AmazonSpBudgetController extends Controller
         ]);
 
     }
-
-
 
 
 
