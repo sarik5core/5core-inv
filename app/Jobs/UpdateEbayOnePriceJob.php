@@ -2,15 +2,14 @@
 
 namespace App\Jobs;
 
-use Illuminate\Bus\Queueable;
 use App\Services\EbayApiService;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
-class UpdateEbaySPriceJob implements ShouldQueue
+class UpdateEbayOnePriceJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -26,21 +25,14 @@ class UpdateEbaySPriceJob implements ShouldQueue
         $this->price = $price;
     }
 
+
+    /**
+     * Execute the job.
+     */
     public function handle(EbayApiService $ebayApiService)
     {
-        try {
+        $response = $ebayApiService->reviseFixedPriceItem($this->itemId, $this->price);
 
-
-            $response = $ebayApiService->reviseFixedPriceItem(
-                itemId: $this->itemId,
-                price: $this->price,
-            );
-
-            return $response;
-        } catch (\Throwable $e) {
-
-            // Optional: rethrow to retry
-            throw $e;
-        }
+        return $response;
     }
 }

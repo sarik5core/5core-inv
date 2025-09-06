@@ -5,9 +5,13 @@ namespace App\Http\Controllers\PricingMaster;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UpdatePriceApiController;
+use App\Jobs\UpdateEbayOnePriceJob;
+use App\Jobs\UpdateEbayPriceJob;
 use App\Jobs\UpdateEbaySPriceJob;
+use App\Jobs\UpdateEbayThreePriceJob;
 use App\Models\AmazonDatasheet;
 use App\Models\AmazonDataView;
+use App\Models\DobaDataView;
 use App\Models\DobaMetric;
 use App\Models\EbayMetric;
 use App\Models\PricingMaster;
@@ -23,11 +27,14 @@ use App\Models\EbayDataView;
 use App\Models\EbayThreeDataView;
 use App\Models\EbayTwoDataView;
 use App\Models\Shopifyb2cDataView;
+use App\Models\TemuDataView;
 use App\Services\AmazonSpApiService;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session as FacadesSession;
+use PhpParser\Node\Stmt\Else_;
 
 class PricingMasterViewsController extends Controller
 {
@@ -81,6 +88,9 @@ class PricingMasterViewsController extends Controller
         $amazonDataView = AmazonDataView::all()->keyBy('sku');
         $ebayDataView = EbayDataView::all()->keyBy('sku');
         $shopifyb2cDataView = Shopifyb2cDataView::all()->keyBy('sku');
+        $dobaDataView = DobaDataView::all()->keyBy('sku');
+        $temuDataView = TemuDataView::all()->keyBy('sku');
+
 
         $processedData = [];
 
@@ -101,6 +111,7 @@ class PricingMasterViewsController extends Controller
             $map  = (float) ($values['map'] ?? 0);
             $lp   = (float) ($values['lp'] ?? 0);
             $ship = (float) ($values['ship'] ?? 0);
+            $temuship = (float) ($values['temu_ship'] ?? 0);
 
             $amazon  = $amazonData[$sku] ?? null;
             $ebay    = $ebayData[$sku] ?? null;
@@ -133,6 +144,7 @@ class PricingMasterViewsController extends Controller
                 'MAP'     => $map,
                 'LP'      => $lp,
                 'SHIP'    => $ship,
+                'temu_ship' => $temuship,
                 'is_parent' => $isParent,
                 'inv' => $shopifyData[trim(strtoupper($sku))]->inv ?? 0,
 
@@ -161,8 +173,8 @@ class PricingMasterViewsController extends Controller
                 // Doba
                 'doba_price' => $doba ? ($doba->anticipated_income ?? 0) : 0,
                 'doba_l30'   => $doba ? ($doba->quantity_l30 ?? 0) : 0,
-                'doba_pft'   => $doba && ($doba->anticipated_income ?? 0) > 0 ? (($doba->anticipated_income - $lp - $ship) / $doba->anticipated_income) : 0,
-                'doba_roi'   => $doba && $lp > 0 && ($doba->anticipated_income ?? 0) > 0 ? (($doba->anticipated_income - $lp - $ship) / $lp) : 0,
+                'doba_pft'   => $doba && ($doba->anticipated_income ?? 0) > 0 ? (($doba->anticipated_income * 0.95 - $lp - $ship) / $doba->anticipated_income) : 0,
+                'doba_roi'   => $doba && $lp > 0 && ($doba->anticipated_income ?? 0) > 0 ? (($doba->anticipated_income * 0.95 - $lp - $ship) / $lp) : 0,
 
                 // Macy
                 'macy_price' => $macy ? ($macy->price ?? 0) : 0,
@@ -181,8 +193,8 @@ class PricingMasterViewsController extends Controller
                 'temu_price' => $temu ? (float) ($temu->{'price'} ?? 0) : 0,
                 'temu_l30'   => $temu ? (float) ($temu->{'l30'} ?? 0) : 0,
                 'temu_dil'   => $temu ? (float) ($temu->{'dil'} ?? 0) : 0,
-                'temu_pft'   => $temu && ($temu->price ?? 0) > 0 ? (($temu->price * 0.77 - $lp - $ship) / $temu->price) : 0,
-                'temu_roi'   => $temu && $lp > 0 && ($temu->price ?? 0) > 0 ? (($temu->price * 0.77 - $lp - $ship) / $lp) : 0,
+                'temu_pft'   => $temu && ($temu->price ?? 0) > 0 ? (($temu->price * 0.87 - $lp - $temuship) / $temu->price) : 0,
+                'temu_roi'   => $temu && $lp > 0 && ($temu->price ?? 0) > 0 ? (($temu->price * 0.87 - $lp - $temuship) / $lp) : 0,
 
                 // Walmart
                 'walmart_price' => $walmart ? (float) ($walmart->{'walmart_price'} ?? 0) : 0,
@@ -258,6 +270,27 @@ class PricingMasterViewsController extends Controller
                 'ebay3_sroi' => isset($ebayDataView[$sku]) ?
                     (is_array($ebayDataView[$sku]->value) ?
                         ($ebayDataView[$sku]->value['SROI'] ?? null) : (json_decode($ebayDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+
+                'doba_sprice' => isset($dobaDataView[$sku]) ?
+                    (is_array($dobaDataView[$sku]->value) ?
+                        ($dobaDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'doba_spft' => isset($dobaDataView[$sku]) ? (is_array($dobaDataView[$sku]->value) ?
+                    ($dobaDataView[$sku]->value['SPFT'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'doba_sroi' => isset($dobaDataView[$sku]) ?
+                    (is_array($dobaDataView[$sku]->value) ?
+                        ($dobaDataView[$sku]->value['SROI'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+
+                'temu_sprice' => isset($temuDataView[$sku]) ?
+                    (is_array($temuDataView[$sku]->value) ?
+                        ($temuDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($temuDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'temu_spft' => isset($temuDataView[$sku]) ? (is_array($temuDataView[$sku]->value) ?
+                    ($temuDataView[$sku]->value['SPFT'] ?? null) : (json_decode($temuDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'temu_sroi' => isset($temuDataView[$sku]) ?
+                    (is_array($temuDataView[$sku]->value) ?
+                        ($temuDataView[$sku]->value['SROI'] ?? null) : (json_decode($temuDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
 
 
             ];
@@ -429,7 +462,8 @@ class PricingMasterViewsController extends Controller
             'type' => 'required|string',
             'sprice' => 'required|numeric',
             'LP' => 'required|numeric',    // cost price
-            'SHIP' => 'required|numeric',  // shipping cost
+            'SHIP' => 'required|numeric',
+            'temu_ship' => 'required|numeric',  // Temu shipping cost
         ]);
 
         $sku = $data['sku'];
@@ -437,6 +471,7 @@ class PricingMasterViewsController extends Controller
         $sprice = $data['sprice'];
         $lp = $data['LP'];
         $ship = $data['SHIP'];
+        $temuship = $data['temu_ship'];
 
         switch ($type) {
             case 'amz':
@@ -545,6 +580,38 @@ class PricingMasterViewsController extends Controller
                 $ebay3DataView->save();
                 break;
 
+            case 'doba':
+                // Doba logic
+                $dobaDataView = DobaDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($dobaDataView->value) ? $dobaDataView->value : (json_decode($dobaDataView->value, true) ?: []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.95) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.95) - $lp - $ship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $dobaDataView->value = $existing;
+                $dobaDataView->save();
+                break;
+
+            case 'temu':
+                // Temu logic
+                $temuDataView = TemuDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($temuDataView->value) ? $temuDataView->value : (json_decode($temuDataView->value, true) ?: []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.87) - $lp - $temuship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.87) - $lp - $temuship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $temuDataView->value = $existing;
+                $temuDataView->save();
+                break;
+
             default:
                 return response()->json([
                     'message' => 'Unknown marketplace type',
@@ -566,6 +633,7 @@ class PricingMasterViewsController extends Controller
 
     public function pushShopifyPriceBySku(Request $request)
     {
+        
         $sku = $request->input('sku');
         $price = $request->input('price');
 
@@ -594,18 +662,35 @@ class PricingMasterViewsController extends Controller
             ], 500);
         }
     }
+
     public function pushEbayPriceBySku(Request $request)
     {
         $sku = $request->input('sku');
         $price = $request->input('price');
 
-        UpdateEbaySPriceJob::dispatch($sku, $price)->delay(now()->addSeconds(3));
+        $itemId = EbayMetric::where('sku', $sku)->value('item_id');
+        UpdateEbayOnePriceJob::dispatch($itemId, $price);
 
-        FacadesSession::flash('success', 'Price Change Requested, Will Be Completed after 5 Minutes');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => "Price update request queued for SKU {$sku}"
-        ], 200);
     }
+
+    public function pushEbayTwoPriceBySku(Request $request)
+    {
+        $sku = $request->input('sku');
+        $price = $request->input('price');
+
+        $itemId = Ebay2Metric::where('sku', $sku)->value('item_id');
+        UpdateEbayOnePriceJob::dispatch($itemId, $price);
+
+    }
+
+    public function pushEbayThreePriceBySku(Request $request)
+    {
+        $sku = $request->input('sku');
+        $price = $request->input('price');
+
+        $itemId = Ebay3Metric::where('sku', $sku)->value('item_id');
+        UpdateEbayThreePriceJob::dispatch($itemId, $price);
+
+    }
+
 }
