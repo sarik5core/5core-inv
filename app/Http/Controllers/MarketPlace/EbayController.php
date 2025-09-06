@@ -31,25 +31,6 @@ class EbayController extends Controller
         $this->apiController = $apiController;
     }
 
-
-    public function updateEbayPricing(Request $request)
-    {
-
-        $service = new EbayApiService();
-
-        $itemID = $request["sku"];
-        $newPrice = $request["price"];
-
-        $result = UpdateEbaySPriceJob::dispatch($itemID, $newPrice);
-
-        // $response = $service->reviseFixedPriceItem(
-        //     itemId: $itemID,
-        //     price: $newPrice,
-        // );
-
-        return response()->json(['status' => 200]);
-    }
-
     public function ebayView(Request $request)
     {
         $mode = $request->query("mode");
@@ -570,8 +551,6 @@ class EbayController extends Controller
 
         return response()->json(['message' => 'Data saved successfully.']);
     }
-
-
 
     public function updateListedLive(Request $request)
     {

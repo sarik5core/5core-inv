@@ -14,8 +14,44 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            background: white;
+         
         }
+
+        .image-preview-container {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.image-preview-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+        .image-preview-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none; /* JS se toggle hoga */
+            cursor: pointer;
+        }
+
+        .channel-logo {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        }
+        .channel-logo:hover {
+        transform: scale(1.1);
+        }
+
 
         .inventory-cell {
             font-weight: 600;
@@ -548,16 +584,12 @@
 
 
                                     </div>
-                                    <div class="view-controls">
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-secondary active" data-view="table">
-                                                <i class="bi bi-table"></i>
-                                            </button>
-                                            <button class="btn btn-outline-secondary" data-view="chart">
-                                                <i class="bi bi-bar-chart"></i>
-                                            </button>
+                                  <div class="view-controls d-flex justify-content-center align-items-center">
+                                        <div class="image-preview-container">
+                                            <img id="ovl30Img" src="" alt="Preview">
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                             <div id="ovl30Content" class="p-3" style="color: #000000; width:100%">
@@ -589,12 +621,12 @@
                 (parseFloat(data.reverb_l30) || 0) +
                 (parseFloat(data.doba_l30) || 0) +
                 (parseFloat(data.temu_l30) || 0) +
-                (parseFloat(data.wayfair_l30) || 0) +
                 (parseFloat(data.ebay3_l30) || 0) +
                 (parseFloat(data.ebay2_l30) || 0) +
                 (parseFloat(data.walmart_l30) || 0);
 
             const SHIP = parseFloat(data.SHIP) || 0;
+            const temuship = parseFloat(data.temu_ship) || 0;
 
             // Calculate profits
             const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.68) - LP - SHIP) * (parseFloat(data
@@ -609,10 +641,9 @@
                 .reverb_l30) || 0) : 0;
             const dobaProfit = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * (parseFloat(data
                 .doba_l30) || 0) : 0;
-            const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.90) - LP - SHIP) * (parseFloat(data
+            const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.87) - LP - temuship) * (parseFloat(data
                 .temu_l30) || 0) : 0;
-            const wayfairProfit = data.wayfair_price ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) * (parseFloat(
-                data.wayfair_l30) || 0) : 0;
+       
             const ebay3Profit = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.71) - LP - SHIP) * (parseFloat(data
                 .ebay3_l30) || 0) : 0;
             const ebay2Profit = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.80) - LP - SHIP) * (parseFloat(data
@@ -623,7 +654,7 @@
 
 
             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                dobaProfit + temuProfit + wayfairProfit + ebay3Profit + ebay2Profit + walmartProfit;
+                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit;
 
             return totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
         }
@@ -632,59 +663,20 @@
         function calculateAvgProfit(data) {
             const LP = parseFloat(data.LP) || 0;
             const SHIP = parseFloat(data.SHIP) || 0;
+            const temuship = parseFloat(data.temu_ship) || 0;
 
             // Calculate profits and revenue for each marketplace
-            const marketplaces = [{
-                    price: data.amz_price,
-                    l30: data.amz_l30,
-                    percent: 0.68
-                },
-                {
-                    price: data.ebay_price,
-                    l30: data.ebay_l30,
-                    percent: 0.71
-                },
-                {
-                    price: data.shopifyb2c_price,
-                    l30: data.shopifyb2c_l30,
-                    percent: 0.75
-                },
-                {
-                    price: data.macy_price,
-                    l30: data.macy_l30,
-                    percent: 0.76
-                },
-                {
-                    price: data.reverb_price,
-                    l30: data.reverb_l30,
-                    percent: 0.84
-                },
-                {
-                    price: data.doba_price,
-                    l30: data.doba_l30,
-                    percent: 0.95
-                },
-                {
-                    price: data.temu_price,
-                    l30: data.temu_l30,
-                    percent: 0.90
-                },
-              
-                {
-                    price: data.ebay3_price,
-                    l30: data.ebay3_l30,
-                    percent: 0.72
-                },
-                {
-                    price: data.ebay2_price,
-                    l30: data.ebay2_l30,
-                    percent: 0.80
-                },
-                {
-                    price: data.walmart_price,
-                    l30: data.walmart_l30,
-                    percent: 0.80
-                }
+            const marketplaces = [
+                { name: "amz", price: data.amz_price, l30: data.amz_l30, percent: 0.68 },
+                { name: "ebay", price: data.ebay_price, l30: data.ebay_l30, percent: 0.71 },
+                { name: "shopifyb2c", price: data.shopifyb2c_price, l30: data.shopifyb2c_l30, percent: 0.75 },
+                { name: "macy", price: data.macy_price, l30: data.macy_l30, percent: 0.76 },
+                { name: "reverb", price: data.reverb_price, l30: data.reverb_l30, percent: 0.84 },
+                { name: "doba", price: data.doba_price, l30: data.doba_l30, percent: 0.95 },
+                { name: "temu", price: data.temu_price, l30: data.temu_l30, percent: 0.87 }, // 👈 Temu special case
+                { name: "ebay3", price: data.ebay3_price, l30: data.ebay3_l30, percent: 0.72 },
+                { name: "ebay2", price: data.ebay2_price, l30: data.ebay2_l30, percent: 0.80 },
+                { name: "walmart", price: data.walmart_price, l30: data.walmart_l30, percent: 0.80 }
             ];
 
             let totalProfit = 0;
@@ -694,13 +686,17 @@
                 const price = parseFloat(mp.price) || 0;
                 const l30 = parseFloat(mp.l30) || 0;
                 if (price && l30) {
-                    totalProfit += ((price * mp.percent) - LP - SHIP) * l30;
+                    // 👇 Temu ke liye alag SHIP cost
+                    const shippingCost = mp.name === "temu" ? temuship : SHIP;
+
+                    totalProfit += ((price * mp.percent) - LP - shippingCost) * l30;
                     totalRevenue += price * l30;
                 }
             });
 
             return totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
         }
+
 
         // Image preview functions
         function showImagePreview(img) {
@@ -836,9 +832,9 @@
                         const l30 = data.shopifyb2c_l30 || 0;
 
                         // Determine button color based on L30 value
-                       
-                        return `<button class="btn btn-outline-dark rounded-pill px-3 text-dark" style="cursor:default !important; background-color: #fff !important">
-                            <i class="bi bi-bar-chart-line me-1"></i>${l30}
+
+                        return `<button class="btn btn-outline-primary  rounded-pill px-3 text-primary" style="cursor:default !important; background-color: #fff !important">
+                            <i class="bi bi-eye me-1"></i>${l30}
                         </button>`;
                     },
                     cellClick: function(e, cell) {
@@ -915,10 +911,7 @@
                                     price: data.temu_price,
                                     l30: data.temu_l30
                                 },
-                                {
-                                    price: data.wayfair_price,
-                                    l30: data.wayfair_l30
-                                },
+                               
                                 {
                                     price: data.ebay3_price,
                                     l30: data.ebay3_l30
@@ -993,11 +986,21 @@
                 /* === OVL30 button (VISIBLE) === */
                
                 /* === MARKETPLACE COLUMNS (HIDDEN, but kept for modal data) === */
+
+
+                    // Total avg pft= (avg price * ovl30 ) * avg pft on top add sum of all columns 
+                    // avg sales = price * Ovl30 same as above
+                    // avgpft top = (total avg pft /avg sales) * 100
+
+                    // Avg cogs = Lp * Ov l30 on back sum on top
+
+                    // Avg Roi % = avg sales / Avg COGS * 100
+
                
                
 
                 {
-                    title: "AVG PFT%",
+                     title: "AVG PFT%<br><span id='avgPftHeader' style='font-size:12px; color:#fff; '></span>",
                     field: "avgPftPercent",
                     hozAlign: "right",
                     headerSort: true,
@@ -1022,6 +1025,9 @@
                         // Calculate profits per site using L30
                         const LP = parseFloat(data.LP) || 0;
                         const SHIP = parseFloat(data.SHIP) || 0;
+                        const ovl30 = parseFloat(data.shopifyb2c_l30) || 0;
+                        const temuship = parseFloat(data.temu_ship) || 0;
+                        const avgPrice = parseFloat(data.formattedAvgPrice) || 0;
 
                         // Get price and L30 values for each marketplace
                         const amzPrice = parseFloat(data.amz_price) || 0;
@@ -1031,7 +1037,7 @@
                         const reverbPrice = parseFloat(data.reverb_price) || 0;
                         const dobaPrice = parseFloat(data.doba_price) || 0;
                         const temuPrice = parseFloat(data.temu_price) || 0;
-                        const wayfairPrice = parseFloat(data.wayfair_price) || 0;
+            
                         const ebay3Price = parseFloat(data.ebay3_price) || 0;
                         const ebay2Price = parseFloat(data.ebay2_price) || 0;
                         const walmartPrice = parseFloat(data.walmart_price) || 0;
@@ -1043,7 +1049,6 @@
                         const reverbL30 = parseFloat(data.reverb_l30) || 0;
                         const dobaL30 = parseFloat(data.doba_l30) || 0;
                         const temuL30 = parseFloat(data.temu_l30) || 0;
-                        const wayfairL30 = parseFloat(data.wayfair_l30) || 0;
                         const ebay3L30 = parseFloat(data.ebay3_l30) || 0;
                         const ebay2L30 = parseFloat(data.ebay2_l30) || 0;
                         const walmartL30 = parseFloat(data.walmart_l30) || 0;
@@ -1055,13 +1060,13 @@
                         const macyProfit = ((macyPrice * 0.76) - LP - SHIP) ;
                         const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) ;
                         const dobaProfit = ((dobaPrice * 0.95) - LP - SHIP) ;
-                        const temuProfit = ((temuPrice * 0.90) - LP - SHIP);
+                        const temuProfit = ((temuPrice * 0.87) - LP - temuship) ;
                         const ebay3Profit = ((ebay3Price * 0.71) - LP - SHIP);
                         const ebay2Profit = ((ebay2Price * 0.80) - LP - SHIP) ;
                         const walmartProfit = ((walmartPrice * 0.80) - LP - SHIP) ;
 
 
-
+ 
 
                         // Calculate total profit
                         const totalProfit = amzProfit * amzL30 + ebayProfit * ebayL30 + shopifyProfit * shopifyL30 + macyProfit * macyL30 +
@@ -1091,6 +1096,7 @@
                         avgPftPercent = Math.round(avgPftPercent);
 
 
+                        // Profit top caculation start 
 
                         // Style based on profit percentage
                         let bgColor, textColor;
@@ -1120,12 +1126,40 @@
                         element.style.textAlign = 'center';
 
                         data.avgPftPercent = avgPftPercent;
+
+                        // console
+
+
+                        
+                        // Top Calculation
+
+                        TotalAvgpft= (avgPrice * ovl30 ) * avgPftPercent / 100;
+                        TotalAvgSales = avgPrice * ovl30;
+                        TotalAvgpftForTop = (TotalAvgpft / TotalAvgSales) * 100;
+                        totalCogs = LP * ovl30;
+                        TotalAvgRoiPer = (TotalAvgpft / totalCogs) * 100;
+
+                        console.log("TotalAvgpft",TotalAvgpft);
+
+                        data.TotalAvgpft = Math.round(TotalAvgpft);
+                        data.TotalAvgSales = Math.round(TotalAvgSales);
+                        data.TotalAvgpftForTop = Math.round(TotalAvgpftForTop) ;
+                        data.totalCogs = Math.round(totalCogs);
+                        data.TotalAvgRoiPer = Math.round(TotalAvgRoiPer);
+                        // console.log("TotalAvgpftForTop",TotalAvgpftForTop);  
+
+
+                       console.log("TotalAvgSales",TotalAvgSales);
+                       console.log("TotalAvgpftForTop",TotalAvgpftForTop);
+                       console.log("totalCogs",totalCogs);
+                       console.log("TotalAvgRoiPer",TotalAvgRoiPer);
+
                         return element;
                     }
                 },
 
                 {
-                        title: "AVG ROI %",
+                        title: "AVG ROI%<br><span id='avgRoiHeader' style='font-size:12px; color:#fff; '></span>",
                         field: "avgRoi",
                         hozAlign: "right",
                         headerSort: true,
@@ -1137,9 +1171,15 @@
                         formatter: function(cell) {
                             const data = cell.getRow().getData();
                             const LP = parseFloat(data.LP) || 0;
+                            const ovl30 = parseFloat(data.shopifyb2c_l30) || 0;
+                            const temuship = parseFloat(data.temu_ship) || 0;
+                            const avgPrice = parseFloat(data.formattedAvgPrice) || 0;
+                             const SHIP = parseFloat(data.SHIP) || 0;
+                            
                             if (LP === 0) return "N/A";
 
-                            const SHIP = parseFloat(data.SHIP) || 0;
+                        
+                           
 
                             // Parse all L30 values
                             const amzL30     = parseFloat(data.amz_l30) || 0;
@@ -1149,14 +1189,13 @@
                             const reverbL30  = parseFloat(data.reverb_l30) || 0;
                             const dobaL30    = parseFloat(data.doba_l30) || 0;
                             const temuL30    = parseFloat(data.temu_l30) || 0;
-                            const wayfairL30 = parseFloat(data.wayfair_l30) || 0;
                             const ebay3L30   = parseFloat(data.ebay3_l30) || 0;
                             const ebay2L30   = parseFloat(data.ebay2_l30) || 0;
                             const walmartL30 = parseFloat(data.walmart_l30) || 0;
 
                             // Total L30 across marketplaces
                             const totalL30 = amzL30 + ebayL30 + shopifyL30 + macyL30 +
-                                            reverbL30 + dobaL30 + temuL30 + wayfairL30 +
+                                            reverbL30 + dobaL30 + temuL30  +
                                             ebay3L30 + ebay2L30 + walmartL30;
 
                             // Profit calculations (use parsed *_L30 variables)
@@ -1166,20 +1205,20 @@
                             const macyProfit    = data.macy_price       ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) * macyL30 : 0;
                             const reverbProfit  = data.reverb_price     ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * reverbL30 : 0;
                             const dobaProfit    = data.doba_price       ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * dobaL30 : 0;
-                            const temuProfit    = data.temu_price       ? ((parseFloat(data.temu_price) * 0.90) - LP - SHIP) * temuL30 : 0;
-                            const wayfairProfit = data.wayfair_price    ? ((parseFloat(data.wayfair_price) * 0.90) - LP - SHIP) * wayfairL30 : 0;
+                            const temuProfit    = data.temu_price       ? ((parseFloat(data.temu_price) * 0.87) - LP - temuship) * temuL30 : 0;
                             const ebay3Profit   = data.ebay3_price      ? ((parseFloat(data.ebay3_price) * 0.71) - LP - SHIP) * ebay3L30 : 0;
                             const ebay2Profit   = data.ebay2_price      ? ((parseFloat(data.ebay2_price) * 0.80) - LP - SHIP) * ebay2L30 : 0;
                             const walmartProfit = data.walmart_price    ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) * walmartL30 : 0;
 
                             // Total profit
                             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
-                                                reverbProfit + dobaProfit + temuProfit + wayfairProfit +
+                                                reverbProfit + dobaProfit + temuProfit  +
                                                 ebay3Profit + ebay2Profit + walmartProfit;
 
                             // ROI calculation
                             const roi = totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
 
+                            data.TotalAvgRoiPer = Math.round(TotalAvgRoiPer);
                             // Style based on ROI percentage
                             let bgColor, textColor;
                             if (roi < 11) {
@@ -1207,7 +1246,6 @@
 
                             // Store for sorting
                             data.avgRoi = Math.round(roi);
-
                             return element;
                         },
                         visible: true
@@ -1310,6 +1348,84 @@
 
         });
 
+
+
+
+        // On Top Start 
+    //   On to Percentaeg color
+        table.on("dataProcessed", function(){
+            let data = table.getData();
+
+            // --- AVG PFT% calculation ---
+            let totalPft = 0, countPft = 0;
+            data.forEach(row => {
+                if (row.TotalAvgpftForTop) {
+                    totalPft += row.TotalAvgpftForTop;
+                    countPft++;
+                }
+            });
+            let avgPft = countPft > 0 ? (totalPft / countPft) : 0;
+
+            let pftHeader = document.getElementById("avgPftHeader");
+            pftHeader.innerText = avgPft + "%";
+
+            // Style for AVG PFT%
+            let bgColorPft, textColorPft;
+            if (avgPft < 11) {
+                bgColorPft = "#ffe5e5"; textColorPft = "#ff0000";
+            } else if (avgPft >= 10 && avgPft < 15) {
+                bgColorPft = "yellow"; textColorPft = "#000000";
+            } else if (avgPft >= 15 && avgPft < 20) {
+                bgColorPft = "#e6f0ff"; textColorPft = "#0d6efd";
+            } else if (avgPft >= 21 && avgPft < 50) {
+                bgColorPft = "#e6ffe6"; textColorPft = "#198754";
+            } else {
+                bgColorPft = "#f5e6f5"; textColorPft = "#800080";
+            }
+            pftHeader.style.color = textColorPft;
+            pftHeader.style.backgroundColor = bgColorPft;
+            pftHeader.style.padding = "3px 6px";
+            pftHeader.style.borderRadius = "4px";
+            pftHeader.style.fontWeight = "600";
+
+            // --- AVG ROI% calculation ---
+            let totalRoi = 0, countRoi = 0;
+            data.forEach(row => {
+                if (row.TotalAvgRoiPer) {
+                    totalRoi += row.TotalAvgRoiPer;
+                    countRoi++;
+                }
+            });
+            let avgRoi = countRoi > 0 ? (totalRoi / countRoi) : 0;
+
+            let roiHeader = document.getElementById("avgRoiHeader");
+            roiHeader.innerText = avgRoi + "%";
+
+            // Style for AVG ROI%
+            let bgColorRoi, textColorRoi;
+            if (avgRoi < 11) {
+                bgColorRoi = "#ffe5e5"; textColorRoi = "#ff0000";
+            } else if (avgRoi >= 10 && avgRoi < 15) {
+                bgColorRoi = "yellow"; textColorRoi = "#000000";
+            } else if (avgRoi >= 15 && avgRoi < 20) {
+                bgColorRoi = "#e6f0ff"; textColorRoi = "#0d6efd";
+            } else if (avgRoi >= 21 && avgRoi < 50) {
+                bgColorRoi = "#e6ffe6"; textColorRoi = "#198754";
+            } else {
+                bgColorRoi = "#f5e6f5"; textColorRoi = "#800080";
+            }
+            roiHeader.style.color = textColorRoi;
+            roiHeader.style.backgroundColor = bgColorRoi;
+            roiHeader.style.padding = "3px 6px";
+            roiHeader.style.borderRadius = "4px";
+            roiHeader.style.fontWeight = "600";
+        });
+
+
+
+
+    
+
         let currentParentFilter = null;
 
         function setCombinedFilters() {
@@ -1338,6 +1454,13 @@
             });
         }
 
+
+
+
+        // On TOp Caalculation
+
+        
+
     </script>
 
     <script>
@@ -1362,47 +1485,19 @@
 
         // Marketplace table generator
         function buildOVL30Table(data) {
-            const rows = [{
-                    label: "Amazon",
-                    prefix: "amz"
-                },
-                {
-                    label: "eBay",
-                    prefix: "ebay"
-                },
-                {
-                    label: "Doba",
-                    prefix: "doba"
-                },
-                {
-                    label: "Macy",
-                    prefix: "macy"
-                },
-                {
-                    label: "Reverb",
-                    prefix: "reverb"
-                },
-                {
-                    label: "Temu",
-                    prefix: "temu"
-                },
-                {
-                    label: "Walmart",
-                    prefix: "walmart"
-                },
-                {
-                    label: "eBay2",
-                    prefix: "ebay2"
-                },
-                {
-                    label: "eBay3",
-                    prefix: "ebay3"
-                },
-                {
-                    label: "Shopify B2C",
-                    prefix: "shopifyb2c"
-                }
+          const rows = [
+                { label: "Amazon", prefix: "amz", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCCJouLV5a5s-_Mk9TtvbRqsqKIIXlQgT-cSdgoR7P1ds0cSZOCA-FCCSqwNgFvlTDLoM&usqp=CAU" },
+                { label: "eBay", prefix: "ebay", logo: "https://www.fusionaccountants.co.uk/wp-content/uploads/2021/10/business-selling-on-Ebay.png" },
+                { label: "Doba", prefix: "doba", logo: "https://www.eduopinions.com/wp-content/uploads/2018/11/DOBABusinessSchool-logo.png" },
+                { label: "Macy", prefix: "macy", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOudE9Uxpaqbm0oiBvtX4Y-M-L6eUM63ol2GsWHSgGpNdyFxnBE0MAl6saYDUXMUCq63o&usqp=CAU" },
+                { label: "Reverb", prefix: "reverb", logo: "https://play-lh.googleusercontent.com/s1ymEdHe4Pabsf9ZKFhT-tIjYPxRMl_Go09ZhN21tdX3AdA0mHVy7jrCBasnpLwTYw" },
+                { label: "Temu", prefix: "temu", logo: "https://aimg.kwcdn.com/upload_aimg/m-img/785681a9-3a72-4e62-90e8-c9b8245739df.jpeg" },
+                { label: "Walmart", prefix: "walmart", logo: "https://cdn.dribbble.com/userupload/32324680/file/original-fa2572d25a5a85d245d1f65816d31bb0.png?format=webp&resize=400x300&vertical=center" },
+                { label: "eBay2", prefix: "ebay2", logo: "https://www.fusionaccountants.co.uk/wp-content/uploads/2021/10/business-selling-on-Ebay.png" },
+                { label: "eBay3", prefix: "ebay3", logo:"https://www.fusionaccountants.co.uk/wp-content/uploads/2021/10/business-selling-on-Ebay.png" },
+                { label: "Shopify B2C", prefix: "shopifyb2c", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6zpvhC0euHbpxlVe45p1ZaKZgX2GEyOe-WyrmsdyMe9MNvgDJdqsFnZ3LDeQ_9W8aD48&usqp=CAU" }
             ];
+
 
             let html = `
             <div class="table-responsive">
@@ -1465,11 +1560,14 @@
                 html += `
                     <tr>
                     <td>
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-shop me-2"></i>
-                            <span class="fw-semibold">${r.label}</span>
-                        </div>
+                    <div class="d-flex align-items-center">
+                        <img src="${r.logo}" alt="${r.label}" 
+                            title="${r.label}" 
+                            class="channel-logo me-2" 
+                            style="width:60px; height:60px; object-fit:contain;">
+                    </div>
                     </td>
+
                     <td>
                         <div class="value-indicator">
                             ${l60 ?? "-"}
@@ -1525,34 +1623,39 @@
                     </td>
                 
 
-                <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="text" 
-                                class="form-control form-control-sm s-price" 
-                                value="${
-                                    r.prefix === 'amz' ? (data.amz_sprice || '') 
-                                    : r.prefix === 'ebay' ? (data.ebay_sprice || '') 
-                                    : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
-                                    : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
-                                    : r.prefix === 'ebay3' ? (data.ebay3_sprice || '') 
-                                    : ''
-                                }"
-                                style="width: 65px;" 
-                                step="any"
-                                data-sku="${data.SKU}" 
-                                data-lp="${data.LP}" 
-                                data-ship="${data.SHIP}" 
-                                data-type="${r.prefix}">
+              <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" 
+                            class="form-control form-control-sm s-price" 
+                            value="${
+                                r.prefix === 'amz' ? (data.amz_sprice || '') 
+                                : r.prefix === 'ebay' ? (data.ebay_sprice || '') 
+                                : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
+                                : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
+                                : r.prefix === 'ebay3' ? (data.ebay3_sprice || '')
+                                : r.prefix === 'doba' ? (data.doba_sprice || '')
+                                : r.prefix === 'temu' ? (data.temu_sprice || '')
+                                : ''
+                            }"
+                            style="width: 65px;" 
+                            step="any"
+                            data-sku="${data.SKU}" 
+                            data-lp="${data.LP}" 
+                            data-ship="${
+                                r.prefix === 'temu' ? (data.temu_ship || '') : (data.SHIP || '')
+                            }"
+                            data-type="${r.prefix}">
 
-                            <!-- Push to Marketplace -->
-                            <button class="btn btn-success btn-sm d-flex align-items-center pushPriceBtn" 
-                                type="button"
-                                data-sku="${data.SKU}" 
-                                data-type="${r.prefix}">
-                                <i class="bi bi-cloud-arrow-up"></i>
-                            </button>
-                        </div>
-                    </td>
+                        <!-- Push to Marketplace -->
+                        <button class="btn btn-success btn-sm d-flex align-items-center pushPriceBtn" 
+                            type="button"
+                            data-sku="${data.SKU}" 
+                            data-type="${r.prefix}">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </button>
+                    </div>
+                </td>
+
 
                     <td class="spft-field">
                         ${(() => {
@@ -1568,7 +1671,12 @@
                                 value = Math.round(data.ebay2_spft);
                             } else if (r.prefix === 'ebay3' && data.ebay3_spft) {
                                 value = Math.round(data.ebay3_spft);
+                            } else if (r.prefix === 'doba' && data.doba_spft) {
+                                value = Math.round(data.doba_spft);
+                            } else if (r.prefix === 'temu' && data.temu_spft) {
+                                value = Math.round(data.temu_spft);
                             }
+
                             
 
                             if (value !== undefined) {
@@ -1606,7 +1714,12 @@
                                 value = Math.round(data.ebay2_sroi);
                             } else if (r.prefix === 'ebay3' && data.ebay3_sroi) {
                                 value = Math.round(data.ebay3_sroi);
+                            }else if (r.prefix === 'doba' && data.doba_sroi) {
+                                value = Math.round(data.doba_sroi);
+                            } else if (r.prefix === 'temu' && data.temu_sroi) {
+                                value = Math.round(data.temu_sroi);
                             }
+
                             
 
                             if (value !== undefined) {
@@ -1635,6 +1748,8 @@
             });
 
             html += "</tbody></table></div>";
+          
+
             return html;
         }
 
@@ -1644,6 +1759,17 @@
             document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
             document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
             document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";        
+            const imgEl = document.getElementById('ovl30Img');
+
+            if (imgEl) {
+                if (data.shopifyb2c_image) {
+                    imgEl.src = data.shopifyb2c_image;
+                    imgEl.style.display = "block";   // show image
+                } else {
+                    imgEl.style.display = "none";    // hide if missing
+                }
+            }
+
 
             document.getElementById('dilPercentage').textContent = data.dilPercentage ? `${data.dilPercentage}` : "0";
             if (data.dilPercentage) {
@@ -1921,9 +2047,12 @@
             const type = $input.data('type');
             const LP = parseFloat($input.data('lp')) || 0;
             const SHIP = parseFloat($input.data('ship')) || 0;
+            const temu_ship = parseFloat($input.data('temu_ship')) || 0;
 
             if (!sku || !type) return;
 
+            console.log(sku, sprice);
+            
             $.ajax({
                 url: '/pricing-master/save-sprice',
                 type: 'POST',
@@ -1933,7 +2062,8 @@
                     type: type,
                     sprice: sprice,
                     LP: LP,
-                    SHIP: SHIP
+                    SHIP: SHIP,
+                    temu_ship: temu_ship
                 },
                  beforeSend: function() {
                         $('#savePricingBtn').html(
@@ -2017,7 +2147,8 @@
                         $btn.html('Push to Marketplace'); // reset button text
                     }
                 });
-            } else if(type === 'ebay') {
+            }
+             else if(type === 'ebay') {
                 $.ajax({
                     url: '/push-ebay-price',
                     type: 'POST',
@@ -2038,6 +2169,48 @@
                 });
             }
 
+              else if(type === 'ebay2') {
+                $.ajax({
+                    url: '/push-ebay2-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
+                    },
+                    error: function(err) {
+                        alert('Error updating eBay price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            }
+              else if(type === 'ebay3') {
+                $.ajax({
+                    url: '/push-ebay3-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
+                    },
+                    error: function(err) {
+                        alert('Error updating eBay price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            }
+
+            
             else if(type === 'shopifyb2c') {
                 $.ajax({
                     url: '/push-shopify-price',
@@ -2086,9 +2259,9 @@
                         $btn.html('Push to Marketplace');
                     }
                 });
-            } else if(type === 'ebay2') {
+            } else if(type === 'ebay3') {
                 $.ajax({
-                    url: '/update-ebay2-price',
+                    url: '/update-ebay3-price',
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
@@ -2106,6 +2279,29 @@
                     }
                 });
             }
+            else if(type === 'temu') {
+                $.ajax({
+                    url: '/update-temu-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('Temu price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating Temu price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            }
+
+
+            
             // You can add more marketplaces here
         });
 
