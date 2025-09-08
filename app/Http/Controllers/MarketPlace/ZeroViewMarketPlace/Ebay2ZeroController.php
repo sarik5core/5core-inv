@@ -58,6 +58,7 @@ class Ebay2ZeroController extends Controller
             if ($inv > 0 && isset($ebayMetrics[$sku])) {
                 $views = $ebayMetrics[$sku]->views;
                 if ($views !== null && intval($views) === 0 || $views === '') {
+
                     // Fetch DobaDataView values
                     $dobaView = $ebay2DataViews[$sku] ?? null;
                     $value = $dobaView ? $dobaView->value : [];
