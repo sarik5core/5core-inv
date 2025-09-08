@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
 use App\Models\MarketplacePercentage;
 use App\Models\TemuMetric;
+use App\Models\TemuProductSheet;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -82,6 +83,9 @@ class TemuController extends Controller
         // Fetch NR values from temu_data_view
         $temuDataViews = TemuDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
+        // NEW: Fetch Temu product sheet data
+        $temuProductSheets = TemuProductSheet::whereIn('sku', $skus)->get()->keyBy('sku');
+
         // Process data from product master and shopify tables
         $processedData = [];
         $slNo = 1;
@@ -143,6 +147,34 @@ class TemuController extends Controller
                 $processedItem['clicks_l60'] = 0;
                 $processedItem['sales_l30'] = 0;
                 $processedItem['sales_l60'] = 0;
+            }
+
+            // NEW: Add data from temu_product_sheets if available
+            if (isset($temuProductSheets[$sku])) {
+                $temuSheet = $temuProductSheets[$sku];
+                $processedItem['sheet_price'] = $temuSheet->price ?? 0;
+                $processedItem['sheet_pft'] = $temuSheet->pft ?? 0;
+                $processedItem['sheet_roi'] = $temuSheet->roi ?? 0;
+                $processedItem['sheet_l30'] = $temuSheet->l30 ?? 0;
+                $processedItem['sheet_dil'] = $temuSheet->dil ?? 0;
+                $processedItem['buy_link'] = $temuSheet->buy_link ?? '';
+
+                // Calculate T Sales and T DIL
+                $inv = $processedItem['INV'] ?? 0;
+                $sales_l30 = $processedItem['sales_l30'] ?? 0;
+                $sheet_dil = $temuSheet->dil ?? 0;
+
+                $processedItem['T_Sales'] = $temuSheet->dil ?? 0; // T Sales from sheet
+                $processedItem['T_DIL'] = $inv > 0 ? ($sheet_dil - ($sales_l30 / $inv)) * 100 : 0; // T DIL formula
+            } else {
+                $processedItem['sheet_price'] = 0;
+                $processedItem['sheet_pft'] = 0;
+                $processedItem['sheet_roi'] = 0;
+                $processedItem['sheet_l30'] = 0;
+                $processedItem['sheet_dil'] = 0;
+                $processedItem['buy_link'] = '';
+                $processedItem['T_Sales'] = 0;
+                $processedItem['T_DIL'] = 0;
             }
 
             // Calculate CVR
@@ -342,7 +374,7 @@ class TemuController extends Controller
     }
 
 
-      public function temuPricingCVRinc(Request $request)
+    public function temuPricingCVRinc(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
@@ -360,7 +392,7 @@ class TemuController extends Controller
         ]);
     }
 
-      public function temuPricingCVRdsc(Request $request)
+    public function temuPricingCVRdsc(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
@@ -377,7 +409,4 @@ class TemuController extends Controller
             'percentage' => $percentage
         ]);
     }
-
-    
-
 }
