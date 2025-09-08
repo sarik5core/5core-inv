@@ -600,13 +600,15 @@
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    if (!invFilterVal) {
-                        if (parseFloat(data.INV) === 0) return false;
-                    } else if (invFilterVal === "INV_0") {
+
+                    if (invFilterVal === "INV_0") {
                         if (parseFloat(data.INV) !== 0) return false;
                     } else if (invFilterVal === "OTHERS") {
                         if (parseFloat(data.INV) === 0) return false;
+                    } else if (invFilterVal === "ALL" || invFilterVal === "") {
+                        // show all rows → do nothing
                     }
+
 
                     let nrlFilterVal = $("#nrl-filter").val();
                     if (nrlFilterVal) {
