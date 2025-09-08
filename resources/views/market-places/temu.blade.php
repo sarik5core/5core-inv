@@ -1450,6 +1450,24 @@
                                             <div class="metric-total" id="ovl30-total">0</div>
                                         </div>
                                     </th>
+                                    <th data-field="tl_30" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                TL 30 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="tl30-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="t_dil" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                T DIL <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="tDil-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th>NRL</th>
 
                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
@@ -2239,7 +2257,7 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
-                        console.log('Temu data loaded successfully:', response.data.sku);
+                        console.log('Temu data loaded successfully:', response.data);
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
                                 // Calculate metrics similar to Reverb
@@ -2250,10 +2268,18 @@
                                 const views_l30 = parseFloat(item.views_l30) || 0;
                                 const views_l60 = parseFloat(item.views_l60) || 0;
 
+                                // NEW: Get sheet_dil from the response
+                                const sheet_dil = parseFloat(item.sheet_dil) || 0;
+
                                 // Calculate ratios similar to Reverb
                                 const conv = tl30 !== 0 ? ((tl30 - tl60) / tl30) : 0;
                                 const ovDil = inv !== 0 ? l30 / inv : 0;
                                 const tDil = inv !== 0 ? tl30 / inv : 0; // Temu L30 / INV
+
+                                // NEW: Calculate T_DIL using the formula: Dil%- (Sales/Inv)%
+                                const salesInvRatio = inv !== 0 ? (tl30 / inv) : 0;
+                                const T_DIL = item.T_DIL; // Convert to percentage
+
                                 const growth = tl30 !== 0 ? ((tl30 - tl60) / tl30) : 0;
 
                                 const valueJson = item.value ? JSON.parse(item.value) : {};
@@ -2271,8 +2297,10 @@
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
-                                    price: item.price || 0,
-                                    price_wo_ship: item.price_wo_ship || 0,
+                                    price: (item.sheet_price || 0) <= 26.99 ? (parseFloat(item
+                                        .sheet_price || 0) + 2.99) : parseFloat(item
+                                        .sheet_price || 0),
+                                    price_wo_ship: item.sheet_price || 0,
                                     views_l30: views_l30,
                                     views_l60: views_l60,
                                     sales_l30: tl30,
@@ -2284,6 +2312,7 @@
                                     raw_data: item || {},
                                     ovDil: ovDil,
                                     tDil: tDil, // Temu equivalent of rDil
+                                    T_DIL: T_DIL, // NEW: Added T_DIL calculation
                                     PFT_percentage: item.PFT_percentage,
                                     ROI_percentage: item.ROI_percentage,
                                     growth: growth,
@@ -2310,7 +2339,14 @@
                                     SHIP: (item.SHIP !== null && !isNaN(parseFloat(item
                                             .SHIP))) ?
                                         parseFloat(item.SHIP) : 0,
-
+                                    // NEW: Sheet data fields
+                                    sheet_price: item.sheet_price || 0,
+                                    sheet_pft: item.sheet_pft || 0,
+                                    sheet_roi: item.sheet_roi || 0,
+                                    sheet_l30: item.sheet_l30 || 0,
+                                    sheet_dil: item.sheet_dil || 0,
+                                    buy_link: item.buy_link || '',
+                                    T_Sales: item.T_Sales || 0
                                 };
                             });
 
@@ -2491,6 +2527,24 @@
                                data-item='${JSON.stringify(item.raw_data)}'>W</span>`
                     ));
 
+                    // T Sales column
+                    $row.append($('<td>').html(`
+                     <div class="sku-tooltip-container">
+                     <span class="sku-text">${item.sheet_l30 || 0}</span>
+                     <div class="sku-tooltip">
+                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.sheet_l30 || 0}</div>
+                     </div>
+                     </div>
+                      `));
+
+                    // T DIL with color coding - using the calculated T_DIL value
+                    $row.append($('<td>').html(`
+                     <span class="dil-percent-value ${getDilColor(item.T_DIL / 100 || 0)}">
+                     ${Math.round(item.T_DIL || 0)}%
+                     </span>
+                    `));
+
+
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
@@ -2616,12 +2670,6 @@
                         ''
                     ));
 
-
-
-
-
-
-
                     // SPRICE + Edit Button (no decimals)
                     $row.append($('<td>').html(
                         item.SPRICE !== null && !isNaN(parseFloat(item.SPRICE)) ?
@@ -2645,7 +2693,6 @@
                     ));
 
 
-
                     // SPFT Column (optional to show badge in table)
                     // SPFT Column
                     $row.append($('<td>').html(
@@ -2661,8 +2708,8 @@
                         ''
                     ));
                     // CVR with color coding and tooltip
-$row.append($('<td>').html(
-    `<span class="dil-percent-value ${getCvrColor(item.CVR)}">
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.CVR)}">
         ${Math.round(item.CVR * 100)}%
     </span>
     <span class="text-info tooltip-icon conversion-view-trigger" 
@@ -2670,7 +2717,7 @@ $row.append($('<td>').html(
         data-bs-placement="left" 
         title="Conversion View"
         data-item='${JSON.stringify(item.raw_data)}'>C</span>`
-));
+                    ));
 
 
                     $row.append($('<td>').html(
@@ -4051,6 +4098,7 @@ $row.append($('<td>').html(
                         totalPftSum: 0,
                         totalSalesL30Sum: 0,
                         totalCogsSum: 0
+
                     };
 
                     filteredData.forEach(item => {
@@ -4095,10 +4143,19 @@ $row.append($('<td>').html(
                     metrics.ovDilTotal = metrics.invTotal > 0 ?
                         (metrics.ovL30Total / metrics.invTotal) * 100 : 0;
                     const divisor = metrics.rowCount || 1;
+                    const sheetL30Sum = filteredData.reduce((sum, item) => {
+                        return sum + (parseFloat(item.sheet_l30) || 0);
+                    }, 0);
+
+                    const sheetDilSum = filteredData.reduce((sum, item) => {
+                        return sum + (parseFloat(item.T_DIL) || 0);
+                    }, 0);
 
                     // Update metric displays
                     $('#inv-total').text(metrics.invTotal.toLocaleString());
                     $('#ovl30-total').text(metrics.ovL30Total.toLocaleString());
+                    $('#tl30-total').text(sheetL30Sum.toLocaleString());
+                    $('#tdil-total').text(Math.round(sheetDilSum / divisor) + '%');
                     $('#ovdil-total').text(Math.round(metrics.ovDilTotal) + '%');
                     $('#al30-total').text(metrics.el30Total.toLocaleString());
                     $('#lDil-total').text(Math.round(metrics.eDilTotal / divisor * 100) + '%');
