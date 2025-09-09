@@ -66,12 +66,15 @@ class PricingMasterViewsController extends Controller
 
     protected function processPricingData($searchTerm = '')
     {
-        $productData = ProductMaster::whereNull('deleted_at')->get();
+        $productData = ProductMaster::whereNull('deleted_at')
+           
+            ->orderBy('id', 'asc')
+            ->get();
 
         $skus = $productData
             ->pluck('sku')
             ->filter(function ($sku) {
-                return stripos($sku, 'PARENT') === false;
+            return stripos($sku, 'PARENT') === false;
             })
             ->unique()
             ->toArray();
