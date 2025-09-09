@@ -2372,8 +2372,8 @@
 
                     // T DIL with color coding - using the calculated T_DIL value
                     $row.append($('<td>').html(`
-                     <span class="dil-percent-value ${getDilColor(item.T_DIL / 100 || 0)}">
-                     ${Math.round(item.T_DIL || 0)}%
+                     <span class="dil-percent-value ${getDilColor(item.sheet_dil / 100 || 0)}">
+                     ${Math.round(item.sheet_dil || 0)}%
                      </span>
                     `));
 
