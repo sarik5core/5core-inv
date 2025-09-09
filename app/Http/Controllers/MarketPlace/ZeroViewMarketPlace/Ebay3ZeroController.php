@@ -53,7 +53,8 @@ class Ebay3ZeroController extends Controller
             // Only include rows where inv > 0, SKU exists in Ebay3Metric, and views == 0
             if ($inv > 0 && isset($ebayMetrics[$sku])) {
                 $views = $ebayMetrics[$sku]->views ?? 0;
-                if (intval($views) === 0) {
+                if ($views !== null && intval($views) === 0 || $views === '') {
+
                     // Fetch DobaDataView values
                     $dobaView = $ebay3DataViews[$sku] ?? null;
                     $value = $dobaView ? $dobaView->value : [];

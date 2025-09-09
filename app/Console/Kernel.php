@@ -118,13 +118,13 @@ class Kernel extends ConsoleKernel
             ->dailyAt('23:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-over-kw-bids')
-            ->dailyAt('17:00')
+            ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-over-pt-bids')
-            ->dailyAt('17:00')
+            ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-over-hl-bids')
-            ->dailyAt('17:00')
+            ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();
         $schedule->command('sync:ebay-prices')->everyMinute();

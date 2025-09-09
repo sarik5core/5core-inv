@@ -2127,9 +2127,9 @@
                                                     <li>
                                                         <a href="{{ url('ebayTwoAnalysis') }}">Ebay 2's Analytics</a>
                                                     </li>
-                                                    <li>
+                                                    {{-- <li>
                                                         <a href="{{ route('zero.ebay2') }}">Ebay 2's 0 View</a>
-                                                    </li>
+                                                    </li> --}}
                                                     @if (isset($permissions['ebayTwo_low_visibility']) && in_array('view', $permissions['ebayTwo_low_visibility']))
                                                         <li>
                                                             <a href="{{ route('ebay2.low.visibility.view') }}">Ebay
@@ -2181,9 +2181,9 @@
                                                         <a href="{{ url('ebayThreeAnalysis') }}">Ebay 3's
                                                             Analytics</a>
                                                     </li>
-                                                    <li>
+                                                    {{-- <li>
                                                         <a href="{{ route('zero.ebay3') }}">Ebay 3's 0 View</a>
-                                                    </li>
+                                                    </li> --}}
                                                     @if (isset($permissions['ebayThree_low_visibility']) && in_array('view', $permissions['ebayThree_low_visibility']))
                                                         <li>
                                                             <a href="{{ route('ebay3.low.visibility.view') }}">Ebay

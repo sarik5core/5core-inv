@@ -619,6 +619,12 @@
             <span class="ms-2">Loading datatable, please wait...</span>
         </div>
 
+        <div class="mb-4">
+            <h5 class="mb-2">Channel-wise L30 Sales</h5>
+            <div id="channelSalesChart" style="width: 100%; height: 400px;"></div>
+        </div>
+
+
         <!-- Table Container -->
         <div class="table-container" id="channelTableWrapper" style="display: none;">
             <div class="table-responsive" style="max-height: 500px; overflow: auto;">
@@ -627,7 +633,7 @@
                         <tr>
                             <th>Channel</th>
                             <th>R&A</th>
-                            <th>Link</th>
+                            {{-- <th>Link</th> --}}
                             <th>Sheet Link</th>
                             <th class="text-center align-middle">
                                 <small id="l60SalesCountBadge" class="badge bg-dark text-white mb-1"
@@ -683,9 +689,9 @@
                             <th>type</th>
                             <th>Listing Counts</th>
                             <th>W/Ads</th>
-                            <th>0 Sold SKU Count</th>
+                            {{-- <th>0 Sold SKU Count</th>
                             <th>Sold Sku Count</th>
-                            <th>Brand Registry</th>
+                            <th>Brand Registry</th> --}}
                             <th>Update</th>
                             <th>Ac Health</th>
                             <th class="text-white">Action</th>
@@ -763,6 +769,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script>
         // Use jQuery.noConflict() if needed
@@ -876,6 +883,718 @@
         }
 
         // Initialize DataTable
+        // function initializeDataTable() {
+        //     try {
+        //         if (!jq('#channelTable').length) {
+        //             console.error('Table element not found');
+        //             return null;
+        //         }
+
+        //         return jq('#channelTable').DataTable({
+        //             processing: true,
+        //             serverSide: false,
+        //             ordering: false,
+        //             searching: true,
+        //             pageLength: 50,
+        //             order: [[5, 'desc']],
+        //             ajax: {
+        //                 url: '/channels-master-data',
+        //                 type: "GET",
+        //                 data: function(d) {
+        //                     $('#customLoader').hide();
+        //                     $('#channelTableWrapper').show();
+        //                     d.channel = jq('#channelSearchInput').val();
+        //                     d.search = jq('#searchInput').val();
+        //                     d.sort_by = jq('#sort_by').val();
+        //                     d.sort_order = jq('#sort_order').val();
+        //                     d.sort_by = currentSortColumn;
+        //                     d.sort_order = currentSortOrder;
+        //                 },
+        //                 dataSrc: function(json) {
+        //                     allChannelData = json.data;
+        //                     if (!originalChannelData.length) {
+        //                         originalChannelData = json.data;
+        //                     }
+
+        //                     const selectedChannel = jq('#channelSearchInput').val()?.toLowerCase()?.trim();
+        //                     const search = jq('#searchInput').val()?.toLowerCase()?.trim();
+
+        //                     let filteredData = json.data;
+
+        //                     if (selectedChannel) {
+        //                         filteredData = filteredData.filter(item =>
+        //                             item['Channel ']?.toLowerCase()?.trim() === selectedChannel
+        //                         );
+        //                     }
+
+        //                     if (search) {
+        //                         filteredData = filteredData.filter(item =>
+        //                             item['Channel ']?.toLowerCase()?.trim() === search
+        //                         );
+        //                     }
+
+        //                     filteredData.sort((a, b) => {
+        //                         const aVal = parseFloat(a['L30 Sales']?.toString().replace(/,/g, '')) || 0;
+        //                         const bVal = parseFloat(b['L30 Sales']?.toString().replace(/,/g, '')) || 0;
+        //                         return bVal - aVal;
+        //                     });
+
+        //                     tableData = filteredData;
+
+        //                     return filteredData;
+        //                 },
+        //                 error: function(xhr, error, thrown) {
+        //                     console.log("AJAX error:", error, thrown);
+        //                 }
+        //             },
+        //             columns: [{
+        //                     data: 'Channel ',
+        //                     render: function(data, type, row) {
+        //                         if (!data) return '';
+
+        //                         const channelName = data.trim().toLowerCase();
+        //                         const routeMap = {
+        //                             'amazon': '/overall-amazon',
+        //                             'amazon fba': '/overall-amazon-fba',
+        //                             'ebay': '/ebay',
+        //                             'temu': '/temu',
+        //                             'macys': '/macys',
+        //                             'wayfair': '/Wayfair',
+        //                             'reverb': '/reverb',
+        //                             'shopify b2c': '/shopifyB2C',
+        //                             'doba ': '#',
+        //                         };
+
+        //                         const routeUrl = routeMap[channelName];
+
+        //                         if (routeUrl) {
+        //                             return `<a href="${routeUrl}" target="_blank" style="color: #007bff; text-decoration: underline;">${data}</a>`;
+        //                         } else {
+        //                             return `<div class="d-flex align-items-center"><span>${data}</span></div>`;
+        //                         }
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'R&A',
+        //                     visible: false,
+        //                     render: function(data, type, row) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<div class="ra-edit-container d-flex align-items-center">
+        //                                 <input type="checkbox" class="ra-checkbox" ${isChecked}>
+        //                             </div>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'URL LINK',
+        //                     render: function(data, type, row) {
+        //                         return data ?
+        //                             `<a href="${data}" target="_blank"><i class="bi bi-box-arrow-up-right link-icon"></i></a>` :
+        //                             '';
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'sheet_link',
+        //                     render: function(data, type, row) {
+        //                         const sheetLink = data || '';
+        //                         const channelName = row['Channel '] || '';  // use correct key here
+        //                         return `
+        //                             <div style="display:flex; align-items:center; gap:6px;">
+        //                                 <input type="text"
+        //                                     class="form-control form-control-sm sheet-link-input"
+        //                                     value="${sheetLink}"
+        //                                     data-channel="${channelName}"
+        //                                     placeholder="Enter Link"
+        //                                     style="min-width: 100px;" />
+        //                                 ${sheetLink ? `<a href="${sheetLink}" target="_blank" class="btn btn-sm btn-success">🔗</a>` : ''}
+        //                             </div>
+        //                         `;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'L-60 Sales',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         try {
+        //                             const num = parseFloat(data.toString().replace(/,/g, ''));
+        //                             const roundedNum = Math.round(num);
+        //                             return `<span class="metric-value">${roundedNum.toLocaleString('en-US')}</span>`;
+        //                         } catch (e) {
+        //                             return '<span class="metric-value">N/A</span>';
+        //                         }
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'L30 Sales',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+
+        //                         const num = parseFloat(data.toString().replace(/,/g, ''));
+
+        //                         if (isNaN(num)) {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+
+        //                         const roundedNum = Math.round(num);
+
+        //                         return `<span class="metric-value">${roundedNum.toLocaleString('en-US', {
+        //                             minimumFractionDigits: 0,
+        //                             maximumFractionDigits: 0
+        //                         })}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'Growth',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         const l30 = parseFloat(row['L30 Sales']);
+        //                         let l60 = parseFloat(row['L-60 Sales']);
+
+        //                         if (isNaN(l60)) l60 = 0;
+
+        //                         if (!l30 || isNaN(l30) || l30 === 0) {
+        //                             return '<span class="growth-value">-</span>';
+        //                         }
+
+        //                         const growth = (l30 - l60) / l30;
+        //                         const percent = (growth * 100).toFixed(0);
+        //                         const value = `${percent}%`;
+
+        //                         let bgColor = '';
+        //                         let textColor = 'black';
+
+        //                         if (growth < 0) {
+        //                             bgColor = '#ff0000';
+        //                             textColor = 'white';
+        //                         } else if (growth >= 0 && growth < 0.10) {
+        //                             bgColor = '#ffff00';
+        //                         } else if (growth >= 0.10 && growth < 0.20) {
+        //                             bgColor = '#00ffff';
+        //                         } else if (growth >= 0.20 && growth < 0.50) {
+        //                             bgColor = '#00ff00';
+        //                         } else if (growth >= 0.50) {
+        //                             bgColor = '#ff00ff';
+        //                             textColor = 'white';
+        //                         }
+
+        //                         return `<span class="growth-value" style="background-color:${bgColor}; color:${textColor}; padding:2px 6px; border-radius:4px;">${value}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'L60 Orders',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+        //                         return `<span class="metric-value">${data}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'L30 Orders',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+        //                         return `<span class="metric-value">${data}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'Gprofit%',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+
+        //                         const num = parseFloat(data);
+
+        //                         if (isNaN(num)) {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+
+        //                         let percentage = Math.round(num * 100);
+        //                         let bgColor = '';
+        //                         let textColor = 'black';
+
+        //                         if (percentage < 25) {
+        //                             bgColor = '#ff0000';
+        //                             textColor = 'white';
+        //                         } else if (percentage >= 25 && percentage < 33) {
+        //                             bgColor = '#00ff00';
+        //                             textColor = 'black';
+        //                         } else {
+        //                             bgColor = '#ff00ff';
+        //                             textColor = 'white';
+        //                         }
+
+        //                         return `<span class="gprofit-value" style="background-color:${bgColor}; color:${textColor}; padding:2px 6px; border-radius:4px;">${percentage}%</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'G Roi%',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+
+        //                         const num = parseFloat(data);
+
+        //                         if (isNaN(num)) {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+
+        //                         let percentage = Math.round(num * 100);
+        //                         let bgColor = '';
+        //                         let textColor = 'black';
+
+        //                         if (percentage <= 50) {
+        //                             bgColor = '#ff0000';
+        //                             textColor = 'white';
+        //                         }
+
+        //                         return `<span class="groi-value" style="background-color:${bgColor}; color:${textColor}; padding:2px 6px; border-radius:4px;">${percentage}%</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'red_margin',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+        //                         return `<span class="metric-value">${data}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'NR',
+        //                     render: function(data, type, row) {
+        //                         // var isChecked = data ? 'checked' : '';
+        //                         const isChecked = parseInt(row.nr) === 1 ? 'checked' : '';
+        //                         // var dateDisplay = data ? new Date(data).toLocaleDateString() : '';
+
+        //                         return `<input type="checkbox" class="checkbox-nr" data-channel="${row['Channel ']}" ${isChecked}>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'type',
+        //                     render: function(data, type, row) {
+        //                         const current = data || row.type || '';
+        //                         const channel = row['Channel ']?.trim();
+
+        //                         return `
+        //                             <input 
+        //                                 type="text" 
+        //                                 class="form-control form-control-sm type-input"
+        //                                 value="${current}" 
+        //                                 data-channel="${channel}" 
+        //                                 style="min-width: 100px;" 
+        //                                 placeholder="Enter Type" />
+        //                         `;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'listed_count',
+        //                     title: 'Listed Count',
+        //                     render: function (data, type, row) {
+                                
+        //                         return `<span class="metric-value">${data ?? 0}</span>`;
+
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'W/Ads',
+        //                     render: function(data, type, row) {
+        //                         const isChecked = parseInt(row.w_ads) === 1 ? 'checked' : '';
+        //                         // var isChecked = data ? 'checked' : '';
+        //                         // var dateDisplay = data ? new Date(data).toLocaleDateString() : '';
+
+        //                         return `<input type="checkbox" class="checkbox-wads" data-channel="${row['Channel ']}" ${isChecked}>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: '0 Sold SKU Count',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+        //                         return `<span class="metric-value">${data}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'Sold SKU Count',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+        //                         return `<span class="metric-value">${data}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'Brand Registry',
+        //                     className: 'metric-cell',
+        //                     render: function(data, type, row) {
+        //                         if (data === undefined || data === null || data === '#DIV/0!') {
+        //                             return '<span class="metric-value"></span>';
+        //                         }
+        //                         return `<span class="metric-value">${data}</span>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'Update',
+        //                     render: function(data, type, row) { 
+        //                         const isChecked = parseInt(row.update) === 1 ? 'checked' : '';
+        //                         // var isChecked = data ? 'checked' : '';
+        //                         // var dateDisplay = data ? new Date(data).toLocaleDateString() : '';
+
+        //                         return `<input type="checkbox" class="checkbox-update" data-channel="${row['Channel ']}" ${isChecked}>`;
+        //                     }
+        //                 },
+        //                 {
+        //                     data: 'Account health',
+        //                     render: function(data, type, row) {
+        //                         return data ?
+        //                             `<a href="${data}" target="_blank"><i class="bi bi-box-arrow-up-right link-icon"></i></a>` :
+        //                             '';
+        //                     }
+        //                 },
+        //                 {
+        //                     data: null,
+        //                     orderable: true,
+        //                     searchable: false,
+        //                     render: function(data, type, row, meta) {
+        //                         const index = meta.row;
+                                
+        //                         return `
+        //                         <div class="d-flex justify-content-center">
+        //                             <button class="btn btn-sm btn-outline-primary edit-btn me-1" title="Edit" data-index="${index}"
+        //                                     data-channel="${row.channel || ''}"
+        //                                     data-url="${row.sheet_url || ''}">
+        //                                 <i class="fas fa-edit"></i>
+        //                             </button>
+        //                             <button class="btn btn-sm btn-outline-danger delete-btn" title="Archive">
+        //                                 <i class="fa fa-archive"></i>
+        //                             </button>
+        //                         </div>`;
+        //                     }
+        //                 }
+        //             ],
+        //             responsive: true,
+        //             language: {
+        //                 processing: "Loading data, please wait...",
+        //                 emptyTable: "",
+        //                 zeroRecords: "",
+        //             },
+        //             initComplete: function() {
+        //                 var buttons = new jq.fn.dataTable.Buttons(table, {
+        //                     buttons: ['excel', 'print']
+        //                 }).container().appendTo(jq('#channelTable_wrapper .col-md-6:eq(0)'));
+        //             }
+        //         });
+        //     } catch (e) {
+        //         console.error('Error initializing DataTable:', e);
+        //         return null;
+        //     }
+        // }
+
+        // function initializeDataTable() {
+        //     try {
+        //         if (!jq('#channelTable').length) {
+        //             console.error('Table element not found');
+        //             return null;
+        //         }
+
+        //         let table = jq('#channelTable').DataTable({
+        //             processing: true,
+        //             serverSide: false,
+        //             ordering: false,
+        //             searching: true,
+        //             pageLength: 50,
+        //             order: [[5, 'desc']],
+        //             ajax: {
+        //                 url: '/channels-master-data',
+        //                 type: "GET",
+        //                 data: function (d) {
+        //                     $('#customLoader').hide();
+        //                     $('#channelTableWrapper').show();
+        //                     d.channel = jq('#channelSearchInput').val(); // Amazon / eBay / etc.
+        //                     d.search = jq('#searchInput').val();
+        //                     d.sort_by = currentSortColumn;
+        //                     d.sort_order = currentSortOrder;
+        //                 },
+        //                 dataSrc: function (json) {
+        //                     if (!json.data) return [];
+
+        //                     // 🔹 Detect selected channel
+        //                     const channel = jq('#channelSearchInput').val().toLowerCase();
+
+        //                     return json.data.map(item => {
+        //                         let mapped = {};
+
+        //                         if (channel === 'amazon') {
+        //                             // Mapping for AmazonController::getAmazonChannelData
+        //                             mapped = {
+        //                                 'Channel ': 'Amazon',
+        //                                 'R&A': item.ra || false,
+        //                                 'Link': item.link || '',
+        //                                 'Sheet Link': item.sheet_link || '',
+        //                                 'L-60 Sales': item.A_L60 || 0,
+        //                                 'L30 Sales': item.T_Sale_l30 || 0,
+        //                                 'Growth': item.PFT_percentage || 0,
+        //                                 'L60 Orders': item.A_L60_orders || 0,
+        //                                 'L30 Orders': item.A_L30_orders || 0,
+        //                                 'Gprofit%': item.PFT_percentage || 0,
+        //                                 'G ROI%': item.roi_percentage || 0,
+        //                                 'Red Margin': item.Total_pft || 0,
+        //                                 'NR': item.nr || 0,
+        //                                 'type': item.type || '',
+        //                                 'Listing Counts': item.listing_counts || 0,
+        //                                 'W/Ads': item.w_ads || 0,
+        //                                 '0 Sold SKU Count': item.zero_sku || 0,
+        //                                 'Sold Sku Count': item.sold_sku || 0,
+        //                                 'Brand Registry': item.brand_registry || 0,
+        //                                 'Update': item.update_flag || 0,
+        //                                 'Ac Health': item.account_health || '',
+        //                             };
+        //                         } else {
+        //                             // Default mapping for other channels (ChannelMaster data)
+        //                             mapped = {
+        //                                 'Channel ': item.channel || '',
+        //                                 'R&A': item.ra || false,
+        //                                 'Link': item.link || '',
+        //                                 'Sheet Link': item.sheet_link || '',
+        //                                 'L-60 Sales': item.l60_sales || 0,
+        //                                 'L30 Sales': item.l30_sales || 0,
+        //                                 'Growth': item.growth || 0,
+        //                                 'L60 Orders': item.l60_orders || 0,
+        //                                 'L30 Orders': item.l30_orders || 0,
+        //                                 'Gprofit%': item.gprofit_percentage || 0,
+        //                                 'G ROI%': item.roi_percentage || 0,
+        //                                 'Red Margin': item.red_margin || 0,
+        //                                 'NR': item.nr || 0,
+        //                                 'type': item.type || '',
+        //                                 'Listing Counts': item.listing_counts || 0,
+        //                                 'W/Ads': item.w_ads || 0,
+        //                                 '0 Sold SKU Count': item.zero_sku || 0,
+        //                                 'Sold Sku Count': item.sold_sku || 0,
+        //                                 'Brand Registry': item.brand_registry || 0,
+        //                                 'Update': item.update_flag || 0,
+        //                                 'Ac Health': item.account_health || '',
+        //                             };
+        //                         }
+
+        //                         return mapped;
+        //                     });
+        //                 },
+        //                 error: function (xhr, error, thrown) {
+        //                     console.log("AJAX error:", error, thrown);
+        //                 }
+        //             },
+        //             columns: [
+        //                 { data: 'Channel ' },
+        //                 {
+        //                     data: 'R&A',
+        //                     render: function (data) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<div class="ra-edit-container d-flex align-items-center">
+        //                                     <input type="checkbox" class="ra-checkbox" ${isChecked}>
+        //                                 </div>`;
+        //                     }
+        //                 },
+        //                 { data: 'Link' },
+        //                 { data: 'Sheet Link' },
+        //                 { data: 'L-60 Sales' },
+        //                 { data: 'L30 Sales' },
+        //                 { data: 'Growth' },
+        //                 { data: 'L60 Orders' },
+        //                 { data: 'L30 Orders' },
+        //                 { data: 'Gprofit%' },
+        //                 { data: 'G ROI%' },
+        //                 { data: 'Red Margin' },
+        //                 { data: 'NR' },
+        //                 {
+        //                     data: 'type',
+        //                     render: function (data) {
+        //                         return `<input type="text" class="form-control type-input" value="${data || ''}">`;
+        //                     }
+        //                 },
+        //                 { data: 'Listing Counts' },
+        //                 {
+        //                     data: 'W/Ads',
+        //                     render: function (data) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<div class="wa-edit-container d-flex align-items-center">
+        //                                     <input type="checkbox" class="wa-checkbox" ${isChecked}>
+        //                                 </div>`;
+        //                     }
+        //                 },
+        //                 { data: '0 Sold SKU Count' },
+        //                 { data: 'Sold Sku Count' },
+        //                 { data: 'Brand Registry' },
+        //                 {
+        //                     data: 'Update',
+        //                     render: function (data) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<div class="update-edit-container d-flex align-items-center">
+        //                                     <input type="checkbox" class="update-checkbox" ${isChecked}>
+        //                                 </div>`;
+        //                     }
+        //                 },
+        //                 { data: 'Ac Health' },
+        //                 {
+        //                     data: null,
+        //                     render: function () {
+        //                         return `<button class="btn btn-sm btn-primary">Edit</button>`;
+        //                     }
+        //                 }
+        //             ],
+        //             responsive: true,
+        //             language: {
+        //                 processing: "Loading data, please wait...",
+        //                 emptyTable: "",
+        //                 zeroRecords: "",
+        //             }
+        //         });
+
+        //         return table;
+        //     } catch (e) {
+        //         console.error('Error initializing DataTable:', e);
+        //         return null;
+        //     }
+        // }
+
+        // function initializeDataTable() {
+        //     try {
+        //         if (!jq('#channelTable').length) {
+        //             console.error('Table element not found');
+        //             return null;
+        //         }
+
+        //         let table = jq('#channelTable').DataTable({
+        //             processing: true,
+        //             serverSide: false,
+        //             ordering: false,
+        //             searching: true,
+        //             pageLength: 50,
+        //             destroy: true, // ✅ Prevent "Cannot reinitialise DataTable"
+        //             ajax: {
+        //                 url: '/channels-master-data',
+        //                 type: "GET",
+        //                 data: function (d) {
+        //                     $('#customLoader').hide();
+        //                     $('#channelTableWrapper').show();
+        //                     d.channel = jq('#channelSearchInput').val(); 
+        //                     d.search = jq('#searchInput').val();
+        //                     d.sort_by = window.currentSortColumn || null;
+        //                     d.sort_order = window.currentSortOrder || null;
+        //                 },
+        //                 dataSrc: function (json) {
+        //                     if (!json.data || !json.data.length) return [];
+
+        //                     //Normalize data: ensure every row has same keys
+        //                     return json.data.map(item => {
+        //                         return {
+        //                             'Channel': item.channel || 'Amazon', // fallback
+        //                             'R&A': item.ra || 0,
+        //                             'Link': item.link || '',
+        //                             'Sheet Link': item.sheet_link || '',
+        //                             'L-60 Sales': item.l60_sales || item.A_L60 || 0,
+        //                             'L30 Sales': item.l30_sales || item.T_Sale_l30 || 0,
+        //                             'Growth': item.growth || item.PFT_percentage || 0,
+        //                             'L60 Orders': item.l60_orders || item.A_L60_orders || 0,
+        //                             'L30 Orders': item.l30_orders || item.A_L30_orders || 0,
+        //                             'Gprofit%': item.gprofit_percentage || item.PFT_percentage || 0,
+        //                             'G ROI%': item.roi_percentage || 0,
+        //                             'Red Margin': item.red_margin || item.Total_pft || 0,
+        //                             'NR': item.nr || 0,
+        //                             'type': item.type || '',
+        //                             'Listing Counts': item.listing_counts || 0,
+        //                             'W/Ads': item.w_ads || 0,
+        //                             '0 Sold SKU Count': item.zero_sku || 0,
+        //                             'Sold Sku Count': item.sold_sku || 0,
+        //                             'Brand Registry': item.brand_registry || 0,
+        //                             'Update': item.update_flag || 0,
+        //                             'Ac Health': item.account_health || '',
+        //                         };
+        //                     });
+        //                 },
+        //                 error: function (xhr, error, thrown) {
+        //                     console.log("AJAX error:", error, thrown);
+        //                 }
+        //             },
+        //             columns: [
+        //                 { data: 'Channel' },
+        //                 {
+        //                     data: 'R&A',
+        //                     render: function (data) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<input type="checkbox" class="ra-checkbox" ${isChecked}>`;
+        //                     }
+        //                 },
+        //                 { data: 'Link' },
+        //                 { data: 'Sheet Link' },
+        //                 { data: 'L-60 Sales' },
+        //                 { data: 'L30 Sales' },
+        //                 { data: 'Growth' },
+        //                 { data: 'L60 Orders' },
+        //                 { data: 'L30 Orders' },
+        //                 { data: 'Gprofit%' },
+        //                 { data: 'G ROI%' },
+        //                 { data: 'Red Margin' },
+        //                 { data: 'NR' },
+        //                 {
+        //                     data: 'type',
+        //                     render: function (data) {
+        //                         return `<input type="text" class="form-control type-input" value="${data || ''}">`;
+        //                     }
+        //                 },
+        //                 { data: 'Listing Counts' },
+        //                 {
+        //                     data: 'W/Ads',
+        //                     render: function (data) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<input type="checkbox" class="wa-checkbox" ${isChecked}>`;
+        //                     }
+        //                 },
+        //                 { data: '0 Sold SKU Count' },
+        //                 { data: 'Sold Sku Count' },
+        //                 { data: 'Brand Registry' },
+        //                 {
+        //                     data: 'Update',
+        //                     render: function (data) {
+        //                         const isChecked = data ? 'checked' : '';
+        //                         return `<input type="checkbox" class="update-checkbox" ${isChecked}>`;
+        //                     }
+        //                 },
+        //                 { data: 'Ac Health' },
+        //                 {
+        //                     data: null,
+        //                     render: function () {
+        //                         return `<button class="btn btn-sm btn-primary">Edit</button>`;
+        //                     }
+        //                 }
+        //             ],
+        //             responsive: true,
+        //             language: {
+        //                 processing: "Loading data, please wait...",
+        //                 emptyTable: "No data available",
+        //                 zeroRecords: "No matching records found",
+        //             }
+        //         });
+
+        //         return table;
+        //     } catch (e) {
+        //         console.error('Error initializing DataTable:', e);
+        //         return null;
+        //     }
+        // }
+
         function initializeDataTable() {
             try {
                 if (!jq('#channelTable').length) {
@@ -883,65 +1602,115 @@
                     return null;
                 }
 
-                return jq('#channelTable').DataTable({
+                // If already initialized, destroy cleanly so we can rebuild
+                if (jq.fn.DataTable.isDataTable('#channelTable')) {
+                    jq('#channelTable').DataTable().clear().destroy();
+                    // Remove previous header thead that DataTables might have created
+                    jq('#channelTable').empty();
+                }
+
+                // --- helpers ---
+                const toNum = (v, def = 0) => {
+                    const n = parseFloat(String(v).replace(/,/g, ''));
+                    return Number.isFinite(n) ? n : def;
+                };
+                const pick = (obj, keys, def = '') => {
+                    for (const k of keys) {
+                        const v = obj[k];
+                        if (v !== undefined && v !== null && v !== '') return v;
+                    }
+                    return def;
+                };
+                const pctFix = (v) => {
+                    let n = toNum(v, 0);
+                    // If it's a fraction (<=1), convert to %
+                    if (Math.abs(n) <= 1) n = n * 100;
+                    // clamp weird values
+                    if (!Number.isFinite(n)) n = 0;
+                    return n;
+                };
+
+                let table = jq('#channelTable').DataTable({
                     processing: true,
                     serverSide: false,
                     ordering: false,
                     searching: true,
                     pageLength: 50,
-                    order: [[5, 'desc']],
+                    destroy: true,
+                    order: [[5, 'desc']], // 5 => L30 Sales in the schema below
                     ajax: {
                         url: '/channels-master-data',
                         type: "GET",
-                        data: function(d) {
-                            $('#customLoader').hide();
-                            $('#channelTableWrapper').show();
-                            d.channel = jq('#channelSearchInput').val();
-                            d.search = jq('#searchInput').val();
-                            d.sort_by = jq('#sort_by').val();
-                            d.sort_order = jq('#sort_order').val();
-                            d.sort_by = currentSortColumn;
-                            d.sort_order = currentSortOrder;
+                        data: function (d) {
+                            jq('#customLoader').hide();
+                            jq('#channelTableWrapper').show();
+                            d.channel     = jq('#channelSearchInput').val(); // Amazon / eBay / etc.
+                            d.search      = jq('#searchInput').val();
+                            d.sort_by     = window.currentSortColumn || null;
+                            d.sort_order  = window.currentSortOrder || null;
                         },
-                        dataSrc: function(json) {
-                            allChannelData = json.data;
-                            if (!originalChannelData.length) {
-                                originalChannelData = json.data;
-                            }
+                       dataSrc: function (json) {
+                            if (!json || !json.data) return [];
 
-                            const selectedChannel = jq('#channelSearchInput').val()?.toLowerCase()?.trim();
-                            const search = jq('#searchInput').val()?.toLowerCase()?.trim();
+                            drawChannelChart(json.data);
 
-                            let filteredData = json.data;
+                            // Normalize every row to ONE schema so columns line up
+                            return json.data.map(item => {
+                                // console.log('Raw item:', item);
 
-                            if (selectedChannel) {
-                                filteredData = filteredData.filter(item =>
-                                    item['Channel ']?.toLowerCase()?.trim() === selectedChannel
-                                );
-                            }
+                                // Make sure to include exact keys sent by controller
+                                const l60Sales = toNum(pick(item, ['L-60 Sales', 'L60 Sales', 'l60_sales', 'A_L60', 'l60sales'], 0), 0);
+                                const l30Sales = toNum(pick(item, ['L30 Sales', 'l30_sales', 'T_Sale_l30', 'l30sales'], 0), 0);
 
-                            if (search) {
-                                filteredData = filteredData.filter(item =>
-                                    item['Channel ']?.toLowerCase()?.trim() === search
-                                );
-                            }
+                                const l60Orders = toNum(pick(item, ['L60 Orders','l60_orders', 'A_L60_orders', 'l60orders'], 0), 0);
+                                const l30Orders = toNum(pick(item, ['L30 Orders','l30_orders', 'A_L30_orders', 'l30orders'], 0), 0);
 
-                            filteredData.sort((a, b) => {
-                                const aVal = parseFloat(a['L30 Sales']?.toString().replace(/,/g, '')) || 0;
-                                const bVal = parseFloat(b['L30 Sales']?.toString().replace(/,/g, '')) || 0;
-                                return bVal - aVal;
+                                let growth = pick(item, ['growth', 'Growth'], null);
+                                // if (growth === null || growth === '' || !Number.isFinite(toNum(growth))) {
+                                //     growth = l30Orders > 0 ? ((l30Orders - l60Orders) / l30Orders) * 100 : 0;
+                                // } else {
+                                //     growth = pctFix(growth);
+                                // }
+                                // if (!Number.isFinite(growth)) growth = 0;
+
+                                let gprofit = pctFix(pick(item, ['gprofit_percentage', 'PFT_percentage', 'gprofit', 'Gprofit%'], 0));
+                                let groi    = pctFix(pick(item, ['G Roi', 'g_roi_percentage', 'roi'], 0));
+
+                                return {
+                                    'Channel': pick(item, ['channel', 'Channel', 'Channel '], ''),  // use per-row channel
+                                    'Link': pick(item, ['link', 'url', 'URL LINK', 'url_link'], ''),
+                                    'sheet_link': pick(item, ['sheet_link', 'sheet_url', 'sheet'], ''),
+                                    'R&A': toNum(pick(item, ['ra', 'R&A', 'R_and_A'], 0), 0),
+                                    'L-60 Sales': l60Sales,
+                                    'L30 Sales': l30Sales,
+                                    'Growth': growth,
+                                    'L60 Orders': l60Orders,
+                                    'L30 Orders': l30Orders,
+                                    'Gprofit%': gprofit,
+                                    'G ROI%': groi,
+                                    'Red Margin': toNum(pick(item, ['red_margin', 'Total_pft', 'total_pft'], 0), 0),
+                                    'NR': toNum(pick(item, ['nr','NR'], 0), 0),
+                                    'type': pick(item, ['type'], ''),
+                                    'Listing Counts': toNum(pick(item, ['listing_counts', 'listed_count', 'list_count'], 0), 0),
+                                    'W/Ads': toNum(pick(item, ['w_ads', 'W/Ads','with_ads', 'ads'], 0), 0),
+                                    '0 Sold SKU Count': toNum(pick(item, ['zero_sku', 'zero_sku_count', 'zero_sold_sku'], 0), 0),
+                                    'Sold Sku Count': toNum(pick(item, ['sold_sku', 'sold_sku_count'], 0), 0),
+                                    'Brand Registry': toNum(pick(item, ['brand_registry', 'brandregistry'], 0), 0),
+                                    'Update': toNum(pick(item, ['update_flag', 'update','Update'], 0), 0),
+                                    'Ac Health': pick(item, ['account_health', 'ac_health', 'accounthealth'], ''),
+                                    
+                                };
                             });
-
-                            tableData = filteredData;
-
-                            return filteredData;
                         },
-                        error: function(xhr, error, thrown) {
+
+                        error: function (xhr, error, thrown) {
                             console.log("AJAX error:", error, thrown);
                         }
                     },
-                    columns: [{
-                            data: 'Channel ',
+                    columns: [
+                        // { data: 'Channel' },
+                        {
+                            data: 'Channel',
                             render: function(data, type, row) {
                                 if (!data) return '';
 
@@ -950,12 +1719,15 @@
                                     'amazon': '/overall-amazon',
                                     'amazon fba': '/overall-amazon-fba',
                                     'ebay': '/ebay',
+                                    'ebay': '/ebay',
+                                    'ebaytwo': '/ebayTwoAnalysis',
+                                    'ebaythree': '/ebayThreeAnalysis',
                                     'temu': '/temu',
                                     'macys': '/macys',
                                     'wayfair': '/Wayfair',
                                     'reverb': '/reverb',
                                     'shopify b2c': '/shopifyB2C',
-                                    'doba ': '#',
+                                    'doba': '/doba',
                                 };
 
                                 const routeUrl = routeMap[channelName];
@@ -967,29 +1739,16 @@
                                 }
                             }
                         },
-                        {
-                            data: 'R&A',
-                            visible: false,
-                            render: function(data, type, row) {
-                                const isChecked = data ? 'checked' : '';
-                                return `<div class="ra-edit-container d-flex align-items-center">
-                                        <input type="checkbox" class="ra-checkbox" ${isChecked}>
-                                    </div>`;
-                            }
-                        },
-                        {
-                            data: 'URL LINK',
-                            render: function(data, type, row) {
-                                return data ?
-                                    `<a href="${data}" target="_blank"><i class="bi bi-box-arrow-up-right link-icon"></i></a>` :
-                                    '';
+                        { data: 'R&A', render: function (v, t, row) {
+                                const checked = toNum(v) === 1 ? 'checked' : '';
+                                return `<input type="checkbox" class="ra-checkbox" data-channel="${row['Channel']}" ${checked}>`;
                             }
                         },
                         {
                             data: 'sheet_link',
                             render: function(data, type, row) {
                                 const sheetLink = data || '';
-                                const channelName = row['Channel '] || '';  // use correct key here
+                                const channelName = row['Channel'] || '';
                                 return `
                                     <div style="display:flex; align-items:center; gap:6px;">
                                         <input type="text"
@@ -1002,277 +1761,99 @@
                                     </div>
                                 `;
                             }
-                        },
-                        {
-                            data: 'L-60 Sales',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                try {
-                                    const num = parseFloat(data.toString().replace(/,/g, ''));
-                                    const roundedNum = Math.round(num);
-                                    return `<span class="metric-value">${roundedNum.toLocaleString('en-US')}</span>`;
-                                } catch (e) {
-                                    return '<span class="metric-value">N/A</span>';
-                                }
-                            }
-                        },
-                        {
-                            data: 'L30 Sales',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
+                        },      
+                        { data: 'L-60 Sales', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        { data: 'L30 Sales',  render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
 
-                                const num = parseFloat(data.toString().replace(/,/g, ''));
-
-                                if (isNaN(num)) {
-                                    return '<span class="metric-value"></span>';
-                                }
-
-                                const roundedNum = Math.round(num);
-
-                                return `<span class="metric-value">${roundedNum.toLocaleString('en-US', {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })}</span>`;
-                            }
-                        },
+                        
                         {
                             data: 'Growth',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                const l30 = parseFloat(row['L30 Sales']);
-                                let l60 = parseFloat(row['L-60 Sales']);
-
-                                if (isNaN(l60)) l60 = 0;
-
-                                if (!l30 || isNaN(l30) || l30 === 0) {
-                                    return '<span class="growth-value">-</span>';
-                                }
-
-                                const growth = (l30 - l60) / l30;
-                                const percent = (growth * 100).toFixed(0);
-                                const value = `${percent}%`;
-
-                                let bgColor = '';
-                                let textColor = 'black';
-
-                                if (growth < 0) {
-                                    bgColor = '#ff0000';
-                                    textColor = 'white';
-                                } else if (growth >= 0 && growth < 0.10) {
-                                    bgColor = '#ffff00';
-                                } else if (growth >= 0.10 && growth < 0.20) {
-                                    bgColor = '#00ffff';
-                                } else if (growth >= 0.20 && growth < 0.50) {
-                                    bgColor = '#00ff00';
-                                } else if (growth >= 0.50) {
-                                    bgColor = '#ff00ff';
-                                    textColor = 'white';
-                                }
-
-                                return `<span class="growth-value" style="background-color:${bgColor}; color:${textColor}; padding:2px 6px; border-radius:4px;">${value}</span>`;
+                            render: function (v) {
+                                const n = pctFix(v);
+                                if (!Number.isFinite(n)) return '-';
+                                let bg = '', color = 'black';
+                                if (n < 0)              { bg = '#ff0000'; color = 'white'; }
+                                else if (n < 10)        { bg = '#ffff00'; }
+                                else if (n < 20)        { bg = '#00ffff'; }
+                                else if (n < 50)        { bg = '#00ff00'; }
+                                else                    { bg = '#ff00ff'; color = 'white'; }
+                                return `<span style="background:${bg};color:${color};padding:2px 6px;border-radius:4px;">${Math.round(n)}%</span>`;
                             }
                         },
-                        {
-                            data: 'L60 Orders',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-                                return `<span class="metric-value">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: 'L30 Orders',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-                                return `<span class="metric-value">${data}</span>`;
-                            }
-                        },
+                        
+                        { data: 'L60 Orders', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        { data: 'L30 Orders', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+
                         {
                             data: 'Gprofit%',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-
-                                const num = parseFloat(data);
-
-                                if (isNaN(num)) {
-                                    return '<span class="metric-value"></span>';
-                                }
-
-                                let percentage = Math.round(num * 100);
-                                let bgColor = '';
-                                let textColor = 'black';
-
-                                if (percentage < 25) {
-                                    bgColor = '#ff0000';
-                                    textColor = 'white';
-                                } else if (percentage >= 25 && percentage < 33) {
-                                    bgColor = '#00ff00';
-                                    textColor = 'black';
-                                } else {
-                                    bgColor = '#ff00ff';
-                                    textColor = 'white';
-                                }
-
-                                return `<span class="gprofit-value" style="background-color:${bgColor}; color:${textColor}; padding:2px 6px; border-radius:4px;">${percentage}%</span>`;
+                            render: function (v) {
+                                const n = pctFix(v);
+                                let bg = '', color = 'black';
+                                if (n < 25)            { bg = '#ff0000'; color = 'white'; }
+                                else if (n < 33)       { bg = '#00ff00'; }
+                                else                   { bg = '#ff00ff'; color = 'white'; }
+                                return `<span style="background:${bg};color:${color};padding:2px 6px;border-radius:4px;">${Math.round(n)}%</span>`;
                             }
                         },
                         {
-                            data: 'G Roi%',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-
-                                const num = parseFloat(data);
-
-                                if (isNaN(num)) {
-                                    return '<span class="metric-value"></span>';
-                                }
-
-                                let percentage = Math.round(num * 100);
-                                let bgColor = '';
-                                let textColor = 'black';
-
-                                if (percentage <= 50) {
-                                    bgColor = '#ff0000';
-                                    textColor = 'white';
-                                }
-
-                                return `<span class="groi-value" style="background-color:${bgColor}; color:${textColor}; padding:2px 6px; border-radius:4px;">${percentage}%</span>`;
+                            data: 'G ROI%',
+                            render: function (v) {
+                                const n = pctFix(v);
+                                let bg = '', color = 'black';
+                                if (n <= 50) { bg = '#ff0000'; color = 'white'; }
+                                return `<span style="background:${bg};color:${color};padding:2px 6px;border-radius:4px;">${Math.round(n)}%</span>`;
                             }
                         },
-                        {
-                            data: 'red_margin',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-                                return `<span class="metric-value">${data}</span>`;
-                            }
-                        },
+                        { data: 'Red Margin', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
                         {
                             data: 'NR',
-                            render: function(data, type, row) {
-                                // var isChecked = data ? 'checked' : '';
-                                const isChecked = parseInt(row.nr) === 1 ? 'checked' : '';
-                                // var dateDisplay = data ? new Date(data).toLocaleDateString() : '';
-
-                                return `<input type="checkbox" class="checkbox-nr" data-channel="${row['Channel ']}" ${isChecked}>`;
+                            render: function (v, t, row) {
+                                const checked = toNum(v) === 1 ? 'checked' : '';
+                                return `<input type="checkbox" class="checkbox-nr" data-channel="${row['Channel']}" ${checked}>`;
                             }
                         },
                         {
                             data: 'type',
-                            render: function(data, type, row) {
-                                const current = data || row.type || '';
-                                const channel = row['Channel ']?.trim();
-
-                                return `
-                                    <input 
-                                        type="text" 
-                                        class="form-control form-control-sm type-input"
-                                        value="${current}" 
-                                        data-channel="${channel}" 
-                                        style="min-width: 100px;" 
-                                        placeholder="Enter Type" />
-                                `;
+                            render: function (v, t, row) {
+                                return `<input type="text" class="form-control form-control-sm type-input"
+                                            value="${v || ''}" data-channel="${row['Channel']}"  style="min-width: 100px;" placeholder="Enter Type">`;
                             }
                         },
-                        {
-                            data: 'listed_count',
-                            title: 'Listed Count',
-                            render: function (data, type, row) {
-                                
-                                return `<span class="metric-value">${data ?? 0}</span>`;
-
-                            }
-                        },
+                        { data: 'Listing Counts', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
                         {
                             data: 'W/Ads',
-                            render: function(data, type, row) {
-                                const isChecked = parseInt(row.w_ads) === 1 ? 'checked' : '';
-                                // var isChecked = data ? 'checked' : '';
-                                // var dateDisplay = data ? new Date(data).toLocaleDateString() : '';
-
-                                return `<input type="checkbox" class="checkbox-wads" data-channel="${row['Channel ']}" ${isChecked}>`;
+                            render: function (v, t, row) {
+                                const checked = toNum(v) === 1 ? 'checked' : '';
+                                return `<input type="checkbox" class="checkbox-wads" data-channel="${row['Channel']}" ${checked}>`;
                             }
                         },
-                        {
-                            data: '0 Sold SKU Count',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-                                return `<span class="metric-value">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: 'Sold SKU Count',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-                                return `<span class="metric-value">${data}</span>`;
-                            }
-                        },
-                        {
-                            data: 'Brand Registry',
-                            className: 'metric-cell',
-                            render: function(data, type, row) {
-                                if (data === undefined || data === null || data === '#DIV/0!') {
-                                    return '<span class="metric-value"></span>';
-                                }
-                                return `<span class="metric-value">${data}</span>`;
-                            }
-                        },
+                        // { data: '0 Sold SKU Count', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        // { data: 'Sold Sku Count',   render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        // { data: 'Brand Registry',   render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
                         {
                             data: 'Update',
-                            render: function(data, type, row) { 
-                                const isChecked = parseInt(row.update) === 1 ? 'checked' : '';
-                                // var isChecked = data ? 'checked' : '';
-                                // var dateDisplay = data ? new Date(data).toLocaleDateString() : '';
-
-                                return `<input type="checkbox" class="checkbox-update" data-channel="${row['Channel ']}" ${isChecked}>`;
+                            render: function (v, t, row) {
+                                const checked = toNum(v) === 1 ? 'checked' : '';
+                                return `<input type="checkbox" class="checkbox-update" data-channel="${row['Channel']}" ${checked}>`;
                             }
                         },
                         {
-                            data: 'Account health',
-                            render: function(data, type, row) {
-                                return data ?
-                                    `<a href="${data}" target="_blank"><i class="bi bi-box-arrow-up-right link-icon"></i></a>` :
-                                    '';
+                            data: 'Ac Health',
+                            render: function (data) {
+                                return data ? `<a href="${data}" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a>` : '';
                             }
                         },
                         {
                             data: null,
-                            orderable: true,
-                            searchable: false,
-                            render: function(data, type, row, meta) {
-                                const index = meta.row;
-                                
+                            render: function (_d, _t, row, meta) {
                                 return `
                                 <div class="d-flex justify-content-center">
-                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1" title="Edit" data-index="${index}"
-                                            data-channel="${row.channel || ''}"
-                                            data-url="${row.sheet_url || ''}">
-                                        <i class="fas fa-edit"></i>
+                                    <button class="btn btn-sm btn-outline-primary edit-btn me-1"
+                                            title="Edit" data-index="${meta.row}" data-channel="${row['Channel'] || ''}">
+                                    <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger delete-btn" title="Archive">
-                                        <i class="fa fa-archive"></i>
+                                    <i class="fa fa-archive"></i>
                                     </button>
                                 </div>`;
                             }
@@ -1283,18 +1864,170 @@
                         processing: "Loading data, please wait...",
                         emptyTable: "",
                         zeroRecords: "",
-                    },
-                    initComplete: function() {
-                        var buttons = new jq.fn.dataTable.Buttons(table, {
-                            buttons: ['excel', 'print']
-                        }).container().appendTo(jq('#channelTable_wrapper .col-md-6:eq(0)'));
                     }
                 });
+
+                return table;
             } catch (e) {
                 console.error('Error initializing DataTable:', e);
                 return null;
             }
         }
+
+
+        // function drawChannelChart(data) {
+        //     if (!data || data.length === 0) return;
+
+        //     google.charts.load('current', { packages: ['corechart'] });
+        //     google.charts.setOnLoadCallback(function () {
+        //         let chartData = [['Channel', 'L30 Sales', { role: 'annotation' }]];
+
+        //         data.forEach(row => {
+        //             let channel = row['channel'] || row['Channel '] || '';
+        //             let l30 = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+
+        //             // Only show channel name if L30 Sales > 0
+        //             let annotation = (l30 > 0) ? channel : null;
+
+        //             chartData.push([channel, l30, annotation]);
+        //         });
+
+        //         let dataTable = google.visualization.arrayToDataTable(chartData);
+
+        //         let options = {
+        //             title: 'Channel-wise L30 Sales',
+        //             hAxis: {
+        //                 textPosition: 'none' // remove bottom labels
+        //             },
+        //             vAxis: {
+        //                 title: 'L30 Sales',
+        //                 minValue: 0
+        //             },
+        //             legend: { position: 'none' },
+        //             bar: { groupWidth: '60%' },
+        //             colors: ['#4285F4'],
+        //             annotations: {
+        //                 alwaysOutside: true,
+        //                 textStyle: {
+        //                     fontSize: 12,
+        //                     bold: true,
+        //                     color: '#000'
+        //                 }
+        //             }
+        //         };
+
+        //         let chart = new google.visualization.ColumnChart(document.getElementById('channelSalesChart'));
+        //         chart.draw(dataTable, options);
+        //     });
+        // }
+
+        // function drawChannelChart(data) {
+        //     if (!data || data.length === 0) return;
+
+        //     google.charts.load('current', { packages: ['corechart'] });
+        //     google.charts.setOnLoadCallback(function () {
+        //         let chartData = [['Channel', 'L30 Sales', { role: 'annotation' }]];
+
+        //         data.forEach(row => {
+        //             let channel = row['channel'] || row['Channel '] || '';
+        //             let l30 = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+
+        //             // Only show channel name if L30 Sales > 0
+        //             let annotation = (l30 > 0) ? channel : null;
+
+        //             chartData.push([channel, l30, annotation]);
+        //         });
+
+        //         let dataTable = google.visualization.arrayToDataTable(chartData);
+
+        //         let options = {
+        //             title: 'Channel-wise L30 Sales',
+        //             curveType: 'function', // smooth line
+        //             legend: { position: 'none' },
+        //             hAxis: {
+        //                 title: 'Channel'
+        //             },
+        //             vAxis: {
+        //                 title: 'L30 Sales',
+        //                 minValue: 0
+        //             },
+        //             annotations: {
+        //                 alwaysOutside: true,
+        //                 textStyle: {
+        //                     fontSize: 12,
+        //                     bold: true,
+        //                     color: '#000'
+        //                 }
+        //             },
+        //             colors: ['#4285F4']
+        //         };
+
+        //         let chart = new google.visualization.LineChart(
+        //             document.getElementById('channelSalesChart')
+        //         );
+        //         chart.draw(dataTable, options);
+        //     });
+        // }
+
+
+        function drawChannelChart(data) {
+            if (!data || data.length === 0) return;
+
+            google.charts.load('current', { packages: ['corechart'] });
+            google.charts.setOnLoadCallback(function () {
+                // Header with annotation roles for each line
+                let chartData = [
+                    ['Channel ', 'L30 Sales', { role: 'annotation' }, 'L60 Sales', { role: 'annotation' }]
+                ];
+
+                data.forEach(row => {
+                    let channel = row['Channel '] || '';
+                    let l30 = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+                    let l60 = parseFloat(row['L-60 Sales'] || row['l60_sales'] || 0);
+
+                    // Show channel name as annotation if value > 0
+                    let l30Annotation = (l30 > 0) ? channel : null;
+                    let l60Annotation = (l60 > 0) ? channel : null;
+
+                    chartData.push([channel, l30, l30Annotation, l60, l60Annotation]);
+                });
+
+                let dataTable = google.visualization.arrayToDataTable(chartData);
+
+                let options = {
+                    title: 'Channel-wise L30 vs L60 Sales',
+                    curveType: 'function',
+                    legend: { position: 'bottom' },
+                    hAxis: {
+                        textPosition: 'none' // 🔹 Hide channel names under X-axis
+                    },
+                    vAxis: {
+                        title: 'Sales',
+                        minValue: 0
+                    },
+                    colors: ['#1E88E5', '#90CAF9'],
+                    lineWidth: 3,
+                    pointSize: 5,
+                    annotations: {
+                        alwaysOutside: true,
+                        textStyle: {
+                            fontSize: 11,
+                            bold: true,
+                            color: '#000'
+                        }
+                    }
+                };
+
+                let chart = new google.visualization.LineChart(
+                    document.getElementById('channelSalesChart')
+                );
+                chart.draw(dataTable, options);
+            });
+        }
+
+
+
+
 
 
         function updatePlayButtonColor() {

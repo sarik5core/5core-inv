@@ -934,6 +934,7 @@
     #ebay-table {
         color: #000 !important; /* Force dark black font */
     }
+    
 
     </style>
 @endsection
@@ -958,7 +959,7 @@
                 <div class="card-body">
                     <h4 class="header-title">verification & Adjustment</h4>
 
-                   <div class="d-flex justify-content-between align-items-center mb-3 w-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 w-100">
                         <!-- Left Side: Play Controls + Activity Log -->
                         <div class="d-flex align-items-center">
                             <div class="btn-group time-navigation-group mr-2" role="group" aria-label="Parent navigation">
@@ -976,8 +977,12 @@
                                 </button>
                             </div>
 
-                            <button id="activity-log-btn" class="btn btn-primary ml-2" data-toggle="modal" data-target="#activityLogModal">
+                            <button id="activity-log-btn" class="btn btn-primary ml-2 me-2" data-toggle="modal" data-target="#activityLogModal">
                                 <i class="fas fa-history"></i> Activity Log
+                            </button>
+
+                            <button id="exportExcel" class="btn btn-success ml-2">
+                                <i class="fas fa-file-excel"></i> Export
                             </button>
 
                             <!-- <button id="viewHiddenRows" class="btn btn-primary ml-2 ms-2" data-toggle="modal">
@@ -1053,11 +1058,20 @@
                     <div class="modal fade" id="hiddenRowsModal" tabindex="-1" aria-labelledby="hideRowsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-xl">
                             <div class="modal-content">
-                            <div class="modal-header">
+                            <div class="modal-header d-flex justify-content-between align-items-center">
                                 <h5 class="modal-title" id="hideRowsModalLabel">Hidden Rows</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+
+                                <div class="d-flex align-items-center ms-auto">
+                                    <input type="text" id="hiddenRowsSearch" 
+                                        class="form-control me-2" 
+                                        placeholder="Search..." 
+                                        style="max-width: 250px;">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                    {{-- <input type="text" id="hiddenRowsSearch" class="form-control ms-auto me-2" placeholder="Search..." style="max-width: 250px;"> --}}
+                                    {{-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button> --}}
                             </div>
                             <div class="modal-body">
                                 <table class="table" id="hiddenRowsTable">
@@ -1393,6 +1407,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <!--for popup modal script-->
     <script>
         flatpickr("#duration", {
@@ -2933,6 +2949,50 @@
                     }
                 });
             }); 
+
+            // Search filter for hidden rows
+            $(document).on('keyup', '#hiddenRowsSearch', function () {
+                let value = $(this).val().toLowerCase();
+                $("#hiddenRowsTable tbody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+            // Export to Excel (SheetJS)
+            $("#exportExcel").on("click", function () {
+                if (!filteredData || filteredData.length === 0) {
+                    alert("No data to export!");
+                    return;
+                }
+
+                // Convert filteredData to flat JSON
+                const rows = filteredData.map(item => ({
+                    Parent: item.Parent,
+                    SKU: item.SKU,
+                    INV: item.INV,
+                    L30: item.L30,
+                    DIL: item.DIL,
+                    ON_HAND: item.ON_HAND,
+                    COMMITTED: item.COMMITTED,
+                    AVAILABLE_TO_SELL: item.AVAILABLE_TO_SELL,
+                    // VERIFIED_STOCK: item.VERIFIED_STOCK,
+                    // TO_ADJUST: item.TO_ADJUST,
+                    // REASON: item.REASON,
+                    // APPROVED: item.APPROVED ? "Yes" : "No",
+                    // APPROVED_BY: item.APPROVED_BY,
+                    // APPROVED_AT: item.APPROVED_AT,
+                    // LOSS_GAIN: item.LOSS_GAIN,
+                    // REMARK: item.REMARK || '',
+                    // LAST_APPROVED_AT: item.LAST_APPROVED_AT
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(rows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "VerificationData");
+
+                XLSX.writeFile(wb, "verification_data.xlsx");
+            });
+
 
             
 

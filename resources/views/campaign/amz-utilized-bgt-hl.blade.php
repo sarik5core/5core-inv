@@ -186,8 +186,8 @@
                                         APR ALL SBID
                                     </button>
                                     <button class="btn btn-success btn-md">
-                                        <i class="fa fa-arrow-up me-1"></i>
-                                        Need to increase bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
+                                        <i class="fa fa-arrow-down me-1"></i>
+                                        Need to decrease bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
                                     </button>
                                     <button class="btn btn-primary btn-md">
                                         <i class="fa fa-percent me-1"></i>
@@ -638,12 +638,13 @@
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    if (!invFilterVal) {
-                        if (parseFloat(data.INV) === 0) return false;
-                    } else if (invFilterVal === "INV_0") {
+
+                    if (invFilterVal === "INV_0") {
                         if (parseFloat(data.INV) !== 0) return false;
                     } else if (invFilterVal === "OTHERS") {
                         if (parseFloat(data.INV) === 0) return false;
+                    } else if (invFilterVal === "ALL" || invFilterVal === "") {
+                        // show all rows → do nothing
                     }
 
                     let nrlFilterVal = $("#nrl-filter").val();

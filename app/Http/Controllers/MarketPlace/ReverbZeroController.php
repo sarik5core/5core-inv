@@ -8,6 +8,7 @@ use App\Models\ReverbProduct;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
 use App\Models\ProductMaster;
+use App\Models\ReverbListingStatus;
 use App\Models\ReverbViewData;
 use Illuminate\Support\Facades\Cache;
 
@@ -349,4 +350,144 @@ class ReverbZeroController extends Controller
 
         return $zeroViewCount;
     }
+
+    public function getLivePendingAndZeroViewCounts()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataViews = ReverbListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $listedCount = 0;
+        $zeroInvOfListed = 0;
+        $liveCount = 0;
+        $zeroViewCount = 0;
+
+        foreach ($productMasters as $item) {
+            $sku = trim($item->sku);
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $isParent = stripos($sku, 'PARENT') !== false;
+            if ($isParent) continue;
+
+            $status = $ebayDataViews[$sku]->value ?? null;
+            if (is_string($status)) {
+                $status = json_decode($status, true);
+            }
+            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $live = $status['live'] ?? null;
+            $nrReq = $status['nr_req'] ?? null;
+
+            // Listed count (for live pending)
+            if ($listed === 'Listed') {
+                $listedCount++;
+                if (floatval($inv) <= 0) {
+                    $zeroInvOfListed++;
+                }
+            }
+
+            // Live count
+            if ($live === 'Live') {
+                $liveCount++;
+            }
+
+            // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
+            $views = $ebayMetrics[$sku]->views ?? null;
+            $nrReq = $status['nr_req'] ?? null;
+            if (floatval($inv) > 0 && $views !== null && intval($views) === 0 && strtoupper($nrReq) !== 'NR') {
+                $zeroViewCount++;
+            }
+        }
+
+        // live pending = listed - 0-inv of listed - live
+        $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+
+        return [
+            'live_pending' => $livePending,
+            'zero_view' => $zeroViewCount,
+        ];
+    }
+
+    // public function getLivePendingAndZeroViewCounts()
+    // {
+    //     $productMasters = ProductMaster::whereNull('deleted_at')->get();
+    //     $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+    //     $shopifyData   = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $listingStatus = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $metrics       = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+
+    //     $listedCount     = 0;
+    //     $zeroInvOfListed = 0;
+    //     $liveCount       = 0;
+    //     $zeroViewCount   = 0;
+
+    //     foreach ($productMasters as $item) {
+    //         $sku = trim($item->sku);
+
+    //         if (stripos($sku, 'PARENT') !== false) {
+    //             continue;
+    //         }
+
+    //         $inv = $shopifyData[$sku]->inv ?? 0;
+
+    //         // --- STATUS ---
+    //         $row = $listingStatus[$sku] ?? null;
+    //         $status = [];
+
+    //         if ($row && !empty($row->value)) {
+    //             // if casted to array, just use it; otherwise decode JSON
+    //             $status = is_array($row->value)
+    //                 ? $row->value
+    //                 : (json_decode($row->value, true) ?: []);
+    //         }
+
+    //         $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+    //         $live   = $status['live'] ?? null;
+    //         $nrReq  = $status['nr_req'] ?? null;
+
+    //         // --- COUNTS ---
+    //         if ($listed === 'Listed') {
+    //             $listedCount++;
+    //             if (floatval($inv) <= 0) {
+    //                 $zeroInvOfListed++;
+    //             }
+    //         }
+
+    //         if ($live === 'Live') {
+    //             $liveCount++;
+    //         }
+
+    //         $views = $metrics[$sku]->views ?? null;
+    //         if (
+    //             floatval($inv) > 0 &&
+    //             $views !== null &&
+    //             intval($views) === 0 &&
+    //             strtoupper($nrReq) !== 'NR' // ✅ now works because $status is a real array
+    //         ) {
+    //             $zeroViewCount++;
+    //         }
+    //     }
+
+    //     $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+
+    //     return [
+    //         'live_pending' => $livePending,
+    //         'zero_view'    => $zeroViewCount,
+    //     ];
+    // }
+
+
+
+    
+
+
+
+
+   
+
+
+
+    
 }

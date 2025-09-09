@@ -267,15 +267,6 @@
                 paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
-                initialSort: [{
-                        column: "parent",
-                        dir: "asc"
-                    },
-                    {
-                        column: "sku",
-                        dir: "asc"
-                    }
-                ],
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
@@ -301,11 +292,11 @@
                         formatter: function(cell) {
                             let sku = cell.getValue();
                             return `
-                                <span>${sku}</span>
-                                <i class="fa fa-info-circle text-primary toggle-cols-btn" 
-                                data-sku="${sku}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
+                    <span>${sku}</span>
+                    <i class="fa fa-info-circle text-primary toggle-cols-btn" 
+                    data-sku="${sku}" 
+                    style="cursor:pointer; margin-left:8px;"></i>
+                `;
                         }
                     },
                     {
@@ -336,49 +327,6 @@
                         visible: false
                     },
                     {
-                        title: "AL 30",
-                        field: "A_L30",
-                        visible: false
-                    },
-                    {
-                        title: "A DIL %",
-                        field: "A DIL %",
-                        formatter: function(cell) {
-                            const data = cell.getData();
-                            const al30 = parseFloat(data.A_L30);
-                            const inv = parseFloat(data.INV);
-
-                            if (!isNaN(al30) && !isNaN(inv) && inv !== 0) {
-                                const dilDecimal = (al30 / inv);
-                                const color = getDilColor(dilDecimal);
-                                return `<div class="text-center"><span class="dil-percent-value ${color}">${Math.round(dilDecimal * 100)}%</span></div>`;
-                            }
-                            return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
-                        },
-                        visible: false
-                    },
-                    {
-                        title: "NRL",
-                        field: "NRL",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="NRL"
-                                        style="width: 90px;">
-                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
-                                    <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
-                                </select>
-                            `;
-                        },
-                        visible: false,
-                        hozAlign: "center"
-                    },
-                    {
                         title: "NRA",
                         field: "NR",
                         formatter: function(cell) {
@@ -387,156 +335,18 @@
                             const value = cell.getValue();
                             const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
                             return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="NR"
-                                        style="width: 90px;">
-                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
-                                    <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
-                                    <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
-                                </select>
-                            `;
+                    <select class="form-select form-select-sm editable-select" 
+                            data-sku="${sku}" 
+                            data-field="NR"
+                            style="width: 90px;">
+                        <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
+                        <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
+                        <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
+                    </select>
+                `;
                         },
                         hozAlign: "center",
                         visible: false
-                    },
-                    {
-                        title: "FBA",
-                        field: "FBA",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="FBA"
-                                        style="width: 90px;">
-                                    <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
-                                    <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
-                                    <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
-                                </select>
-                            `;
-                        },
-                        hozAlign: "center",
-                        visible: false
-                    },
-                    {
-                        title: "CAMPAIGN",
-                        field: "campaignName"
-                    },
-                    {
-                        title: "BGT",
-                        field: "campaignBudgetAmount",
-                        hozAlign: "right",
-                        formatter: (cell) => parseFloat(cell.getValue() || 0)
-                    },
-                    {
-                        title: "ACOS L30",
-                        field: "acos_L30",
-                        hozAlign: "right",
-                        formatter: function(cell) {
-                            return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
-                            `;
-                        }
-                    },
-                    {
-                        title: "Clicks L30",
-                        field: "clicks_L30",
-                        hozAlign: "right",
-                        formatter: function(cell) {
-                            return `
-                                <span>${cell.getValue().toFixed(0)}</span>
-                            `;
-                        }
-                    },
-                    {
-                        title: "L7 CPC",
-                        field: "l7_cpc",
-                        hozAlign: "center",
-                        formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
-                            return l7_cpc.toFixed(2);
-                        }
-                    },
-                    {
-                        title: "SBGT",
-                        field: "sbgt",
-                        formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var acos = parseFloat(row.acos_L30) || 0;
-                            var value;
-
-                            if (acos >= 100) {
-                                value = 1;
-                            } else if (acos >= 50 && acos <= 100) {
-                                value = 2;
-                            } else if (acos >= 40 && acos <= 50) {
-                                value = 3;
-                            } else if (acos >= 35 && acos <= 40) {
-                                value = 4;
-                            } else if (acos >= 30 && acos <= 35) {
-                                value = 5;
-                            } else if (acos >= 25 && acos <= 30) {
-                                value = 6;
-                            } else if (acos >= 20 && acos <= 25) {
-                                value = 7;
-                            } else if (acos >= 15 && acos <= 20) {
-                                value = 8;
-                            } else if (acos >= 10 && acos <= 15) {
-                                value = 9;
-                            } else if (acos < 10 && acos > 0) {
-                                value = 10;
-                            } else {
-                                value = 3;
-                            }
-                            return `
-                                <input type="number" class="form-control form-control-sm text-center sbgt-input"  value="${value}" min="1" max="10"  data-campaign-id="${row.campaign_id}">
-                            `;
-                        }
-                    },
-                    {
-                        title: "APR BGT",
-                        field: "apr_bgt",
-                        hozAlign: "center",
-                        formatter: function(cell, formatterParams, onRendered) {
-                            var value = cell.getValue() || 0;
-                            return `
-                                <div style="align-items:center; gap:5px;">
-                                    <button class="btn btn-primary update-row-btn">APR BGT</button>
-                                </div>
-                            `;
-                        },
-                        cellClick: function(e, cell) {
-                            if (e.target.classList.contains("update-row-btn")) {
-                                var rowData = cell.getRow().getData();
-                                var acos = parseFloat(rowData.acos_L30) || 0;
-
-                                if (acos > 0) {
-                                    var sbgtInput = cell.getRow().getElement().querySelector(
-                                        '.sbgt-input');
-                                    var sbgtValue = parseFloat(sbgtInput.value) || 0;
-
-                                    updateBid(sbgtValue, rowData.campaign_id);
-                                } else {
-                                    console.log("Skipped because acos_L30 = 0 for campaign:",
-                                        rowData.campaign_id);
-                                }
-                            }
-                        }
-                    },
-                    {
-                        title: "TPFT %",
-                        field: "tpft",
-                        hozAlign: "center"
-                    },
-                    {
-                        title: "TROI %",
-                        field: "troi",
-                        hozAlign: "center"
                     }
                 ],
                 ajaxResponse: function(url, params, response) {
