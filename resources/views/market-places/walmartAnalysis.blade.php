@@ -981,9 +981,11 @@
         .scouth-product-value a:hover {
             text-decoration: underline;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
+
         /*popup modal style end */
     </style>
 @endsection
@@ -1439,9 +1441,27 @@
                                             <div class="metric-total" id="ovl30-total">0</div>
                                         </div>
                                     </th>
+                                    <th data-field="wl_30" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                WL 30 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="wl30-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="w_dil" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                W DIL <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="wDil-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th>NRL</th>
 
-                                      <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 LISTED <span class="sort-arrow">↓</span>
@@ -1458,6 +1478,20 @@
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="live-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="price_wo_ship" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                Base Price <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th data-field="price" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                Price <span class="sort-arrow">↓</span>
+                                            </div>
                                         </div>
                                     </th>
                                 </tr>
@@ -2123,13 +2157,15 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            console.log(response.data,'ddd');
-                            
+                            console.log(response.data, 'ddd');
+
                             tableData = response.data.map((item, index) => {
 
                                 const valueJson = item.value ? JSON.parse(item.value) : {};
-                                const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
-                                const liveVal   = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
 
                                 return {
                                     sl_no: index + 1,
@@ -2141,6 +2177,10 @@
                                     '', // Get R&A value from server data
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
+                                    price: (item.sheet_price || 0) <= 26.99 ? (parseFloat(item
+                                        .sheet_price || 0) + 2.99) : parseFloat(item
+                                        .sheet_price || 0),
+                                    price_wo_ship: item.sheet_price || 0,
 
                                     is_parent: item.Sku ? item.Sku
                                         .toUpperCase().includes("PARENT") : false,
@@ -2203,7 +2243,7 @@
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if(item.NR === 'NRA'){
+                    if (item.NR === 'NRA') {
                         $row.addClass('nr-hide');
                     }
 
@@ -2320,11 +2360,28 @@
 
                     $row.append($('<td>').text(item.INV));
                     $row.append($('<td>').text(item.L30));
+                    // T Sales column
+                    $row.append($('<td>').html(`
+                     <div class="sku-tooltip-container">
+                     <span class="sku-text">${item.sheet_l30 || 0}</span>
+                     <div class="sku-tooltip">
+                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.sheet_l30 || 0}</div>
+                     </div>
+                     </div>
+                      `));
+
+                    // T DIL with color coding - using the calculated T_DIL value
+                    $row.append($('<td>').html(`
+                     <span class="dil-percent-value ${getDilColor(item.sheet_dil / 100 || 0)}">
+                     ${Math.round(item.sheet_dil || 0)}%
+                     </span>
+                    `));
 
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ? item.NR : 'RA';
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
@@ -2347,8 +2404,11 @@
                         $row.append($('<td>').append($select));
                     }
 
-                     //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1';
+
+
+                    //Listed checkbox
+                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                        .Listed === 1 || rawData.Listed === '1';
                     const $listedCb = $('<input>', {
                         type: 'checkbox',
                         class: 'listed-checkbox',
@@ -2358,7 +2418,8 @@
                     $row.append($('<td>').append($listedCb));
 
                     // Live checkbox
-                    const liveVal   = rawData.Live === true   || rawData.Live === 'true'   || rawData.Live === 1   || rawData.Live === '1';
+                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                        1 || rawData.Live === '1';
                     const $liveCb = $('<input>', {
                         type: 'checkbox',
                         class: 'live-checkbox',
@@ -2366,6 +2427,33 @@
                     }).data('sku', item['Sku']);
 
                     $row.append($('<td>').append($liveCb));
+
+                    // Price without shipping with tooltip
+                    $row.append($('<td>').html(
+                        `$${(Number(item.price_wo_ship) || 0).toFixed(2)}
+                        <span class="tooltip-container" style="margin-left:8px">
+                            <i class="fas fa-tag text-warning price-view-trigger" 
+                            style="transform:translateY(1px)"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top-end" 
+                            title="Pricing view"
+                            data-item='${JSON.stringify(item.raw_data)}'"></i>
+                        </span>`
+                    ));
+
+                    // Price with shipping
+                    $row.append($('<td>').text(() => {
+                        const price = Number(item.price) || 0;
+                        const ship = item.SHIP !== null && item.SHIP !== '' && !isNaN(Number(
+                            item.SHIP)) ? Number(item.SHIP) : null;
+
+                        if (ship !== null) {
+                            return `$${(price + ship).toFixed(2)}`;
+                        } else {
+                            return `$${price.toFixed(2)}`;
+                        }
+                    }));
+
 
 
                     $tbody.append($row);
@@ -2428,29 +2516,29 @@
             }
 
             function initNRSelectChangeHandler() {
-                    $(document).off('change', '.nr-select');
-                    $(document).on('change', '.nr-select', function () {
-                        const $select = $(this);
-                        const newValue = $select.val();
-                        const sku = $select.data('sku');
+                $(document).off('change', '.nr-select');
+                $(document).on('change', '.nr-select', function() {
+                    const $select = $(this);
+                    const newValue = $select.val();
+                    const sku = $select.data('sku');
 
-                        // Change background color based on selected value
-                        if (newValue === 'NRA') {
-                            $select.css('background-color', '#dc3545').css('color', '#ffffff');
-                        } else {
-                            $select.css('background-color', '#28a745').css('color', '#ffffff');
-                        }
+                    // Change background color based on selected value
+                    if (newValue === 'NRA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
+                    }
 
-                        // Send AJAX
-                        $.ajax({
-                            url: '/temu/save-nr',
-                            type: 'POST',
-                            data: {
-                                sku: sku,
-                                nr: newValue,
-                                _token: $('meta[name="csrf-token"]').attr('content')
+                    // Send AJAX
+                    $.ajax({
+                        url: '/temu/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            nr: newValue,
+                            _token: $('meta[name="csrf-token"]').attr('content')
                         },
-                        success: function (response) {
+                        success: function(response) {
                             showNotification('success', 'NR updated successfully!');
 
                             // Update tableData and filteredData
@@ -2467,7 +2555,7 @@
                             calculateTotals();
                             renderTable();
                         },
-                        error: function (xhr) {
+                        error: function(xhr) {
                             showNotification('danger', 'Failed to update NR.');
                         }
                     });
@@ -3700,7 +3788,7 @@
                     };
 
                     filteredData.forEach(item => {
-                        if(item.NR === 'NR'){
+                        if (item.NR === 'NR') {
                             return;
                         }
 
@@ -3713,16 +3801,18 @@
                             }
                         } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
                             rawData = item.raw_data;
-                            
+
                         }
 
                         // Count listed checkboxes
-                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1') {
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
+                            rawData.Listed === '1') {
                             metrics.listedCount++;
                         }
 
                         // Count Live checkboxes
-                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 || rawData.Live === '1') {
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
+                            rawData.Live === '1') {
                             metrics.liveCount++;
                         }
 
@@ -3765,10 +3855,20 @@
                         (metrics.ovL30Total / metrics.invTotal) * 100 : 0;
                     const divisor = metrics.rowCount || 1;
 
+                    const sheetL30Sum = filteredData.reduce((sum, item) => {
+                        return sum + (parseFloat(item.sheet_l30) || 0);
+                    }, 0);
+
+                    const sheetDilSum = filteredData.reduce((sum, item) => {
+                        return sum + (parseFloat(item.sheet_dil) || 0);
+                    }, 0);
+
                     // Update metric displays
                     $('#inv-total').text(metrics.invTotal.toLocaleString());
                     $('#ovl30-total').text(metrics.ovL30Total.toLocaleString());
                     $('#ovdil-total').text(Math.round(metrics.ovDilTotal) + '%');
+                    $('#wl30-total').text(sheetL30Sum.toLocaleString());
+                    $('#wDil-total').text(Math.round(sheetDilSum / divisor * 100) + '%');
                     $('#al30-total').text(metrics.el30Total.toLocaleString());
                     $('#lDil-total').text(Math.round(metrics.eDilTotal / divisor * 100) + '%');
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());

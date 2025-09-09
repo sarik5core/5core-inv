@@ -10,10 +10,11 @@ use App\Models\WalmartDataView;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
+use App\Models\WalmartProductSheet;
 
 class WalmartControllerMarket extends Controller
 {
-  protected $apiController;
+    protected $apiController;
 
     public function __construct(ApiController $apiController)
     {
@@ -36,10 +37,9 @@ class WalmartControllerMarket extends Controller
             'demo' => $demo,
             'percentage' => $percentage
         ]);
-        
     }
 
-   public function walmartPricingCVR(Request $request)
+    public function walmartPricingCVR(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
@@ -76,6 +76,10 @@ class WalmartControllerMarket extends Controller
 
         // Fetch NR values for these SKUs from walmartDataView
         $walmartDataViews = WalmartDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        // NEW: Fetch Walmart product sheet data
+        $walmartProductSheets = WalmartProductSheet::whereIn('sku', $skus)->get()->keyBy('sku');
+
         $nrValues = [];
         $listedValues = [];
         $liveValues = [];
@@ -125,6 +129,24 @@ class WalmartControllerMarket extends Controller
                 $processedItem['L30'] = 0;
             }
 
+            // NEW: Add data from walmart_product_sheets if available
+            if (isset($walmartProductSheets[$sku])) {
+                $walmartSheet = $walmartProductSheets[$sku];
+                $processedItem['sheet_price'] = $walmartSheet->price ?? 0;
+                $processedItem['sheet_pft'] = $walmartSheet->pft ?? 0;
+                $processedItem['sheet_roi'] = $walmartSheet->roi ?? 0;
+                $processedItem['sheet_l30'] = $walmartSheet->l30 ?? 0;
+                $processedItem['sheet_dil'] = $walmartSheet->dil ?? 0;
+                $processedItem['buy_link'] = $walmartSheet->buy_link ?? '';
+            } else {
+                $processedItem['sheet_price'] = 0;
+                $processedItem['sheet_pft'] = 0;
+                $processedItem['sheet_roi'] = 0;
+                $processedItem['sheet_l30'] = 0;
+                $processedItem['sheet_dil'] = 0;
+                $processedItem['buy_link'] = '';
+            }
+
             // Fetch NR value if available
             $processedItem['NR'] = $nrValues[$sku] ?? false;
             $processedItem['Listed'] = $listedValues[$sku] ?? false;
@@ -133,12 +155,30 @@ class WalmartControllerMarket extends Controller
             // Default values for other fields
             $processedItem['A L30'] = 0;
             $processedItem['Sess30'] = 0;
-            $processedItem['price'] = 0;
+            $processedItem['price'] = $processedItem['sheet_price'] ?? 0;
             $processedItem['TOTAL PFT'] = 0;
-            $processedItem['T Sales L30'] = 0;
-            $processedItem['PFT %'] = 0;
-            $processedItem['Roi'] = 0;
+            $processedItem['T Sales L30'] = $processedItem['sheet_l30'] ?? 0;
             $processedItem['percentage'] = $percentageValue;
+
+            // Calculate profit and ROI percentages
+            $price = floatval($processedItem['price']);
+            $percentage = floatval($processedItem['percentage']);
+            $lp = floatval($processedItem['LP']);
+            $ship = floatval($processedItem['Ship']);
+
+            if ($price > 0) {
+                $pft_percentage = (($price * $percentage - $lp - $ship) / $price) * 100;
+                $processedItem['PFT %'] = round($pft_percentage, 2);
+            } else {
+                $processedItem['PFT %'] = 0;
+            }
+
+            if ($lp > 0) {
+                $roi_percentage = (($price * $percentage - $lp - $ship) / $lp) * 100;
+                $processedItem['Roi'] = round($roi_percentage, 2);
+            } else {
+                $processedItem['Roi'] = 0;
+            }
 
             $processedData[] = $processedItem;
         }
