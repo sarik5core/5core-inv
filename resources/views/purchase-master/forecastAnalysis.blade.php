@@ -804,8 +804,6 @@
             });
         }
 
-
-
         //modals
         function openMonthModal(monthData) {
             const wrapper = document.getElementById("monthCardWrapper");
@@ -874,9 +872,336 @@
 
         const COLUMN_VIS_KEY = "tabulator_column_visibility";
 
-       
-       
-      
+        function buildColumnDropdown() {
+            const menu = document.getElementById("column-dropdown-menu");
+            menu.innerHTML = '';
+
+            const savedVisibility = JSON.parse(localStorage.getItem(COLUMN_VIS_KEY) || '{}');
+
+            const columns = table.getColumns().filter(col => col.getField());
+
+            columns.forEach(col => {
+                const field = col.getField();
+                const title = col.getDefinition().title;
+
+                // Apply saved visibility on table
+                if (savedVisibility[field] === false) {
+                    col.hide();
+                } else {
+                    col.show();
+                }
+
+                const li = document.createElement("li");
+                const div = document.createElement("div");
+                div.className = "form-check d-flex align-items-center gap-2 py-1 px-2 rounded hover-bg-light";
+
+                const input = document.createElement("input");
+                input.className = "form-check-input shadow-sm cursor-pointer";
+                input.type = "checkbox";
+                input.id = `col-${field}`;
+                input.value = field;
+                input.checked = col.isVisible();
+                input.style.cssText = `
+                    width: 18px;
+                    height: 18px;
+                    cursor: pointer;
+                    border-color: #dee2e6;
+                `;
+
+                const label = document.createElement("label");
+                label.className = "form-check-label cursor-pointer mb-0 text-dark";
+                label.htmlFor = `col-${field}`;
+                label.innerText = title;
+                label.style.cssText = `
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    user-select: none;
+                `;
+
+                // Add hover effect
+                div.addEventListener('mouseover', () => {
+                    div.style.backgroundColor = '#f8f9fa';
+                });
+                
+                div.addEventListener('mouseout', () => {
+                    div.style.backgroundColor = 'transparent';
+                });
+
+                // Add ripple effect on click
+                div.addEventListener('click', (e) => {
+                    if (e.target !== input) {
+                        input.click();
+                    }
+                });
+
+                div.appendChild(input);
+                div.appendChild(label);
+                li.appendChild(div);
+                menu.appendChild(li);
+            });
+        }
+
+        function saveColumnVisibilityToLocalStorage() {
+            const visibility = {};
+            table.getColumns().forEach(col => {
+                const field = col.getField();
+                if (field) {
+                    visibility[field] = col.isVisible();
+                }
+            });
+            localStorage.setItem(COLUMN_VIS_KEY, JSON.stringify(visibility));
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            buildColumnDropdown();
+
+            // Toggle column from dropdown
+            document.getElementById("column-dropdown-menu").addEventListener("change", function (e) {
+                if (e.target.type === "checkbox") {
+                    const field = e.target.value;
+                    const col = table.getColumn(field);
+                    if (col) {
+                        e.target.checked ? col.show() : col.hide();
+                        saveColumnVisibilityToLocalStorage();
+                    }
+                }
+            });
+
+            // Show All Columns button
+            document.getElementById("show-all-columns-btn").addEventListener("click", function () {
+                const checkboxes = document.querySelectorAll("#column-dropdown-menu input[type='checkbox']");
+                checkboxes.forEach(cb => {
+                    cb.checked = true;
+                    const col = table.getColumn(cb.value);
+                    if (col) col.show();
+                });
+                saveColumnVisibilityToLocalStorage();
+            });
+
+            // Handle editable field
+            $(document).off('blur', '.editable-qty').on('blur', '.editable-qty', function () {
+                const $cell = $(this);
+                const newValueRaw = $cell.text().trim();
+                const originalValue = ($cell.data('original') ?? '').toString().trim();
+                const field = $cell.data('field');
+                const sku = $cell.data('sku');
+                const parent = $cell.data('parent');
+
+                // Convert raw value to number safely
+                const newValue = ['Approved QTY', 'S-MSL', 'ORDER given'].includes(field)
+                    ? Number(newValueRaw)
+                    : newValueRaw;
+
+                const original = ['Approved QTY', 'S-MSL', 'ORDER given'].includes(field)
+                    ? Number(originalValue)
+                    : originalValue;
+
+                // Avoid unnecessary updates
+                if (newValue === original) return;
+
+                // Numeric validation
+                if (['Approved QTY', 'S-MSL', 'ORDER given'].includes(field) && isNaN(newValue)) {
+                    alert('Please enter a valid number.');
+                    $cell.text(originalValue); // revert
+                    return;
+                }
+
+                // Optional validation for date fields (YYYY-MM-DD)
+                if (['Date of Appr'].includes(field)) {
+                    const isValidDate = /^\d{4}-\d{2}-\d{2}$/.test(newValue);
+                    if (!isValidDate) {
+                        alert('Please enter a valid date in YYYY-MM-DD format.');
+                        $cell.text(originalValue);
+                        return;
+                    }
+                }
+
+                updateForecastField({ sku, parent, column: field, value: newValue }, function () {
+                    $cell.data('original', newValue);
+
+                    if (field === 'Approved QTY') {
+                        const today = new Date();
+                        const currentDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+                        updateForecastField({ sku, parent, column: 'Date of Appr', value: currentDate }, function () {
+                            const row = table.getRows().find(r => r.getData().SKU === sku && r.getData().Parent === parent);
+                            if (row) {
+                                row.delete();
+                            }
+                        });
+                    }
+                    setCombinedFilters();
+                }, function () {
+                    $cell.text(originalValue);
+                });
+
+            });
+
+            // Handle link edit modal save
+            $('#saveLinkBtn').on('click', function () {
+                const newValue = $('#linkEditInput').val().trim();
+                const field = editingField;
+                const sku = editingRow['SKU'];
+                const parent = editingRow['Parent'];
+
+                editingRow[field] = newValue;
+
+                const iconMap = {
+                    'Clink': `<i class="fas fa-link text-primary me-1"></i>`,
+                    'Olink': `<i class="fas fa-external-link-alt text-success me-1"></i>`,
+                    'rfq_form_link': `<i class="fas fa-file-contract text-success me-1"></i>`,
+                    'rfq_report': `<i class="fas fa-file-alt text-info me-1"></i>`
+                };
+
+
+                const iconHtml = newValue
+                    ? `<a href="${newValue}" target="_blank" title="${field}">${iconMap[field] || ''}</a>`
+                    : '';
+
+                const editIcon = `<a href="#" class="edit-${field.toLowerCase()}" title="Edit ${field}">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </a>`;
+
+                $(editingLinkCell).html(`
+                    <div class="d-flex align-items-center justify-content-center gap-1 ${field.toLowerCase()}-cell">
+                        ${iconHtml}${editIcon}
+                    </div>
+                `);
+
+                $('#linkEditModal').modal('hide');
+
+                updateForecastField(
+                    { sku, parent, column: field, value: newValue },
+                    function () {
+                        console.log(`${field} saved successfully.`);
+                    },
+                    function () {
+                        alert(`Failed to save ${field}.`);
+                    }
+                );
+            });
+
+            // Handle editable select field
+            $(document).off('change', '.editable-select, .editable-date').on('change', '.editable-select, .editable-date', function () {
+                const $el = $(this);
+                const isSelect = $el.hasClass('editable-select');
+                const isDate = $el.hasClass('editable-date');
+
+                const newValue = $el.val().trim();
+                const sku = $el.data('sku');
+                const parent = $el.data('parent');
+                const field = isSelect ? $el.data('type') : $el.data('field');
+                const originalValue = isDate ? $el.data('original') : null;
+
+                // For date input: skip if no change
+                if (isDate && newValue === originalValue) return;
+
+                updateForecastField(
+                    { sku, parent, column: field, value: newValue },
+                    function () {
+                        if (isDate) {
+                            $el.data('original', newValue); // update reference
+                        }
+                        if (field === 'NR') {
+                            const row = table.getRows().find(r =>
+                                r.getData().SKU === sku && r.getData().Parent === parent
+                            );
+                            if (row) row.update({ nr: newValue });
+
+                            setCombinedFilters();
+                        }
+                        console.log(`Saved ${field}: ${newValue}`);
+                    },
+                    function () {
+                        if (isDate) {
+                            $el.val(originalValue); // revert on fail
+                        }
+                        alert(`Failed to save ${field}.`);
+                    }
+                );
+            });
+
+            // Handle notes edit modal save
+            $('#saveNotesBtn').on('click', function () {
+                const newValue = $('#notesInput').val().trim();
+                const field = editingField;
+                const sku = editingRow['SKU'];
+                const parent = editingRow['Parent'];
+
+                editingRow[field] = newValue;
+
+                // Update DOM cell content
+                const display = newValue ? newValue.substring(0, 30) + (newValue.length > 30 ? '...' : '') : '<em class="text-muted">No notes</em>';
+
+                const updatedHTML = `
+                    <div class="d-flex align-items-center justify-content-between notes-cell">
+                        <span class="text-truncate" title="${newValue}">${display}</span>
+                        <a href="#" class="edit-notes ms-2" title="Edit Notes">
+                            <i class="fas fa-edit text-warning"></i>
+                        </a>
+                    </div>
+                `;
+
+                $(editingLinkCell).html(updatedHTML);
+                $('#editNotesModal').modal('hide');
+
+                updateForecastField({sku,parent,column: 'Notes',value: newValue},
+                    () => {
+                        $('#editNotesModal').modal('hide');
+
+                        const cell = $(`.edit-notes-btn[data-sku="${sku}"][data-parent="${parent}"]`).closest('td');
+
+                        if (cell.length === 0) {
+                            console.warn('Cell not found for SKU:', sku, 'and Parent:', parent);
+                            return;
+                        }
+
+                        cell.empty();
+
+                        const viewBtn = $('<i>')
+                            .addClass('fas fa-eye text-info ms-2 view-note-btn')
+                            .css('cursor', 'pointer')
+                            .attr('title', 'View Note')
+                            .attr('data-note', newValue);
+
+                        const editBtn = $('<i>')
+                            .addClass('fas fa-edit text-primary ms-2 edit-notes-btn')
+                            .css('cursor', 'pointer')
+                            .attr('title', 'Edit Note')
+                            .attr('data-note', newValue)
+                            .attr('data-sku', sku)
+                            .attr('data-parent', parent);
+
+                        cell.append(viewBtn, editBtn);
+                    },
+                    () => {
+                        alert('Failed to save note.');
+                    }
+                );
+
+            });
+
+            // Reusable AJAX call
+            function updateForecastField(data, onSuccess = () => {}, onFail = () => {}) {
+                $.post('/update-forecast-data', {
+                    ...data,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                }).done(res => {
+                    if (res.success) {
+                        console.log('Saved:', res.message);
+                        onSuccess();
+                    } else {
+                        console.warn('Not saved:', res.message);
+                        onFail();
+                    }
+                }).fail(err => {
+                    console.error('AJAX failed:', err);
+                    alert('Error saving data.');
+                    onFail();
+                });
+            }
+
+        });
 
         //play btn filter
         document.addEventListener('DOMContentLoaded', function() {
