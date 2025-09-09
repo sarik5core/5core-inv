@@ -185,13 +185,8 @@ class ForecastAnalysisController extends Controller
         ]);
     }
 
-    public function demoForecast()
-    {
-        return view('purchase-master.forecastAnalysis');
-    }
-
     public function updateForcastSheet(Request $request)
-    {
+    {        
         $sku = trim($request->input('sku'));
         $parent = trim($request->input('parent'));
         $column = trim($request->input('column'));

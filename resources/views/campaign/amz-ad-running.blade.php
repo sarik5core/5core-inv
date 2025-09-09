@@ -504,7 +504,7 @@
                 function combinedFilter(data) {
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
-                    if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
+                    if (searchVal && !(data.sku?.toLowerCase().includes(searchVal))) {
                         return false;
                     }
 

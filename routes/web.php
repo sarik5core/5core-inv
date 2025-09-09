@@ -944,9 +944,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //Update Forecast Sheet
     Route::post('/update-forecast-data', [ForecastAnalysisController::class, 'updateForcastSheet'])->name('update.forecast.data');
 
-    //for testing purpose
-    Route::get('/forecastDemo', [ForecastAnalysisController::class, 'demoForecast']);
-
     //MFRG In Progress
     Route::get('/mfrg-in-progress', [MFRGInProgressController::class, 'index'])->name('mfrg.in.progress');
     Route::post('/mfrg-progresses/inline-update-by-sku', [MFRGInProgressController::class, 'inlineUpdateBySku']);
