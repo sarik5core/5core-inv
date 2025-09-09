@@ -5,6 +5,7 @@ namespace App\Http\Controllers\PricingMaster;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UpdatePriceApiController;
+use App\Jobs\EbayTwoPriceJob;
 use App\Jobs\UpdateEbayOnePriceJob;
 use App\Jobs\UpdateEbayPriceJob;
 use App\Jobs\UpdateEbaySPriceJob;
@@ -26,6 +27,8 @@ use App\Models\Ebay3Metric;
 use App\Models\EbayDataView;
 use App\Models\EbayThreeDataView;
 use App\Models\EbayTwoDataView;
+use App\Models\MacyDataView;
+use App\Models\ReverbViewData;
 use App\Models\Shopifyb2cDataView;
 use App\Models\TemuDataView;
 use App\Services\AmazonSpApiService;
@@ -90,6 +93,8 @@ class PricingMasterViewsController extends Controller
         $shopifyb2cDataView = Shopifyb2cDataView::all()->keyBy('sku');
         $dobaDataView = DobaDataView::all()->keyBy('sku');
         $temuDataView = TemuDataView::all()->keyBy('sku');
+        $reverbDataView = ReverbViewData::all()->keyBy('sku');
+        $macyDataView = MacyDataView::all()->keyBy('sku');
 
 
         $processedData = [];
@@ -291,7 +296,22 @@ class PricingMasterViewsController extends Controller
                     (is_array($temuDataView[$sku]->value) ?
                         ($temuDataView[$sku]->value['SROI'] ?? null) : (json_decode($temuDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
+                'reverb_sprice' => isset($reverbDataView[$sku]) ?
+                    (is_array($reverbDataView[$sku]->value) ?
+                        ($reverbDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($reverbDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'reverb_spft' => isset($reverbDataView[$sku]) ? (is_array($reverbDataView[$sku]->value) ?
+                    ($reverbDataView[$sku]->value['SPFT'] ?? null) : (json_decode($reverbDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'reverb_sroi' => isset($reverbDataView[$sku]) ? (is_array($reverbDataView[$sku]->value) ?
+                    ($reverbDataView[$sku]->value['SROI'] ?? null) : (json_decode($reverbDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
+                'macy_sprice' => isset($macyDataView[$sku]) ?
+                    (is_array($macyDataView[$sku]->value) ?
+                        ($macyDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($macyDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'macy_spft' => isset($macyDataView[$sku]) ? (is_array($macyDataView[$sku]->value) ?
+                    ($macyDataView[$sku]->value['SPFT'] ?? null) : (json_decode($macyDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'macy_sroi' => isset($macyDataView[$sku]) ?
+                    (is_array($macyDataView[$sku]->value) ?
+                        ($macyDataView[$sku]->value['SROI'] ?? null) : (json_decode($macyDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
             ];
 
@@ -564,6 +584,7 @@ class PricingMasterViewsController extends Controller
                 $ebay2DataView->save();
                 break;
 
+                
             case 'ebay3':
                 // eBay3 logic
                 $ebay3DataView = EbayThreeDataView::firstOrNew(['sku' => $sku]);
@@ -612,6 +633,42 @@ class PricingMasterViewsController extends Controller
                 $temuDataView->save();
                 break;
 
+
+            case 'reverb':
+                // Reverb logic
+                $reverbDataView = ReverbViewData::firstOrNew(['sku' => $sku]);
+                $existing = is_array($reverbDataView->values) ? $reverbDataView->values : (json_decode($reverbDataView->values, true) ?: []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.84) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.84) - $lp - $ship) / $lp) * 100 : 0;
+
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $reverbDataView->values = $existing;
+                $reverbDataView->save();
+                break;
+
+
+            case 'macy':
+                // Macy logic
+                $macyDataView = MacyDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($macyDataView->value) ? $macyDataView->value : (json_decode($macyDataView->value, true) ?: []);
+                $spft = $sprice > 0 ? round(((($sprice * 0.76) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.76) - $lp - $ship) / $lp) * 100 : 0;
+
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $macyDataView->value = $existing;
+                $macyDataView->save();
+                break;
+
+
             default:
                 return response()->json([
                     'message' => 'Unknown marketplace type',
@@ -633,7 +690,7 @@ class PricingMasterViewsController extends Controller
 
     public function pushShopifyPriceBySku(Request $request)
     {
-        
+
         $sku = $request->input('sku');
         $price = $request->input('price');
 
@@ -670,7 +727,6 @@ class PricingMasterViewsController extends Controller
 
         $itemId = EbayMetric::where('sku', $sku)->value('item_id');
         UpdateEbayOnePriceJob::dispatch($itemId, $price);
-
     }
 
     public function pushEbayTwoPriceBySku(Request $request)
@@ -679,8 +735,7 @@ class PricingMasterViewsController extends Controller
         $price = $request->input('price');
 
         $itemId = Ebay2Metric::where('sku', $sku)->value('item_id');
-        UpdateEbayOnePriceJob::dispatch($itemId, $price);
-
+        EbayTwoPriceJob::dispatch($itemId, $price);
     }
 
     public function pushEbayThreePriceBySku(Request $request)
@@ -690,7 +745,5 @@ class PricingMasterViewsController extends Controller
 
         $itemId = Ebay3Metric::where('sku', $sku)->value('item_id');
         UpdateEbayThreePriceJob::dispatch($itemId, $price);
-
     }
-
 }
