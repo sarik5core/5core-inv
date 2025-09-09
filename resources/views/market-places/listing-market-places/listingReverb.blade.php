@@ -1429,6 +1429,8 @@
                         }));
 
                         filteredData = [...tableData];
+                        console.log('Data loaded:', tableData);
+                        
                     },
                     error: function(xhr, status, error) {
                         console.error('Error loading data:', error);
