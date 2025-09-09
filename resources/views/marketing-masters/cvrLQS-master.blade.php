@@ -2292,7 +2292,9 @@
                             });
 
                             // console.log('Data loaded successfully:', tableData);
-                            filteredData = [...tableData];
+                            // filteredData = [...tableData];
+                            filteredData = tableData.filter(row => row.SCVR * 100 < 7);
+
 
                         }
                     },
