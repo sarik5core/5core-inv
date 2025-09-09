@@ -19,9 +19,9 @@ class EbayTwoApiService
 
     public function __construct()
     {
-        $this->appId       = env('EBAY_2_APP_ID');
-        $this->certId      = env('EBAY_2_CERT_ID');
-        $this->devId       = env('EBAY_2_DEV_ID');
+        $this->appId       = env('EBAY2_APP_ID');
+        $this->certId      = env('EBAY2_CERT_ID');
+        $this->devId       = env('EBAY2_DEV_ID');
         $this->endpoint    = env('EBAY_TRADING_API_ENDPOINT', 'https://api.ebay.com/ws/api.dll');
         $this->siteId      = env('EBAY_SITE_ID', 0); // US = 0
         $this->compatLevel = env('EBAY_COMPAT_LEVEL', '1189');
@@ -39,9 +39,9 @@ class EbayTwoApiService
         echo "Generating New Ebay Token";
 
         // 2. Otherwise, request new token from eBay
-        $clientId     = env('EBAY_2_APP_ID');
-        $clientSecret = env('EBAY_2_CERT_ID');
-        $refreshToken = env('EBAY_2_REFRESH_TOKEN');
+        $clientId     = env('EBAY2_APP_ID');
+        $clientSecret = env('EBAY2_CERT_ID');
+        $refreshToken = env('EBAY2_REFRESH_TOKEN');
 
         $response = Http::asForm()
             ->withBasicAuth($clientId, $clientSecret)
