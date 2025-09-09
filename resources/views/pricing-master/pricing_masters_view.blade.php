@@ -759,18 +759,9 @@
             width: "100%",
             height: "700px",
           
-            pagination: true,
+            pagination: true, 
             paginationSize: 15,
-            initialSort: [{
-                column: "Parent",
-                dir: "dsc"
-            }],
-            groupBy: "Parent",
-            groupHeader: function(value, count, data, group) {
-                return value + ' <span class="badge text-light" style="background-color: purple;">' + count + ' items</span>';
-            },
-
-
+        
              rowFormatter: function(row) {
                 const data = row.getData();
                 const sku = data["SKU"] || '';
@@ -1367,7 +1358,8 @@
             let avgPft = countPft > 0 ? (totalPft / countPft) : 0;
 
             let pftHeader = document.getElementById("avgPftHeader");
-            pftHeader.innerText = avgPft + "%";
+            pftHeader.innerText = Math.round(avgPft) + "%";
+
 
             // Style for AVG PFT%
             let bgColorPft, textColorPft;
@@ -1399,7 +1391,8 @@
             let avgRoi = countRoi > 0 ? (totalRoi / countRoi) : 0;
 
             let roiHeader = document.getElementById("avgRoiHeader");
-            roiHeader.innerText = avgRoi + "%";
+            roiHeader.innerText = Math.round(avgRoi) + "%";
+
 
             // Style for AVG ROI%
             let bgColorRoi, textColorRoi;
@@ -1559,14 +1552,14 @@
 
                 html += `
                     <tr>
-                    <td>
-                    <div class="d-flex align-items-center">
-                        <img src="${r.logo}" alt="${r.label}" 
-                            title="${r.label}" 
-                            class="channel-logo me-2" 
-                            style="width:60px; height:60px; object-fit:contain;">
-                    </div>
-                    </td>
+            <td>
+  <div class="d-flex flex-column align-items-center text-center">
+      <img src="${r.logo}" alt="${r.label}" 
+          class="channel-logo mb-1" 
+          style="width:60px; height:60px; object-fit:contain;">
+      <span class="small fw-bold">${r.label}</span>
+  </div>
+</td>
 
                     <td>
                         <div class="value-indicator">
