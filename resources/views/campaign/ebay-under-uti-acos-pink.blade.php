@@ -341,7 +341,7 @@
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
+                            if (acos < 7 && acos >= 0.01) {
                                 td.classList.add('pink-bg'); 
                             } else if (acos >= 7 && acos <= 14) {
                                 td.classList.add('green-bg'); 

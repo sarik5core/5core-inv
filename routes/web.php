@@ -1633,6 +1633,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
         Route::post('/update-ebay-nr-data', 'updateNrData');
         Route::put('/update-ebay-keywords-bid-price', 'updateKeywordsBidDynamic');
+        
     });
 
 
@@ -1660,7 +1661,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(EbayACOSController::class)->group(function () {
         Route::get('/ebay-acos-control/data', 'index')->name('ebay.acos.index');
-        // Route::get('/ebay-acos-data', 'getAmzonAcOSData');
+        Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);
