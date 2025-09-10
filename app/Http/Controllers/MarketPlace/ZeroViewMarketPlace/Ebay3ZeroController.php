@@ -7,6 +7,7 @@ use App\Models\Ebay3Metric;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use App\Models\EbayThreeDataView;
+use App\Models\EbayThreeListingStatus;
 use Illuminate\Http\Request;
 
 class Ebay3ZeroController extends Controller
@@ -188,7 +189,7 @@ class Ebay3ZeroController extends Controller
         $skus = $productMasters->pluck('sku')->unique()->toArray();
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayDataViews = EbayThreeDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataViews = EbayThreeListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebayMetrics = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $listedCount = 0;
