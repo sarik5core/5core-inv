@@ -262,7 +262,9 @@ class AmazonPinkDilAdController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if($row['INV'] > 0 && !empty($row['campaignName'])){
+                $result[] = (object) $row;
+            }
         }
 
         $uniqueResult = collect($result)->unique('sku')->values()->all();
