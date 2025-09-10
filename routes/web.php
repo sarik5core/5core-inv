@@ -211,6 +211,8 @@ use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
 use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
+use App\Http\Controllers\MarketingMaster\MovementPricingMaster;
+use App\Http\Controllers\NewPermissionController;
 
 /*  
 |--------------------------------------------------------------------------
@@ -1054,6 +1056,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/pricing-analysis-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
     
+
+
+    Route::get('/movement-pricing-master', [MovementPricingMaster::class, 'MovementPricingMaster']);
+    Route::get('/pricing-analysis-data-views', [MovementPricingMaster::class, 'getViewPricingAnalysisData']);
+    Route::post('/pricing-master/save', [MovementPricingMaster::class, 'save']);
+    
+    
     // Analysis routes
     Route::get('/pricing-master/l30-analysis', [PricingMasterViewsController::class, 'getL30Analysis']);
     Route::get('/pricing-master/site-analysis', [PricingMasterViewsController::class, 'getSiteAnalysis']);
@@ -1411,7 +1420,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/listing_swgearexchange/import', [ListingSWGearExchangeController::class, 'import'])->name('listing_swgearexchange.import');
     Route::get('/listing_swgearexchange/export', [ListingSWGearExchangeController::class, 'export'])->name('listing_swgearexchange.export');
 
-
+    // Permissions
+    Route::get('/permissions', [NewPermissionController::class, 'index'])->name('permissions.index');
+    Route::post('/permissions/store', [NewPermissionController::class, 'store'])->name('permissions.store');
 
     // listing Bestbuy USA
     Route::get('/zero-bestbuyusa', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroview'])->name('zero.bestbuyusa');
@@ -1664,6 +1675,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('{any}', [RoutingController::class, 'root'])->name('any');
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::post('/ebay-product-price-update', [EbayDataUpdateController::class, 'updatePrice'])->name('ebay_product_price_update');
+
 
 
     // Route::post('/import-amazon-listing-status', [ListingAmazonController::class, 'importAmazonListingStatus'])->name('import.amazon.listing.status');

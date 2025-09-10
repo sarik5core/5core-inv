@@ -21,6 +21,15 @@ class PermissionController extends Controller
         return view('pages.permission', compact('users', 'sidebarPages'));
     }
 
+
+
+    public function getPermissions()
+    {
+        $sidebarPages = config('sidebar_pages');
+        $users = User::with('permission')->get(); // Get all users
+        return view('pages.permissions', compact('users', 'sidebarPages'));
+    }
+
     // Rename this method to avoid conflict with parent class
     public function getUserPermissionData(User $user)
     {
