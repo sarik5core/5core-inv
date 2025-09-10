@@ -1424,8 +1424,8 @@
                             ...item,
                             nr_req: item.nr_req || (parseFloat(item.INV) > 0 ? 'REQ' :
                                 'NR'),
-                            listed: item.listed || (parseFloat(item.INV) > 0 ? 'Pending' :
-                                'Listed')
+                            // listed: item.listed || (parseFloat(item.INV) > 0 ? 'Pending' :
+                            //     'Listed')
                         }));
 
                         filteredData = [...tableData];
