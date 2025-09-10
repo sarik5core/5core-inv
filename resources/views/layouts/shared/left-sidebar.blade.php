@@ -1504,6 +1504,27 @@
                                             </div>
                                         </li>
                                         <li>
+                                            <a data-bs-toggle="collapse" href="#amazonPinkDilAds" aria-expanded="false"
+                                                aria-controls="amazonPinkDilAds">
+                                                <span>Amazon Pink Dil Ads</span>
+                                                <span class="menu-arrow"></span>
+                                            </a>
+                                            <div class="collapse" id="amazonPinkDilAds">
+                                                <ul class="side-nav-fourth-level">
+                                                     <li>
+                                                        <a href="{{ route('amazon.pink.dil.kw.ads') }}">Amazon Pink KW</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.pink.dil.hl.ads') }}">Amazon Pink HL</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('amazon.pink.dil.pt.ads') }}">Amazon Pink PT</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+
+                                        <li>
                                             <a data-bs-toggle="collapse" href="#amazonBudget" aria-expanded="false"
                                                 aria-controls="amazonBudget">
                                                 <span>Amazon Budget</span>
@@ -1623,6 +1644,9 @@
                                         </li>
                                         <li>
                                             <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('ebay.pink.dil.ads') }}">Ebay Pink Dil Ads</a>
                                         </li>
                                         <li>
                                             <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>

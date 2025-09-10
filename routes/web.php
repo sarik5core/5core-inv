@@ -157,12 +157,14 @@ use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingControl
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
 use App\Http\Controllers\Campaigns\AmazonAdRunningController;
+use App\Http\Controllers\Campaigns\AmazonPinkDilAdController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\Campaigns\AmzCorrectlyUtilizedController;
 use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
+use App\Http\Controllers\Campaigns\EbayPinkDilAdController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
 use App\Http\Controllers\PurchaseMaster\PurchaseController;
@@ -1621,6 +1623,18 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon/ad-running/data', 'getAmazonAdRunningData');
     });
 
+    Route::controller(AmazonPinkDilAdController::class)->group(function(){
+        Route::get('/amazon/pink-dil/kw/ads', 'amazonPinkDilKwAds')->name('amazon.pink.dil.kw.ads');
+        Route::get('/amazon/pink-dil/kw/ads/data','getAmazonPinkDilKwAdsData');
+
+        Route::get('/amazon/pink-dil/pt/ads', 'amazonPinkDilPtAds')->name('amazon.pink.dil.pt.ads');
+        Route::get('/amazon/pink-dil/pt/ads/data','getAmazonPinkDilPtAdsData');
+
+        Route::get('/amazon/pink-dil/hl/ads', 'amazonPinkDilHlAds')->name('amazon.pink.dil.hl.ads');
+        Route::get('/amazon/pink-dil/hl/ads/data','getAmazonPinkDilHlAdsData');
+
+    });
+
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
         Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
         Route::get('/ebay-over-uti-acos-green', 'ebayOverUtiAcosGreen')->name('ebay-over-uti-acos-green');
@@ -1635,7 +1649,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::put('/update-ebay-keywords-bid-price', 'updateKeywordsBidDynamic');
         
     });
-
 
     //FaceBook Adds Manager 
     Route::controller(FacebookAddsManagerController::class)->group(function () {
@@ -1662,6 +1675,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::controller(EbayACOSController::class)->group(function () {
         Route::get('/ebay-acos-control/list', 'index')->name('ebay.acos.index');
         Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
+    });
+
+    Route::controller(EbayPinkDilAdController::class)->group(function(){
+        Route::get('/ebay/pink-dil/ads', 'index')->name('ebay.pink.dil.ads');
+        Route::get('/ebay/pink-dil/ads/data','getEbayPinkDilAdsData');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);
