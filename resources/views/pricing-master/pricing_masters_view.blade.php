@@ -759,18 +759,9 @@
             width: "100%",
             height: "700px",
           
-            pagination: true,
+            pagination: true, 
             paginationSize: 15,
-            initialSort: [{
-                column: "Parent",
-                dir: "dsc"
-            }],
-            groupBy: "Parent",
-            groupHeader: function(value, count, data, group) {
-                return value + ' <span class="badge text-light" style="background-color: purple;">' + count + ' items</span>';
-            },
-
-
+        
              rowFormatter: function(row) {
                 const data = row.getData();
                 const sku = data["SKU"] || '';
@@ -1367,7 +1358,8 @@
             let avgPft = countPft > 0 ? (totalPft / countPft) : 0;
 
             let pftHeader = document.getElementById("avgPftHeader");
-            pftHeader.innerText = avgPft + "%";
+            pftHeader.innerText = Math.round(avgPft) + "%";
+
 
             // Style for AVG PFT%
             let bgColorPft, textColorPft;
@@ -1399,7 +1391,8 @@
             let avgRoi = countRoi > 0 ? (totalRoi / countRoi) : 0;
 
             let roiHeader = document.getElementById("avgRoiHeader");
-            roiHeader.innerText = avgRoi + "%";
+            roiHeader.innerText = Math.round(avgRoi) + "%";
+
 
             // Style for AVG ROI%
             let bgColorRoi, textColorRoi;
@@ -1559,14 +1552,14 @@
 
                 html += `
                     <tr>
-                    <td>
-                    <div class="d-flex align-items-center">
-                        <img src="${r.logo}" alt="${r.label}" 
-                            title="${r.label}" 
-                            class="channel-logo me-2" 
-                            style="width:60px; height:60px; object-fit:contain;">
-                    </div>
-                    </td>
+            <td>
+  <div class="d-flex flex-column align-items-center text-center">
+      <img src="${r.logo}" alt="${r.label}" 
+          class="channel-logo mb-1" 
+          style="width:60px; height:60px; object-fit:contain;">
+      <span class="small fw-bold">${r.label}</span>
+  </div>
+</td>
 
                     <td>
                         <div class="value-indicator">
@@ -1635,6 +1628,10 @@
                                 : r.prefix === 'ebay3' ? (data.ebay3_sprice || '')
                                 : r.prefix === 'doba' ? (data.doba_sprice || '')
                                 : r.prefix === 'temu' ? (data.temu_sprice || '')
+                                : r.prefix === 'macy' ? (data.macy_sprice || '')
+                                : r.prefix === 'reverb' ? (data.reverb_sprice || '')
+                                : r.prefix === 'walmart' ? (data.walmart_sprice || '')
+                            
                                 : ''
                             }"
                             style="width: 65px;" 
@@ -1675,6 +1672,12 @@
                                 value = Math.round(data.doba_spft);
                             } else if (r.prefix === 'temu' && data.temu_spft) {
                                 value = Math.round(data.temu_spft);
+                            } else if (r.prefix === 'macy' && data.macy_spft) {
+                                value = Math.round(data.macy_spft);
+                            } else if (r.prefix === 'reverb' && data.reverb_spft) {
+                                value = Math.round(data.reverb_spft);
+                            } else if (r.prefix === 'walmart' && data.walmart_spft) {
+                                value = Math.round(data.walmart_spft);
                             }
 
                             
@@ -1718,9 +1721,13 @@
                                 value = Math.round(data.doba_sroi);
                             } else if (r.prefix === 'temu' && data.temu_sroi) {
                                 value = Math.round(data.temu_sroi);
+                            } else if (r.prefix === 'macy' && data.macy_sroi) {
+                                value = Math.round(data.macy_sroi);
+                            } else if (r.prefix === 'reverb' && data.reverb_sroi) {
+                                value = Math.round(data.reverb_sroi);
+                            } else if (r.prefix === 'walmart' && data.walmart_sroi) {
+                                value = Math.round(data.walmart_sroi);
                             }
-
-                            
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -2210,7 +2217,6 @@
                 });
             }
 
-            
             else if(type === 'shopifyb2c') {
                 $.ajax({
                     url: '/push-shopify-price',
@@ -2240,46 +2246,7 @@
                         $btn.html('Push to Marketplace');
                     }
                 });
-            }  else if(type === 'ebay2') {
-                $.ajax({
-                    url: '/update-ebay2-price',
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        sku: sku,
-                        price: sprice
-                    },
-                    success: function(res) {
-                     alert('eBay 2 price updated successfully!');
-                    },
-                    error: function(err) {
-                        alert('Error updating eBay 2 price: ' + err);
-                    },
-                    complete: function() {
-                        $btn.html('Push to Marketplace');
-                    }
-                });
-            } else if(type === 'ebay3') {
-                $.ajax({
-                    url: '/update-ebay3-price',
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        sku: sku,
-                        price: sprice
-                    },
-                    success: function(res) {
-                     alert('eBay 3 price updated successfully!');
-                    },
-                    error: function(err) {
-                        alert('Error updating eBay 3 price: ' + err);
-                    },
-                    complete: function() {
-                        $btn.html('Push to Marketplace');
-                    }
-                });
-            }
-            else if(type === 'temu') {
+            }  else if(type === 'temu') {
                 $.ajax({
                     url: '/update-temu-price',
                     type: 'POST',
@@ -2299,8 +2266,87 @@
                     }
                 });
             }
-
-
+                else if(type === 'doba') {
+                    $.ajax({
+                        url: '/update-doba-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                        alert('Doba price updated successfully!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Doba price: ' + err);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+                else if(type === 'macy') {
+                    $.ajax({
+                        url: '/update-macy-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                        alert('Macy price updated successfully!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Macy price: ' + err);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+                else if(type === 'reverb') {
+                    $.ajax({
+                        url: '/update-reverb-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                        alert('Reverb price updated successfully!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Reverb price: ' + err);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+                else if(type === 'walmart') {
+                    $.ajax({
+                        url: '/update-walmart-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                        alert('Walmart price updated successfully!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Walmart price: ' + err);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+           
             
             // You can add more marketplaces here
         });

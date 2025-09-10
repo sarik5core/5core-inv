@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use SimpleXMLElement;
 
-class Ebay2ApiService
+class EbayTwoApiService
 {
+
     protected $appId;
     protected $certId;
     protected $devId;
@@ -21,54 +22,59 @@ class Ebay2ApiService
         $this->appId       = env('EBAY2_APP_ID');
         $this->certId      = env('EBAY2_CERT_ID');
         $this->devId       = env('EBAY2_DEV_ID');
-        $this->userToken   = env('EBAY2_USER_TOKEN');
-        $this->endpoint    = env('EBAY2_TRADING_API_ENDPOINT', 'https://api.ebay.com/ws/api.dll');
-        $this->siteId      = env('EBAY2_SITE_ID', 0); // US = 0
-        $this->compatLevel = env('EBAY2_COMPAT_LEVEL', '1189');
+        $this->endpoint    = env('EBAY_TRADING_API_ENDPOINT', 'https://api.ebay.com/ws/api.dll');
+        $this->siteId      = env('EBAY_SITE_ID', 0); // US = 0
+        $this->compatLevel = env('EBAY_COMPAT_LEVEL', '1189');
     }
-
-    /**
-     * Revise the price of a fixed-price item listing.
-     *
-     * @param string $itemId
-     * @param float $price
-     * @param int|null $quantity
-     * @param string|null $sku
-     * @param array|null $variationSpecifics
-     * @param array|null $variationSpecificsSet
-     * @return array
-     */
-
-    public function getOAuthToken()
+    public function generateBearerToken()
     {
-        $clientId     = env('EBAY_APP_ID');
-        $clientSecret = env('EBAY_CERT_ID');
+        // 1. If cached token exists, return it immediately
+        if (Cache::has('ebay2_bearer')) {
+            echo "\nBearer Token in Cache";
 
-        $credentials = base64_encode("{$clientId}:{$clientSecret}");
-
-        $response = Http::withHeaders([
-            'Content-Type'  => 'application/x-www-form-urlencoded',
-            'Authorization' => "Basic {$credentials}",
-        ])->asForm()->post('https://api.ebay.com/identity/v1/oauth2/token', [
-            'grant_type'    => 'client_credentials',
-        ]);
-
-        dd($response->json());
-
-        if ($response->successful()) {
-            return $response->json()['access_token'] ?? null;
+            return Cache::get('ebay2_bearer');
         }
 
-        return [];
+
+        echo "Generating New Ebay Token";
+
+        // 2. Otherwise, request new token from eBay
+        $clientId     = env('EBAY2_APP_ID');
+        $clientSecret = env('EBAY2_CERT_ID');
+        $refreshToken = env('EBAY2_REFRESH_TOKEN');
+
+        $response = Http::asForm()
+            ->withBasicAuth($clientId, $clientSecret)
+            ->post('https://api.ebay.com/identity/v1/oauth2/token', [
+                'grant_type'    => 'refresh_token',
+                'refresh_token' => $refreshToken,
+                'scope'         => 'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.inventory',
+            ]);
+
+        if ($response->failed()) {
+            throw new \Exception('Failed to get eBay token: ' . $response->body());
+        }
+
+        $data        = $response->json();
+        $accessToken = $data['access_token'];
+        $expiresIn   = $data['expires_in'] ?? 3600; // seconds, defaults to 1h
+
+        // 3. Store token in cache for slightly less than expiry time
+        Cache::put('ebay2_bearer', $accessToken, now()->addSeconds($expiresIn - 60));
+
+        return $accessToken;
     }
+
 
     public function reviseFixedPriceItem($itemId, $price, $quantity = null, $sku = null, $variationSpecifics = null, $variationSpecificsSet = null)
     {
-        // Build XML body
+                // Build XML body
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><ReviseFixedPriceItemRequest xmlns="urn:ebay:apis:eBLBaseComponents"/>');
         $credentials = $xml->addChild('RequesterCredentials');
-        $authToken = env('EBAY_USER_TOKEN');
-        $credentials->addChild('eBayAuthToken', $authToken);
+        
+        $authToken = $this->generateBearerToken();
+
+        $credentials->addChild('eBayAuthToken', $authToken ?? '');
 
 
         $item = $xml->addChild('Item');
@@ -137,7 +143,8 @@ class Ebay2ApiService
 
         // Parse XML response
         libxml_use_internal_errors(true);
-        $xmlResp = simplexml_load_string($body);
+        $xmlResp = simplexml_load_string(data: $body);
+        dd($xmlResp);
         if ($xmlResp === false) {
             return [
                 'success' => false,

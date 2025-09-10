@@ -43,6 +43,79 @@ class AmazonACOSController extends Controller
         });
     }
 
+    public function updateAutoAmazonCampaignBgt(array $campaignIds, array $newBgts)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        if (empty($campaignIds) || empty($newBgts)) {
+            return response()->json([
+                'message' => 'Campaign IDs and new budgets are required',
+                'status' => 400
+            ]);
+        }
+
+        $allCampaigns = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBgt = floatval($newBgts[$index] ?? 0);
+
+            $allCampaigns[] = [
+                'campaignId' => $campaignId,
+                'budget' => [
+                    'budget' => $newBgt,
+                    'budgetType' => 'DAILY'
+                ]
+            ];
+        }
+
+        if (empty($allCampaigns)) {
+            return response()->json([
+                'message' => 'No campaigns found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sp/campaigns';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allCampaigns, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.spCampaign.v3+json',
+                        'Accept' => 'application/vnd.spCampaign.v3+json',
+                    ],
+                    'json' => [
+                        'campaigns' => $chunk
+                    ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+            return [
+                'message' => 'BGT updated successfully',
+                'data' => $results,
+                'status' => 200,
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'message' => 'Error updating BGT',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ];
+        }
+    }
+
     public function updateAmazonCampaignBgt(Request $request)
     {
         ini_set('max_execution_time', 300);
@@ -116,6 +189,76 @@ class AmazonACOSController extends Controller
                 'error' => $e->getMessage(),
                 'status' => 500,
             ]);
+        }
+    }
+
+    public function updateAutoAmazonSbCampaignBgt(array $campaignIds, array $newBgts)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        if (empty($campaignIds) || empty($newBgts)) {
+            return response()->json([
+                'message' => 'Campaign IDs and new budgets are required',
+                'status' => 400
+            ]);
+        }
+
+        $allCampaigns = [];
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBgt = floatval($newBgts[$index] ?? 0);
+
+            $allCampaigns[] = [
+                'campaignId' => $campaignId,
+                'budget' => $newBgt,
+            ];
+        }
+
+        if (empty($allCampaigns)) {
+            return response()->json([
+                'message' => 'No campaigns found to update',
+                'status' => 404,
+            ]);
+        }
+
+        $accessToken = $this->getAccessToken();
+        $client = new Client();
+        $url = 'https://advertising-api.amazon.com/sb/v4/campaigns';
+        $results = [];
+
+        try {
+            $chunks = array_chunk($allCampaigns, 100);
+            foreach ($chunks as $chunk) {
+                $response = $client->put($url, [
+                    'headers' => [
+                        'Amazon-Advertising-API-ClientId' => env('AMAZON_ADS_CLIENT_ID'),
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Amazon-Advertising-API-Scope' => $this->profileId,
+                        'Content-Type' => 'application/vnd.sbcampaignresource.v4+json',
+                        'Accept' => 'application/vnd.sbcampaignresource.v4+json',
+                    ],
+                    'json' => [
+                        'campaigns' => $chunk
+                    ],
+                    'timeout' => 60,
+                    'connect_timeout' => 30,
+                ]);
+
+                $results[] = json_decode($response->getBody(), true);
+            }
+            return [
+                'message' => 'Campaign bgt updated successfully',
+                'data' => $results,
+                'status' => 200,
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'message' => 'Error updating campaign bgt',
+                'error' => $e->getMessage(),
+                'status' => 500,
+            ];
         }
     }
 
@@ -496,8 +639,8 @@ class AmazonACOSController extends Controller
             $row['campaignBudgetAmount'] = $matchedCampaignL30->campaignBudgetAmount ?? '';
             $row['l7_cpc'] = $matchedCampaignL7->costPerClick ?? 0;
             
-            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaignL30->sales30d ?? 0) > 0)
-                ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2)
+            $row['acos_L30'] = ($matchedCampaignL30 && ($matchedCampaignL30->sales ?? 0) > 0)
+                ? round(($matchedCampaignL30->cost / $matchedCampaignL30->sales) * 100, 2)
                 : null;
 
             $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
@@ -635,8 +778,4 @@ class AmazonACOSController extends Controller
                 && strtoupper($item->campaignStatus) === 'ENABLED';
         });
     }
-
-
-
-
 }
