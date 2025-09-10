@@ -54,7 +54,7 @@
         <div class="row mb-3">
             <div class="col-12">
                 <div class="page-title-box">
-                    <h4 class="page-title">Listing Audit Master</h4>
+                    <h4 class="page-title">Listing Master</h4>
                 </div>
             </div>
         </div>

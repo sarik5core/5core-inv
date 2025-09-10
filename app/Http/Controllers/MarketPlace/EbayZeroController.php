@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Models\AmazonDataView;
 use App\Models\EbayDataView;
+use App\Models\EbayListingStatus;
 use App\Models\EbayMetric;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
@@ -250,8 +251,8 @@ class EbayZeroController extends Controller
         $skus = $productMasters->pluck('sku')->unique()->toArray();
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayDataViews = EbayDataView::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayMetrics = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataViews = EbayListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku'); 
 
         $listedCount = 0;
         $zeroInvOfListed = 0;
