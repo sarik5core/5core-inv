@@ -7,6 +7,7 @@ use App\Models\Ebay2Metric;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use App\Models\EbayTwoDataView;
+use App\Models\EbayTwoListingStatus;
 use Illuminate\Http\Request;
 
 class Ebay2ZeroController extends Controller
@@ -213,7 +214,7 @@ class Ebay2ZeroController extends Controller
         $skus = $productMasters->pluck('sku')->unique()->toArray();
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayDataViews = EbayTwoDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataViews = EbayTwoListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebayMetrics = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $listedCount = 0;
