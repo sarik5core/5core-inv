@@ -428,7 +428,7 @@ class AmzUnderUtilizedBgtController extends Controller
             $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -437,7 +437,7 @@ class AmzUnderUtilizedBgtController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
@@ -571,7 +571,7 @@ class AmzUnderUtilizedBgtController extends Controller
             $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -580,7 +580,7 @@ class AmzUnderUtilizedBgtController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }

@@ -1424,11 +1424,13 @@
                             ...item,
                             nr_req: item.nr_req || (parseFloat(item.INV) > 0 ? 'REQ' :
                                 'NR'),
-                            listed: item.listed || (parseFloat(item.INV) > 0 ? 'Pending' :
-                                'Listed')
+                            // listed: item.listed || (parseFloat(item.INV) > 0 ? 'Pending' :
+                            //     'Listed')
                         }));
 
                         filteredData = [...tableData];
+                        console.log('Data loaded:', tableData);
+                        
                     },
                     error: function(xhr, status, error) {
                         console.error('Error loading data:', error);

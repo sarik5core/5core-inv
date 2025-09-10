@@ -535,7 +535,7 @@ class AmazonACOSController extends Controller
             $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -544,7 +544,7 @@ class AmazonACOSController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
@@ -646,7 +646,7 @@ class AmazonACOSController extends Controller
             $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -655,7 +655,7 @@ class AmazonACOSController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
@@ -741,7 +741,7 @@ class AmazonACOSController extends Controller
             $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -750,7 +750,7 @@ class AmazonACOSController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }

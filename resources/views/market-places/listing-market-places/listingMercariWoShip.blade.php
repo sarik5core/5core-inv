@@ -1065,7 +1065,9 @@
 @endsection
 
 @section('content')
-    @extends('layouts.vertical', ['title' => 'Listing Mercari w/o Ship', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+    {{-- @extends('layouts.vertical', ['title' => 'Listing Mercari w/o Ship', 'mode' => $mode ?? '', 'demo' => $demo ?? '']) --}}
+    @include('layouts.shared/page-title', ['page_title' => 'Listing Mercari w/o Ship', 'sub_title' => 'Mercari w/o Ship'])
+
 
     <div class="row">
         <div class="col-12">
@@ -1410,6 +1412,8 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
+                        console.log(response,'response');
+                        
                         // If response is an object with a data property, use that
                         if (Array.isArray(response)) {
                             tableData = response;
@@ -1424,8 +1428,7 @@
                             ...item,
                             nr_req: item.nr_req || (parseFloat(item.INV) > 0 ? 'REQ' :
                                 'NR'),
-                            listed: item.listed || (parseFloat(item.INV) > 0 ? 'Pending' :
-                                'Listed')
+
                         }));
 
                         filteredData = [...tableData];
@@ -1571,14 +1574,14 @@
                 const $linkCell = $('<td>');
 
                 // Buyer Link
-                if (parseFloat(item.INV) > 0 && item.buyer_link) {
+                if (item.buyer_link) {
                     $linkCell.append(
                         `<a href="${item.buyer_link}" target="_blank" style="color:#007bff;text-decoration:underline;margin-right:8px;">Buyer</a>`
                     );
                 }
 
                 // Seller Link
-                if (parseFloat(item.INV) > 0 && item.seller_link) {
+                if (item.seller_link) {
                     $linkCell.append(
                         `<a href="${item.seller_link}" target="_blank" style="color:#007bff;text-decoration:underline;margin-right:8px;">Seller</a>`
                     );

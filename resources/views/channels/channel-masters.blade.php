@@ -1637,7 +1637,6 @@
                     searching: true,
                     pageLength: 50,
                     destroy: true,
-                    order: [[5, 'desc']], // 5 => L30 Sales in the schema below
                     ajax: {
                         url: '/channels-master-data',
                         type: "GET",
@@ -1653,6 +1652,12 @@
                             if (!json || !json.data) return [];
 
                             drawChannelChart(json.data);
+
+                            json.data.sort((a, b) => {
+                                const aVal = parseFloat(String(a['L30 Sales'] || a['l30_sales'] || 0).replace(/,/g, '')) || 0;
+                                const bVal = parseFloat(String(b['L30 Sales'] || b['l30_sales'] || 0).replace(/,/g, '')) || 0;
+                                return bVal - aVal; // high → low
+                            });
 
                             // Normalize every row to ONE schema so columns line up
                             return json.data.map(item => {
@@ -1763,9 +1768,24 @@
                             }
                         },      
                         { data: 'L-60 Sales', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
-                        { data: 'L30 Sales',  render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        // { data: 'L30 Sales',  render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        {
+                            data: 'L30 Sales',
+                            render: function(data, type, row) {
+                                const n = parseFloat(String(data).replace(/,/g, '')) || 0;
 
-                        
+                                // For sorting: return numeric value (DataTables internal)
+                                if (type === 'sort' || type === 'type') return n;
+
+                                // Display formatted
+                                return `<span class="metric-value">${n.toLocaleString('en-US')}</span>`;
+                            },
+                            // --- NEW: always sort descending before displaying ---
+                            createdCell: function(td, cellData, rowData, row, col) {
+                                // no action needed here
+                            }
+                        },
+
                         {
                             data: 'Growth',
                             render: function (v) {
@@ -1873,6 +1893,9 @@
                 return null;
             }
         }
+
+        
+
 
 
         // function drawChannelChart(data) {
@@ -2024,10 +2047,6 @@
                 chart.draw(dataTable, options);
             });
         }
-
-
-
-
 
 
         function updatePlayButtonColor() {

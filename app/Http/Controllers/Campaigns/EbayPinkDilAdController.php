@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\MarketPlace\ACOSControl;
+namespace App\Http\Controllers\Campaigns;
 
 use App\Http\Controllers\Controller;
 use App\Models\EbayDataView;
@@ -10,13 +10,13 @@ use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
 
-class EbayACOSController extends Controller
+class EbayPinkDilAdController extends Controller
 {
     public function index(){
-        return view('market-places.acos-control.ebay-acos-control');
+        return view('campaign.ebay-pink-dil-ads');
     }
 
-    public function getEbayAcosControlData()
+    public function getEbayPinkDilAdsData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -87,8 +87,6 @@ class EbayACOSController extends Controller
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
             $row['e_l30']  = $ebay->ebay_l30 ?? 0;
-            $dil = $shopify->inv > 0 ? ($shopify->quantity / $shopify->inv ) * 100 : 0;
-            $row['dil_per'] = $dil;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
@@ -98,12 +96,16 @@ class EbayACOSController extends Controller
 
             $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
             
-            
-            $row['acos'] = $acos;
+            if($adFees > 0 && $sales === 0){
+                $row['acos'] = 100;
+            }else{
+                $row['acos'] = $acos;
+            }
 
-            $row['l30_spend'] = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_ad_fees_payout_currency ?? 0);
-            $row['ad_cvr'] = $matchedCampaignL30->cpc_conversion_rate ?? 0;
-            $row['l30_cpc_clicks'] = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_clicks ?? 0);
+            $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
+            $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
+            $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
 
             $row['NR'] = '';
             if (isset($nrValues[$pm->sku])) {

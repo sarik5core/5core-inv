@@ -66,11 +66,11 @@ class EbayCvrLqsController extends Controller
         // 3. NR values
         $nrValues = EbayDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
-        // 🔑 Build mapping arrays
+        // Build mapping arrays
         $itemIdToSku = $ebayMetricsBySku->pluck('sku', 'item_id')->toArray();
         $campaignIdToSku = $ebayMetricsBySku->pluck('sku', 'campaign_id')->toArray();
 
-        // ✅ Fetch General Reports (listing_id → clicks etc.)
+        // Fetch General Reports (listing_id → clicks etc.)
         $generalReports = EbayGeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
             ->whereIn('report_range', ['L30'])
             ->get();
@@ -85,7 +85,7 @@ class EbayCvrLqsController extends Controller
                 ($adMetricsBySku[$sku]['L30']['Clk'] ?? 0) + (int) $report->clicks;
         }
 
-        // 🔑 Fetch extra clicks (same as in getViewEbayData)
+        // Fetch extra clicks (same as in getViewEbayData)
         $extraClicksData = EbayGeneralReport::whereIn('listing_id', array_keys($itemIdToSku))
             ->where('report_range', 'L30')
             ->pluck('clicks', 'listing_id')
@@ -128,7 +128,7 @@ class EbayCvrLqsController extends Controller
 
             if ($row['INV'] <= 0) continue;
 
-            // ✅ Add PmtClkL30
+            // Add PmtClkL30
             $row['PmtClkL30'] = $adMetricsBySku[$sku]['L30']['Clk'] ?? 0;
             if ($ebayMetric && isset($extraClicksData[$ebayMetric->item_id])) {
                 $row['PmtClkL30'] += (int) $extraClicksData[$ebayMetric->item_id];
@@ -337,4 +337,56 @@ class EbayCvrLqsController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function getPendingCount()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $statusData = EbayCvrLqs::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $reqCount = 0;
+        $nrCount = 0;
+        $listedCount = 0;
+        $pendingCount = 0;
+
+        foreach ($productMasters as $item) {
+            $sku = trim($item->sku);
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $isParent = stripos($sku, 'PARENT') !== false;
+
+            if ($isParent || floatval($inv) <= 0) continue;
+
+            $status = $statusData[$sku]->value ?? null;
+            if (is_string($status)) {
+                $status = json_decode($status, true);
+            }
+            // dd($status);
+
+            // NR/REQ logic
+            // $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            // if ($nrReq === 'REQ') {
+            //     $reqCount++;
+            // } elseif ($nrReq === 'NR') {
+            //     $nrCount++; 
+            // }
+
+            // Listed/Pending logic
+            $listed = $status['Processed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Processed');
+            if ($listed === 'Processed') {
+                $listedCount++;
+            } elseif ($listed === 'Pending') {
+                $pendingCount++;
+            }
+        }
+
+        return [
+            // 'NR'  => $nrCount,
+            // 'REQ' => $reqCount,
+            'Listed' => $listedCount,
+            'Pending' => $pendingCount,
+        ];
+    }
+
+    
 }

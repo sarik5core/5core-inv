@@ -140,6 +140,7 @@
   .nav-tabs::-webkit-scrollbar-track {
     background: transparent;
   }
+
 </style>
 @section('content')
 @include('layouts.shared.page-title', ['page_title' => 'Transit Container INV', 'sub_title' => 'Transit Container INV'])
@@ -211,6 +212,14 @@
         </div>
     </div>
 </div>
+
+<div id="cell-image-preview" 
+     style="position:absolute; display:none; z-index:9999; 
+            border:1px solid #ccc; background:#fff; padding:5px; 
+            border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+  <img src="" style="max-height:250px; max-width:350px;">
+</div>
+
 
 @endsection
 
@@ -332,9 +341,12 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                   }
                 }
 
-                return url
-                  ? `<a href="${url}" target="_blank"><img src="${url}" style="height:40px;border-radius:4px;border:1px solid #ccc"/></a>`
-                  : '<span class="text-muted">No Image</span>';
+                if (!url) {
+                  return '<span class="text-muted">No Image</span>';
+                }
+
+                return `<img src="${url}" data-preview="${url}" 
+                style="height:40px;border-radius:4px;border:1px solid #ccc;cursor:zoom-in;">`;
               }
             },
             { title: "Qty / Ctns", field: "no_of_units", editor: "input" },
@@ -652,10 +664,29 @@ document.getElementById('search-input').addEventListener('input', function () {
         activeTable.redraw();
         console.log("Filtered data count:", activeTable.getDataCount("active"));
     });
+
+    document.addEventListener("mouseover", function(e) {
+      if (e.target && e.target.dataset.preview) {
+        const previewBox = document.getElementById("cell-image-preview");
+        const img = previewBox.querySelector("img");
+        img.src = e.target.dataset.preview;
+
+        const rect = e.target.getBoundingClientRect(); // cell position
+        previewBox.style.left = (rect.right + 10) + "px"; // cell ke bagal me
+        previewBox.style.top = rect.top + "px";
+
+        previewBox.style.display = "block";
+      }
+    });
+
+    document.addEventListener("mouseout", function(e) {
+      if (e.target && e.target.dataset.preview) {
+        const previewBox = document.getElementById("cell-image-preview");
+        previewBox.style.display = "none";
+      }
+    });
+
   });
-
-
-
 
 
 document.body.style.zoom = "98%"; 

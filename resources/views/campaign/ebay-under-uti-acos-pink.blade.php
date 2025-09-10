@@ -299,7 +299,7 @@
                         visible: false
                     },
                     {
-                        title: "NRL",
+                        title: "NRA",
                         field: "NR",
                         formatter: function(cell) {
                             const row = cell.getRow();
@@ -311,8 +311,8 @@
                                         data-sku="${sku}" 
                                         data-field="NR"
                                         style="width: 90px;">
-                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
+                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
                                 </select>
                             `;
@@ -341,7 +341,7 @@
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
+                            if (acos < 7 && acos >= 0.01) {
                                 td.classList.add('pink-bg'); 
                             } else if (acos >= 7 && acos <= 14) {
                                 td.classList.add('green-bg'); 

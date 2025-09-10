@@ -371,7 +371,7 @@ class AmazonSbBudgetController extends Controller
             $row['l1_cpc']   = $costPerClick1;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -380,7 +380,7 @@ class AmazonSbBudgetController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
@@ -550,7 +550,7 @@ class AmazonSbBudgetController extends Controller
             $row['clicks_L7'] = $matchedCampaignL7->clicks ?? 0;
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -559,7 +559,7 @@ class AmazonSbBudgetController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }

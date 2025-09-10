@@ -32,7 +32,7 @@ class AutoUpdateAmazonBgtHl extends Command
 
         $updateKwBgts = new AmazonACOSController;
 
-        $campaigns = $this->amazonAcosKwControlData();
+        $campaigns = $this->amazonAcosHlControlData();
 
         if (empty($campaigns)) {
             $this->warn("No campaigns matched filter conditions.");
@@ -47,7 +47,7 @@ class AutoUpdateAmazonBgtHl extends Command
 
     }
 
-    public function amazonAcosKwControlData()
+    public function amazonAcosHlControlData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")

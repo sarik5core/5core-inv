@@ -157,12 +157,14 @@ use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingControl
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
 use App\Http\Controllers\Campaigns\AmazonAdRunningController;
+use App\Http\Controllers\Campaigns\AmazonPinkDilAdController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\Campaigns\AmzCorrectlyUtilizedController;
 use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
+use App\Http\Controllers\Campaigns\EbayPinkDilAdController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
 use App\Http\Controllers\PurchaseMaster\PurchaseController;
@@ -213,6 +215,7 @@ use App\Http\Controllers\PurchaseMaster\SourcingController;
 use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
 use App\Http\Controllers\MarketingMaster\MovementPricingMaster;
 use App\Http\Controllers\NewPermissionController;
+use App\Http\Controllers\MarketingMaster\OverallCvrLqsController;
 
 /*  
 |--------------------------------------------------------------------------
@@ -946,9 +949,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //Update Forecast Sheet
     Route::post('/update-forecast-data', [ForecastAnalysisController::class, 'updateForcastSheet'])->name('update.forecast.data');
 
-    //for testing purpose
-    Route::get('/forecastDemo', [ForecastAnalysisController::class, 'demoForecast']);
-
     //MFRG In Progress
     Route::get('/mfrg-in-progress', [MFRGInProgressController::class, 'index'])->name('mfrg.in.progress');
     Route::post('/mfrg-progresses/inline-update-by-sku', [MFRGInProgressController::class, 'inlineUpdateBySku']);
@@ -1444,6 +1444,15 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/listing-master-counts-data', [ListingMasterController::class, 'getMarketplacesData']);
     Route::delete('/listing-master/{marketplace}', [ListingMasterController::class, 'destroy'])->name('listing-master.destroy');
 
+
+    //overall cvr-lqs
+    Route::get('/overall-lqs-cvr', [OverallCvrLqsController::class, 'index'])->name('overallLqsCvr');
+    Route::get('/lqs-cvr-data', [OverallCvrLqsController::class, 'getCvrLqsData']);
+
+    // Route::get('/listing-master-counts', [OverallCvrLqsController::class, 'getListingMasterCountsViews']);
+    // Route::post('/listing-master-counts-data', [OverallCvrLqsController::class, 'getMarketplacesData']);
+    Route::delete('/listing-master/{marketplace}', [OverallCvrLqsController::class, 'destroy'])->name('listing-master.destroy');
+
     // MM video posted route
     Route::controller(VideoPostedController::class)->group(function () {
         Route::get('/markrting-master/video-posted', 'videoPostedView')->name('mm.video.posted');
@@ -1625,6 +1634,18 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon/ad-running/data', 'getAmazonAdRunningData');
     });
 
+    Route::controller(AmazonPinkDilAdController::class)->group(function(){
+        Route::get('/amazon/pink-dil/kw/ads', 'amazonPinkDilKwAds')->name('amazon.pink.dil.kw.ads');
+        Route::get('/amazon/pink-dil/kw/ads/data','getAmazonPinkDilKwAdsData');
+
+        Route::get('/amazon/pink-dil/pt/ads', 'amazonPinkDilPtAds')->name('amazon.pink.dil.pt.ads');
+        Route::get('/amazon/pink-dil/pt/ads/data','getAmazonPinkDilPtAdsData');
+
+        Route::get('/amazon/pink-dil/hl/ads', 'amazonPinkDilHlAds')->name('amazon.pink.dil.hl.ads');
+        Route::get('/amazon/pink-dil/hl/ads/data','getAmazonPinkDilHlAdsData');
+
+    });
+
     Route::controller(EbayOverUtilizedBgtController::class)->group(function(){
         Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
         Route::get('/ebay-over-uti-acos-green', 'ebayOverUtiAcosGreen')->name('ebay-over-uti-acos-green');
@@ -1637,8 +1658,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
         Route::post('/update-ebay-nr-data', 'updateNrData');
         Route::put('/update-ebay-keywords-bid-price', 'updateKeywordsBidDynamic');
+        
     });
-
 
     //FaceBook Adds Manager 
     Route::controller(FacebookAddsManagerController::class)->group(function () {
@@ -1663,8 +1684,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayACOSController::class)->group(function () {
-        Route::get('/ebay-acos-control/data', 'index')->name('ebay.acos.index');
-        // Route::get('/ebay-acos-data', 'getAmzonAcOSData');
+        Route::get('/ebay-acos-control/list', 'index')->name('ebay.acos.index');
+        Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
+    });
+
+    Route::controller(EbayPinkDilAdController::class)->group(function(){
+        Route::get('/ebay/pink-dil/ads', 'index')->name('ebay.pink.dil.ads');
+        Route::get('/ebay/pink-dil/ads/data','getEbayPinkDilAdsData');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);
