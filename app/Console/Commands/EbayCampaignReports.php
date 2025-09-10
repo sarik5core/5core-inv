@@ -43,7 +43,7 @@ class EbayCampaignReports extends Command
             'L30' => [Carbon::today()->subDays(30), Carbon::today()->subDay()->endOfDay()],
             'L15' => [Carbon::today()->subDays(15), Carbon::today()->subDay()->endOfDay()],
             'L7' => [Carbon::today()->subDays(7), Carbon::today()->subDay()->endOfDay()],
-            'L1' => [Carbon::today()->subDays(1), Carbon::today()->endOfDay()],
+            'L1' => [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()],
         ];
 
         // Loop through date ranges first: L30 then L60

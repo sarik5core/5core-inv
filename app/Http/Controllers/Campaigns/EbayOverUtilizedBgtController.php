@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Campaigns;
 
 use App\Http\Controllers\Controller;
 use App\Models\EbayDataView;
+use App\Models\EbayMetric;
 use App\Models\EbayPriorityReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
@@ -304,7 +305,12 @@ class EbayOverUtilizedBgtController extends Controller
             $sales    = (float) $matchedCampaignL30->cpc_attributed_sales;
 
             $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
-            $row['acos'] = $acos;
+            
+            if($adFees > 0 && $sales === 0){
+                $row['acos'] = 100;
+            }else{
+                $row['acos'] = $acos;
+            }
 
             $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
             $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
@@ -356,4 +362,5 @@ class EbayOverUtilizedBgtController extends Controller
         ]);
 
     }
+
 }
