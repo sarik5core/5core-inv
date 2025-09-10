@@ -1452,7 +1452,7 @@
                                             <div class="metric-total" id="eDil-total">0%</div>
                                         </div>
                                     </th>
-                                    <th data-field="NRL">NRL</th>
+                                    <th data-field="NRA">NRA</th>
 
                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -2407,9 +2407,9 @@
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if (item.NR === 'NRA') {
-                        $row.addClass('nr-hide');
-                    }
+                    // if (item.NR === 'NRA') {
+                    //     $row.addClass('nr-hide');
+                    // }
 
                     let rawData = {};
                     if (typeof item.raw_data === 'string') {
@@ -2562,8 +2562,13 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                        let currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
                             item.NR : 'RA';
+
+                        const adilPercent = Math.round(item['E Dil%'] * 100);
+                        if (adilPercent >= 50) {
+                            currentNR = 'NRA';
+                        }
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">

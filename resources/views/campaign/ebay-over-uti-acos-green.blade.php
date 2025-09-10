@@ -314,7 +314,7 @@
                         visible: false
                     },
                     {
-                        title: "NRL",
+                        title: "NRA",
                         field: "NR",
                         formatter: function(cell) {
                             const row = cell.getRow();
@@ -326,8 +326,8 @@
                                         data-sku="${sku}" 
                                         data-field="NR"
                                         style="width: 90px;">
-                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
+                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
                                 </select>
                             `;

@@ -192,7 +192,7 @@ class AmazonAdRunningController extends Controller
             $row['CLICKS_L7']  = ($row['pt_clicks_L7']  + $row['kw_clicks_L7']  + $hl_share_clicks_L7);
 
             $row['NRL']  = '';
-            $row['NR'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
@@ -201,7 +201,7 @@ class AmazonAdRunningController extends Controller
                 }
                 if (is_array($raw)) {
                     $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
