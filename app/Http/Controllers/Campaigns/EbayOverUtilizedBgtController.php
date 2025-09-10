@@ -328,7 +328,9 @@ class EbayOverUtilizedBgtController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['NR'] !== 'NRA') {
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([

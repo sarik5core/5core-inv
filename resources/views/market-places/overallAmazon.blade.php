@@ -2832,8 +2832,26 @@
                             item.NRA : 'RA';
 
                         const adilPercent = Math.round(item['A Dil%'] * 100);
+                        
                             if (adilPercent > 50) {
                                 currentNR = 'NRA';
+
+                                // Auto-save NRA when adilPercent > 50
+                                $.ajax({
+                                    url: '/amazon/save-nr',
+                                    type: 'POST',
+                                    data: {
+                                        sku: item['(Child) sku'],
+                                        nr: JSON.stringify({ NRA: 'NRA' }),
+                                        _token: $('meta[name="csrf-token"]').attr('content')
+                                    },
+                                    success: function(res) {
+                                        console.log("Auto NRA saved for", item['(Child) sku']);
+                                    },
+                                    error: function(err) {
+                                        console.error("Auto-save failed:", err);
+                                    }
+                                });
                             }
 
                         const $select = $(`

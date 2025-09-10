@@ -2568,6 +2568,22 @@
                         const adilPercent = Math.round(item['E Dil%'] * 100);
                         if (adilPercent >= 50) {
                             currentNR = 'NRA';
+
+                            $.ajax({
+                                url: '/ebay/save-nr',
+                                type: 'POST',
+                                data: {
+                                    sku: item['(Child) sku'],
+                                    nr: 'NRA',
+                                    _token: $('meta[name="csrf-token"]').attr('content')
+                                },
+                                success: function(res) {
+                                    console.log("Auto NRA saved for", item['(Child) sku']);
+                                },
+                                error: function(err) {
+                                    console.error("Auto-save failed:", err);
+                                }
+                            });
                         }
 
                         const $select = $(`

@@ -549,7 +549,10 @@ class AmazonACOSController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['NRA'] !== 'NRA') {
+                $result[] = (object) $row;
+            }
+
         }
 
         return response()->json([
@@ -660,7 +663,9 @@ class AmazonACOSController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['NRA'] !== 'NRA') {
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([
@@ -755,7 +760,9 @@ class AmazonACOSController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['NRA'] !== 'NRA') {
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([
