@@ -325,14 +325,21 @@
                             const row = cell.getRow();
                             const sku = row.getData().sku;
                             const value = cell.getValue();
-                            const bgColor = value === 'NRL' ? 'red-bg' : 'green-bg';
+
+                            let bgColor = "";
+                            if (value === "NRL") {
+                                bgColor = "background-color:#dc3545;color:#fff;"; // red
+                            } else if (value === "RL") {
+                                bgColor = "background-color:#28a745;color:#fff;"; // green
+                            }
+
                             return `
                                 <select class="form-select form-select-sm editable-select" 
                                         data-sku="${sku}" 
                                         data-field="NRL"
-                                        style="width: 90px;">
-                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
+                                        style="width: 90px; ${bgColor}">
                                     <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
+                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
                                 </select>
                             `;
                         },
@@ -341,19 +348,28 @@
                     },
                     {
                         title: "NRA",
-                        field: "NR",
+                        field: "NRA",
                         formatter: function(cell) {
                             const row = cell.getRow();
                             const sku = row.getData().sku;
-                            const value = cell.getValue();
-                            const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
+                            const value = cell.getValue()?.trim();
+
+                            let bgColor = "";
+                            if (value === "NRA") {
+                                bgColor = "background-color:#dc3545;color:#fff;"; // red
+                            } else if (value === "RA") {
+                                bgColor = "background-color:#28a745;color:#fff;"; // green
+                            } else if (value === "LATER") {
+                                bgColor = "background-color:#ffc107;color:#000;"; // yellow
+                            }
+
                             return `
                                 <select class="form-select form-select-sm editable-select" 
                                         data-sku="${sku}" 
-                                        data-field="NR"
-                                        style="width: 90px;">
-                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
+                                        data-field="NRA"
+                                        style="width: 100px; ${bgColor}">
                                     <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
+                                    <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
                                 </select>
                             `;
@@ -368,12 +384,21 @@
                             const row = cell.getRow();
                             const sku = row.getData().sku;
                             const value = cell.getValue();
-                            const bgColor = value === 'NRA' ? 'red-bg' : 'green-bg';
+
+                            let bgColor = "";
+                            if (value === "FBA") {
+                                bgColor = "background-color:#007bff;color:#fff;"; // blue
+                            } else if (value === "FBM") {
+                                bgColor = "background-color:#6f42c1;color:#fff;"; // purple
+                            } else if (value === "BOTH") {
+                                bgColor = "background-color:#90ee90;color:#000;"; // light green
+                            }
+
                             return `
                                 <select class="form-select form-select-sm editable-select" 
                                         data-sku="${sku}" 
                                         data-field="FBA"
-                                        style="width: 90px;">
+                                        style="width: 90px; ${bgColor}">
                                     <option value="FBA" ${value === 'FBA' ? 'selected' : ''}>FBA</option>
                                     <option value="FBM" ${value === 'FBM' ? 'selected' : ''}>FBM</option>
                                     <option value="BOTH" ${value === 'BOTH' ? 'selected' : ''}>BOTH</option>
@@ -656,7 +681,7 @@
                 if (e.target.classList.contains("toggle-cols-btn")) {
                     let btn = e.target;
 
-                    let colsToToggle = ["INV", "L30", "DIL %", "A_L30", "A DIL %", "NRL", "NR", "FBA"];
+                    let colsToToggle = ["INV", "L30", "DIL %", "A_L30", "A DIL %", "NRL", "NRA", "FBA"];
 
                     colsToToggle.forEach(colName => {
                         let col = table.getColumn(colName);

@@ -1660,7 +1660,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayACOSController::class)->group(function () {
-        Route::get('/ebay-acos-control/data', 'index')->name('ebay.acos.index');
+        Route::get('/ebay-acos-control/list', 'index')->name('ebay.acos.index');
         Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
     });
 

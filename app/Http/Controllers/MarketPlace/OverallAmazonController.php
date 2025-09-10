@@ -230,7 +230,8 @@ class OverallAmazonController extends Controller
             $row['Ship_productmaster'] = $ship;
 
             // Default values
-            $row['NR'] = '';
+            $row['NRL'] = '';
+            $row['NRA'] = '';
             $row['FBA'] = null;
             $row['SPRICE'] = null;
             $row['Spft'] = null;
@@ -250,7 +251,8 @@ class OverallAmazonController extends Controller
                 }
 
                 if (is_array($raw)) {
-                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRL'] = $raw['NRL'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
                     $row['shopify_id'] = $shopify->id ?? null;
                     $row['SPRICE'] = $raw['SPRICE'] ?? null;
@@ -393,10 +395,17 @@ class OverallAmazonController extends Controller
         // Handle NR
         if ($nrInput) {
             $nr = is_array($nrInput) ? $nrInput : json_decode($nrInput, true);
-            if (!is_array($nr) || !isset($nr['NR'])) {
+
+            if (!is_array($nr)) {
                 return response()->json(['error' => 'Invalid NR format.'], 400);
             }
-            $existing['NR'] = $nr['NR'];
+
+            // Example: {NRL: "Low"} OR {NRA: "Approved"}
+            foreach ($nr as $key => $val) {
+                if (in_array($key, ['NRL', 'NRA'])) {
+                    $existing[$key] = $val;
+                }
+            }
         }
 
         // Handle FBA

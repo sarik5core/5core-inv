@@ -2495,7 +2495,7 @@
                                     is_parent: item['(Child) sku'] ? item['(Child) sku']
                                         .toUpperCase().includes("PARENT") : false,
                                     raw_data: item || {},
-                                    NR: item.NR !== undefined ? item.NR : '',
+                                    NRL: item.NRL !== undefined ? item.NRL : '',
                                     NRA: item.NRA !== undefined ? item.NRA : '',
                                     FBA: item.FBA !== undefined ? item.FBA : null,
                                     listed: listedVal,
@@ -2560,7 +2560,9 @@
                         is_parent: item['(Child) sku'] ? item['(Child) sku'].toUpperCase().includes(
                             "PARENT") : false,
                         raw_data: item || {},
-                        NR: item.NR || '',
+                        NRL: item.NRL !== undefined ? item.NRL : '',
+                        NRA: item.NRA !== undefined ? item.NRA : '',
+                        FBA: item.FBA !== undefined ? item.FBA : null,
                         Spend: item.Spend || 0,
                         listed: listedVal,
                         live: liveVal,
@@ -2660,9 +2662,9 @@
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if (item.NR === 'NRA') {
-                        $row.addClass('nr-hide');
-                    }
+                    // if (item.NRL === 'NRL') {
+                    //     $row.addClass('nr-hide');
+                    // }
 
                     // Helper functions for color coding
                     const getDilColor = (value) => {
@@ -2798,13 +2800,13 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RL' || item.NR === 'NRL' || item.NR === 'LATER') ?
-                            item.NR : 'RL';
+                        const currentNR = (item.NRL === 'RL' || item.NRL === 'NRL' || item.NRL === 'LATER') ?
+                            item.NRL : 'RL';
 
                         const $select = $(`
-                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NRL" ${currentNR === 'NRL' ? 'selected' : ''}>NRL</option>
+                            <select class="form-select form-select-sm nr-select" data-nr-type="NRL" style="min-width: 100px;">
                                 <option value="RL" ${currentNR === 'RL' ? 'selected' : ''}>RL</option>
+                                <option value="NRL" ${currentNR === 'NRL' ? 'selected' : ''}>NRL</option>
                             </select>
                         `);
 
@@ -2826,13 +2828,18 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NRA === 'RA' || item.NRA === 'NRA' || item.NRA === 'LATER') ?
+                        let currentNR = (item.NRA === 'RA' || item.NRA === 'NRA' || item.NRA === 'LATER') ?
                             item.NRA : 'RA';
 
+                        const adilPercent = Math.round(item['A Dil%'] * 100);
+                            if (adilPercent > 50) {
+                                currentNR = 'NRA';
+                            }
+
                         const $select = $(`
-                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
+                            <select class="form-select form-select-sm nr-select" data-nr-type="NRA" style="min-width: 100px;">
                                 <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
+                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
                                 <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
                             </select>
                         `);
@@ -3323,7 +3330,7 @@
                     const $select = $(this);
                     const sku = $(this).data('sku');
                     const nrValue = $(this).val();
-                    if (nrValue === 'NRA') {
+                    if (nrValue === 'NRL') {
                         $select.css('background-color', '#dc3545').css('color', '#ffffff');
                     } else {
                         $select.css('background-color', '#28a745').css('color', '#ffffff');
@@ -3334,22 +3341,24 @@
                         data: {
                             sku: sku,
                             nr: JSON.stringify({
-                                NR: nrValue
+                                [ $select.data('nr-type') ]: nrValue
                             }),
                             _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
                         },
                         success: function(res) {
                             showNotification('success', 'NR updated successfully');
 
+                            const nrType = $select.data('nr-type');
+
                             // Update tableData and filteredData correctly
                             tableData.forEach(item => {
                                 if (item['(Child) sku'] === sku) {
-                                    item.NR = nrValue;
+                                    item[nrType] = nrValue;
                                 }
                             });
                             filteredData.forEach(item => {
                                 if (item['(Child) sku'] === sku) {
-                                    item.NR = nrValue;
+                                    item[nrType] = nrValue;
                                 }
                             });
                             // Recalculate & re-render
