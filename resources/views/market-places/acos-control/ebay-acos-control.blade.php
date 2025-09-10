@@ -172,7 +172,7 @@
                                     <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
                                         APR ALL SBID
                                     </button>
-                                    <a href="javascript:void(0)" id="export-btn" class="btn btn-sm btn-success d-flex align-items-center justify-content-center">
+                                    <a href="javascript:void(0)" id="export-btn" class="btn btn-sm btn-success d-flex align-items-center justify-content-center d-none">
                                         <i class="fas fa-file-export me-1"></i> Export Excel/CSV
                                     </a>
                                     <button class="btn btn-success btn-md">
