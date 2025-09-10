@@ -24,7 +24,10 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\UpdateCampaignBid::class,
         \App\Console\Commands\AutoUpdateAmazonKwBids::class,
         \App\Console\Commands\AutoUpdateAmazonPtBids::class,
-        \App\Console\Commands\AutoUpdateAmazonHlBids::class
+        \App\Console\Commands\AutoUpdateAmazonHlBids::class,
+        \App\Console\Commands\AutoUpdateAmazonBgtKw::class,
+        \App\Console\Commands\AutoUpdateAmazonBgtPt::class,
+        \App\Console\Commands\AutoUpdateAmazonBgtHl::class,
     ];
 
     /**
@@ -124,6 +127,15 @@ class Kernel extends ConsoleKernel
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-over-hl-bids')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-amz-bgt-kw')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-amz-bgt-pt')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-amz-bgt-hl')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();

@@ -108,6 +108,7 @@
                             </div>
                         </li>
 
+<<<<<<< HEAD
                         <li>
                             <a href="{{ route('mfrg.in.progress') }}">MFRG In Progress</a>
                         </li>
@@ -141,6 +142,104 @@
                     </ul>
                 </div>
             </li>
+=======
+            @if ($hasPurchaseMasters)
+                <li class="side-nav-item">
+                    <a data-bs-toggle="collapse" href="#suppliers" aria-expanded="false" aria-controls="suppliers"
+                        class="side-nav-link">
+                        <i class="ri-group-line"></i>
+                        <span>Purchase Master</span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="suppliers">
+                        <ul class="side-nav-second-level">
+                            @if (isset($permissions['purchase_master_categories']) && in_array('view', $permissions['purchase_master_categories']))
+                                <li>
+                                    <a href="{{ route('category.list') }}">Categories</a>
+                                </li>
+                            @endif
+                            @if (isset($permissions['purchase_master_suppliers']) && in_array('view', $permissions['purchase_master_suppliers']))
+                                <li>
+                                    <a href="{{ route('supplier.list') }}">Suppliers</a>
+                                </li>
+                            @endif
+                            <li>
+                                <a href="{{ route('claim.reimbursement') }}">Claims & Reimbursements</a>
+                            </li>
+                            @if (isset($permissions['forecast_analysis']) && in_array('view', $permissions['forecast_analysis']))
+                                <li>
+                                    <a href="{{ route('forecast.analysis') }}">Forecast Analysis</a>
+                                </li>
+                            @endif
+                            @if (isset($permissions['to_order_analysis']) && in_array('view', $permissions['to_order_analysis']))
+                                <li>
+                                    <a href="{{ route('to.order.analysis') }}">To Order Analysis</a>
+                                </li>
+                            @endif
+                            <li>
+                                <a href="{{ route('list-all-purchase-orders') }}">Purchase Contract</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('purchase.index') }}">Purchase</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('sourcing.index') }}">Sourcing</a>
+                            </li>
+                            <li class="side-nav-item">
+                                <a data-bs-toggle="collapse" href="#ledger" aria-expanded="false"
+                                    aria-controls="ledger">
+                                    <span>Ledger</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="ledger">
+                                    <ul class="side-nav-third-level">
+                                        <li>
+                                            <a href="{{ route('ledger.advance.payments') }}">Advance & Payments</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('supplier.ledger') }}">Supplier Ledger</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            @if (isset($permissions['purchase_master_mfrg_in_progress']) &&
+                                    in_array('view', $permissions['purchase_master_mfrg_in_progress']))
+                                <li>
+                                    <a href="{{ route('mfrg.in.progress') }}">MFRG In Progress</a>
+                                </li>
+                            @endif
+                            <li>
+                                <a href="{{ route('ready.to.ship') }}">Ready To Ship</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('china.load') }}">China Load</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('transit.container.details') }}">Transit Container INV</a>
+                            </li>
+                            {{-- <li>
+                                <a href="{{ route('transit.container.changes') }}">Transit Container Changes</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('transit.container.new') }}">Transit Container New</a>
+                            </li> --}}
+                            <li>
+                                <a href="{{ route('container.planning') }}">Container Planning</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('on.sea.transit') }}">On Sea Transit</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('on.road.transit') }}">On Road Transit</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('quality.enhance') }}">Quality Enhance</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            @endif
+>>>>>>> 3eababa84a77a4ab1a4c9a6a16f56788ae0f5a11
 
 
             <li class="side-nav-item">
