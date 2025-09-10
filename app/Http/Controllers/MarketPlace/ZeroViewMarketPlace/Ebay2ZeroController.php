@@ -57,8 +57,8 @@ class Ebay2ZeroController extends Controller
 
               // Only include rows where inv > 0, SKU exists in Ebay3Metric, and views == 0
             if ($inv > 0 && isset($ebayMetrics[$sku])) {
-                $views = $ebayMetrics[$sku]->views;
-                if ($views !== null && intval($views) === 0 || $views === '') {
+                $views = $ebayMetrics[$sku]->views ?? null;
+                if ($views !== null && intval($views) === 0) {
 
                     // Fetch DobaDataView values
                     $dobaView = $ebay2DataViews[$sku] ?? null;
@@ -250,8 +250,15 @@ class Ebay2ZeroController extends Controller
 
             // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
             $views = $ebayMetrics[$sku]->views ?? null;
-            if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
-                $zeroViewCount++;
+            // if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
+            //     $zeroViewCount++;
+            // }
+            if ($inv > 0) {
+                if ($views === null) {
+                    // Do nothing, ignore null
+                } elseif (intval($views) === 0) {
+                    $zeroViewCount++;
+                }
             }
         }
 

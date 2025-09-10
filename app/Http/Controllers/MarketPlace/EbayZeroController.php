@@ -287,8 +287,15 @@ class EbayZeroController extends Controller
 
             // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
             $views = $ebayMetrics[$sku]->views ?? null;
-            if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
-                $zeroViewCount++;
+            // if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
+            //     $zeroViewCount++;
+            // }
+            if ($inv > 0) {
+                if ($views === null) {
+                    // Do nothing, ignore null
+                } elseif (intval($views) === 0) {
+                    $zeroViewCount++;
+                }
             }
         }
 
