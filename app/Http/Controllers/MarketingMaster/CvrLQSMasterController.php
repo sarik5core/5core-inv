@@ -532,5 +532,58 @@ class CvrLQSMasterController extends Controller
     }
 
 
+    public function getPendingCount()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $statusData = CvrLqs::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $reqCount = 0;
+        $nrCount = 0;
+        $listedCount = 0;
+        $pendingCount = 0;
+
+        foreach ($productMasters as $item) {
+            $sku = trim($item->sku);
+            $inv = $shopifyData[$sku]->inv ?? 0;
+            $isParent = stripos($sku, 'PARENT') !== false;
+
+            if ($isParent || floatval($inv) <= 0) continue;
+
+            $status = $statusData[$sku]->value ?? null;
+            if (is_string($status)) {
+                $status = json_decode($status, true);
+            }
+            // dd($status);
+
+            // NR/REQ logic
+            // $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            // if ($nrReq === 'REQ') {
+            //     $reqCount++;
+            // } elseif ($nrReq === 'NR') {
+            //     $nrCount++; 
+            // }
+
+            // Listed/Pending logic
+            $listed = $status['Processed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Processed');
+            if ($listed === 'Processed') {
+                $listedCount++;
+            } elseif ($listed === 'Pending') {
+                $pendingCount++;
+            }
+        }
+
+        return [
+            // 'NR'  => $nrCount,
+            // 'REQ' => $reqCount,
+            'Listed' => $listedCount,
+            'Pending' => $pendingCount,
+        ];
+    }
+
+
+
 
 }

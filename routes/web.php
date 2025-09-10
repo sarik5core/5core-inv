@@ -211,6 +211,7 @@ use App\Http\Controllers\PurchaseMaster\QualityEnhanceController;
 use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
 use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
+use App\Http\Controllers\MarketingMaster\OverallCvrLqsController;
 
 /*  
 |--------------------------------------------------------------------------
@@ -1429,6 +1430,15 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing-master-counts', [ListingMasterController::class, 'getListingMasterCountsViews']);
     Route::post('/listing-master-counts-data', [ListingMasterController::class, 'getMarketplacesData']);
     Route::delete('/listing-master/{marketplace}', [ListingMasterController::class, 'destroy'])->name('listing-master.destroy');
+
+
+    //overall cvr-lqs
+    Route::get('/overall-lqs-cvr', [OverallCvrLqsController::class, 'index'])->name('overallLqsCvr');
+    Route::get('/lqs-cvr-data', [OverallCvrLqsController::class, 'getCvrLqsData']);
+
+    // Route::get('/listing-master-counts', [OverallCvrLqsController::class, 'getListingMasterCountsViews']);
+    // Route::post('/listing-master-counts-data', [OverallCvrLqsController::class, 'getMarketplacesData']);
+    Route::delete('/listing-master/{marketplace}', [OverallCvrLqsController::class, 'destroy'])->name('listing-master.destroy');
 
     // MM video posted route
     Route::controller(VideoPostedController::class)->group(function () {
