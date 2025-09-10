@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MarketPlace\ZeroViewMarketPlace;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ebay3Metric;
+use App\Models\EbayListingStatus;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use App\Models\EbayThreeDataView;
@@ -53,8 +54,8 @@ class Ebay3ZeroController extends Controller
 
             // Only include rows where inv > 0, SKU exists in Ebay3Metric, and views == 0
             if ($inv > 0 && isset($ebayMetrics[$sku])) {
-                $views = $ebayMetrics[$sku]->views ?? 0;
-                if ($views !== null && intval($views) === 0 || $views === '') {
+                $views = $ebayMetrics[$sku]->views ?? null;
+                if ($views !== null && intval($views) === 0) {
 
                     // Fetch DobaDataView values
                     $dobaView = $ebay3DataViews[$sku] ?? null;
@@ -190,7 +191,7 @@ class Ebay3ZeroController extends Controller
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebayDataViews = EbayThreeListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayMetrics = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayMetrics = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
 
         $listedCount = 0;
         $zeroInvOfListed = 0;
@@ -225,8 +226,15 @@ class Ebay3ZeroController extends Controller
 
             // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
             $views = $ebayMetrics[$sku]->views ?? null;
-            if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
-                $zeroViewCount++;
+            // if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
+            //     $zeroViewCount++;
+            // }
+            if ($inv > 0) {
+                if ($views === null) {
+                    // Do nothing, ignore null
+                } elseif (intval($views) === 0) {
+                    $zeroViewCount++;
+                }
             }
         }
 
@@ -238,6 +246,78 @@ class Ebay3ZeroController extends Controller
             'zero_view' => $zeroViewCount,
         ];
     }
+
+
+    // public function getLivePendingAndZeroViewCounts()
+    // {
+    //     $productMasters = ProductMaster::whereNull('deleted_at')->get();
+    //     $skus = $productMasters->pluck('sku')->unique()->toArray();
+
+    //     $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+    //     $ebayDataViews = EbayThreeListingStatus::whereIn('sku', $skus)->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+    //     $ebayMetrics = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+
+    //     $listedCount = 0;
+    //     $zeroInvOfListed = 0;
+    //     $liveCount = 0;
+    //     $zeroViewCount = 0;
+
+    //     foreach ($productMasters as $item) {
+    //         $sku = strtoupper(trim($item->sku));
+    //         $inv = $shopifyData[$sku]->inv ?? 0;
+    //         $isParent = stripos($sku, 'PARENT') !== false;
+    //         if ($isParent) continue;
+
+    //         $originalSku = trim($item->sku);
+    //         $sku = strtoupper($originalSku);
+
+    //         if ($originalSku === 'GRack 7N1') {
+    //             dd([
+    //                 'originalSku'  => $originalSku,
+    //                 'lookupKey'    => $sku,
+    //                 'inv'          => $inv,
+    //                 'metric_entry' => $ebayMetrics[$sku] ?? null,
+    //                 'views'        => $ebayMetrics[$sku]->views ?? null,
+    //             ]);
+    //         }
+
+    //         $status = $ebayDataViews[$sku]->value ?? null;
+    //         if (is_string($status)) {
+    //             $status = json_decode($status, true);
+    //         }
+    //         $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+    //         $live = $status['live'] ?? null;
+
+    //         // Listed count (for live pending)
+    //         if ($listed === 'Listed') {
+    //             $listedCount++;
+    //             if (floatval($inv) <= 0) {
+    //                 $zeroInvOfListed++;
+    //             }
+    //         }
+
+    //         // Live count
+    //         if ($live === 'Live') {
+    //             $liveCount++;
+    //         }
+
+    //         // Zero view: INV > 0, views == 0
+    //         $views = $ebayMetrics[$sku]->views ?? null;
+    //         if (floatval($inv) > 0 && $views !== null && intval($views) === 0) {
+    //             $zeroViewCount++;
+    //         }
+    //     }
+
+    //     // live pending = listed - 0-inv of listed - live
+    //     $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+
+    //     return [
+    //         // 'live'    => $liveCount,
+    //         'live_pending' => $livePending,
+    //         'zero_view'    => $zeroViewCount,
+    //     ];
+    // }
+
 
     
 }
