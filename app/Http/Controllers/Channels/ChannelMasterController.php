@@ -1567,8 +1567,7 @@ class ChannelMasterController extends Controller
             'NR'         => $channelData->nr ?? 0,
             'Update'     => $channelData->update ?? 0,
         ];
-        dd($result);
-
+        
         return response()->json([
             'status' => 200,
             'message' => 'Walmart channel data fetched successfully',
