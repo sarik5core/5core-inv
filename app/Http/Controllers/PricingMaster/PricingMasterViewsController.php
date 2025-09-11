@@ -14,7 +14,7 @@ use App\Models\AmazonListingStatus;
 use App\Models\EbayListingStatus;
 use App\Models\EbayTwoListingStatus;
 use App\Models\EbayThreeListingStatus;
-use App\Models\Shopifyb2cListingStatus;
+use App\Models\ShopifyB2CListingStatus;
 use App\Models\DobaListingStatus;
 use App\Models\AmazonDatasheet;
 use App\Models\AmazonDataView;
