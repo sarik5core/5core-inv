@@ -502,9 +502,17 @@
             table.on("tableBuilt", function() {
 
                 function combinedFilter(data) {
-                    var acos = parseFloat(data.acos || 0);
+                    let acos = parseFloat(data.acos || 0);
+                    let l7_spend = parseFloat(data.l7_spend) || 0;
+                    let l1_spend = parseFloat(data.l1_spend) || 0;
+                    let budget = parseFloat(data.campaignBudgetAmount) || 0;
 
-                    if (!(acos > 14)) return false;
+                    let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
+                    let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
+
+                    if (!(acos > 14 && ub7 < 10 && ub1 < 10)) {
+                        return false;
+                    }
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {

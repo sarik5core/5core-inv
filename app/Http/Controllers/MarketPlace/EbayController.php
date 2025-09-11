@@ -275,6 +275,7 @@ class EbayController extends Controller
             $row["eBay Price"] = $ebayMetric->ebay_price ?? 0;
             $row['price_lmpa'] = $ebayMetric->price_lmpa ?? null;
             $row['eBay_item_id'] = $ebayMetric->item_id ?? null;
+            $row['ebay_views'] = $ebayMetric->views ?? 0;
 
             $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
                 ? round(($row["eBay L30"] / $row["INV"]), 2)
@@ -322,9 +323,6 @@ class EbayController extends Controller
             if ($ebayMetric && isset($extraClicksData[$ebayMetric->item_id])) {
                 $row["PmtClkL30"] += (int) $extraClicksData[$ebayMetric->item_id];
             }
-
-            // Log for debugging
-            \Illuminate\Support\Facades\Log::info("PmtClkL30 for SKU {$sku}: " . $row["PmtClkL30"]);
 
             // New Tacos Formula
             $generalSpent = $adMetricsBySku[$sku]['L30']['GENERAL_SPENT'] ?? 0;
