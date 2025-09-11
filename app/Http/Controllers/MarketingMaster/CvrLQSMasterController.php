@@ -45,214 +45,222 @@ class CvrLQSMasterController extends Controller
         ]);
     }
 
-    public function getViewCvrData(Request $request)
-    {
-        // 1. Fetch all ProductMaster rows (base)
-        $productMasters = ProductMaster::orderBy('parent', 'asc')
-            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
-            ->orderBy('sku', 'asc')
-            ->get();
+        public function getViewCvrData(Request $request)
+        {
+            // 1. Fetch all ProductMaster rows (base)
+            $productMasters = ProductMaster::orderBy('parent', 'asc')
+                ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+                ->orderBy('sku', 'asc')
+                ->get();
 
-        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+            $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
 
-        // 2. Fetch AmazonDatasheet and ShopifySku for those SKUs
-        $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-            return strtoupper($item->sku);
-        });
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+            // 2. Fetch AmazonDatasheet and ShopifySku for those SKUs
+            $amazonDatasheetsBySku = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+                return strtoupper($item->sku);
+            });
+            $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        // 3. Fetch API data (Google Sheet)
-        $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
-        $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
-        // Index API data by SKU (case-insensitive)
-        $apiDataBySku = [];
-        foreach ($apiDataArr as $item) {
-            $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
-            if ($sku)
-                $apiDataBySku[$sku] = $item;
-        }
+            // 3. Fetch API data (Google Sheet)
+            // $response = $this->apiController->fetchDataFromAmazonGoogleSheet();
+            // $apiDataArr = ($response->getStatusCode() === 200) ? ($response->getData()->data ?? []) : [];
+            // // Index API data by SKU (case-insensitive)
+            // $apiDataBySku = [];
+            // foreach ($apiDataArr as $item) {
+            //     $sku = isset($item->{'(Child) sku'}) ? strtoupper(trim($item->{'(Child) sku'})) : null;
+            //     if ($sku)
+            //         $apiDataBySku[$sku] = $item;
+            // }
 
-        // 4. JungleScout Data (by parent)
-        $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
-        // JungleScout Data
-        $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
-            ->get()
-            ->groupBy(function ($item) {
-                return strtoupper(trim($item->parent));
-            })
-            ->map(function ($group) {
-                $validPrices = $group->filter(function ($item) {
-                    $data = is_array($item->data) ? $item->data : [];
-                    $price = $data['price'] ?? null;
-                    return is_numeric($price) && $price > 0;
-                })->pluck('data.price');
-
-                return [
-                    'scout_parent' => $group->first()->parent,
-                    'min_price' => $validPrices->isNotEmpty() ? $validPrices->min() : null,
-                    'product_count' => $group->count(),
-                    'all_data' => $group->map(function ($item) {
+            // 4. JungleScout Data (by parent)
+            $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
+            // JungleScout Data
+            $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
+                ->get()
+                ->groupBy(function ($item) {
+                    return strtoupper(trim($item->parent));
+                })
+                ->map(function ($group) {
+                    $validPrices = $group->filter(function ($item) {
                         $data = is_array($item->data) ? $item->data : [];
-                        if (isset($data['price'])) {
-                            $data['price'] = is_numeric($data['price']) ? (float) $data['price'] : null;
-                        }
-                        return $data;
-                    })->toArray()
-                ];
+                        $price = $data['price'] ?? null;
+                        return is_numeric($price) && $price > 0;
+                    })->pluck('data.price');
+
+                    return [
+                        'scout_parent' => $group->first()->parent,
+                        'min_price' => $validPrices->isNotEmpty() ? $validPrices->min() : null,
+                        'product_count' => $group->count(),
+                        'all_data' => $group->map(function ($item) {
+                            $data = is_array($item->data) ? $item->data : [];
+                            if (isset($data['price'])) {
+                                $data['price'] = is_numeric($data['price']) ? (float) $data['price'] : null;
+                            }
+                            return $data;
+                        })->toArray()
+                    ];
+                });
+
+            // 5. NR values
+            $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+            // 6. Marketplace percentage
+            $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
+                return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
+            });
+            $percentage = $percentage / 100;
+
+            // 7. Fetch all listing_lqs actions by SKU
+            $lqsActions = CvrLqs::all()->keyBy(function($item) {
+                return strtoupper($item->sku);
             });
 
-        // 5. NR values
-        $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+            // $lqsActions = ListingLqs::all()->keyBy(function ($item) {
+            //     return strtoupper($item->sku);
+            // });
 
-        // 6. Marketplace percentage
-        $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
-            return MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
-        });
-        $percentage = $percentage / 100;
+            // 8. Build final data
+            $result = [];
+            foreach ($productMasters as $pm) {
+                $sku = strtoupper($pm->sku);
+                $parent = $pm->parent;
+                $apiItem = $apiDataBySku[$sku] ?? null;
+                $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
+                $shopify = $shopifyData[$pm->sku] ?? null;
 
-        // 7. Fetch all listing_lqs actions by SKU
-        $lqsActions = CvrLqs::all()->keyBy(function($item) {
-            return strtoupper($item->sku);
-        });
+                // Merge API data into base row if exists
+                $row = [];
+                $row['Parent'] = $parent;
+                $row['(Child) sku'] = $pm->sku;
 
-        // $lqsActions = ListingLqs::all()->keyBy(function ($item) {
-        //     return strtoupper($item->sku);
-        // });
-
-        // 8. Build final data
-        $result = [];
-        foreach ($productMasters as $pm) {
-            $sku = strtoupper($pm->sku);
-            $parent = $pm->parent;
-            $apiItem = $apiDataBySku[$sku] ?? null;
-            $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
-            $shopify = $shopifyData[$pm->sku] ?? null;
-
-            // Merge API data into base row if exists
-            $row = [];
-            $row['Parent'] = $parent;
-            $row['(Child) sku'] = $pm->sku;
-
-            // Merge API fields if available
-            if ($apiItem) {
-                foreach ($apiItem as $k => $v) {
-                    $row[$k] = $v;
-                }
-            }
-
-            // Add AmazonDatasheet fields if available
-            if ($amazonSheet) {
-                $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
-                $row['Sess30'] = $row['Sess30'] ?? $amazonSheet->sessions_l30;
-                $row['price'] = $row['price'] ?? $amazonSheet->price;
-                $row['sessions_l60'] = $row['sessions_l60'] ?? $amazonSheet->sessions_l60;
-                $row['units_ordered_l60'] = $row['units_ordered_l60'] ?? $amazonSheet->units_ordered_l60;
-            }
-
-            // Add Shopify fields if available
-            $row['INV'] = $shopify->inv ?? 0;
-            $row['L30'] = $shopify->quantity ?? 0;
-
-            // LP and Ship from ProductMaster
-            $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
-            $lp = 0;
-            foreach ($values as $k => $v) {
-                if (strtolower($k) === 'lp') {
-                    $lp = floatval($v);
-                    break;
-                }
-            }
-            if ($lp === 0 && isset($pm->lp)) {
-                $lp = floatval($pm->lp);
-            }
-            $ship = isset($values['ship']) ? floatval($values['ship']) : (isset($pm->ship) ? floatval($pm->ship) : 0);
-
-            // Formulas
-            $price = isset($row['price']) ? floatval($row['price']) : 0;
-            $units_ordered_l30 = isset($row['A_L30']) ? floatval($row['A_L30']) : 0;
-            $row['Total_pft'] = round((($price * $percentage) - $lp - $ship) * $units_ordered_l30, 2);
-            $row['T_Sale_l30'] = round($price * $units_ordered_l30, 2);
-            $row['PFT_percentage'] = round($price > 0 ? ((($price * $percentage) - $lp - $ship) / $price) * 100 : 0, 2);
-            $row['ROI_percentage'] = round($lp > 0 ? ((($price * $percentage) - $lp - $ship) / $lp) * 100 : 0, 2);
-            $row['T_COGS'] = round($lp * $units_ordered_l30, 2);
-
-            // JungleScout
-            $parentKey = strtoupper($parent);
-            if (!empty($parentKey) && $jungleScoutData->has($parentKey)) {
-                $row['scout_data'] = $jungleScoutData[$parentKey];
-            }
-
-            $jungleSkuData = JungleScoutProductData::where('sku', $pm->sku)->latest()->first();
-
-            if ($jungleSkuData && isset($jungleSkuData->data['listing_quality_score'])) {
-                $row['lqs_jungle'] = floatval($jungleSkuData->data['listing_quality_score']);
-            } else {
-                $row['lqs_jungle'] = null;
-            }
-
-            // Percentage, LP, Ship
-            $row['percentage'] = $percentage;
-            $row['LP_productmaster'] = $lp;
-            $row['Ship_productmaster'] = $ship;
-
-            // NR value
-            // $row['NR'] = false;
-            $row['NR'] = 'REQ';
-            if (isset($nrValues[$pm->sku])) {
-                $raw = $nrValues[$pm->sku];
-                
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
+                // Merge API fields if available
+                if ($apiItem) {
+                    foreach ($apiItem as $k => $v) {
+                        $row[$k] = $v;
+                    }
                 }
 
-                if (is_array($raw)) {
-                    // $row['NR'] = filter_var($raw['NR'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                    $row['NR'] = isset($raw['NR']) && in_array($raw['NR'], ['REQ', 'NR']) ? $raw['NR'] : 'REQ';
+                // Add AmazonDatasheet fields if available
+                if ($amazonSheet) {
+                    $row['A_L30'] = $row['A_L30'] ?? $amazonSheet->units_ordered_l30;
+                    $row['Sess30'] = $row['Sess30'] ?? $amazonSheet->sessions_l30;
+                    $row['price'] = $row['price'] ?? $amazonSheet->price;
+                    $row['sessions_l60'] = $row['sessions_l60'] ?? $amazonSheet->sessions_l60;
+                    $row['units_ordered_l60'] = $row['units_ordered_l60'] ?? $amazonSheet->units_ordered_l60;
+                }
+
+                // Add Shopify fields if available
+                $row['INV'] = $shopify->inv ?? 0;
+                $row['L30'] = $shopify->quantity ?? 0;
+
+                // LP and Ship from ProductMaster
+                $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+                $lp = 0;
+                foreach ($values as $k => $v) {
+                    if (strtolower($k) === 'lp') {
+                        $lp = floatval($v);
+                        break;
+                    }
+                }
+                if ($lp === 0 && isset($pm->lp)) {
+                    $lp = floatval($pm->lp);
+                }
+                $ship = isset($values['ship']) ? floatval($values['ship']) : (isset($pm->ship) ? floatval($pm->ship) : 0);
+
+                // Formulas
+                $price = isset($row['price']) ? floatval($row['price']) : 0;
+                $units_ordered_l30 = isset($row['A_L30']) ? floatval($row['A_L30']) : 0;
+                $row['Total_pft'] = round((($price * $percentage) - $lp - $ship) * $units_ordered_l30, 2);
+                $row['T_Sale_l30'] = round($price * $units_ordered_l30, 2);
+                $row['PFT_percentage'] = round($price > 0 ? ((($price * $percentage) - $lp - $ship) / $price) * 100 : 0, 2);
+                $row['ROI_percentage'] = round($lp > 0 ? ((($price * $percentage) - $lp - $ship) / $lp) * 100 : 0, 2);
+                $row['T_COGS'] = round($lp * $units_ordered_l30, 2);
+
+                // JungleScout
+                $parentKey = strtoupper($parent);
+                if (!empty($parentKey) && $jungleScoutData->has($parentKey)) {
+                    $row['scout_data'] = $jungleScoutData[$parentKey];
+                }
+
+                $jungleSkuData = JungleScoutProductData::where('sku', $pm->sku)->latest()->first();
+
+                if ($jungleSkuData && isset($jungleSkuData->data['listing_quality_score'])) {
+                    $row['lqs_jungle'] = floatval($jungleSkuData->data['listing_quality_score']);
                 } else {
-                    $decoded = json_decode($raw, true);
-                    // $row['NR'] = filter_var($decoded['NR'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                    $row['NR'] = isset($raw['NR']) && in_array($raw['NR'], ['REQ', 'NR']) ? $raw['NR'] : 'REQ';
+                    $row['lqs_jungle'] = null;
                 }
+
+                // Percentage, LP, Ship
+                $row['percentage'] = $percentage;
+                $row['LP_productmaster'] = $lp;
+                $row['Ship_productmaster'] = $ship;
+
+                // NR value
+                // $row['NR'] = false;
+                $row['NR'] = 'REQ';
+                if (isset($nrValues[$pm->sku])) {
+                    $raw = $nrValues[$pm->sku];
+                    
+                    if (!is_array($raw)) {
+                        $raw = json_decode($raw, true);
+                    }
+
+                    if (is_array($raw)) {
+                        // $row['NR'] = filter_var($raw['NR'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                        $row['NR'] = isset($raw['NR']) && in_array($raw['NR'], ['REQ', 'NR']) ? $raw['NR'] : 'REQ';
+                    } else {
+                        $decoded = json_decode($raw, true);
+                        // $row['NR'] = filter_var($decoded['NR'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                        $row['NR'] = isset($raw['NR']) && in_array($raw['NR'], ['REQ', 'NR']) ? $raw['NR'] : 'REQ';
+                    }
+                }
+
+                // Image path (from Shopify or ProductMaster)
+                $row['image_path'] = $shopify->image_src ?? ($values['image_path'] ?? null);
+
+                // Add action from listing_lqs if exists
+                $row['action'] = '';
+                if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['action'])) {
+                    $row['action'] = $lqsActions[$sku]->value['action'];
+                }
+
+                $row['listing_quality_score'] = '';
+                if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['listing_quality_score'])) {
+                    $row['listing_quality_score'] = $lqsActions[$sku]->value['listing_quality_score'];
+                }
+
+                $row['listing_quality_score_c'] = '';
+                if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['listing_quality_score_c'])) {
+                    $row['listing_quality_score_c'] = $lqsActions[$sku]->value['listing_quality_score_c'];
+                }
+
+                $row['link'] = '';
+                if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['link'])) {
+                    $row['link'] = $lqsActions[$sku]->value['link'];
+                }
+
+                $row['status'] = '';
+                if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['status'])) {
+                    $row['status'] = $lqsActions[$sku]->value['status'];
+                }
+
+                // Skip parent and inv <= 0 (align with getPendingCount)
+                if (stripos($pm->sku, 'PARENT') !== false) {
+                    continue;
+                }
+                if (floatval($shopify->inv ?? 0) <= 0) {
+                    continue;
+                }
+
+                $result[] = (object) $row;
             }
 
-            // Image path (from Shopify or ProductMaster)
-            $row['image_path'] = $shopify->image_src ?? ($values['image_path'] ?? null);
-
-            // Add action from listing_lqs if exists
-            $row['action'] = '';
-            if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['action'])) {
-                $row['action'] = $lqsActions[$sku]->value['action'];
-            }
-
-            $row['listing_quality_score'] = '';
-            if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['listing_quality_score'])) {
-                $row['listing_quality_score'] = $lqsActions[$sku]->value['listing_quality_score'];
-            }
-
-            $row['listing_quality_score_c'] = '';
-            if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['listing_quality_score_c'])) {
-                $row['listing_quality_score_c'] = $lqsActions[$sku]->value['listing_quality_score_c'];
-            }
-
-            $row['link'] = '';
-            if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['link'])) {
-                $row['link'] = $lqsActions[$sku]->value['link'];
-            }
-
-            $row['status'] = '';
-            if (isset($lqsActions[$sku]) && isset($lqsActions[$sku]->value['status'])) {
-                $row['status'] = $lqsActions[$sku]->value['status'];
-            }
-
-            $result[] = (object) $row;
+            return response()->json([
+                'message' => 'Data fetched successfully',
+                'data' => $result,
+                'status' => 200,
+            ]);
         }
-
-        return response()->json([
-            'message' => 'Data fetched successfully',
-            'data' => $result,
-            'status' => 200,
-        ]);
-    }
 
     // public function saveAction(Request $request)
     // {
@@ -541,7 +549,6 @@ class CvrLQSMasterController extends Controller
         $statusData = CvrLqs::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $reqCount = 0;
-        $nrCount = 0;
         $listedCount = 0;
         $pendingCount = 0;
 
@@ -556,28 +563,27 @@ class CvrLQSMasterController extends Controller
             if (is_string($status)) {
                 $status = json_decode($status, true);
             }
-            // dd($status);
 
-            // NR/REQ logic
-            // $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
-            // if ($nrReq === 'REQ') {
-            //     $reqCount++;
-            // } elseif ($nrReq === 'NR') {
-            //     $nrCount++; 
-            // }
-
-            // Listed/Pending logic
-            $listed = $status['Processed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Processed');
-            if ($listed === 'Processed') {
-                $listedCount++;
-            } elseif ($listed === 'Pending') {
-                $pendingCount++;
+            $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            $rowStatus = $status['status'] ?? null;
+            
+            if ($nrReq === 'REQ') {
+                $reqCount++;
             }
+
+            // if ($nrReq !== 'NR') {
+                if ($rowStatus === 'Processed') {
+                    $listedCount++;
+                } elseif ($rowStatus === 'Pending' || empty($rowStatus)) {
+                    $pendingCount++;
+                }
+            // }
+           
         }
 
         return [
             // 'NR'  => $nrCount,
-            // 'REQ' => $reqCount,
+            'REQ' => $reqCount,
             'Listed' => $listedCount,
             'Pending' => $pendingCount,
         ];

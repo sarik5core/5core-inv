@@ -165,6 +165,7 @@ use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
 use App\Http\Controllers\Campaigns\EbayPinkDilAdController;
+use App\Http\Controllers\Campaigns\EbayPMPAdsController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
 use App\Http\Controllers\PurchaseMaster\PurchaseController;
@@ -1691,6 +1692,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::controller(EbayPinkDilAdController::class)->group(function(){
         Route::get('/ebay/pink-dil/ads', 'index')->name('ebay.pink.dil.ads');
         Route::get('/ebay/pink-dil/ads/data','getEbayPinkDilAdsData');
+    });
+
+    Route::controller(EbayPMPAdsController::class)->group(function(){
+        Route::get('/ebay/pmp/ads', 'index')->name('ebay.pmp.ads');
+        Route::get('/ebay/pmp/ads/data','getEbayPmpAdsData');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);

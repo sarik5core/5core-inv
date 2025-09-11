@@ -346,7 +346,6 @@ class EbayCvrLqsController extends Controller
         $statusData = EbayCvrLqs::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $reqCount = 0;
-        $nrCount = 0;
         $listedCount = 0;
         $pendingCount = 0;
 
@@ -361,28 +360,26 @@ class EbayCvrLqsController extends Controller
             if (is_string($status)) {
                 $status = json_decode($status, true);
             }
-            // dd($status);
 
-            // NR/REQ logic
-            // $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
-            // if ($nrReq === 'REQ') {
-            //     $reqCount++;
-            // } elseif ($nrReq === 'NR') {
-            //     $nrCount++; 
-            // }
-
-            // Listed/Pending logic
-            $listed = $status['Processed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Processed');
-            if ($listed === 'Processed') {
-                $listedCount++;
-            } elseif ($listed === 'Pending') {
-                $pendingCount++;
+            $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            $rowStatus = $status['status'] ?? null;
+            
+            if ($nrReq === 'REQ') {
+                $reqCount++;
             }
+
+            // if ($nrReq !== 'NR') {
+                if ($rowStatus === 'Processed') {
+                    $listedCount++;
+                } elseif ($rowStatus === 'Pending' || empty($rowStatus)) {
+                    $pendingCount++;
+                }
+            // }
+           
         }
 
         return [
-            // 'NR'  => $nrCount,
-            // 'REQ' => $reqCount,
+            'REQ' => $reqCount,
             'Listed' => $listedCount,
             'Pending' => $pendingCount,
         ];

@@ -536,7 +536,7 @@
                 if (e.target.classList.contains("toggle-cols-btn")) {
                     let btn = e.target;
 
-                    let colsToToggle = ["INV", "L30", "DIL %", "NR"];
+                    let colsToToggle = ["INV", "L30", "DIL %", "E DIL %", "NR"];
 
                     colsToToggle.forEach(colName => {
                         let col = table.getColumn(colName);
