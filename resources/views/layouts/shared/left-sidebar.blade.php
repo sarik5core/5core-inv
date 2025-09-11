@@ -1336,6 +1336,9 @@
                                         <a href="{{ route('ebay.pink.dil.ads') }}">Ebay Pink Dil Ads</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('ebay.pmp.ads') }}">Ebay PMP Ads</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
                                     </li>
                                     <li>
