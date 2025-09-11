@@ -63,13 +63,13 @@ return [
             ]) : [],
         ],
 
-            'api_central' => [   // new DB
+            'apicentral' => [
             'driver' => 'mysql',
-            'host' => env('DB_API_CENTRAL_HOST', '127.0.0.1'),
-            'port' => env('DB_API_CENTRAL_PORT', '3306'),
-            'database' => env('DB_API_CENTRAL_DATABASE', 'forge'),
-            'username' => env('DB_API_CENTRAL_USERNAME', 'forge'),
-            'password' => env('DB_API_CENTRAL_PASSWORD', ''),
+            'host' => env('DB_APICENTRAL_HOST', '127.0.0.1'),
+            'port' => env('DB_APICENTRAL_PORT', '3306'),
+            'database' => env('DB_APICENTRAL_DATABASE', 'api_central'),
+            'username' => env('DB_APICENTRAL_USERNAME', 'root'),
+            'password' => env('DB_APICENTRAL_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
