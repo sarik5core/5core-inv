@@ -1821,12 +1821,15 @@
                                 metrics.withoutLinkTotal++;
                             }
                             // Count Listed and Pending rows
-                            if (item.listed === 'Listed') {
-                                metrics.listedTotal++;
+                            if (item.nr_req !== 'NR') {
+                                if (item.listed === 'Listed') {
+                                    metrics.listedTotal++;
+                                }
+                                if (item.listed === 'Pending' || !item.listed) {
+                                    metrics.pendingTotal++;
+                                }
                             }
-                            if (item.listed === 'Pending' || !item.listed) {
-                                metrics.pendingTotal++;
-                            }
+
                         }
                     });
 

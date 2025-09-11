@@ -1040,6 +1040,7 @@
                                         <li>
                                             <a href="{{ route('overallLqsCvr') }}">OverAll LQS - CVR</a>
                                         </li>
+                                        
                                         @if (isset($permissions['listing_LQS_masters']) && in_array('view', $permissions['listing_LQS_masters']))
                                             <li>
                                                 <a href="{{ route('listingLQS.master') }}">LQS - Listing</a>

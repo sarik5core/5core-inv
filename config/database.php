@@ -63,6 +63,20 @@ return [
             ]) : [],
         ],
 
+            'api_central' => [   // new DB
+            'driver' => 'mysql',
+            'host' => env('DB_API_CENTRAL_HOST', '127.0.0.1'),
+            'port' => env('DB_API_CENTRAL_PORT', '3306'),
+            'database' => env('DB_API_CENTRAL_DATABASE', 'forge'),
+            'username' => env('DB_API_CENTRAL_USERNAME', 'forge'),
+            'password' => env('DB_API_CENTRAL_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'repricer' => [ // REPRICER
             'driver' => 'mysql',
             'host' => env('REPRICER_DB_HOST', '127.0.0.1'),

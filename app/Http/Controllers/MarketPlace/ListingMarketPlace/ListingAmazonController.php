@@ -114,7 +114,6 @@ class ListingAmazonController extends Controller
         $statusData = AmazonListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $reqCount = 0;
-        $nrCount = 0;
         $listedCount = 0;
         $pendingCount = 0;
 
@@ -134,21 +133,34 @@ class ListingAmazonController extends Controller
             $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
             if ($nrReq === 'REQ') {
                 $reqCount++;
-            } elseif ($nrReq === 'NR') {
-                $nrCount++; 
             }
 
-            // Listed/Pending logic
-            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $listed = $status['listed'] ?? null;
             if ($listed === 'Listed') {
                 $listedCount++;
-            } elseif ($listed === 'Pending') {
+            }
+
+            // Row-wise pending logic to match frontend
+            if ($nrReq !== 'NR' && ($listed === 'Pending' || empty($listed))) {
                 $pendingCount++;
             }
+            // $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            // if ($nrReq === 'REQ') {
+            //     $reqCount++;
+            // } elseif ($nrReq === 'NR') {
+            //     $nrCount++; 
+            // }
+
+            // Listed/Pending logic
+            // $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            // if ($listed === 'Listed') {
+            //     $listedCount++;
+            // } elseif ($listed === 'Pending') {
+            //     $pendingCount++;
+            // }
         }
 
         return [
-            'NR'  => $nrCount,
             'REQ' => $reqCount,
             'Listed' => $listedCount,
             'Pending' => $pendingCount,
