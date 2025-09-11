@@ -41,7 +41,7 @@ class AutoUpdateAmazonBgtHl extends Command
 
         $campaignIds = collect($campaigns)->pluck('campaign_id')->toArray();
         $newBgts = collect($campaigns)->pluck('sbgt')->toArray();
-
+        
         $result = $updateKwBgts->updateAutoAmazonSbCampaignBgt($campaignIds, $newBgts);
         $this->info("Update Result: " . json_encode($result));
 

@@ -21,7 +21,8 @@ class AmazonACOSController extends Controller
 
     public function __construct()
     {
-        $this->profileId = "4216505535403428";
+        parent::__construct();
+        $this->profileId = env('AMAZON_ADS_PROFILE_IDS');
     }
 
     public function getAccessToken()
@@ -62,10 +63,8 @@ class AmazonACOSController extends Controller
 
             $allCampaigns[] = [
                 'campaignId' => $campaignId,
-                'budget' => [
-                    'budget' => $newBgt,
-                    'budgetType' => 'DAILY'
-                ]
+                'budget' => $newBgt,
+                'state' => 'ENABLED'
             ];
         }
 
@@ -228,7 +227,7 @@ class AmazonACOSController extends Controller
         $results = [];
 
         try {
-            $chunks = array_chunk($allCampaigns, 100);
+            $chunks = array_chunk($allCampaigns, 10);
             foreach ($chunks as $chunk) {
                 $response = $client->put($url, [
                     'headers' => [
@@ -301,7 +300,7 @@ class AmazonACOSController extends Controller
         $results = [];
 
         try {
-            $chunks = array_chunk($allCampaigns, 100);
+            $chunks = array_chunk($allCampaigns, 10);
             foreach ($chunks as $chunk) {
                 $response = $client->put($url, [
                     'headers' => [
