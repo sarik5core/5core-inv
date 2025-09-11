@@ -1554,7 +1554,7 @@
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div>
-                                                <span class="metric-total" id="status-total"
+                                                <span class="metric-total" id="processed-total"
                                                     style="display:inline-block; background:#28a745; color:white; border-radius:8px; padding:4px 12px; font-weight:600; font-size:15px;">
                                                     0
                                                 </span>
@@ -5128,10 +5128,13 @@
                         rowCount: 0,
                         totalPftSum: 0,
                         totalSalesL30Sum: 0,
-                        totalCogsSum: 0
+                        totalCogsSum: 0,
+                        ProcessedTotal: 0, // Green
+                        pendingTotal: 0, // Red
                     };
 
                     filteredData.forEach(item => {
+                        
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['A L30']) || 0;
@@ -5142,6 +5145,17 @@
                         metrics.roiSum += parseFloat(item.ROI_percentage) || 0;
                         metrics.scvrSum += parseFloat(item.SCVR) || 0;
                         metrics.rowCount++;
+
+                        // ---  Listed & Pending counters ---
+                        const statusVal = (item.status || item.raw_data?.status || '').toString();
+                        const nrVal = (item.NR || item.raw_data?.NR || '').toString().trim();
+                        // if (nrVal !== 'NR') {
+                            if (statusVal === 'Processed') {
+                                metrics.ProcessedTotal++;
+                            } else if (statusVal === 'Pending') {
+                                metrics.pendingTotal++;
+                            }
+                        // }
 
                         // Only sum for child rows (not parent rows)
                         if (
@@ -5195,6 +5209,9 @@
 
                     $('#tacos-total').text(Math.round(metrics.tacosTotal / divisor * 100) + '%');
                     $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
+                    $('#processed-total').text(metrics.ProcessedTotal);
+                    $('#pending-total').text(metrics.pendingTotal);
+
 
                 } catch (error) {
                     console.error('Error in calculateTotals:', error);
@@ -5214,6 +5231,8 @@
                 $('#tacos-total').text('0%');
                 $('#cvr-total').text('0%');
                 $('#slno-total').text('0');
+                $('#processed-total').text('0');
+                $('#pending-total').text('0');
             }
 
             // Initialize enhanced dropdowns
