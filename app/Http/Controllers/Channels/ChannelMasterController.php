@@ -58,6 +58,7 @@ use App\Models\ReverbProduct;
 use App\Models\ShopifySku;
 use App\Models\TemuMetric;
 use App\Models\TemuProductSheet;
+use App\Models\WalmartMetrics;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1480,7 +1481,7 @@ class ChannelMasterController extends Controller
     {
         $result = [];
 
-        $query = ApiCentralWalmartMetric::where('sku', 'not like', '%Parent%');
+        $query = WalmartMetrics::where('sku', 'not like', '%Parent%');
 
         $l30Orders = $query->sum('l30');
         $l60Orders = $query->sum('l60');

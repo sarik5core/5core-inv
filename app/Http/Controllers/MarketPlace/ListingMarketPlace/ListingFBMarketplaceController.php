@@ -121,13 +121,27 @@ class ListingFBMarketplaceController extends Controller
                 $reqCount++;
             }
 
-            // Listed/Pending logic
-            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            $listed = $status['listed'] ?? null;
             if ($listed === 'Listed') {
                 $listedCount++;
-            } elseif ($listed === 'Pending') {
+            }
+
+            // Row-wise pending logic to match frontend
+            if ($nrReq !== 'NR' && ($listed === 'Pending' || empty($listed))) {
                 $pendingCount++;
             }
+            // $nrReq = $status['nr_req'] ?? (floatval($inv) > 0 ? 'REQ' : 'NR');
+            // if ($nrReq === 'REQ') {
+            //     $reqCount++;
+            // }
+
+            // // Listed/Pending logic
+            // $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
+            // if ($listed === 'Listed') {
+            //     $listedCount++;
+            // } elseif ($listed === 'Pending') {
+            //     $pendingCount++;
+            // }
         }
 
         return [
