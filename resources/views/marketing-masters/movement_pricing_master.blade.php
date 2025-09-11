@@ -1555,6 +1555,7 @@
                 </thead>
                 <tbody>
             `;
+            
 
             rows.forEach(r => {
                 const price = data[`${r.prefix}_price`];

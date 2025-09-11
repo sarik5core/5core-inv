@@ -16,7 +16,7 @@ use App\Models\AmazonListingStatus;
 use App\Models\EbayListingStatus;
 use App\Models\EbayTwoListingStatus;
 use App\Models\EbayThreeListingStatus;
-use App\Models\Shopifyb2cListingStatus;
+use App\Models\ShopifyB2CListingStatus;
 use App\Models\DobaListingStatus;
 use App\Models\DobaDataView;
 use App\Models\DobaMetric;
@@ -237,9 +237,11 @@ class MovementPricingMaster extends Controller
                 'doba_buyer_link' => isset($dobaListingData[$sku]) ? ($dobaListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'doba_seller_link' => isset($dobaListingData[$sku]) ? ($dobaListingData[$sku]->value['seller_link'] ?? null) : null,
 
+
                 // Macy
                 'macy_price' => $macy ? ($macy->price ?? 0) : 0,
                 'macy_l30'   => $macy ? ($macy->m_l30 ?? 0) : 0,
+                'macy_l60'   => $macy ? ($macy->m_l60 ?? 0) : 0,
                 'macy_pft'   => $macy && $macy->price > 0 ? (($macy->price * 0.77 - $lp - $ship) / $macy->price) : 0,
                 'macy_roi'   => $macy && $lp > 0 && $macy->price > 0 ? (($macy->price * 0.77 - $lp - $ship) / $lp) : 0,
                 'macy_buyer_link' => isset($macysListingStatus[$sku]) ? ($macysListingStatus[$sku]->value['buyer_link'] ?? null) : null,
