@@ -172,8 +172,9 @@ class PricingMasterViewsController extends Controller
 
 
             $avgCvr = $total_views > 0
-                ? round(($l30 / $total_views) * 1000, 0) . ' %'
-                : 'V';
+            ? round(($l30 / $total_views) * 100) . ' %'
+            : '0 %';
+
 
             $item = (object) [
 

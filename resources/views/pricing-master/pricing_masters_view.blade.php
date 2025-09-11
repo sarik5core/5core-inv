@@ -921,7 +921,7 @@
 
 
        const table = new Tabulator("#forecast-table", {
-            ajaxURL: "/pricing-analysis-data-views",
+            ajaxURL: "/pricing-master-data-views",
             fixedHeader: true,
          
             width: "100%",
