@@ -480,6 +480,11 @@
                             return l1_cpc.toFixed(2);
                         }
                     },
+                    {
+                        title: "SBGT",
+                        field: "sbgt",
+                        hozAlign: "center"
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;

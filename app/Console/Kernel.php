@@ -28,6 +28,9 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\AutoUpdateAmazonBgtKw::class,
         \App\Console\Commands\AutoUpdateAmazonBgtPt::class,
         \App\Console\Commands\AutoUpdateAmazonBgtHl::class,
+        \App\Console\Commands\AutoUpdateAmazonPinkDilKwAds::class,
+        \App\Console\Commands\AutoUpdateAmazonPinkDilPtAds::class,
+        \App\Console\Commands\AutoUpdateAmazonPinkDilHlAds::class,
     ];
 
     /**
@@ -136,6 +139,15 @@ class Kernel extends ConsoleKernel
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-amz-bgt-hl')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-pink-dil-kw-ads')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-pink-dil-pt-ads')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('amazon:auto-update-pink-dil-hl-ads')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();

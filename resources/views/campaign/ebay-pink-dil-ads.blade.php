@@ -167,18 +167,13 @@
                             </div>
 
                             <!-- Stats -->
-                            {{-- <div class="col-md-6">
+                            <div class="col-md-6">
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button class="btn btn-success btn-md">
-                                        <i class="fa fa-arrow-up me-1"></i>
-                                        Need to increase bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
-                                    </button>
-                                    <button class="btn btn-primary btn-md">
-                                        <i class="fa fa-percent me-1"></i>
-                                        of Total: <span id="percentage-campaigns" class="fw-bold ms-1 fs-4">0%</span>
-                                    </button>
+                                    <a href="javascript:void(0)" id="export-btn" class="btn btn-sm btn-success d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-file-export me-1"></i> Export Excel/CSV
+                                    </a>
                                 </div>
-                            </div> --}}
+                            </div>
                         </div>
 
                         <!-- Search and Controls Row -->
@@ -263,12 +258,12 @@
                     {
                         title: "INV",
                         field: "INV",
-                        // visible: false
+                        visible: false
                     },
                     {
                         title: "OV L30",
                         field: "L30",
-                        // visible: false
+                        visible: false
                     },
                     {
                         title: "DIL %",
@@ -285,7 +280,7 @@
                             }
                             return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
                         },
-                        // visible: false
+                        visible: false
                     },
                     {
                         title: "E DIL %",
@@ -302,7 +297,7 @@
                             }
                             return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
                         },
-                        // visible: false
+                        visible: false
                     },
                     {
                         title: "NRA",
@@ -346,7 +341,7 @@
                             `;
                         },
                         hozAlign: "center",
-                        // visible: false
+                        visible: false
                     },
                     {
                         title: "CAMPAIGN",
@@ -415,6 +410,16 @@
                             return l1_cpc.toFixed(2);
                         }
                     },
+                    {
+                        title: "SBID",
+                        field: "sbid",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var sbid = parseFloat(row.sbid) || 0;
+                            return sbid.toFixed(2);
+                        }
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
@@ -542,25 +547,25 @@
                 }
             });
 
-            // document.getElementById("export-btn").addEventListener("click", function () {
-            //     let filteredData = table.getData("active");
+            document.getElementById("export-btn").addEventListener("click", function () {
+                let filteredData = table.getData("active");
 
-            //     let exportData = filteredData.map(row => ({
-            //         campaignName: row.campaignName,
-            //         sbid: (parseFloat(row.l1_cpc || 0) * 0.90).toFixed(2)
-            //     }));
+                let exportData = filteredData.map(row => ({
+                    campaignName: row.campaignName,
+                    sbid: row.sbid.toFixed(2)
+                }));
 
-            //     if (exportData.length === 0) {
-            //         alert("No data available to export!");
-            //         return;
-            //     }
+                if (exportData.length === 0) {
+                    alert("No data available to export!");
+                    return;
+                }
 
-            //     let ws = XLSX.utils.json_to_sheet(exportData);
-            //     let wb = XLSX.utils.book_new();
-            //     XLSX.utils.book_append_sheet(wb, ws, "Campaigns");
+                let ws = XLSX.utils.json_to_sheet(exportData);
+                let wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Campaigns");
 
-            //     XLSX.writeFile(wb, "ebay_over_acos_pink.xlsx");
-            // });
+                XLSX.writeFile(wb, "ebay_pink_dil_ads.xlsx");
+            });
 
         });
     </script>

@@ -63,8 +63,10 @@ class AmazonACOSController extends Controller
 
             $allCampaigns[] = [
                 'campaignId' => $campaignId,
-                'budget' => $newBgt,
-                'state' => 'ENABLED'
+                'budget' => [
+                    'budget' => $newBgt,
+                    'budgetType' => 'DAILY'
+                ]
             ];
         }
 
