@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\PricingMaster;
+namespace App\Http\Controllers\MarketingMaster;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
@@ -10,14 +10,14 @@ use App\Jobs\UpdateEbayOnePriceJob;
 use App\Jobs\UpdateEbayPriceJob;
 use App\Jobs\UpdateEbaySPriceJob;
 use App\Jobs\UpdateEbayThreePriceJob;
+use App\Models\AmazonDatasheet;
+use App\Models\AmazonDataView;
 use App\Models\AmazonListingStatus;
 use App\Models\EbayListingStatus;
 use App\Models\EbayTwoListingStatus;
 use App\Models\EbayThreeListingStatus;
 use App\Models\Shopifyb2cListingStatus;
 use App\Models\DobaListingStatus;
-use App\Models\AmazonDatasheet;
-use App\Models\AmazonDataView;
 use App\Models\DobaDataView;
 use App\Models\DobaMetric;
 use App\Models\EbayMetric;
@@ -48,8 +48,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session as FacadesSession;
 use PhpParser\Node\Stmt\Else_;
+use SebastianBergmann\CodeCoverage\Report\Xml\Totals;
 
-class PricingMasterViewsController extends Controller
+class MovementPricingMaster extends Controller
 {
     protected $apiController;
 
@@ -59,20 +60,20 @@ class PricingMasterViewsController extends Controller
     }
 
 
-    public function pricingMaster(Request $request)
+    public function MovementPricingMaster(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        // yaha processed data le lo
         $processedData = $this->processPricingData();
 
-        return view('pricing-master.pricing_masters_view', [
+        return view('marketing-masters.movement_pricing_master', [
             'mode' => $mode,
             'demo' => $demo,
-            'records' => $processedData, // processed data table ke liye
+            'records' => $processedData, 
         ]);
     }
+
     protected function processPricingData($searchTerm = '')
     {
         $productData = ProductMaster::whereNull('deleted_at')

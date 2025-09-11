@@ -416,8 +416,8 @@
                                     <h5 class="modal-title" id="editPermissionsModalLabel">Edit Permissions for <span
                                             id="edit-user-name"></span></h5>
                                     <button type="button" class="close" onclick="closeModal()" aria-label="Close">
-  <span aria-hidden="true">&times;</span>
-</button>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
 
                                 </div>
                                 <div class="modal-body">
@@ -492,6 +492,7 @@
             </div>
         </div>
     </div>
+    
 @endsection
 
 @section('script')

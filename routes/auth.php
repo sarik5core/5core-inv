@@ -65,6 +65,10 @@ Route::get('/confirm-password', [ConfirmablePasswordController::class, 'show'])
     ->middleware('auth')
     ->name('password.confirm');
 
+
+Route::post('/permissions', [PermissionController::class, 'store'])->name('permissions.store');
+// Route::get('/api/permissions', [PermissionController::class, 'getPermissions']);
+
 Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store'])
     ->middleware('auth');
 
@@ -79,6 +83,7 @@ Route::put('/profile/password', [UserProfileController::class, 'updatePassword']
 
 Route::get('/permissions', [PermissionController::class, 'index'])->middleware('auth')->name('permissions');
 // Add these specific routes ABOVE any catch-all routes
+
 Route::get('users/{user}/permissions', [PermissionController::class, 'getUserPermissionData'])
     ->name('users.permissions.get');
     
@@ -94,3 +99,5 @@ Route::put('/roles/{user}', [RoleController::class, 'update'])
     ->name('roles.update');
 
 Route::post('/save-column-permission', [PermissionController::class, 'saveColumnPermission'])->middleware('auth');
+
+

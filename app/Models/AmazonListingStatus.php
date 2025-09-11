@@ -12,6 +12,6 @@ class AmazonListingStatus extends Model
     protected $fillable = ['sku', 'value'];
 
     protected $casts = [
-        'value' => 'array', // Automatically cast JSON to array
+        'value' => 'array', 
     ];
 }
