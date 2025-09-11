@@ -981,9 +981,11 @@
         .scouth-product-value a:hover {
             text-decoration: underline;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
+
         /*popup modal style end */
     </style>
 @endsection
@@ -1441,7 +1443,7 @@
                                     </th>
                                     <th>NRL</th>
 
-                                      <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 LISTED <span class="sort-arrow">↓</span>
@@ -1458,6 +1460,50 @@
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="live-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                VIEWS <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="views-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="price"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                PRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                PFT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                ROI <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="roi-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
                                         </div>
                                     </th>
                                 </tr>
@@ -2123,13 +2169,17 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            console.log(response.data,'ddd');
-                            
+                            console.log(response.data, 'ddd');
+
                             tableData = response.data.map((item, index) => {
 
                                 const valueJson = item.value ? JSON.parse(item.value) : {};
-                                const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
-                                const liveVal   = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
+
+                                const price = parseFloat(item['price']) || 0;
 
                                 return {
                                     sl_no: index + 1,
@@ -2148,6 +2198,7 @@
                                     NR: item.NR || '',
                                     listed: listedVal,
                                     live: liveVal,
+                                    price: price || 0,
                                 };
                             });
 
@@ -2203,7 +2254,7 @@
                     if (item.is_parent) {
                         $row.addClass('parent-row');
                     }
-                    if(item.NR === 'NRA'){
+                    if (item.NR === 'NRA') {
                         $row.addClass('nr-hide');
                     }
 
@@ -2324,7 +2375,8 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ? item.NR : 'RA';
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
@@ -2347,8 +2399,9 @@
                         $row.append($('<td>').append($select));
                     }
 
-                     //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1';
+                    //Listed checkbox
+                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                        .Listed === 1 || rawData.Listed === '1';
                     const $listedCb = $('<input>', {
                         type: 'checkbox',
                         class: 'listed-checkbox',
@@ -2358,7 +2411,8 @@
                     $row.append($('<td>').append($listedCb));
 
                     // Live checkbox
-                    const liveVal   = rawData.Live === true   || rawData.Live === 'true'   || rawData.Live === 1   || rawData.Live === '1';
+                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                        1 || rawData.Live === '1';
                     const $liveCb = $('<input>', {
                         type: 'checkbox',
                         class: 'live-checkbox',
@@ -2366,6 +2420,52 @@
                     }).data('sku', item['Sku']);
 
                     $row.append($('<td>').append($liveCb));
+                    // VIEWS with tooltip icon (no color coding)
+                    $row.append($('<td>').html(
+                        `<span>${Math.round(item?.VIEWS || 0)}%</span>
+                         <span class="text-info tooltip-icon ad-view-trigger" 
+                               data-bs-toggle="tooltip" 
+                               data-bs-placement="left" 
+                               title="visibility View"
+                               data-item='${JSON.stringify(item.raw_data)}'>V</span>`
+                    ));
+
+
+                    //price with tooltip
+                    const safePrice = typeof item.price === 'number' ? item.price : parseFloat(item
+                        .price) || 0;
+                    $row.append($('<td>').html(
+                        `$${safePrice.toFixed(2)}
+                        <span class="" style="margin-left:8px">
+                            <i class="fas fa-tag text-warning price-view-trigger" 
+                            style="transform:translateY(1px)"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top-end" 
+                            title="Pricing view"
+                            data-item='${JSON.stringify(item.raw_data)}'"></i>
+                        </span>`
+                    ));
+
+                    // PFT with color coding (always show 0% if value is missing)
+                    const pftValue = (typeof item['PFT %'] === 'number' && !isNaN(item['PFT %'])) ? Math
+                        .round(item['PFT %'] * 100) : 0;
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getPftColor(item['PFT %'])}">${pftValue}%</span>`
+                    ));
+
+                    // ROI with color coding (always show 0% if value is missing)
+                    const roiValue = (typeof item.Roi === 'number' && !isNaN(item.Roi)) ? Math.round(item
+                        .Roi * 100) : 0;
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getRoiColor(item.Roi)}">${roiValue}%</span>`
+                    ));
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.SCVR || 0)}">${Math.round((item.SCVR || 0)  * 100)}%</span>
+    <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
 
 
                     $tbody.append($row);
@@ -2428,29 +2528,29 @@
             }
 
             function initNRSelectChangeHandler() {
-                    $(document).off('change', '.nr-select');
-                    $(document).on('change', '.nr-select', function () {
-                        const $select = $(this);
-                        const newValue = $select.val();
-                        const sku = $select.data('sku');
+                $(document).off('change', '.nr-select');
+                $(document).on('change', '.nr-select', function() {
+                    const $select = $(this);
+                    const newValue = $select.val();
+                    const sku = $select.data('sku');
 
-                        // Change background color based on selected value
-                        if (newValue === 'NRA') {
-                            $select.css('background-color', '#dc3545').css('color', '#ffffff');
-                        } else {
-                            $select.css('background-color', '#28a745').css('color', '#ffffff');
-                        }
+                    // Change background color based on selected value
+                    if (newValue === 'NRA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
+                    }
 
-                        // Send AJAX
-                        $.ajax({
-                            url: '/tiktok/save-nr',
-                            type: 'POST',
-                            data: {
-                                sku: sku,
-                                nr: newValue,
-                                _token: $('meta[name="csrf-token"]').attr('content')
+                    // Send AJAX
+                    $.ajax({
+                        url: '/tiktok/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            nr: newValue,
+                            _token: $('meta[name="csrf-token"]').attr('content')
                         },
-                        success: function (response) {
+                        success: function(response) {
                             showNotification('success', 'NR updated successfully!');
 
                             // Update tableData and filteredData
@@ -2467,7 +2567,7 @@
                             calculateTotals();
                             renderTable();
                         },
-                        error: function (xhr) {
+                        error: function(xhr) {
                             showNotification('danger', 'Failed to update NR.');
                         }
                     });
@@ -3700,7 +3800,7 @@
                     };
 
                     filteredData.forEach(item => {
-                        if(item.NR === 'NR'){
+                        if (item.NR === 'NR') {
                             return;
                         }
 
@@ -3713,16 +3813,18 @@
                             }
                         } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
                             rawData = item.raw_data;
-                            
+
                         }
 
                         // Count listed checkboxes
-                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1') {
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
+                            rawData.Listed === '1') {
                             metrics.listedCount++;
                         }
 
                         // Count Live checkboxes
-                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 || rawData.Live === '1') {
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
+                            rawData.Live === '1') {
                             metrics.liveCount++;
                         }
 
@@ -3774,6 +3876,13 @@
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
                     $('#listed-total').text(metrics.listedCount.toLocaleString());
                     $('#live-total').text(metrics.liveCount.toLocaleString());
+                    $('#pft-total').text(metrics.pftSum.toLocaleString()); // Placeholder
+                    $('#roi-total').text(metrics.roiSum.toLocaleString()); // Placeholder
+                    if (divisor > 0) {
+                        $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
+                    } else {
+                        $('#cvr-total').text('N/A');
+                    }
 
 
                     // --- Custom PFT TOTAL calculation ---
@@ -3791,8 +3900,11 @@
                     }
                     $('#roi-total').text(roiTotalDisplay);
                     $('#tacos-total').text(Math.round(metrics.tacosTotal / divisor * 100) + '%');
-                    $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
-
+                    if (divisor > 0) {
+                        $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
+                    } else {
+                        $('#cvr-total').text('N/A');
+                    }
                 } catch (error) {
                     console.error('Error in calculateTotals:', error);
                     resetMetricsToZero();
