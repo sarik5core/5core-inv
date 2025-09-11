@@ -2297,9 +2297,9 @@
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
-                                    price: (item.sheet_price || 0) <= 26.99 ? (parseFloat(item
-                                        .sheet_price || 0) + 2.99) : parseFloat(item
-                                        .sheet_price || 0),
+                                    price: (parseFloat(item.sheet_price) || 0) < 26.99
+                                        ? (parseFloat(item.sheet_price) || 0) + 2.99
+                                        : parseFloat(item.sheet_price) || 0,
                                     price_wo_ship: item.sheet_price || 0,
                                     views_l30: views_l30,
                                     views_l60: views_l60,
