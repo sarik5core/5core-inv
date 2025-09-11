@@ -1483,13 +1483,6 @@
                                     <th data-field="price_wo_ship" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center">
-                                                Base Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="price" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
                                                 Price <span class="sort-arrow">↓</span>
                                             </div>
                                         </div>
@@ -2177,9 +2170,6 @@
                                     '', // Get R&A value from server data
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
-                                    price: (item.sheet_price || 0) <= 26.99 ? (parseFloat(item
-                                        .sheet_price || 0) + 2.99) : parseFloat(item
-                                        .sheet_price || 0),
                                     price_wo_ship: item.sheet_price || 0,
 
                                     is_parent: item.Sku ? item.Sku
@@ -2440,21 +2430,6 @@
                             data-item='${JSON.stringify(item.raw_data)}'"></i>
                         </span>`
                     ));
-
-                    // Price with shipping
-                    $row.append($('<td>').text(() => {
-                        const price = Number(item.price) || 0;
-                        const ship = item.SHIP !== null && item.SHIP !== '' && !isNaN(Number(
-                            item.SHIP)) ? Number(item.SHIP) : null;
-
-                        if (ship !== null) {
-                            return `$${(price + ship).toFixed(2)}`;
-                        } else {
-                            return `$${price.toFixed(2)}`;
-                        }
-                    }));
-
-
 
                     $tbody.append($row);
                 });
