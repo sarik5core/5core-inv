@@ -915,6 +915,9 @@
                             <div class="collapse" id="lqsSubmenu">
                                 <ul class="side-nav-fourth-level">
                                     <li>
+                                            <a href="{{ route('overallLqsCvr') }}">OverAll LQS - CVR</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('listingLQS.master') }}">LQS - Listing</a>
                                     </li>
                                     <li>

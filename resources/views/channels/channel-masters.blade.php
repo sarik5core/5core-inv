@@ -1733,6 +1733,7 @@
                                     'reverb': '/reverb',
                                     'shopify b2c': '/shopifyB2C',
                                     'doba': '/doba',
+                                    'walmart': '/walmartAnalysis',
                                 };
 
                                 const routeUrl = routeMap[channelName];
