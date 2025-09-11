@@ -41,6 +41,7 @@ use App\Models\Shopifyb2cDataView;
 use App\Models\TemuDataView;
 use App\Models\TemuListingStatus;
 use App\Models\WalmartListingStatus;
+use App\Models\WalmartMetrics;
 use App\Services\AmazonSpApiService;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
@@ -111,7 +112,7 @@ class PricingMasterViewsController extends Controller
         $macyData    = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbData  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $temuLookup  = TemuProductSheet::all()->keyBy('sku');
-        $walmartLookup = WalmartDataView::all()->keyBy('sku');
+        $walmartLookup = WalmartMetrics::all()->keyBy('sku');
         $ebay2Lookup = Ebay2Metric::all()->keyBy('sku');
         $ebay3Lookup = Ebay3Metric::all()->keyBy('sku');
         $amazonDataView = AmazonDataView::all()->keyBy('sku');
@@ -264,11 +265,13 @@ class PricingMasterViewsController extends Controller
                 'temu_seller_link' => isset($temuListingData[$sku]) ? ($temuListingData[$sku]->value['seller_link'] ?? null) : null,
 
                 // Walmart
-                'walmart_price' => $walmart ? (float) ($walmart->{'walmart_price'} ?? 0) : 0,
-                'walmart_l30'   => $walmart ? (float) ($walmart->{'walmart_l30'} ?? 0) : 0,
-                'walmart_dil'   => $walmart ? (float) ($walmart->{'walmart_dil'} ?? 0) : 0,
-                'walmart_pft'   => $walmart && ($walmart->walmart_price ?? 0) > 0 ? (($walmart->walmart_price * 0.85 - $lp - $ship) / $walmart->walmart_price) : 0,
-                'walmart_roi'   => $walmart && $lp > 0 && ($walmart->walmart_price ?? 0) > 0 ? (($walmart->walmart_price * 0.85 - $lp - $ship) / $lp) : 0,
+                'walmart_price' => $walmart ? (float) ($walmart->{'price'} ?? 0) : 0,
+                'walmart_l30'   => $walmart ? (float) ($walmart->{'l30'} ?? 0) : 0,
+                'walmart_l60'   => $walmart ? (float) ($walmart->{'l60'} ?? 0) : 0,
+
+                'walmart_dil'   => $walmart ? (float) ($walmart->{'dil'} ?? 0) : 0,
+                'walmart_pft'   => $walmart && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.85 - $lp - $ship) / $walmart->price) : 0,
+                'walmart_roi'   => $walmart && $lp > 0 && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.85 - $lp - $ship) / $lp) : 0,
                 'walmart_buyer_link' => isset($walmartListingData[$sku]) ? ($walmartListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'walmart_seller_link' => isset($walmartListingData[$sku]) ? ($walmartListingData[$sku]->value['seller_link'] ?? null) : null,
 
