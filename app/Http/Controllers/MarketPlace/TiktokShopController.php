@@ -14,7 +14,7 @@ use App\Models\TiktokVideoAd;
 
 class TiktokShopController extends Controller
 {
-  protected $apiController;
+    protected $apiController;
 
     public function __construct(ApiController $apiController)
     {
@@ -37,10 +37,9 @@ class TiktokShopController extends Controller
             'demo' => $demo,
             'percentage' => $percentage
         ]);
-        
     }
 
-   public function tiktokPricingCVR(Request $request)
+    public function tiktokPricingCVR(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
@@ -121,9 +120,13 @@ class TiktokShopController extends Controller
                 $shopifyItem = $shopifyData[$sku];
                 $processedItem['INV'] = $shopifyItem->inv ?? 0;
                 $processedItem['L30'] = $shopifyItem->quantity ?? 0;
+                $processedItem['shopify_price'] = $shopifyItem->price ?? 0; // Store Shopify price
+                $processedItem['shopify_l30'] = $shopifyItem->shopify_l30 ?? 0; // Store Shopify L30
             } else {
                 $processedItem['INV'] = 0;
                 $processedItem['L30'] = 0;
+                $processedItem['shopify_price'] = 0;
+                $processedItem['shopify_l30'] = 0;
             }
 
             // Fetch NR value if available
@@ -131,15 +134,33 @@ class TiktokShopController extends Controller
             $processedItem['Listed'] = $listedValues[$sku] ?? false;
             $processedItem['Live'] = $liveValues[$sku] ?? false;
 
-            // Default values for other fields
+            // Default values for other fields - use Shopify data if available
             $processedItem['A L30'] = 0;
             $processedItem['Sess30'] = 0;
-            $processedItem['price'] = 0;
+            $processedItem['price'] = $processedItem['shopify_price'] ?? 0; // Use Shopify price
             $processedItem['TOTAL PFT'] = 0;
-            $processedItem['T Sales L30'] = 0;
-            $processedItem['PFT %'] = 0;
-            $processedItem['Roi'] = 0;
+            $processedItem['T Sales L30'] = $processedItem['shopify_l30'] ?? 0; // Use Shopify L30
             $processedItem['percentage'] = $percentageValue;
+
+            // Calculate profit and ROI percentages using Shopify price if available
+            $price = floatval($processedItem['price']);
+            $percentage = floatval($processedItem['percentage']);
+            $lp = floatval($processedItem['LP']);
+            $ship = floatval($processedItem['Ship']);
+
+            if ($price > 0) {
+                $pft_percentage = (($price * $percentage - $lp - $ship) / $price) * 100;
+                $processedItem['PFT %'] = round($pft_percentage, 2);
+            } else {
+                $processedItem['PFT %'] = 0;
+            }
+
+            if ($lp > 0) {
+                $roi_percentage = (($price * $percentage - $lp - $ship) / $lp) * 100;
+                $processedItem['Roi'] = round($roi_percentage, 2);
+            } else {
+                $processedItem['Roi'] = 0;
+            }
 
             $processedData[] = $processedItem;
         }
