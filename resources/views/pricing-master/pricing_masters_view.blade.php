@@ -571,18 +571,15 @@
                             <div class="market-summary p-3 bg-light border-bottom">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="summary-stats">
-                                        
-                                        <span class="badge bg-success me-2">Active Markets: <span id="activeMarketsCount">10 </span>
-                                       <span class="badge text-dark fs-4 text-bold me-2">INV : <span id="ovl30InvLabel">0%</span>
-                                         <span class="badge text-dark fs-4 text-bold">OV L30  : <span id="ovl30">0%</span></span> 
+
+                                       <span class="badge text-dark fs-4 text-bold me-2 bg-success">INV : <span id="ovl30InvLabel">0%</span>
+                                         <span class="badge text-dark fs-4 text-bold">OV L30  : <span id="ovl30">0%</span></span>
                                         <span class="badge text-dark fs-4 text-bold ">Dil : <span id="dilPercentage"> </span> %</span>
                                         <span class="badge me-2 text-dark fs-4 text-bold">Avg Price: <span id="formattedAvgPrice">0%</span></span>
                                         <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
                                         <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
-                                        
-
-
-
+                                        <span class="badge text-dark fs-4  me-2">Total Views : <span id="total_views">0</span></span>
+                                        <span class="badge text-dark fs-4  me-2">Avg CVR : <span id="avgCvr">0%</span></span>   
 
                                     </div>
                                   <div class="view-controls d-flex justify-content-center align-items-center">
@@ -1730,7 +1727,7 @@
                     <th data-sort="number">ROI % <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">Views L30 <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">CVR <i class="bi bi-arrow-down-up"></i></th>
-                    <th data-sort="number">Req CVR <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">Req Views <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">LMP <i class="bi bi-arrow-down-up"></i></th>
                     <th>S Price</th>
                     <th data-sort="number">S PFT<i class="bi bi-arrow-down-up"></i></th>
@@ -1781,7 +1778,7 @@
                     <div class="d-flex flex-column align-items-center text-center">
                         <img src="${r.logo}" alt="${r.label}" 
                             class="channel-logo mb-1" 
-                            style="width:60px; height:60px; object-fit:contain;">
+                            style="width:40px; height:40px; object-fit:contain;">
                         <span class="small fw-bold">${r.label}</span>
                         ${r.prefix === 'amz' ? `
                             <div class="d-flex gap-2 mt-1">
@@ -2126,7 +2123,9 @@
             const data = row.getData();
             document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
             document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
-            document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";        
+            document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";    
+            document.getElementById('total_views').textContent = data.total_views ? `${data.total_views}` : "0";  
+            document.getElementById('avgCvr').textContent = data.avgCvr ? `${data.avgCvr}` : "0";        
             const imgEl = document.getElementById('ovl30Img');
 
             if (imgEl) {
