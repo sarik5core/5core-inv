@@ -517,11 +517,7 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    let isGreen = (
-                        (acos >= 7 && acos <= 14) &&   // ACOS Green
-                        (ub7 >= 30 && ub7 <= 60) &&    // UB7 Green
-                        (ub1 >= 30 && ub1 <= 60)       // UB1 Green
-                    );
+                    let isGreen = ( (acos >= 7 && acos <= 14) && ub7 < 30 && ub1 < 30 );
 
                     if (!isGreen) return false;
 
