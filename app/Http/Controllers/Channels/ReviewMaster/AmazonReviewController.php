@@ -35,10 +35,17 @@ class AmazonReviewController extends Controller
             $shopify = $shopifyData[$pm->sku] ?? null;
             $amazon  = $amazonReviews[$pm->sku] ?? null;
 
+            $inv = $shopify->inv ?? 0;
+
+            // Skip rows where INV is 0 or less
+            if (floatval($inv) <= 0) {
+                continue;
+            }
+
             $row = [];
             $row['Parent'] = $pm->parent;
             $row['Sku'] = $pm->sku;
-            $row['INV'] = $shopify->inv ?? 0;
+            $row['INV'] = $inv;
             $row['L30'] = $shopify->quantity ?? 0;
             $row['image_path'] = $shopify->image_src ?? null;
 
@@ -107,14 +114,14 @@ class AmazonReviewController extends Controller
         unset($rows[0]);
 
         foreach ($rows as $row) {
-            if (empty($row[0])) { 
+            if (empty($row[0])) {
                 continue;
             }
 
             $rowData = array_combine($headers, $row);
 
             AmazonProductReview::updateOrCreate(
-                ['sku' => $rowData['sku']], 
+                ['sku' => $rowData['sku']],
                 [
                     'product_rating'       => $rowData['product_rating'] ?? null,
                     'review_count'         => $rowData['review_count'] ?? null,
