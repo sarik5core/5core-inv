@@ -1054,13 +1054,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     Route::get('/pricing-masters.pricing_masters', [PricingMasterViewsController::class, 'pricingMaster']);
-    Route::get('/pricing-analysis-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+    Route::get('/pricing-master-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
     
 
 
     Route::get('/movement-pricing-master', [MovementPricingMaster::class, 'MovementPricingMaster']);
-    Route::get('/pricing-analysis-data-views', [MovementPricingMaster::class, 'getViewPricingAnalysisData']);
+    // Route::get('/pricing-analysis-data-views', [MovementPricingMaster::class, 'getViewPricingAnalysisData']);
     Route::post('/pricing-master/save', [MovementPricingMaster::class, 'save']);
     
     

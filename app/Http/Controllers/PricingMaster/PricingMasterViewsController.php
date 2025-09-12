@@ -111,17 +111,17 @@ class PricingMasterViewsController extends Controller
         $pricingData = PricingMaster::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyData    = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbData  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
-        $temuLookup  = TemuProductSheet::all()->keyBy('sku');
-        $walmartLookup = WalmartMetrics::all()->keyBy('sku');
-        $ebay2Lookup = Ebay2Metric::all()->keyBy('sku');
-        $ebay3Lookup = Ebay3Metric::all()->keyBy('sku');
-        $amazonDataView = AmazonDataView::all()->keyBy('sku');
-        $ebayDataView = EbayDataView::all()->keyBy('sku');
-        $shopifyb2cDataView = Shopifyb2cDataView::all()->keyBy('sku');
-        $dobaDataView = DobaDataView::all()->keyBy('sku');
-        $temuDataView = TemuDataView::all()->keyBy('sku');
-        $reverbDataView = ReverbViewData::all()->keyBy('sku');
-        $macyDataView = MacyDataView::all()->keyBy('sku');
+        $temuLookup  = TemuProductSheet::whereIn('sku', $skus)->get()->keyBy('sku');
+        $walmartLookup = WalmartMetrics::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebay3Lookup = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+        $amazonDataView = AmazonDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $ebayDataView = EbayDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $shopifyb2cDataView = Shopifyb2cDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $dobaDataView = DobaDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $temuDataView = TemuDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $reverbDataView = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
+        $macyDataView = MacyDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
 
 
@@ -172,8 +172,9 @@ class PricingMasterViewsController extends Controller
 
 
             $avgCvr = $total_views > 0
-                ? round(($l30 / $total_views) * 1000, 0) . ' %'
-                : 'V';
+            ? round(($l30 / $total_views) * 100) . ' %'
+            : '0 %';
+
 
             $item = (object) [
 
@@ -265,11 +266,10 @@ class PricingMasterViewsController extends Controller
                 'temu_seller_link' => isset($temuListingData[$sku]) ? ($temuListingData[$sku]->value['seller_link'] ?? null) : null,
 
                 // Walmart
-                'walmart_price' => $walmart ? (float) ($walmart->{'price'} ?? 0) : 0,
-                'walmart_l30'   => $walmart ? (float) ($walmart->{'l30'} ?? 0) : 0,
-                'walmart_l60'   => $walmart ? (float) ($walmart->{'l60'} ?? 0) : 0,
-
-                'walmart_dil'   => $walmart ? (float) ($walmart->{'dil'} ?? 0) : 0,
+                'walmart_price' => $walmart ? ($walmart->price ?? 0) : 0,
+                'walmart_l30'   => $walmart ?  ($walmart->l30 ?? 0) : 0,
+                'walmart_l60'   => $walmart ? ($walmart->l60 ?? 0) : 0,
+                'walmart_dil'   => $walmart ?    ($walmart->dil ?? 0) : 0,
                 'walmart_pft'   => $walmart && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.85 - $lp - $ship) / $walmart->price) : 0,
                 'walmart_roi'   => $walmart && $lp > 0 && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.85 - $lp - $ship) / $lp) : 0,
                 'walmart_buyer_link' => isset($walmartListingData[$sku]) ? ($walmartListingData[$sku]->value['buyer_link'] ?? null) : null,
@@ -288,7 +288,7 @@ class PricingMasterViewsController extends Controller
                     : 0,
 
 
-        
+
                 'ebay2_buyer_link' => isset($ebayTwoListingData[$sku]) ? ($ebayTwoListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'ebay2_seller_link' => isset($ebayTwoListingData[$sku]) ? ($ebayTwoListingData[$sku]->value['seller_link'] ?? null) : null,
 
@@ -409,13 +409,9 @@ class PricingMasterViewsController extends Controller
                         ($macyDataView[$sku]->value['SROI'] ?? null) : (json_decode($macyDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
 
-              
 
             ];
 
-            
-           
-     
 
 
             // Add shopifyb2c fields after $item is created
@@ -427,7 +423,7 @@ class PricingMasterViewsController extends Controller
             $item->shopifyb2c_pft = $item->shopifyb2c_price > 0 ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $item->shopifyb2c_price) : 0;
             $item->shopifyb2c_roi = ($lp > 0 && $item->shopifyb2c_price > 0) ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $lp) : 0;
 
-          
+
             // Add analysis action buttons
             $item->l30_analysis = '<button class="btn btn-sm btn-info" onclick="showL30Modal(this)" data-sku="' . $item->SKU . '">L30</button>';
 
