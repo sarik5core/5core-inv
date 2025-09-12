@@ -603,21 +603,22 @@
     </div>
 
     {{-- Marketplace Price Comparison Modal --}}
-    <div class="modal fade" id="priceComparisonModal" tabindex="-1" aria-labelledby="priceComparisonModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="priceComparisonModalLabel">Marketplace Price Comparison for <span
-                            id="price-comparison-sku"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <canvas id="priceComparisonChart"></canvas>
-                </div>
+      <div class="modal fade" id="priceComparisonModal" tabindex="-1" aria-labelledby="priceComparisonModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header cursor-move">
+                <h5 class="modal-title" id="priceComparisonModalLabel">
+                    Marketplace Price Comparison for <span id="price-comparison-sku"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="priceComparisonChart"></canvas>
             </div>
         </div>
     </div>
+</div>
 @endsection
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
