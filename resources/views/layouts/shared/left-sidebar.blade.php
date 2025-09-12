@@ -678,7 +678,7 @@
                             <a href="{{ route('zero.visibility') }}">0 Views Masters</a>
                         </li>
                         <li>
-                            <a href="{{ url('movement-pricing-master') }}"> Movement Pricing Masters</a>
+                            <a href="{{ url('movement-pricing-master') }}"> Movement Analysis Master</a>
                         </li>
                         <li>
                             <a href="{{ route('carousel.sales') }}">Carousel Sales Master</a>
