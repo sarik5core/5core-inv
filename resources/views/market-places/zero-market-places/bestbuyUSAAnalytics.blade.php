@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'BestBuy USA Zero View', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'BestBuy USA Analytics', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -1010,7 +1010,7 @@
 
 @section('content')
     @include('layouts.shared/page-title', [
-        'page_title' => 'BestBuy USA Zero View',
+        'page_title' => 'BestBuy USA Analytics',
         'sub_title' => 'BestBuy USA',
     ])
 
@@ -1018,7 +1018,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="header-title">BestBuy USA Zero View</h4>
+                    <h4 class="header-title">BestBuy USA Zero Analytics</h4>
 
                     <!-- Custom Dropdown Filters Row -->
                     <div class="d-flex flex-wrap gap-2 mb-3">
@@ -1341,6 +1341,24 @@
                                             <div class="metric-total" id="ovdil-total">0%</div>
                                         </div>
                                     </th>
+                                    <th data-field="al_30" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                AL 30 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="al30-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="a_dil" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                A DIL <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="lDil-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
                                         NRL
                                     </th>
@@ -1358,12 +1376,42 @@
                                             {{-- <div class="metric-total" id="views-total">0</div> --}}
                                         </div>
                                     </th>
-                                    <th data-field="reason" style="vertical-align: middle; white-space: nowrap;">Reason
+                                    <th data-field="price"
+                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                PRICE <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
                                     </th>
-                                    <th data-field="action_required" style="vertical-align: middle; white-space: nowrap;">
-                                        Action Required</th>
-                                    <th data-field="action_taken" style="vertical-align: middle; white-space: nowrap;">
-                                        Action Taken</th>
+                                    <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                PFT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                ROI <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="roi-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -2271,6 +2319,21 @@
                                 data-item='${JSON.stringify(item.raw_data)}'>W</span>`
                     ));
 
+                    $row.append($('<td>').html(`
+                        <div class="sku-tooltip-container">
+                            <span class="sku-text">${item['A L30']}</span>
+                            <div class="sku-tooltip">
+                                <div class="sku-link"><strong>L60:</strong> ${item['units_ordered_l60']}</div>
+                                <div class="sku-link"><strong>L7:</strong></div>
+                            </div>
+                        </div>
+                    `));
+
+                    // A DIL with color coding
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${(item['A Dil%'] * 100).toFixed(2)}%</span>`
+                    ));
+
                     // --- NR column ---
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
@@ -2306,35 +2369,42 @@
                                 data-item='${JSON.stringify(item.raw_data)}'>V</span>`
                     ));
 
-                    // Truncate function for dynamic column width
-                    function truncateWithTooltip(text, cellWidth) {
-                        if (!text) return '';
-                        let minLetters = 10;
-                        let letters = Math.max(minLetters, Math.floor(cellWidth / 12));
-                        const truncated = text.length > letters ? text.substring(0, letters) + '...' : text;
-                        return `<span class="truncated-text" title="${text.replace(/"/g, '&quot;')}">${truncated}</span>`;
-                    }
+                    //price with tooltip
+                    const safePrice = typeof item.price === 'number' ? item.price : parseFloat(item
+                        .price) || 0;
+                    $row.append($('<td>').html(
+                        `$${safePrice.toFixed(2)}
+                        <span class="" style="margin-left:8px">
+                            <i class="fas fa-tag text-warning price-view-trigger" 
+                            style="transform:translateY(1px)"
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="top-end" 
+                            title="Pricing view"
+                            data-item='${JSON.stringify(item.raw_data)}'"></i>
+                        </span>`
+                    ));
 
-                    // Reason column with plus icon and tooltip
-                    $row.append($('<td>').html(`
-                        ${truncateWithTooltip(item.A_Z_Reason, reasonCellWidth)}
-                        <i class="fas fa-plus reason-action-plus" style="cursor:pointer; color:#007bff; margin-left:8px;" 
-                        data-slno="${item['SL No.']}" data-type="reason"></i>
-                    `));
+                    // PFT with color coding (always show 0% if value is missing)
+                    const pftValue = (typeof item['PFT %'] === 'number' && !isNaN(item['PFT %'])) ? Math
+                        .round(item['PFT %'] * 100) : 0;
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getPftColor(item['PFT %'])}">${pftValue}%</span>`
+                    ));
 
-                    // Action Required column
-                    $row.append($('<td>').html(`
-                        ${truncateWithTooltip(item.A_Z_ActionRequired, actionRequiredCellWidth)}
-                        <i class="fas fa-plus reason-action-plus" style="cursor:pointer; color:#007bff; margin-left:8px;" 
-                        data-slno="${item['SL No.']}" data-type="action_required"></i>
-                    `));
+                    // ROI with color coding (always show 0% if value is missing)
+                    const roiValue = (typeof item.Roi === 'number' && !isNaN(item.Roi)) ? Math.round(item
+                        .Roi * 100) : 0;
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getRoiColor(item.Roi)}">${roiValue}%</span>`
+                    ));
 
-                    // Action Taken column
-                    $row.append($('<td>').html(`
-                        ${truncateWithTooltip(item.A_Z_ActionTaken, actionTakenCellWidth)}
-                        <i class="fas fa-plus reason-action-plus" style="cursor:pointer; color:#007bff; margin-left:8px;" 
-                        data-slno="${item['SL No.']}" data-type="action_taken"></i>
-                    `));
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.SCVR || 0)}">${Math.round((item.SCVR || 0)  * 100)}%</span>
+    <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
 
                     $tbody.append($row);
                 });
