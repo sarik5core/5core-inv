@@ -5500,7 +5500,7 @@ fieldset:disabled .btn {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 123%;
   color: var(--tz-modal-color);
   pointer-events: auto;
   background-color: var(--tz-modal-bg);

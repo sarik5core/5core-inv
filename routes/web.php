@@ -1060,7 +1060,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     Route::get('/movement-pricing-master', [MovementPricingMaster::class, 'MovementPricingMaster']);
-    // Route::get('/pricing-analysis-data-views', [MovementPricingMaster::class, 'getViewPricingAnalysisData']);
+    Route::get('/pricing-analysis-data-views', [MovementPricingMaster::class, 'getViewPricingAnalysisData']);
     Route::post('/pricing-master/save', [MovementPricingMaster::class, 'save']);
     
     

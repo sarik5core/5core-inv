@@ -65,7 +65,6 @@ class PricingMasterViewsController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        // yaha processed data le lo
         $processedData = $this->processPricingData();
 
         return view('pricing-master.pricing_masters_view', [
