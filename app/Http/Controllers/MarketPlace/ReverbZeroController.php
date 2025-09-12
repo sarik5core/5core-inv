@@ -351,103 +351,35 @@ class ReverbZeroController extends Controller
         return $zeroViewCount;
     }
 
-    public function getLivePendingAndZeroViewCounts()
-    {
-        $productMasters = ProductMaster::whereNull('deleted_at')->get();
-        $skus = $productMasters->pluck('sku')->unique()->toArray();
-
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayDataViews = ReverbListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayMetrics = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $listedCount = 0;
-        $zeroInvOfListed = 0;
-        $liveCount = 0;
-        $zeroViewCount = 0;
-
-        foreach ($productMasters as $item) {
-            $sku = trim($item->sku);
-            $inv = $shopifyData[$sku]->inv ?? 0;
-            $isParent = stripos($sku, 'PARENT') !== false;
-            if ($isParent) continue;
-
-            $status = $ebayDataViews[$sku]->value ?? null;
-            if (is_string($status)) {
-                $status = json_decode($status, true);
-            }
-            $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
-            $live = $status['live'] ?? null;
-            $nrReq = $status['nr_req'] ?? null;
-
-            // Listed count (for live pending)
-            if ($listed === 'Listed') {
-                $listedCount++;
-                if (floatval($inv) <= 0) {
-                    $zeroInvOfListed++;
-                }
-            }
-
-            // Live count
-            if ($live === 'Live') {
-                $liveCount++;
-            }
-
-            // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
-            $views = $ebayMetrics[$sku]->views ?? null;
-            $nrReq = $status['nr_req'] ?? null;
-            if (floatval($inv) > 0 && $views !== null && intval($views) === 0 && strtoupper($nrReq) !== 'NR') {
-                $zeroViewCount++;
-            }
-        }
-
-        // live pending = listed - 0-inv of listed - live
-        $livePending = $listedCount - $zeroInvOfListed - $liveCount;
-
-        return [
-            'live_pending' => $livePending,
-            'zero_view' => $zeroViewCount,
-        ];
-    }
-
     // public function getLivePendingAndZeroViewCounts()
     // {
     //     $productMasters = ProductMaster::whereNull('deleted_at')->get();
     //     $skus = $productMasters->pluck('sku')->unique()->toArray();
 
-    //     $shopifyData   = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-    //     $listingStatus = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
-    //     $metrics       = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $ebayDataViews = ReverbListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+    //     $ebayMetrics = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
 
-    //     $listedCount     = 0;
+    //     $listedCount = 0;
     //     $zeroInvOfListed = 0;
-    //     $liveCount       = 0;
-    //     $zeroViewCount   = 0;
+    //     $liveCount = 0;
+    //     $zeroViewCount = 0;
 
     //     foreach ($productMasters as $item) {
     //         $sku = trim($item->sku);
-
-    //         if (stripos($sku, 'PARENT') !== false) {
-    //             continue;
-    //         }
-
     //         $inv = $shopifyData[$sku]->inv ?? 0;
+    //         $isParent = stripos($sku, 'PARENT') !== false;
+    //         if ($isParent) continue;
 
-    //         // --- STATUS ---
-    //         $row = $listingStatus[$sku] ?? null;
-    //         $status = [];
-
-    //         if ($row && !empty($row->value)) {
-    //             // if casted to array, just use it; otherwise decode JSON
-    //             $status = is_array($row->value)
-    //                 ? $row->value
-    //                 : (json_decode($row->value, true) ?: []);
+    //         $status = $ebayDataViews[$sku]->value ?? null;
+    //         if (is_string($status)) {
+    //             $status = json_decode($status, true);
     //         }
-
     //         $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
-    //         $live   = $status['live'] ?? null;
-    //         $nrReq  = $status['nr_req'] ?? null;
+    //         $live = $status['live'] ?? null;
+    //         $nrReq = $status['nr_req'] ?? null;
 
-    //         // --- COUNTS ---
+    //         // Listed count (for live pending)
     //         if ($listed === 'Listed') {
     //             $listedCount++;
     //             if (floatval($inv) <= 0) {
@@ -455,39 +387,115 @@ class ReverbZeroController extends Controller
     //             }
     //         }
 
+    //         // Live count
     //         if ($live === 'Live') {
     //             $liveCount++;
     //         }
 
-    //         $views = $metrics[$sku]->views ?? null;
-    //         if (
-    //             floatval($inv) > 0 &&
-    //             $views !== null &&
-    //             intval($views) === 0 &&
-    //             strtoupper($nrReq) !== 'NR' // ✅ now works because $status is a real array
-    //         ) {
+    //         // Zero view: INV > 0, views == 0 (from ebay_metric table), not parent SKU (NR ignored)
+    //         $views = $ebayMetrics[$sku]->views ?? null;
+    //         $nrReq = $status['nr_req'] ?? null;
+    //         if (floatval($inv) > 0 && $views !== null && intval($views) === 0 && strtoupper($nrReq) !== 'NR') {
     //             $zeroViewCount++;
     //         }
     //     }
 
+    //     // live pending = listed - 0-inv of listed - live
     //     $livePending = $listedCount - $zeroInvOfListed - $liveCount;
 
     //     return [
     //         'live_pending' => $livePending,
-    //         'zero_view'    => $zeroViewCount,
+    //         'zero_view' => $zeroViewCount,
     //     ];
     // }
 
 
+    public function getLivePendingAndZeroViewCounts()
+    {
+        $productMasters = ProductMaster::whereNull('deleted_at')->get();
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $shopifyData     = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+        $listingStatuses = ReverbListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $viewData        = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
+        $reverbProducts  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $listedCount = 0;
+        $zeroInvOfListed = 0;
+        $liveCount = 0;
+        $zeroViewCount = 0;
+
+        foreach ($productMasters as $pm) {
+            $sku = trim($pm->sku);
+            if ($sku === '' || stripos($sku, 'PARENT') !== false) continue;
+
+            $inv = floatval($shopifyData[$sku]->inv ?? 0);
+
+            // --- LISTED from reverb_listing_statuses ---
+            $listedRaw = $listingStatuses[$sku]->value ?? null;
+            if (is_string($listedRaw)) {
+                $decoded = json_decode($listedRaw, true);
+                $listed = (json_last_error() === JSON_ERROR_NONE) ? ($decoded['listed'] ?? null) : null;
+            } elseif (is_array($listedRaw)) {
+                $listed = $listedRaw['listed'] ?? null;
+            } else {
+                $listed = null;
+            }
+            $listed = $listed ?? ($inv > 0 ? 'Pending' : 'Listed');
+
+            // --- LIVE + NR from reverb_view_data ---
+            $live = null;
+            $nrReq = null;
+            if (isset($viewData[$sku])) {
+                $vdRaw = $viewData[$sku]->values ?? $viewData[$sku]->value ?? null;
+                if (is_string($vdRaw)) {
+                    $decoded = json_decode($vdRaw, true);
+                    $vd = (json_last_error() === JSON_ERROR_NONE) ? $decoded : null;
+                } elseif (is_array($vdRaw)) {
+                    $vd = $vdRaw;
+                } else {
+                    $vd = null;
+                }
+
+                if (is_array($vd)) {
+                    $live = $vd['live'] ?? null;
+                    $nrReq = $vd['NR'] ?? $vd['nr_req'] ?? $vd['nrReq'] ?? $vd['nr'] ?? null;
+                }
+            }
+
+            // --- VIEWS from reverb_products ---
+            $views = null;
+            if (isset($reverbProducts[$sku])) {
+                $raw = $reverbProducts[$sku]->views ?? null;
+                $views = ($raw === '' || $raw === null) ? null : $raw;
+            }
+
+            // --- COUNTS ---
+            // Listed count
+            if ($listed === 'Listed') {
+                $listedCount++;
+                if ($inv <= 0) $zeroInvOfListed++;
+            }
+
+            // Live count
+            if ($live === 'Live') $liveCount++;
+
+            // Zero view: inv > 0, views == 0, NR not flagged
+            $isNr = (is_string($nrReq) || is_numeric($nrReq)) && strtoupper((string)$nrReq) === 'NR';
+            if ($inv > 0 && $views !== null && is_numeric($views) && intval($views) === 0 && !$isNr) {
+                $zeroViewCount++;
+            }
+        }
+
+        $livePending = $listedCount - $zeroInvOfListed - $liveCount;
+
+        return [
+            'live_pending' => $livePending,
+            'zero_view'    => $zeroViewCount,
+        ];
+    }
 
     
-
-
-
-
-   
-
-
 
     
 }
