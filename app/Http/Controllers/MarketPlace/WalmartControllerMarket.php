@@ -10,6 +10,7 @@ use App\Models\WalmartDataView;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
+use App\Models\WalmartMetrics;
 use App\Models\WalmartProductSheet;
 
 class WalmartControllerMarket extends Controller
@@ -78,7 +79,7 @@ class WalmartControllerMarket extends Controller
         $walmartDataViews = WalmartDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
         // NEW: Fetch Walmart product sheet data
-        $walmartProductSheets = WalmartProductSheet::whereIn('sku', $skus)->get()->keyBy('sku');
+        $walmartMetrics = WalmartMetrics::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $nrValues = [];
         $listedValues = [];
@@ -130,14 +131,14 @@ class WalmartControllerMarket extends Controller
             }
 
             // NEW: Add data from walmart_product_sheets if available
-            if (isset($walmartProductSheets[$sku])) {
-                $walmartSheet = $walmartProductSheets[$sku];
-                $processedItem['sheet_price'] = $walmartSheet->price ?? 0;
-                $processedItem['sheet_pft'] = $walmartSheet->pft ?? 0;
-                $processedItem['sheet_roi'] = $walmartSheet->roi ?? 0;
-                $processedItem['sheet_l30'] = $walmartSheet->l30 ?? 0;
-                $processedItem['sheet_dil'] = $walmartSheet->dil ?? 0;
-                $processedItem['buy_link'] = $walmartSheet->buy_link ?? '';
+            if (isset($walmartMetrics[$sku])) {
+                $walmartMetric = $walmartMetrics[$sku];
+                $processedItem['sheet_price'] = $walmartMetric->price ?? 0;
+                $processedItem['sheet_pft'] = $walmartMetric->pft ?? 0;
+                $processedItem['sheet_roi'] = $walmartMetric->roi ?? 0;
+                $processedItem['sheet_l30'] = $walmartMetric->l30 ?? 0;
+                $processedItem['sheet_dil'] = $walmartMetric->dil ?? 0;
+                $processedItem['buy_link'] = $walmartMetric->buy_link ?? '';
             } else {
                 $processedItem['sheet_price'] = 0;
                 $processedItem['sheet_pft'] = 0;
