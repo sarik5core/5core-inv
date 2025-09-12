@@ -265,7 +265,7 @@
 
         /* Modal enhancements */
         .modal-xl .modal-body {
-            max-height: 80vh;
+            max-height: 95vh;
             overflow-y: auto;
            
         }
@@ -579,7 +579,8 @@
                                         <span class="badge me-2 text-dark fs-4 text-bold">Avg Price: <span id="formattedAvgPrice">0%</span></span>
                                         <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
                                         <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
-                                         
+                                        
+
 
 
 
@@ -699,11 +700,22 @@
                       
                     ]
                 },
-                options: {
-                    responsive: true,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                let value = context.parsed.y;
+
+                                if (label === 'Price') {
+                                    return `${label}: $${value.toFixed(2)}`;
+                                } else if (label.includes('%')) {
+                                    return `${label}: ${value.toFixed(1)}%`;
+                                } else {
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
                     },
                     scales: {
                         y: {
