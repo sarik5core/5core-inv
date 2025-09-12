@@ -301,8 +301,8 @@ class EbayOverUtilizedBgtController extends Controller
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
 
-            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
-            $sales    = (float) $matchedCampaignL30->cpc_attributed_sales;
+            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_ad_fees_payout_currency ?? 0);
+            $sales    = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_sale_amount_payout_currency ?? 0 );
 
             $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
             
