@@ -601,12 +601,181 @@
             </div>
         </div>
     </div>
+
+    {{-- Marketplace Price Comparison Modal --}}
+      <div class="modal fade" id="priceComparisonModal" tabindex="-1" aria-labelledby="priceComparisonModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header cursor-move">
+                <h5 class="modal-title" id="priceComparisonModalLabel">
+                    Marketplace Price Comparison for <span id="price-comparison-sku"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="priceComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.body.style.zoom = "95%";
+
+        function showPriceComparisonModal(row) {
+            const data = row.getData();
+            const sku = data.SKU;
+
+            document.getElementById('price-comparison-sku').textContent = sku;
+
+            const marketplaces = [
+                { label: "Amazon", prefix: "amz" },
+                { label: "eBay", prefix: "ebay" },
+                { label: "Doba", prefix: "doba" },
+                { label: "Macy", prefix: "macy" },
+                { label: "Reverb", prefix: "reverb" },
+                { label: "Temu", prefix: "temu" },
+                { label: "Walmart", prefix: "walmart" },
+                { label: "eBay2", prefix: "ebay2" },
+                { label: "eBay3", prefix: "ebay3" },
+                { label: "Shopify B2C", prefix: "shopifyb2c" }
+            ];
+
+            const labels = [];
+            const prices = [];
+
+            marketplaces.forEach(m => {
+                const price = data[`${m.prefix}_price`];
+                if (price !== null && price !== undefined && price > 0) {
+                    labels.push(m.label);
+                    prices.push(price);
+                }
+            });
+
+            const modalEl = document.getElementById('priceComparisonModal');
+            const chartCanvas = document.getElementById('priceComparisonChart');
+
+            // Destroy previous chart instance if it exists
+            if (window.priceChart instanceof Chart) {
+                window.priceChart.destroy();
+            }
+
+            window.priceChart = new Chart(chartCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Price',
+                            data: prices,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'L30',
+                            data: labels.map(label => data[`${label.toLowerCase()}_l30`] || 0),
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'L60', 
+                            data: labels.map(label => data[`${label.toLowerCase()}_l60`] || 0),
+                            borderColor: '#2a0032',
+                            backgroundColor: 'rgba(42, 0, 50, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        },
+                      
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Price ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            title: {
+                                display: true,
+                                text: 'Sales Volume'
+                            }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(0) + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    
+                                    if (label === 'Price') {
+                                        return `${label}: $${value.toFixed(2)}`;
+                                    } else if (label.includes('%')) {
+                                        return `${label}: ${value.toFixed(1)}%`;
+                                    } else {
+                                        return `${label}: ${value}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+                
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
 
         // Helper function to calculate ROI
         function calculateROI(data) {
@@ -799,7 +968,10 @@
                     headerFilterPlaceholder: "Search SKU...",
                     cssClass: "font-weight-bold",
                     tooltip: true,
-                    frozen: true
+                    frozen: true,
+                    cellClick: function(e, cell) {
+                        showPriceComparisonModal(cell.getRow());
+                    },
                 },
                 {
                     title: "INV",
@@ -813,7 +985,7 @@
                 },
 
 
-                {
+               {
                     title: "OVL30",
                     field: "ovl30",
                     hozAlign: "center",
@@ -832,6 +1004,7 @@
                         showOVL30Modal(cell.getRow());
                     }
                 },
+             
 
                 {
                     title: "Total Views",

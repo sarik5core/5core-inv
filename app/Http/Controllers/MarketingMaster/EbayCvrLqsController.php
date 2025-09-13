@@ -384,6 +384,5 @@ class EbayCvrLqsController extends Controller
             'Pending' => $pendingCount,
         ];
     }
-
     
 }

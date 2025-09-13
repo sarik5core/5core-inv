@@ -371,12 +371,10 @@
                     </div>
 
                     <div class="col-md-6 text-end mb-3">
-                        @if (in_array('create', $permissions['product_lists'] ?? []))
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                 data-bs-target="#addProductModal">
                                 <i class="fas fa-plus me-1"></i> ADD PRODUCT
                             </button>
-                        @endif
 
                         <button type="button" class="btn btn-success ms-2" id="downloadExcel">
                             <i class="fas fa-file-excel me-1"></i> Download Excel

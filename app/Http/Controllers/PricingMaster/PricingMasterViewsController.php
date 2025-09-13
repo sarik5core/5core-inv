@@ -65,7 +65,6 @@ class PricingMasterViewsController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        // yaha processed data le lo
         $processedData = $this->processPricingData();
 
         return view('pricing-master.pricing_masters_view', [
@@ -270,8 +269,8 @@ class PricingMasterViewsController extends Controller
                 'walmart_l30'   => $walmart ?  ($walmart->l30 ?? 0) : 0,
                 'walmart_l60'   => $walmart ? ($walmart->l60 ?? 0) : 0,
                 'walmart_dil'   => $walmart ?    ($walmart->dil ?? 0) : 0,
-                'walmart_pft'   => $walmart && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.85 - $lp - $ship) / $walmart->price) : 0,
-                'walmart_roi'   => $walmart && $lp > 0 && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.85 - $lp - $ship) / $lp) : 0,
+                'walmart_pft'   => $walmart && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.80 - $lp - $ship) / $walmart->price) : 0,
+                'walmart_roi'   => $walmart && $lp > 0 && ($walmart->price ?? 0) > 0 ? (($walmart->price * 0.80 - $lp - $ship) / $lp) : 0,
                 'walmart_buyer_link' => isset($walmartListingData[$sku]) ? ($walmartListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'walmart_seller_link' => isset($walmartListingData[$sku]) ? ($walmartListingData[$sku]->value['seller_link'] ?? null) : null,
 

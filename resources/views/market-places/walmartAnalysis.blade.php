@@ -2169,7 +2169,7 @@
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] :
                                     '', // Get R&A value from server data
                                     INV: item.INV || 0,
-                                    L30: item.L30 || 0,
+                                    L30: item.sheet_l30 || 0,
                                     price_wo_ship: item.sheet_price || 0,
 
                                     is_parent: item.Sku ? item.Sku
@@ -2350,20 +2350,21 @@
 
                     $row.append($('<td>').text(item.INV));
                     $row.append($('<td>').text(item.L30));
+
                     // T Sales column
                     $row.append($('<td>').html(`
                      <div class="sku-tooltip-container">
-                     <span class="sku-text">${item.sheet_l30 || 0}</span>
+                     <span class="sku-text">${item.raw_data.sheet_l30 || 0}</span>
                      <div class="sku-tooltip">
-                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.sheet_l30 || 0}</div>
+                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.raw_data.sheet_l30 || 0}</div>
                      </div>
                      </div>
                       `));
 
                     // T DIL with color coding - using the calculated T_DIL value
                     $row.append($('<td>').html(`
-                     <span class="dil-percent-value ${getDilColor(item.sheet_dil / 100 || 0)}">
-                     ${Math.round(item.sheet_dil || 0)}%
+                     <span class="dil-percent-value ${getDilColor(item.raw_data.sheet_dil / 100 || 0)}">
+                     ${Math.round(item.raw_data.sheet_dil || 0)}%
                      </span>
                     `));
 
