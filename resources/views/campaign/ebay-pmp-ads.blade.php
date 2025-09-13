@@ -922,6 +922,15 @@
                             <i class="fa fa-pen"></i>
                         </button>
                     </div>
+                    <div id="adupdates-edit-div" class="d-flex align-items-center">
+                        <div class="input-group" style="width: 150px;">
+                            <input type="number" id="updateAdUpdatesPercent" class="form-control" min="0" value="{{ $ebayAdPercentage }}"  step="any" placeholder="Ad Per" disabled />
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <button id="editAdUpdatesBtn" class="btn btn-outline-primary ms-2">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                    </div>
                     <div class="d-inline-flex align-items-center ms-2">
                         <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
                             0 SOLD - <span id="zero-sold-count">0</span>
@@ -1740,6 +1749,50 @@
                 }
             });
 
+            $('#editAdUpdatesBtn').on('click', function() {
+                var $input = $('#updateAdUpdatesPercent');
+                var $icon = $(this).find('i');
+                var originalValue = $input.val();
+
+                if ($icon.hasClass('fa-pen')) {
+                    // Enable editing
+                    $input.prop('disabled', false).focus();
+                    $icon.removeClass('fa-pen').addClass('fa-check');
+                } else {
+                    // Submit and disable editing
+                    var percent = parseFloat($input.val());
+
+                    // Validate input
+                    if (isNaN(percent) || percent < 0 || percent > 100) {
+                        showNotification('danger', 'Invalid percentage value. Must be between 0 and 100.');
+                        $input.val(originalValue); // Restore original value
+                        return;
+                    }
+                    
+                    $.ajax({
+                        url: '/update-ebay-pmt-percenatge',
+                        type: 'POST',
+                        data: {
+                            type: 'ad_updates',
+                            value: percent,
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            showNotification('success', 'Percentage updated successfully!');
+                            $input.prop('disabled', true);
+                            $icon.removeClass('fa-check').addClass('fa-pen');
+                            initTable();
+                        },
+                        error: function(xhr) {
+                            showNotification('danger', 'Error updating percentage.');
+                            $input.val(originalValue); // Restore original value
+                            $input.prop('disabled', true);
+                            $icon.removeClass('fa-check').addClass('fa-pen');
+                        }
+                    });
+                }
+            });
+
             $(document).on("click", "#export-btn", function () {
                 exportData();
             });
@@ -2348,6 +2401,7 @@
                                     SHIP: item.Ship_productmaster || 0,
                                     VIEWS: item.ebay_views || 0,
                                     CBID: item.bid_percentage || 0,
+                                    TPFT: item.TPFT || 0,
                                 };
                             });
 
@@ -2673,7 +2727,7 @@
                         ''
                     ));
 
-                    $row.append($('<td>').text(""));
+                    $row.append($('<td>').text(item.TPFT.toFixed(2)));
                     $row.append($('<td>').text(""));
                         
                     // TACOS with color coding and tooltip
@@ -2752,15 +2806,23 @@
                         font-weight:bold;
                         padding:6px 12px; 
                         border-radius:8px; 
-                        color:#dc3545; 
-                        background-color:${
-                            parseFloat(item.SROI) <= 50 
-                                ? '#fff'   // 🔴 red
-                                : parseFloat(item.SROI) <= 100 
+                        color:${
+                            parseFloat(item.SROI) <= 10 
+                                ? '#dc3545'   // 🔴 red
+                                : parseFloat(item.SROI) <= 15 
                                     ? '#ffc107'   // 🟡 yellow
-                                    : parseFloat(item.SROI) <= 150 
-                                        ? '#198754'   // 🟢 green
-                                        : '#6f42c1'   // 🟣 purple
+                                    : parseFloat(item.SROI) <= 20 
+                                        ? '#0d6efd'   // 🔵 blue
+                                        : '#28a745'   // 🟢 green
+                        };
+                        background-color:${
+                            parseFloat(item.SROI) <= 10 
+                                ? '#fff'   // 🔴 red
+                                : parseFloat(item.SROI) <= 15 
+                                    ? '#fff'   // 🟡 yellow
+                                    : parseFloat(item.SROI) <= 20 
+                                        ? '#fff'   // 🔵 blue
+                                        : '#fff'   // 🟢 green
                         };">
                         ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
                             ? Math.ceil(parseFloat(item.SROI)) 
@@ -5604,7 +5666,7 @@
                 }
 
                 $.ajax({
-                    url: '/ebay/save-sprice',
+                    url: '/update-ebay-pmt-sprice',
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),

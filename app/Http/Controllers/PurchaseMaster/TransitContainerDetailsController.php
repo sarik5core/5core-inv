@@ -20,41 +20,47 @@ class TransitContainerDetailsController extends Controller
             $tabs = ['Container 1'];
         }
 
-        $skuParentMap = ProductMaster::pluck('parent', 'sku')->toArray();
+        // 🔥 Normalize ProductMaster SKUs
+        $skuParentMap = ProductMaster::pluck('parent', 'sku')
+            ->mapWithKeys(function ($parent, $sku) {
+                $normSku = strtoupper(trim(preg_replace('/\s+/', ' ', $sku)));
+                return [$normSku => strtoupper(trim($parent))];
+            })->toArray();
 
         $supplierData = Supplier::select('name', 'parent')->get();
         $parentSupplierMap = [];
         foreach ($supplierData as $supplier) {
             $parentList = array_map('trim', explode(',', $supplier->parent));
             foreach ($parentList as $parent) {
-                $key = strtolower($parent);
-                if (!isset($parentSupplierMap[$key])) {
-                    $parentSupplierMap[$key] = [];
-                }
+                $key = strtoupper(trim(preg_replace('/\s+/', ' ', $parent)));
                 $parentSupplierMap[$key][] = $supplier->name;
             }
         }
 
-        $shopifyImages = ShopifySku::pluck('image_src', 'sku')->mapWithKeys(function($value, $key) {
-            return [strtoupper(trim($key)) => $value];
+        $shopifyImages = ShopifySku::pluck('image_src', 'sku')->mapWithKeys(function ($value, $key) {
+            $normSku = strtoupper(trim(preg_replace('/\s+/', ' ', $key)));
+            return [$normSku => $value];
         })->toArray();
 
-        $productValuesMap = ProductMaster::pluck('Values', 'sku')->mapWithKeys(function($value, $key) {
-            return [strtoupper(trim($key)) => $value];
+        $productValuesMap = ProductMaster::pluck('Values', 'sku')->mapWithKeys(function ($value, $key) {
+            $normSku = strtoupper(trim(preg_replace('/\s+/', ' ', $key)));
+            return [$normSku => $value];
         })->toArray();
 
+        // 🔥 Transform TransitContainerDetail Records
         $allRecords->transform(function ($record) use ($skuParentMap, $parentSupplierMap, $shopifyImages, $productValuesMap) {
-            $sku = strtoupper(trim($record->our_sku ?? ''));
+            $sku = strtoupper(trim(preg_replace('/\s+/', ' ', $record->our_sku ?? '')));
 
-            if (empty($record->parent) && isset($skuParentMap[$sku])) {
-                $record->parent = $skuParentMap[$sku];
+            $parent = $skuParentMap[$sku] ?? null;
+
+            if (empty($record->parent) && $parent) {
+                $record->parent = $parent;
             }
 
-            $parentKey = strtolower(trim($record->parent ?? ''));
+            $parentKey = strtoupper(trim(preg_replace('/\s+/', ' ', $record->parent ?? '')));
             $record->supplier_names = $parentSupplierMap[$parentKey] ?? [];
 
             $record->image_src = $shopifyImages[$sku] ?? null;
-
             $record->Values = $productValuesMap[$sku] ?? null;
 
             return $record;

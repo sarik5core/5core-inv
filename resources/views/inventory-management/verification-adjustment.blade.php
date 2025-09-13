@@ -2061,6 +2061,7 @@
                                     IMAGE_URL: item.IMAGE_URL || '',
                                     Parent: item.Parent || item.parent || item.parent_asin || item.Parent_ASIN || '(No Parent)',
                                     SKU: item['SKU'] || '', // Normalize SKU field
+                                    // SKU: item.sku || '', // Normalize SKU field
                                     TITLE: item['TITLE'] || '', // Title field from the sheet
 
                                     INV: INV, // Inventory
