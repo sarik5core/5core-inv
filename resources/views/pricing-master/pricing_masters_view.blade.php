@@ -954,7 +954,7 @@
                 }
             });
         });
-
+ 
 
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-master-data-views",
@@ -964,7 +964,7 @@
             height: "700px",
           
             pagination: true, 
-            paginationSize: 15,
+            paginationSize: 50,
         
              rowFormatter: function(row) {
                 const data = row.getData();
@@ -996,7 +996,7 @@
                     tooltip: true,
                     frozen: true
                 },
-                 {
+                {
                     title: "SKU",
                     field: "SKU",
                     headerFilter: "input",
@@ -1004,8 +1004,34 @@
                     cssClass: "font-weight-bold",
                     tooltip: true,
                     frozen: true,
+                    formatter: function(cell) {
+                        let value = cell.getValue();
+                        return `
+                            <span class="sku-text">${value}</span>
+                            <i class="bi bi-clipboard ms-2 copy-icon" 
+                            style="cursor:pointer;color:#007bff;" 
+                            title="Copy SKU"></i>
+                            <span class="copied-msg" style="display:none;color:green;font-size:12px;margin-left:5px;">Copied!</span>
+                        `;
+                    },
                     cellClick: function(e, cell) {
-                        showPriceComparisonModal(cell.getRow());
+                        if (e.target.classList.contains("copy-icon")) {
+                            let sku = cell.getValue();
+
+                            // copy to clipboard
+                            navigator.clipboard.writeText(sku).then(() => {
+                                let copiedMsg = cell.getElement().querySelector(".copied-msg");
+                                copiedMsg.style.display = "inline";
+
+                                setTimeout(() => {
+                                    copiedMsg.style.display = "none";
+                                }, 500);
+                            }).catch(err => {
+                                console.error("Failed to copy: ", err);
+                            });
+                        } else {
+                            showPriceComparisonModal(cell.getRow());
+                        }
                     },
                 },
                 {
