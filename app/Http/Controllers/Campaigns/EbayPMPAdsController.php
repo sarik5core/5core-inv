@@ -20,11 +20,12 @@ class EbayPMPAdsController extends Controller
 
         $marketplaceData = MarketplacePercentage::where("marketplace", "Ebay" )->first();
         $ebayPercentage = $marketplaceData ? $marketplaceData->percentage : 100;
+        $ebayAdPercentage = $marketplaceData ? $marketplaceData->ad_updates : 100;
 
-        return view('campaign.ebay-pmp-ads', compact('ebayPercentage'));
+        return view('campaign.ebay-pmp-ads', compact('ebayPercentage','ebayAdPercentage'));
     }
 
-    public function getViewEbayData()
+    public function getEbayPmpAdsData()
     {
         $productMasters = ProductMaster::orderBy("parent", "asc")
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -226,13 +227,11 @@ class EbayPMPAdsController extends Controller
             $type = $request->input('type');
             $value = $request->input('value');
 
-            // Current record fetch
             $marketplace = MarketplacePercentage::where('marketplace', 'Ebay')->first();
 
             $percent = $marketplace->percentage ?? 0;
             $adUpdates = $marketplace->ad_updates ?? 0;
 
-            // Handle percentage update
             if ($type === 'percentage') {
                 if (!is_numeric($value) || $value < 0 || $value > 100) {
                     return response()->json(['status' => 400, 'message' => 'Invalid percentage value'], 400);
@@ -240,7 +239,6 @@ class EbayPMPAdsController extends Controller
                 $percent = $value;
             }
 
-            // Handle ad_updates update
             if ($type === 'ad_updates') {
                 if (!is_numeric($value) || $value < 0) {
                     return response()->json(['status' => 400, 'message' => 'Invalid ad_updates value'], 400);
@@ -248,7 +246,6 @@ class EbayPMPAdsController extends Controller
                 $adUpdates = $value;
             }
 
-            // Save both fields
             $marketplace = MarketplacePercentage::updateOrCreate(
                 ['marketplace' => 'Ebay'],
                 [
@@ -274,98 +271,4 @@ class EbayPMPAdsController extends Controller
         }
     }
 
-    public function getEbayPmpAdsData(){
-
-        $productMasters = ProductMaster::orderBy('parent', 'asc')
-            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
-            ->orderBy('sku', 'asc')
-            ->get();
-
-        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
-
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $ebayMetricData = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $nrValues = EbayDataView::whereIn('sku', $skus)->pluck('value', 'sku');
-
-        $ebayCampaignReportsL7 = EbayPriorityReport::where('report_range', 'L7')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
-                }
-            })
-            ->get();
-
-        $ebayCampaignReportsL1 = EbayPriorityReport::where('report_range', 'L1')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
-                }
-            })
-            ->get();
-
-        $ebayCampaignReportsL30 = EbayPriorityReport::where('report_range', 'L30')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
-                }
-            })
-            ->get();
-
-        $result = [];
-
-        foreach ($productMasters as $pm) {
-            $sku = strtoupper($pm->sku);
-            $parent = $pm->parent;
-
-            $shopify = $shopifyData[$pm->sku] ?? null;
-
-            $ebay = $ebayMetricData[$pm->sku] ?? null;
-
-            $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
-            });
-
-            $matchedCampaignL1 = $ebayCampaignReportsL1->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
-            });
-
-            $matchedCampaignL30 = $ebayCampaignReportsL30->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
-            });
-
-            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
-                continue;
-            }
-
-            $row = [];
-            $row['parent'] = $parent;
-            $row['sku']    = $pm->sku;
-            $row['INV']    = $shopify->inv ?? 0;
-            $row['L30']    = $shopify->quantity ?? 0;
-            $row['e_l30']  = $ebay->ebay_l30 ?? 0;
-            $row['views']  = $ebay->views ?? 0;
-            $row['ebay_price']  = $ebay->ebay_price ?? 0;
-
-             $row['NR'] = '';
-            if (isset($nrValues[$pm->sku])) {
-                $raw = $nrValues[$pm->sku];
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
-                }
-                if (is_array($raw)) {
-                    $row['NR'] = $raw['NR'] ?? null;
-                }
-            }
-
-            $result[] = (object) $row;
-        }
-
-        return response()->json([
-            'message' => 'Data fetched successfully',
-            'data'    => $result,
-            'status'  => 200,
-        ]);
-    }
 }

@@ -120,12 +120,12 @@
                         <li>
                             <a href="{{ route('transit.container.details') }}">Transit Container INV</a>
                         </li>
-                        <li>
+                        {{-- <li>
                             <a href="{{ route('transit.container.changes') }}">Transit Container Changes</a>
                         </li>
                         <li>
                             <a href="{{ route('transit.container.new') }}">Transit Container New</a>
-                        </li>
+                        </li> --}}
                         <li>
                             <a href="{{ route('container.planning') }}">Container Planning</a>
                         </li>
@@ -1819,10 +1819,26 @@
                                     <li>
                                         <a href="{{ route('listing.walmart') }}">Listing Walmart</a>
                                     </li>
-
-
                                     <li>
                                         <a href="walmartPricingCVR">Walmart Pricing - CVR</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.utilized.kw') }}">Walmart Utilized KW</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#sidebarGoogleShopping" aria-expanded="false"
+                                aria-controls="sidebarGoogleShopping">
+                                <span> Google Shopping </span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="sidebarGoogleShopping">
+                                <ul class="side-nav-third-level">
+                                    <li>
+                                        <a href="{{ route('google.shopping.kw') }}">Google Shopping KW</a>
                                     </li>
                                 </ul>
                             </div>
