@@ -1697,7 +1697,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(EbayPMPAdsController::class)->group(function(){
         Route::get('/ebay/pmp/ads', 'index')->name('ebay.pmp.ads');
-        Route::get('/ebay/pmp/ads/data','getEbayPmpAdsData');
+        Route::get('/ebay/pmp/ads/data','getViewEbayData');
+        Route::post('/update-ebay-pmt-percenatge','updateEbayPercentage');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);

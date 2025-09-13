@@ -394,49 +394,58 @@ class EbayController extends Controller
     public function updateAllEbaySkus(Request $request)
     {
         try {
-            $percent = $request->input("percent");
+            $type = $request->input('type');
+            $value = $request->input('value');
 
-            if (!is_numeric($percent) || $percent < 0 || $percent > 100) {
-                return response()->json(
-                    [
-                        "status" => 400,
-                        "message" =>
-                        "Invalid percentage value. Must be between 0 and 100.",
-                    ],
-                    400
-                );
+            // Current record fetch
+            $marketplace = MarketplacePercentage::where('marketplace', 'Ebay')->first();
+
+            $percent = $marketplace->percentage ?? 0;
+            $adUpdates = $marketplace->ad_updates ?? 0;
+
+            // Handle percentage update
+            if ($type === 'percentage') {
+                if (!is_numeric($value) || $value < 0 || $value > 100) {
+                    return response()->json(['status' => 400, 'message' => 'Invalid percentage value'], 400);
+                }
+                $percent = $value;
             }
 
-            // Update database
-            MarketplacePercentage::updateOrCreate(
-                ["marketplace" => "Ebay"],
-                ["percentage" => $percent]
+            // Handle ad_updates update
+            if ($type === 'ad_updates') {
+                if (!is_numeric($value) || $value < 0) {
+                    return response()->json(['status' => 400, 'message' => 'Invalid ad_updates value'], 400);
+                }
+                $adUpdates = $value;
+            }
+
+            // Save both fields
+            $marketplace = MarketplacePercentage::updateOrCreate(
+                ['marketplace' => 'Ebay'],
+                [
+                    'percentage' => $percent,
+                    'ad_updates' => $adUpdates,
+                ]
             );
 
-            // Store in cache
-            Cache::put(
-                "ebay_marketplace_percentage",
-                $percent,
-                now()->addDays(30)
-            );
+            // Clear the cache
+            Cache::forget('amazon_marketplace_percentage');
+            Cache::forget('amazon_marketplace_ad_updates');
 
             return response()->json([
-                "status" => 200,
-                "message" => "Percentage updated successfully",
-                "data" => [
-                    "marketplace" => "Ebay",
-                    "percentage" => $percent,
-                ],
+                'status' => 200,
+                'message' => ucfirst($type) . ' updated successfully!',
+                'data' => [
+                    'percentage' => $marketplace->percentage,
+                    'ad_updates' => $marketplace->ad_updates
+                ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(
-                [
-                    "status" => 500,
-                    "message" => "Error updating percentage",
-                    "error" => $e->getMessage(),
-                ],
-                500
-            );
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error updating Ebay marketplace values',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -447,6 +456,7 @@ class EbayController extends Controller
         $hideValues = $request->input("hideValues"); // <-- add this
         $sku = $request->input("sku");
         $nr = $request->input("nr");
+        $nrl = $request->input("nrl");
         $hide = $request->input("hide");
 
         // Decode hideValues if it's a JSON string
@@ -495,7 +505,7 @@ class EbayController extends Controller
         }
 
         // Single update (existing logic)
-        if (!$sku || ($nr === null && $hide === null)) {
+        if (!$sku || ($nr === null && $nrl === null && $hide === null)) {
             return response()->json(
                 ["error" => "SKU and at least one of NR or Hide is required."],
                 400
@@ -510,6 +520,10 @@ class EbayController extends Controller
 
         if ($nr !== null) {
             $value["NR"] = $nr;
+        }
+
+        if ($nrl !== null) {
+            $value["NRL"] = $nrl;
         }
 
         $ebayDataView->value = $value;
