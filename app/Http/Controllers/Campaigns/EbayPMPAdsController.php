@@ -92,6 +92,7 @@ class EbayPMPAdsController extends Controller
 
         $marketplaceData = MarketplacePercentage::where("marketplace", "Ebay" )->first();
         $percentage = $marketplaceData ? ($marketplaceData->percentage / 100) : 1;
+        $adPercentage = $marketplaceData ? ($marketplaceData->ad_updates / 100) : 1;
 
         $result = [];
 
@@ -173,6 +174,7 @@ class EbayPMPAdsController extends Controller
                 $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) : 0,
                 2
             );
+            $row["TPFT"] = $row["PFT %"] + $adPercentage - $row["bid_percentage"];
             $row["percentage"] = $percentage;
             $row["LP_productmaster"] = $lp;
             $row["Ship_productmaster"] = $ship;

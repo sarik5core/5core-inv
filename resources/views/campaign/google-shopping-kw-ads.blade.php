@@ -519,12 +519,12 @@
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    let invVal = parseFloat(data.INV || 0);
-
-                    if (invFilterVal === "INV_0") {
-                        if (invVal !== 0) return false;
+                    if (invFilterVal === "ALL") {
+                        if (parseFloat(data.INV) === 0) return false;
+                    } else if (invFilterVal === "INV_0") {
+                        if (parseFloat(data.INV) !== 0) return false;
                     } else if (invFilterVal === "OTHERS") {
-                        if (invVal === 0) return false;
+                        if (parseFloat(data.INV) === 0) return false;
                     }
 
                     let nrlFilterVal = $("#nrl-filter").val();

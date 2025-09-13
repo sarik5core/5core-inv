@@ -2401,6 +2401,7 @@
                                     SHIP: item.Ship_productmaster || 0,
                                     VIEWS: item.ebay_views || 0,
                                     CBID: item.bid_percentage || 0,
+                                    TPFT: item.TPFT || 0,
                                 };
                             });
 
@@ -2726,7 +2727,7 @@
                         ''
                     ));
 
-                    $row.append($('<td>').text(""));
+                    $row.append($('<td>').text(item.TPFT.toFixed(2)));
                     $row.append($('<td>').text(""));
                         
                     // TACOS with color coding and tooltip
