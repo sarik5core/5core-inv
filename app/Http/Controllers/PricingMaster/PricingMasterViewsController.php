@@ -43,6 +43,7 @@ use App\Models\TemuListingStatus;
 use App\Models\WalmartListingStatus;
 use App\Models\WalmartMetrics;
 use App\Services\AmazonSpApiService;
+use App\Services\WalmartService;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,10 +54,12 @@ use PhpParser\Node\Stmt\Else_;
 class PricingMasterViewsController extends Controller
 {
     protected $apiController;
+    protected $walmart;
 
     public function __construct(ApiController $apiController)
     {
         $this->apiController = $apiController;
+        $this->walmart = new WalmartService();
     }
 
 
@@ -111,7 +114,19 @@ class PricingMasterViewsController extends Controller
         $macyData    = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbData  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $temuLookup  = TemuProductSheet::whereIn('sku', $skus)->get()->keyBy('sku');
-        $walmartLookup = WalmartMetrics::whereIn('sku', $skus)->get()->keyBy('sku');
+        $walmartLookup = DB::connection('apicentral')
+            ->table('walmart_api_data as api')
+            ->select(
+                'api.sku',
+                'api.price',
+                DB::raw('COALESCE(m.l30, 0) as l30'),
+                DB::raw('COALESCE(m.l60, 0) as l60')
+            )
+            ->leftJoin('walmart_metrics as m', 'api.sku', '=', 'm.sku')
+            ->whereIn('api.sku', $skus)
+            ->get()
+            ->keyBy('sku');
+
         $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebay3Lookup = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
         $amazonDataView = AmazonDataView::whereIn('sku', $skus)->get()->keyBy('sku');
@@ -171,8 +186,8 @@ class PricingMasterViewsController extends Controller
 
 
             $avgCvr = $total_views > 0
-            ? round(($l30 / $total_views) * 100) . ' %'
-            : '0 %';
+                ? round(($l30 / $total_views) * 100) . ' %'
+                : '0 %';
 
 
             $item = (object) [
@@ -768,6 +783,23 @@ class PricingMasterViewsController extends Controller
                 break;
 
 
+            case 'walmart':
+                // Walmart logic
+                $walmartDataView = WalmartDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($walmartDataView->value) ? $walmartDataView->value : (json_decode($walmartDataView->value, true) ?: []);
+
+                $spft = $sprice > 0 ? ((($sprice * 0.68) - $lp - $ship) / $sprice) * 100 : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.68) - $lp - $ship) / $lp) * 100 : 0;
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+
+                $walmartDataView->value = $existing;
+                $walmartDataView->save();
+                break;
+
+
             default:
                 return response()->json([
                     'message' => 'Unknown marketplace type',
@@ -819,6 +851,8 @@ class PricingMasterViewsController extends Controller
         }
     }
 
+
+
     public function pushEbayPriceBySku(Request $request)
     {
         $sku = $request->input('sku');
@@ -844,5 +878,21 @@ class PricingMasterViewsController extends Controller
 
         $itemId = Ebay3Metric::where('sku', $sku)->value('item_id');
         UpdateEbayThreePriceJob::dispatch($itemId, $price);
+    }
+
+
+    public function pushPricewalmart(Request $request)
+    {
+        $sku = $request->input('sku');
+        $price = $request->input('price');
+
+        $itemId = DB::connection('apicentral')->table('walmart_api_data')->where('sku', $sku)->value('sku');
+        $result = $this->walmart->updatePrice($itemId, $price);
+
+        if (isset($result['errors'])) {
+            return response()->json(['error' => $result['errors']], 400);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Price update submitted']);
     }
 }
