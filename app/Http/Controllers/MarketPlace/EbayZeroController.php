@@ -272,7 +272,7 @@ class EbayZeroController extends Controller
             $listed = $status['listed'] ?? (floatval($inv) > 0 ? 'Pending' : 'Listed');
             $live = $status['live'] ?? null;
 
-            // Listed count (for live pending)
+            // Listed count 
             if ($listed === 'Listed') {
                 $listedCount++;
                 if (floatval($inv) <= 0) {
@@ -292,7 +292,6 @@ class EbayZeroController extends Controller
             // }
             if ($inv > 0) {
                 if ($views === null) {
-                    // Do nothing, ignore null
                 } elseif (intval($views) === 0) {
                     $zeroViewCount++;
                 }
