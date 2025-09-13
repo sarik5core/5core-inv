@@ -20,6 +20,16 @@ class BestbuyUSAZeroController extends Controller
         ]);
     }
 
+    public function bestbuyUSAZeroAnalytics(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+        return view('market-places.zero-market-places.bestbuyUSAAnalytics', [
+            'mode' => $mode,
+            'demo' => $demo
+        ]);
+    }
+
     public function getViewBestbuyUSAZeroData(Request $request)
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
@@ -48,12 +58,18 @@ class BestbuyUSAZeroController extends Controller
                     $value = json_decode($value, true) ?: [];
                 }
 
+                // Get price - use BestBuy price if available, otherwise fall back to Shopify price
+                $bestbuy_price = $value['price'] ?? 0;
+                $shopify_price = $shopify ? $shopify->price : 0;
+                $price = $bestbuy_price > 0 ? $bestbuy_price : $shopify_price;
+
                 $row = [
                     'parent' => $parent,
                     'sku' => $sku,
                     'inv' => $inv,
                     'ov_l30' => $ov_l30,
                     'ov_dil' => $ov_dil,
+                    'price' => $price, // Added price field with fallback to Shopify
                     'NR' => isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ',
                     'A_Z_Reason' => $value['A_Z_Reason'] ?? '',
                     'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? '',

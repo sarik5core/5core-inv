@@ -521,22 +521,33 @@
                         </div>
 
 
-                        <div class="d-flex align-items-center flex-wrap gap-2">
-                            <!-- Column Management -->
-                            <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1"
-                                    type="button" id="hide-column-dropdown" data-bs-toggle="dropdown">
-                                    <i class="bi bi-grid-3x3-gap-fill"></i>
-                                    Manage Columns
-                                </button>
-                                <ul class="dropdown-menu p-3 shadow-lg border rounded-3" id="column-dropdown-menu"
-                                    style="max-height: 300px; overflow-y: auto; min-width: 250px;">
-                                    <li class="fw-semibold text-muted mb-2">Toggle Columns</li>
-                                </ul>
-                            </div>
-
-
+                      <div class="d-flex align-items-center flex-wrap gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1"
+                                type="button" id="hide-column-dropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                                Manage Columns
+                            </button>
+                            <ul class="dropdown-menu p-3 shadow-lg border rounded-3" id="column-dropdown-menu"
+                                style="max-height: 300px; overflow-y: auto; min-width: 250px;">
+                                <li class="fw-semibold text-muted mb-2">Toggle Columns</li>
+                                <!-- Columns checkboxes dynamically append karoge -->
+                            </ul>
                         </div>
+
+                        <!-- Filter by Inventory -->
+                        <div class="btn-group" id="inv-filter" role="group" aria-label="Inventory Filter">
+                            <input type="radio" class="btn-check" name="invFilter" id="filterAll" value="all" checked>
+                            <label class="btn btn-outline-secondary" for="filterAll">All</label>
+
+                            <input type="radio" class="btn-check" name="invFilter" id="filterZero" value="zero">
+                            <label class="btn btn-outline-danger" for="filterZero">0</label>
+
+                            <input type="radio" class="btn-check" name="invFilter" id="filterOther" value="other">
+                            <label class="btn btn-outline-success" for="filterOther">Other</label>
+                        </div>
+                    </div>
+
                     </div>
 
                     <div id="forecast-table"></div>
@@ -571,19 +582,25 @@
                             <div class="market-summary p-3 bg-light border-bottom">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="summary-stats">
-                                        
-                                        <span class="badge bg-success me-2">Active Markets: <span id="activeMarketsCount">10 </span>
-                                       <span class="badge text-dark fs-4 text-bold me-2">INV : <span id="ovl30InvLabel">0%</span>
-                                         <span class="badge text-dark fs-4 text-bold">OV L30  : <span id="ovl30">0%</span></span> 
-                                        <span class="badge text-dark fs-4 text-bold ">Dil : <span id="dilPercentage"> </span> %</span>
-                                        <span class="badge me-2 text-dark fs-4 text-bold">Avg Price: <span id="formattedAvgPrice">0%</span></span>
-                                        <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
-                                        <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
-                                        
-
-
-
-
+                                        <div class="d-flex align-items-center gap-3 mb-2">
+                                            <div class="input-group" style="width: 200px;">
+                                                @csrf
+                                                <input type="number" id="topPushPrice" class="form-control form-control-lg" step="any" placeholder="Enter Price" style="height: 40px;">
+                                                <button class="btn btn-primary d-flex align-items-center" id="topPushBtn" type="button" style="height: 40px;">
+                                                    <i class="fas fa-upload"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="badge text-dark fs-4 text-bold me-2 bg-success">INV : <span id="ovl30InvLabel">0%</span></span>
+                                            <span class="badge text-dark fs-4 text-bold">OV L30  : <span id="ovl30">0%</span></span>
+                                            <span class="badge text-dark fs-4 text-bold ">Dil : <span id="dilPercentage"> </span> %</span>
+                                            <span class="badge me-2 text-dark fs-4 text-bold">Avg Price: <span id="formattedAvgPrice">0%</span></span>
+                                            <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
+                                            <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
+                                            <span class="badge text-dark fs-4  me-2">Total Views : <span id="total_views">0</span></span>
+                                            <span class="badge text-dark fs-4  me-2">Avg CVR : <span id="avgCvr">0%</span></span>
+                                        </div>
                                     </div>
                                   <div class="view-controls d-flex justify-content-center align-items-center">
                                         <div class="image-preview-container">
@@ -603,22 +620,24 @@
         </div>
     </div>
 
+
     {{-- Marketplace Price Comparison Modal --}}
-    <div class="modal fade" id="priceComparisonModal" tabindex="-1" aria-labelledby="priceComparisonModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="priceComparisonModalLabel">Marketplace Price Comparison for <span
-                            id="price-comparison-sku"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <canvas id="priceComparisonChart"></canvas>
-                </div>
+    <div class="modal fade" id="priceComparisonModal" tabindex="-1" aria-labelledby="priceComparisonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header cursor-move">
+                <h5 class="modal-title" id="priceComparisonModalLabel">
+                    Marketplace Price Comparison for <span id="price-comparison-sku"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="priceComparisonChart"></canvas>
             </div>
         </div>
     </div>
+</div>
+
 @endsection
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -657,8 +676,9 @@
                 }
             });
 
-            const modalEl = document.getElementById('priceComparisonModal');
-            const chartCanvas = document.getElementById('priceComparisonChart');
+            // Chart.js setup and rendering here
+             const modalEl = document.getElementById('priceComparisonModal');
+             const chartCanvas = document.getElementById('priceComparisonChart');
 
             // Destroy previous chart instance if it exists
             if (window.priceChart instanceof Chart) {
@@ -700,22 +720,11 @@
                       
                     ]
                 },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                let value = context.parsed.y;
-
-                                if (label === 'Price') {
-                                    return `${label}: $${value.toFixed(2)}`;
-                                } else if (label.includes('%')) {
-                                    return `${label}: ${value.toFixed(1)}%`;
-                                } else {
-                                    return `${label}: ${value}`;
-                                }
-                            }
-                        }
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
                     },
                     scales: {
                         y: {
@@ -916,20 +925,35 @@
         }
 
 
-        //global variables for play btn
-     function renderGroup(parentKey) {
-    if (!groupedSkuData[parentKey]) return;
+                //global variables for play btn
+        function renderGroup(parentKey) {
+        if (!groupedSkuData[parentKey]) return;
 
-    // Update current filter
-    currentParentFilter = parentKey;
-    setCombinedFilters();
+            // Update current filter
+        currentParentFilter = parentKey;
+        setCombinedFilters();
 
-    // Apply Tabulator filter for the selected group
-   table.setFilter(function(data) {
-    return data.Parent === parentKey;
-});
-}
+            // Apply Tabulator filter for the selected group
+        table.setFilter(function(data) {
+            return data.Parent === parentKey;
+        });
+        }
 
+        // Filter by Inventory radio buttons
+        
+        document.querySelectorAll("input[name='invFilter']").forEach(input => {
+            input.addEventListener("change", function() {
+                let value = this.value;
+
+                if (value === "all") {
+                    table.clearFilter();
+                } else if (value === "zero") {
+                    table.setFilter("inv", "=", 0);
+                } else if (value === "other") {
+                    table.setFilter("inv", ">", 0);
+                }
+            });
+        });
 
 
        const table = new Tabulator("#forecast-table", {
@@ -1730,7 +1754,7 @@
                     <th data-sort="number">ROI % <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">Views L30 <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">CVR <i class="bi bi-arrow-down-up"></i></th>
-                    <th data-sort="number">Req CVR <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">Req Views <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">LMP <i class="bi bi-arrow-down-up"></i></th>
                     <th>S Price</th>
                     <th data-sort="number">S PFT<i class="bi bi-arrow-down-up"></i></th>
@@ -1781,7 +1805,7 @@
                     <div class="d-flex flex-column align-items-center text-center">
                         <img src="${r.logo}" alt="${r.label}" 
                             class="channel-logo mb-1" 
-                            style="width:60px; height:60px; object-fit:contain;">
+                            style="width:40px; height:40px; object-fit:contain;">
                         <span class="small fw-bold">${r.label}</span>
                         ${r.prefix === 'amz' ? `
                             <div class="d-flex gap-2 mt-1">
@@ -2124,9 +2148,18 @@
         // Modal open function
         function showOVL30Modal(row) {
             const data = row.getData();
+            
+            // Initialize top push button
+            const topPushPrice = document.getElementById('topPushPrice');
+            const topPushBtn = document.getElementById('topPushBtn');
+            
+            topPushBtn.dataset.sku = data.SKU;
+            topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
             document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
             document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
-            document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";        
+            document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";    
+            document.getElementById('total_views').textContent = data.total_views ? `${data.total_views}` : "0";  
+            document.getElementById('avgCvr').textContent = data.avgCvr ? `${data.avgCvr}` : "0";        
             const imgEl = document.getElementById('ovl30Img');
 
             if (imgEl) {
@@ -2406,6 +2439,46 @@
             });
         });
 
+        // Draggable Modal for Chart 
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.querySelector("#priceComparisonModal .modal-dialog");
+            const header = document.querySelector("#priceComparisonModal .modal-header");
+
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.style.cursor = "move";
+
+            header.addEventListener("mousedown", (e) => {
+                isDragging = true;
+                const rect = modal.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                modal.style.position = "absolute";
+                modal.style.margin = "0";
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (isDragging) {
+                    modal.style.left = e.clientX - offsetX + "px";
+                    modal.style.top = e.clientY - offsetY + "px";
+                }
+            });
+
+
+            document.addEventListener("mouseup", () => {
+                isDragging = false;
+            });
+
+            // Reset position when modal is closed
+            document.getElementById("priceComparisonModal").addEventListener("hidden.bs.modal", function () {
+                modal.style.position = "";
+                modal.style.left = "";
+                modal.style.top = "";
+                modal.style.margin = "";
+            });
+        });
+
 
         // Push Price
         $(document).on('blur', '.s-price', function() {
@@ -2477,9 +2550,70 @@
         });
 
 
-            $(document).on('click', '.pushPriceBtn', function() {
+            $(document).on('click', '.pushPriceBtn, #topPushBtn', function() {
             const $btn = $(this);
-            const sku = $btn.data('sku');
+            const sku = $btn.data('sku') || $('#topPushBtn').data('sku');
+            let price;
+            
+            if($btn.attr('id') === 'topPushBtn') {
+                price = parseFloat($('#topPushPrice').val()) || 0;
+                if(price <= 0) {
+                    alert('Please enter a valid price');
+                    return;
+                }
+                // Push to all marketplaces
+                $.ajax({
+                    url: '/push-shopify-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Shopify price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Shopify update failed:', error);
+                    }
+                });
+                
+                $.ajax({
+                    url: '/push-ebay-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('eBay price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('eBay update failed:', error);
+                    }
+                });
+                
+                $.ajax({
+                    url: '/update-amazon-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Amazon price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Amazon update failed:', error);
+                    }
+                });
+                
+                alert('Price is being updated across all marketplaces');
+                return;
+            }
+            
             const type = $btn.data('type');
 
             if(!sku || !type) return;

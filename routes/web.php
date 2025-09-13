@@ -1427,6 +1427,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     // listing Bestbuy USA
     Route::get('/zero-bestbuyusa', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroview'])->name('zero.bestbuyusa');
+    Route::get('/bestbuyusa-analytics', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroAnalytics'])->name('zero.bestbuyusa.analytics');
     Route::get('/zero_bestbuyusa/view-data', [BestbuyUSAZeroController::class, 'getViewBestbuyUSAZeroData']);
     Route::post('/zero_bestbuyusa/reason-action/update-data', [BestbuyUSAZeroController::class, 'updateReasonAction']);
     Route::get('/listing-bestbuyusa', [ListingBestbuyUSAController::class, 'listingBestbuyUSA'])->name('listing.bestbuyusa');
@@ -1696,7 +1697,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(EbayPMPAdsController::class)->group(function(){
         Route::get('/ebay/pmp/ads', 'index')->name('ebay.pmp.ads');
-        Route::get('/ebay/pmp/ads/data','getEbayPmpAdsData');
+        Route::get('/ebay/pmp/ads/data','getViewEbayData');
+        Route::post('/update-ebay-pmt-percenatge','updateEbayPercentage');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);

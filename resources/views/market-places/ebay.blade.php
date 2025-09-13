@@ -2559,6 +2559,7 @@
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getEDilColor(item['E Dil%'])}">${Math.round(item['E Dil%'] * 100)}%</span>`
                     ));
+                    
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {

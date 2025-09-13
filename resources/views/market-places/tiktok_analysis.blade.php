@@ -1441,6 +1441,24 @@
                                             <div class="metric-total" id="ovl30-total">0</div>
                                         </div>
                                     </th>
+                                    <th data-field="tl_30" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                TL 30 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="tl30-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="t_dil" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                T DIL <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="tDil-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th>NRL</th>
 
                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
@@ -2180,6 +2198,7 @@
                                     valueJson.Live) : 0;
 
                                 const price = parseFloat(item['price']) || 0;
+                                const Tdil = parseFloat(item['T DIL']) || 0;
 
                                 return {
                                     sl_no: index + 1,
@@ -2371,6 +2390,23 @@
 
                     $row.append($('<td>').text(item.INV));
                     $row.append($('<td>').text(item.L30));
+                    // T Sales column
+                    $row.append($('<td>').html(`
+                     <div class="sku-tooltip-container">
+                     <span class="sku-text">${item.raw_data['T Sales L30'] || 0}</span>
+                     <div class="sku-tooltip">
+                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.raw_data['T Sales L30'] || 0}</div>
+                     </div>
+                     </div>
+                      `));
+
+                    // T DIL with color coding - using the calculated T_DIL value
+                    $row.append($('<td>').html(`
+                     <span class="dil-percent-value ${getDilColor(item.raw_data['T DIL'] / 100 || 0)}">
+                     ${Math.round(item.raw_data['T DIL'] || 0)}%
+                     </span>
+                    `));
+
 
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
@@ -3872,7 +3908,8 @@
                     $('#ovl30-total').text(metrics.ovL30Total.toLocaleString());
                     $('#ovdil-total').text(Math.round(metrics.ovDilTotal) + '%');
                     $('#al30-total').text(metrics.el30Total.toLocaleString());
-                    $('#lDil-total').text(Math.round(metrics.eDilTotal / divisor * 100) + '%');
+                    $('#tl30-total').text(metrics.totalSalesL30Sum.toLocaleString());
+                    $('#tDil-total').text(Math.round(metrics.eDilTotal / divisor * 100) + '%');
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
                     $('#listed-total').text(metrics.listedCount.toLocaleString());
                     $('#live-total').text(metrics.liveCount.toLocaleString());

@@ -95,7 +95,10 @@
     </style>
 @endsection
 @section('content')
-    @include('layouts.shared.page-title', ['page_title' => 'Amazon Product Review', 'sub_title' => 'Amazon Product Review'])
+    @include('layouts.shared.page-title', [
+        'page_title' => 'Amazon Product Review',
+        'sub_title' => 'Amazon Product Review',
+    ])
 
     <div class="row">
         <div class="col-12">
@@ -121,8 +124,7 @@
                         </div>
 
                         <!-- Import Button -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#importModal">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
                             <i class="fas fa-file-import me-1"></i> Import Excel/CSV
                         </button>
                     </div>
@@ -192,12 +194,59 @@
                 movableColumns: false,
                 resizableColumns: true,
                 height: "680px",
+
+                // ADDED: Data filter to hide SKUs with 0 inventory but keep parent rows
+                dataFilter: function(data) {
+                    return data.filter(function(row) {
+                        const sku = row.Sku || '';
+                        const inv = parseFloat(row.INV);
+                        const isParent = sku.toUpperCase().includes("PARENT");
+
+                        // Keep parent rows and SKUs with inventory > 0
+                        return isParent || (!isNaN(inv) && inv > 0);
+                    });
+                },
+
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
+                    const isParent = sku.toUpperCase().includes("PARENT");
 
-                    if (sku.toUpperCase().includes("PARENT")) {
+                    if (isParent) {
                         row.getElement().classList.add("parent-row");
+
+                        // Calculate and display parent group inventory summary
+                        const parent = data.Parent;
+                        const tableData = table.getData();
+
+                        // Get all SKUs under this parent (excluding the parent row itself)
+                        const childSkus = tableData.filter(item =>
+                            item.Parent === parent && !item.Sku.toUpperCase().includes("PARENT")
+                        );
+
+                        // Calculate total inventory and L30 for this parent group
+                        const totalInv = childSkus.reduce((sum, item) => sum + (parseFloat(item.INV) ||
+                            0), 0);
+                        const totalL30 = childSkus.reduce((sum, item) => sum + (parseFloat(item.L30) ||
+                            0), 0);
+
+                        // Calculate parent Dil% using the formula: totalL30 / totalInv
+                        const parentDilPercent = totalInv > 0 ? (totalL30 / totalInv) * 100 : 0;
+                        const dilColor = getDilColor(parentDilPercent / 100);
+
+                        // Add inventory summary to parent row
+                        if (row.getElement().querySelector('.parent-inventory-summary')) {
+                            row.getElement().querySelector('.parent-inventory-summary').remove();
+                        }
+
+                        const summaryEl = document.createElement('div');
+                        summaryEl.className = 'parent-inventory-summary';
+                        summaryEl.style.cssText =
+                            'font-size: 12px; color: #666; margin-top: 5px; padding: 2px; background: #f5f5f5;';
+                        summaryEl.innerHTML =
+                            `Group: ${childSkus.length} SKUs | INV: ${totalInv} | L30: ${totalL30} | Dil%: <span class="dil-percent-value ${dilColor}">${Math.round(parentDilPercent)}%</span>`;
+
+                        row.getElement().querySelector('.tabulator-cell').appendChild(summaryEl);
                     }
                 },
                 columns: [{
@@ -222,11 +271,21 @@
                         headerSort: true,
                         titleFormatter: function() {
                             return `<div>
-                                INV<br>
-                                <span id="total-inv-header" style="font-size:13px;color:white;font-weight:600;"></span>
-                            </div>`;
+                    INV<br>
+                    <span id="total-inv-header" style="font-size:13px;color:white;font-weight:600;"></span>
+                </div>`;
                         },
-                        formatter: "plaintext",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+                            const inv = parseFloat(data.INV);
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">PARENT</div>`;
+                            }
+                            return `<div class="text-center">${inv}</div>`;
+                        },
                         hozAlign: "center"
                     },
                     {
@@ -235,11 +294,21 @@
                         headerSort: true,
                         titleFormatter: function() {
                             return `<div>
-                            OV L30<br>
-                            <span id="total-l30-header" style="font-size:13px;color:white;font-weight:600;"></span>
-                        </div>`;
+                OV L30<br>
+                <span id="total-l30-header" style="font-size:13px;color:white;font-weight:600;"></span>
+            </div>`;
                         },
-                        formatter: "plaintext",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+                            const l30 = parseFloat(data.L30);
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return `<div class="text-center">${l30}</div>`;
+                        },
                         hozAlign: "center"
                     },
                     {
@@ -247,6 +316,36 @@
                         field: "Dil",
                         formatter: function(cell) {
                             const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                // Calculate parent Dil% using summation formula
+                                const parent = data.Parent;
+                                const tableData = table.getData();
+
+                                // Get all SKUs under this parent (excluding the parent row itself)
+                                const childSkus = tableData.filter(item =>
+                                    item.Parent === parent && !item.Sku.toUpperCase().includes(
+                                        "PARENT")
+                                );
+
+                                // Calculate total inventory and L30 for this parent group
+                                const totalInv = childSkus.reduce((sum, item) => sum + (parseFloat(
+                                    item.INV) || 0), 0);
+                                const totalL30 = childSkus.reduce((sum, item) => sum + (parseFloat(
+                                    item.L30) || 0), 0);
+
+                                // Calculate parent Dil% using the formula: totalL30 / totalInv
+                                if (totalInv > 0) {
+                                    const dilDecimal = totalL30 / totalInv;
+                                    const color = getDilColor(dilDecimal);
+                                    return `<div class="text-center"><span class="dil-percent-value ${color}" style="font-weight: bold;">${Math.round(dilDecimal * 100)}%</span></div>`;
+                                }
+                                return `<div class="text-center"><span class="dil-percent-value red" style="font-weight: bold;">0%</span></div>`;
+                            }
+
+                            // Regular SKU Dil% calculation
                             const l30 = parseFloat(data.L30);
                             const inv = parseFloat(data.INV);
 
@@ -264,6 +363,13 @@
                         editor: "input",
                         formatter: function(cell) {
                             const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+
                             const bg = data.ratingBg || "";
                             return `<div style="background-color:${bg}; padding:3px;">${cell.getValue() || ''}</div>`;
                         }
@@ -271,18 +377,36 @@
                     {
                         title: "Reviews count",
                         field: "review_count",
-                        editor: "input"
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
                     },
                     {
                         title: "Link",
                         field: "link",
                         width: 150,
                         formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+
                             const value = cell.getValue();
                             if (value && value.trim() !== "") {
                                 return `<a href="${value}" target="_blank" style="text-decoration:none;">
-                                            <i class="fa fa-link"></i> Open
-                                        </a>`;
+                                <i class="fa fa-link"></i> Open
+                            </a>`;
                             }
                             return "";
                         },
@@ -292,17 +416,35 @@
                     {
                         title: "Remarks",
                         field: "remarks",
-                        editor: "input"
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
                     },
                     {
                         title: "Competitor Link/ASIN",
                         field: "comp_link",
                         formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+
                             const value = cell.getValue();
                             if (value && value.trim() !== "") {
                                 return `<a href="${value}" target="_blank" style="text-decoration:none;">
-                                            <i class="fa fa-link"></i> Open
-                                        </a>`;
+                                <i class="fa fa-link"></i> Open
+                            </a>`;
                             }
                             return "";
                         },
@@ -312,75 +454,136 @@
                     {
                         title: "Comp Rating",
                         field: "comp_rating",
-                        editor: "input"
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
                     },
                     {
                         title: "Comp Reviews count",
                         field: "comp_review_count",
-                        editor: "input"
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
                     },
                     {
                         title: "Remarks",
                         field: "comp_remarks",
-                        editor: "input"
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
                     },
                     {
                         title: "Negative L90",
                         field: "negation_l90",
-                        editor: "input"
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
                     },
                     {
                         title: "Action",
                         field: "action",
                         formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().Sku;
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-row-id="${sku}" 
-                                        data-type="action"
-                                    style="width: 90px;">
-                                    <option value="Pending" ${cell.getValue() === 'Pending' ? 'selected' : ''}>Pending</option>
-                                    <option value="Resolved" ${cell.getValue() === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                                </select>
-                            `;
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
 
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+
+                            const row = cell.getRow();
+                            const skuValue = data.Sku;
+                            return `
+                    <select class="form-select form-select-sm editable-select" 
+                            data-row-id="${skuValue}" 
+                            data-type="action"
+                        style="width: 90px;">
+                        <option value="Pending" ${cell.getValue() === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Resolved" ${cell.getValue() === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                `;
                         },
                         hozAlign: "center"
                     },
                     {
                         title: "Corrective Action",
                         field: "corrective_action",
-                        editor: "input"
-                    }
+                        editor: "input",
+                        formatter: function(cell) {
+                            const data = cell.getData();
+                            const sku = data.Sku || '';
+                            const isParent = sku.toUpperCase().includes("PARENT");
 
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">-</div>`;
+                            }
+                            return cell.getValue() || '';
+                        }
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     const rows = response.data;
 
                     rows.forEach(row => {
-                        const inv = parseFloat(row.INV);
-                        const l30 = parseFloat(row.L30);
-                        if (!isNaN(inv) && inv !== 0 && !isNaN(l30)) {
-                            row.dilColor = getDilColor(l30 / inv);
-                        } else {
-                            row.dilColor = "red";
-                        }
+                        const sku = row.Sku || '';
+                        const isParent = sku.toUpperCase().includes("PARENT");
 
-                        // Rating vs Competitor Rating check
-                        const rating = parseFloat(row.product_rating);
-                        const compRating = parseFloat(row.comp_rating);
-
-                        if (!isNaN(rating) && !isNaN(compRating)) {
-                            if (rating < compRating) {
-                                row.ratingBg = "red";
-                            } else if (rating > compRating) {
-                                row.ratingBg = "green";
+                        if (!isParent) {
+                            const inv = parseFloat(row.INV);
+                            const l30 = parseFloat(row.L30);
+                            if (!isNaN(inv) && inv !== 0 && !isNaN(l30)) {
+                                row.dilColor = getDilColor(l30 / inv);
                             } else {
-                                row.ratingBg = ""; // equal case
+                                row.dilColor = "red";
                             }
-                        } else {
-                            row.ratingBg = "";
+
+                            // Rating vs Competitor Rating check
+                            const rating = parseFloat(row.product_rating);
+                            const compRating = parseFloat(row.comp_rating);
+
+                            if (!isNaN(rating) && !isNaN(compRating)) {
+                                if (rating < compRating) {
+                                    row.ratingBg = "red";
+                                } else if (rating > compRating) {
+                                    row.ratingBg = "green";
+                                } else {
+                                    row.ratingBg = ""; // equal case
+                                }
+                            } else {
+                                row.ratingBg = "";
+                            }
                         }
                     });
 
@@ -423,8 +626,8 @@
             });
 
             $(document).on('change', '.editable-select', function() {
-                const sku = $(this).data('row-id'); 
-                const field = $(this).data('type'); 
+                const sku = $(this).data('row-id');
+                const field = $(this).data('type');
                 const value = $(this).val();
 
                 if (!sku) return;
@@ -443,6 +646,16 @@
                     },
                     error: function(xhr) {
                         console.error(xhr.responseText);
+                    }
+                });
+            });
+
+            // ADDED: Function to refresh parent row summaries when data changes
+            table.on("dataChanged", function(data) {
+                // Reapply row formatting to update parent summaries
+                table.getRows().forEach(row => {
+                    if (row.getData().Sku.toUpperCase().includes("PARENT")) {
+                        row.reformat();
                     }
                 });
             });
