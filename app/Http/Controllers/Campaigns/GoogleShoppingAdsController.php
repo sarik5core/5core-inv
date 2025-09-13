@@ -11,7 +11,15 @@ use Illuminate\Support\Facades\DB;
 class GoogleShoppingAdsController extends Controller
 {
     public function index(){
-        return view('campaign.google-shopping-kw-ads');
+        return view('campaign.google-shopping-ads');
+    }
+
+    public function googleShoppingSerp(){
+        return view('campaign.google-shopping-ads-serp');
+    }
+
+    public function googleShoppingPmax(){
+        return view('campaign.google-shopping-ads-pmax');
     }
 
     public function getGoogleShoppingAdsData(){

@@ -1838,7 +1838,13 @@
                             <div class="collapse" id="sidebarGoogleShopping">
                                 <ul class="side-nav-third-level">
                                     <li>
-                                        <a href="{{ route('google.shopping.kw') }}">Google Shopping KW</a>
+                                        <a href="{{ route('google.shopping') }}">Google Shopping</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('google.shopping.serp') }}">Google SERP</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('google.shopping.pmax') }}">Google PMAX</a>
                                     </li>
                                 </ul>
                             </div>

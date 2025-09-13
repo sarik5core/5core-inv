@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Google Shopping - UTILIZED KW', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Google Shopping SERP', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Google Shopping - UTILIZED KW',
-        'sub_title' => 'Google Shopping - UTILIZED KW',
+        'page_title' => 'Google Shopping SERP',
+        'sub_title' => 'Google Shopping SERP',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Google Shopping - Utilized KW
+                            Google Shopping SERP
                         </h4>
 
                         <!-- Filters Row -->
@@ -245,7 +245,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/google/shopping/kw/data",
+                ajaxURL: "/google/shopping/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,

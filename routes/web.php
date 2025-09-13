@@ -1701,6 +1701,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ebay/pmp/ads', 'index')->name('ebay.pmp.ads');
         Route::get('/ebay/pmp/ads/data','getEbayPmpAdsData');
         Route::post('/update-ebay-pmt-percenatge','updateEbayPercentage');
+        Route::post('/update-ebay-pmt-sprice','saveEbayPMTSpriceToDatabase');
     });
 
     Route::controller(WalmartUtilisationController::class)->group(function(){
@@ -1709,8 +1710,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(GoogleShoppingAdsController::class)->group(function(){
-        Route::get('/google/shopping/kw', 'index')->name('google.shopping.kw');
-        Route::get('/google/shopping/kw/data', 'getGoogleShoppingAdsData');
+        Route::get('/google/shopping', 'index')->name('google.shopping');
+        Route::get('/google/shopping/serp', 'googleShoppingSerp')->name('google.shopping.serp');
+        Route::get('/google/shopping/pmax', 'googleShoppingPmax')->name('google.shopping.pmax');
+        Route::get('/google/shopping/data', 'getGoogleShoppingAdsData');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);

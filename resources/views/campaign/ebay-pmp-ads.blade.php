@@ -2806,15 +2806,23 @@
                         font-weight:bold;
                         padding:6px 12px; 
                         border-radius:8px; 
-                        color:#dc3545; 
-                        background-color:${
-                            parseFloat(item.SROI) <= 50 
-                                ? '#fff'   // 🔴 red
-                                : parseFloat(item.SROI) <= 100 
+                        color:${
+                            parseFloat(item.SROI) <= 10 
+                                ? '#dc3545'   // 🔴 red
+                                : parseFloat(item.SROI) <= 15 
                                     ? '#ffc107'   // 🟡 yellow
-                                    : parseFloat(item.SROI) <= 150 
-                                        ? '#198754'   // 🟢 green
-                                        : '#6f42c1'   // 🟣 purple
+                                    : parseFloat(item.SROI) <= 20 
+                                        ? '#0d6efd'   // 🔵 blue
+                                        : '#28a745'   // 🟢 green
+                        };
+                        background-color:${
+                            parseFloat(item.SROI) <= 10 
+                                ? '#fff'   // 🔴 red
+                                : parseFloat(item.SROI) <= 15 
+                                    ? '#fff'   // 🟡 yellow
+                                    : parseFloat(item.SROI) <= 20 
+                                        ? '#fff'   // 🔵 blue
+                                        : '#fff'   // 🟢 green
                         };">
                         ${(parseFloat(item.SROI) - Math.floor(parseFloat(item.SROI)) >= 0.5 
                             ? Math.ceil(parseFloat(item.SROI)) 
@@ -5658,7 +5666,7 @@
                 }
 
                 $.ajax({
-                    url: '/ebay/save-sprice',
+                    url: '/update-ebay-pmt-sprice',
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),

@@ -223,6 +223,34 @@ class EbayPMPAdsController extends Controller
         return (float) preg_replace('/[^\d.]/', '', $value);
     }
 
+    public function saveEbayPMTSpriceToDatabase(Request $request)
+    {
+        $sku = $request->input('sku');
+        $spriceData = $request->only(['sprice', 'spft_percent', 'sroi_percent']);
+
+        if (!$sku || !$spriceData['sprice']) {
+            return response()->json(['error' => 'SKU and sprice are required.'], 400);
+        }
+
+
+        $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
+
+        $existing = is_array($ebayDataView->value)
+            ? $ebayDataView->value
+            : (json_decode($ebayDataView->value, true) ?: []);
+
+        $merged = array_merge($existing, [
+            'SPRICE' => $spriceData['sprice'],
+            'SPFT' => $spriceData['spft_percent'],
+            'SROI' => $spriceData['sroi_percent'],
+        ]);
+
+        $ebayDataView->value = $merged;
+        $ebayDataView->save();
+
+        return response()->json(['message' => 'Data saved successfully.']);
+    }
+
     public function updateEbayPercentage(Request $request)
     {
         try {
