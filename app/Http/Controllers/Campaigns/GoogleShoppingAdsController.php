@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GoogleShoppingAdsController extends Controller
 {
@@ -24,6 +25,11 @@ class GoogleShoppingAdsController extends Controller
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
+        $googleCampaigns = DB::connection('apicentral')
+            ->table('google_ads_campaigns')
+            ->select('campaign_name')
+            ->get();
+
         $result = [];
 
         foreach ($productMasters as $pm) {
@@ -32,11 +38,24 @@ class GoogleShoppingAdsController extends Controller
 
             $shopify = $shopifyData[$sku] ?? null;
 
+            $matchedCampaign = $googleCampaigns->first(function ($c) use ($sku) {
+                $campaign = strtoupper(trim($c->campaign_name));
+                $parts = array_map('trim', explode(',', $campaign));
+                foreach ($parts as $part) {
+                    if ($part === $sku) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
             $row = [];
             $row['parent'] = $parent;
             $row['sku']    = $pm->sku;
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
+            $row['campaignName'] = $matchedCampaign->campaign_name ?? null;
+
 
             $result[] = (object) $row;
 
