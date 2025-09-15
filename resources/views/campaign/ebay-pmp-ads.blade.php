@@ -2637,13 +2637,29 @@
                     $row.append($('<td>').text(item.CBID));
                     
                     let sbid = 0;
+                    let sbidColor = "";
+                    const percent = Math.round(item.ov_dil * 100);
 
-                    const ovlDil = Math.round(item.ov_dil * 100);
-                    if (ovlDil >= 50) {
-                        sbid = 2.1;
+                    if (percent < 16.66) {
+                        sbid = 10;      // red
+                        sbidColor = "red";
+                    } else if (percent >= 16.66 && percent < 25) {
+                        sbid = 7.5;     // yellow
+                        sbidColor = "yellow";
+                    } else if (percent >= 25 && percent < 50) {
+                        sbid = 5;       // green
+                        sbidColor = "green";
+                    } else {
+                        sbid = 2.1;     // pink (50 and above)
+                        sbidColor = "pink";
                     }
 
-                    $row.append($('<td>').attr("data-field", "sbid").text(sbid));
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${sbidColor}">
+                           ${sbid}
+                        </span>`
+                    ));
+
                     $row.append($('<td>').text(""));
                     $row.append($('<td>').text(item.VIEWS));
 
