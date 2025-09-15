@@ -26,48 +26,48 @@ class AmazonReviewController extends Controller
         $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
         $amazonReviews = AmazonProductReview::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $result = [];
 
         foreach ($productMasters as $pm) {
             $shopify = $shopifyData[$pm->sku] ?? null;
-            $amazon = $amazonReviews[$pm->sku] ?? null;
+            $amazon  = $amazonReviews[$pm->sku] ?? null;
 
             $inv = $shopify->inv ?? 0;
-            $isParent = stripos($pm->sku, 'PARENT') !== false;
 
-            // Skip non-parent rows with INV <= 0, but keep parent rows
-            if (!$isParent && floatval($inv) <= 0 || empty($pm->parent) && $pm->parent === '0') {
+            // Skip rows where INV is 0 or less
+            if (floatval($inv) <= 0) {
                 continue;
             }
 
             $row = [];
             $row['Parent'] = $pm->parent;
             $row['Sku'] = $pm->sku;
-            $row['INV'] = $isParent ? 0 : $inv; 
-            $row['L30'] = $isParent ? 0 : ($shopify->quantity ?? 0);
+            $row['INV'] = $inv;
+            $row['L30'] = $shopify->quantity ?? 0;
             $row['image_path'] = $shopify->image_src ?? null;
 
-            $row['product_rating'] = $amazon->product_rating ?? null;
-            $row['review_count'] = $amazon->review_count ?? null;
-            $row['link'] = $amazon->link ?? null;
-            $row['remarks'] = $amazon->remarks ?? null;
-            $row['comp_link'] = $amazon->comp_link ?? null;
-            $row['comp_rating'] = $amazon->comp_rating ?? null;
-            $row['comp_review_count'] = $amazon->comp_review_count ?? null;
-            $row['comp_remarks'] = $amazon->comp_remarks ?? null;
-            $row['negation_l90'] = $amazon->negation_l90 ?? null;
-            $row['action'] = $amazon->action ?? null;
-            $row['corrective_action'] = $amazon->corrective_action ?? null;
+            $row['product_rating']     = $amazon->product_rating ?? null;
+            $row['review_count']       = $amazon->review_count ?? null;
+            $row['link']               = $amazon->link ?? null;
+            $row['remarks']            = $amazon->remarks ?? null;
+            $row['comp_link']          = $amazon->comp_link ?? null;
+            $row['comp_rating']        = $amazon->comp_rating ?? null;
+            $row['comp_review_count']  = $amazon->comp_review_count ?? null;
+            $row['comp_remarks']       = $amazon->comp_remarks ?? null;
+            $row['negation_l90']       = $amazon->negation_l90 ?? null;
+            $row['action']             = $amazon->action ?? null;
+            $row['corrective_action']  = $amazon->corrective_action ?? null;
 
             $result[] = (object) $row;
         }
 
         return response()->json([
             'message' => 'Data fetched successfully',
-            'data' => $result,
-            'status' => 200,
+            'data'    => $result,
+            'status'  => 200,
         ]);
     }
 

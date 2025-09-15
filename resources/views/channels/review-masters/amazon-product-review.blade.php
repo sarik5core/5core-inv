@@ -195,22 +195,62 @@
                 resizableColumns: true,
                 height: "680px",
 
+                // Data filter to hide SKUs with 0 inventory but keep parent rows
+                dataFilter: function(data) {
+                    return data.filter(function(row) {
+                        const sku = row.Sku || '';
+                        const inv = parseFloat(row.INV) || 0;
+                        const isParent = sku.toUpperCase().includes("PARENT");
+                        return isParent || (!isNaN(inv) && inv > 0);
+                    });
+                },
+
+                // Row formatter to calculate and display Parent row summaries
                 rowFormatter: function(row) {
                     const data = row.getData();
-                    const sku = data["Sku"] || '';
+                    const sku = data.Sku || '';
                     const isParent = sku.toUpperCase().includes("PARENT");
 
                     if (isParent) {
                         row.getElement().classList.add("parent-row");
 
-                        // Use precalculated values
-                        const totalInv = data.INV;
-                        const totalL30 = data.L30;
-                        const childCount = data.childCount || 0;
+                        // Get all child SKUs for this parent
+                        const parent = data.Parent;
+                        const tableData = table.getData();
+                        const childSkus = tableData.filter(item =>
+                            item.Parent === parent && !item.Sku.toUpperCase().includes("PARENT")
+                        );
+
+                        // Calculate totals for INV and L30
+                        const totalInv = childSkus.reduce((sum, item) => sum + (parseFloat(item.INV) ||
+                            0), 0);
+                        const totalL30 = childSkus.reduce((sum, item) => sum + (parseFloat(item.L30) ||
+                            0), 0);
                         const parentDilPercent = totalInv > 0 ? (totalL30 / totalInv) * 100 : 0;
-                        const dilColor = data.dilColor || getDilColor(parentDilPercent / 100);
+                        const dilColor = getDilColor(parentDilPercent / 100);
+
+                        // Update Parent row data with calculated totals
+                        row.getData().INV = totalInv;
+                        row.getData().L30 = totalL30;
+                        row.getData().Dil = parentDilPercent;
+
+                        // Remove existing summary if present
+                        if (row.getElement().querySelector('.parent-inventory-summary')) {
+                            row.getElement().querySelector('.parent-inventory-summary').remove();
+                        }
+
+                        // Add summary to Parent row
+                        const summaryEl = document.createElement('div');
+                        summaryEl.className = 'parent-inventory-summary';
+                        summaryEl.style.cssText =
+                            'font-size: 12px; color: #666; margin-top: 5px; padding: 2px; background: #f5f5f5;';
+                        summaryEl.innerHTML =
+                            `Group: ${childSkus.length} SKUs | INV: ${totalInv} | L30: ${totalL30} | Dil%: <span class="dil-percent-value ${dilColor}">${Math.round(parentDilPercent)}%</span>`;
+
+                        row.getElement().querySelector('.tabulator-cell').appendChild(summaryEl);
                     }
                 },
+
                 columns: [{
                         title: "Parent",
                         field: "Parent",
@@ -241,9 +281,12 @@
                             const data = cell.getData();
                             const sku = data.Sku || '';
                             const isParent = sku.toUpperCase().includes("PARENT");
-                            const style = isParent ? 'font-weight: bold;' : '';
-                            const inv = data.INV;
-                            return `<div class="text-center" style="${style}">${inv}</div>`;
+                            const inv = parseFloat(data.INV) || 0;
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">${inv}</div>`;
+                            }
+                            return `<div class="text-center">${inv}</div>`;
                         },
                         hozAlign: "center"
                     },
@@ -253,17 +296,20 @@
                         headerSort: true,
                         titleFormatter: function() {
                             return `<div>
-                OV L30<br>
-                <span id="total-l30-header" style="font-size:13px;color:white;font-weight:600;"></span>
-            </div>`;
+                    OV L30<br>
+                    <span id="total-l30-header" style="font-size:13px;color:white;font-weight:600;"></span>
+                </div>`;
                         },
                         formatter: function(cell) {
                             const data = cell.getData();
                             const sku = data.Sku || '';
                             const isParent = sku.toUpperCase().includes("PARENT");
-                            const style = isParent ? 'font-weight: bold;' : '';
-                            const l30 = data.L30;
-                            return `<div class="text-center" style="${style}">${l30}</div>`;
+                            const l30 = parseFloat(data.L30) || 0;
+
+                            if (isParent) {
+                                return `<div class="text-center" style="font-weight: bold;">${l30}</div>`;
+                            }
+                            return `<div class="text-center">${l30}</div>`;
                         },
                         hozAlign: "center"
                     },
@@ -274,17 +320,14 @@
                             const data = cell.getData();
                             const sku = data.Sku || '';
                             const isParent = sku.toUpperCase().includes("PARENT");
-                            const style = isParent ? 'font-weight: bold;' : '';
-                            const l30 = parseFloat(data.L30);
-                            const inv = parseFloat(data.INV);
+                            const inv = parseFloat(data.INV) || 0;
+                            const l30 = parseFloat(data.L30) || 0;
+                            const dilPercent = inv > 0 ? (l30 / inv) * 100 : 0;
+                            const color = getDilColor(dilPercent / 100);
 
-                            if (!isNaN(l30) && !isNaN(inv) && inv !== 0) {
-                                const dilDecimal = (l30 / inv);
-                                const color = getDilColor(dilDecimal);
-                                return `<div class="text-center"><span class="dil-percent-value ${color}" style="${style}">${Math.round(dilDecimal * 100)}%</span></div>`;
-                            }
-                            return `<div class="text-center"><span class="dil-percent-value red" style="${style}">0%</span></div>`;
-                        }
+                            return `<div class="text-center"><span class="dil-percent-value ${color}" style="font-weight: ${isParent ? 'bold' : 'normal'}">${Math.round(dilPercent)}%</span></div>`;
+                        },
+                        hozAlign: "center"
                     },
                     {
                         title: "Rating",
@@ -334,8 +377,8 @@
                             const value = cell.getValue();
                             if (value && value.trim() !== "") {
                                 return `<a href="${value}" target="_blank" style="text-decoration:none;">
-                                <i class="fa fa-link"></i> Open
-                            </a>`;
+                        <i class="fa fa-link"></i> Open
+                    </a>`;
                             }
                             return "";
                         },
@@ -372,8 +415,8 @@
                             const value = cell.getValue();
                             if (value && value.trim() !== "") {
                                 return `<a href="${value}" target="_blank" style="text-decoration:none;">
-                                <i class="fa fa-link"></i> Open
-                            </a>`;
+                        <i class="fa fa-link"></i> Open
+                    </a>`;
                             }
                             return "";
                         },
@@ -458,7 +501,7 @@
                     <select class="form-select form-select-sm editable-select" 
                             data-row-id="${skuValue}" 
                             data-type="action"
-                        style="width: 90px;">
+                            style="width: 90px;">
                         <option value="Pending" ${cell.getValue() === 'Pending' ? 'selected' : ''}>Pending</option>
                         <option value="Resolved" ${cell.getValue() === 'Resolved' ? 'selected' : ''}>Resolved</option>
                     </select>
@@ -482,71 +525,64 @@
                         }
                     }
                 ],
+
+                // Add Parent rows dynamically and process data
                 ajaxResponse: function(url, params, response) {
-                    const rows = response.data;
+                    let rows = response.data || [];
 
-                    // Filter to hide SKUs with 0 inventory but keep parent rows
-                    const filteredRows = rows.filter(function(row) {
-                        const sku = row.Sku || '';
-                        const inv = parseFloat(row.INV);
-                        const isParent = sku.toUpperCase().includes("PARENT");
-                        return isParent || (!isNaN(inv) && inv > 0);
-                    });
+                    // Step 1: Identify unique Parent values
+                    const parentSet = new Set(rows.map(row => row.Parent).filter(parent => parent));
+                    const existingParents = new Set(rows.filter(row => row.Sku.toUpperCase().includes(
+                        "PARENT")).map(row => row.Parent));
 
-                    // Initialize parent map and accumulators
-                    const parentMap = {};
-                    filteredRows.forEach(row => {
-                        const sku = row.Sku || '';
-                        const isParent = sku.toUpperCase().includes("PARENT");
-                        if (isParent) {
-                            const parent = row.Parent;
-                            parentMap[parent] = row;
-                            row.childInv = 0;
-                            row.childL30 = 0;
-                            row.childCount = 0;
+                    // Step 2: Add missing Parent rows
+                    parentSet.forEach(parent => {
+                        if (!existingParents.has(parent)) {
+                            rows.push({
+                                Parent: parent,
+                                Sku: `${parent} PARENT`,
+                                INV: 0,
+                                L30: 0,
+                                Dil: 0,
+                                product_rating: '-',
+                                review_count: '-',
+                                link: '-',
+                                remarks: '-',
+                                comp_link: '-',
+                                comp_rating: '-',
+                                comp_review_count: '-',
+                                comp_remarks: '-',
+                                negation_l90: '-',
+                                action: '-',
+                                corrective_action: '-'
+                            });
                         }
                     });
 
-                    // Accumulate sums and count for each parent from visible children
-                    filteredRows.forEach(row => {
+                    // Step 3: Sort rows to place Parent rows after their child SKUs
+                    rows.sort((a, b) => {
+                        const aIsParent = a.Sku.toUpperCase().includes("PARENT");
+                        const bIsParent = b.Sku.toUpperCase().includes("PARENT");
+                        if (a.Parent === b.Parent) {
+                            return aIsParent ? 1 : bIsParent ? -1 : a.Sku.localeCompare(b.Sku);
+                        }
+                        return a.Parent.localeCompare(b.Parent);
+                    });
+
+                    // Step 4: Apply Dil% and rating background logic for non-Parent rows
+                    rows.forEach(row => {
                         const sku = row.Sku || '';
                         const isParent = sku.toUpperCase().includes("PARENT");
+
                         if (!isParent) {
-                            const parent = row.Parent;
-                            if (parentMap[parent]) {
-                                parentMap[parent].childInv += parseFloat(row.INV) || 0;
-                                parentMap[parent].childL30 += parseFloat(row.L30) || 0;
-                                parentMap[parent].childCount += 1;
-                            }
-                        }
-                    });
-
-                    // Set calculated values to parent rows
-                    for (let parent in parentMap) {
-                        const row = parentMap[parent];
-                        row.INV = row.childInv;
-                        row.L30 = row.childL30;
-                        // Set dilColor for parent
-                        const inv = row.INV;
-                        const l30 = row.L30;
-                        if (!isNaN(inv) && !isNaN(l30) && inv !== 0) {
-                            row.dilColor = getDilColor(l30 / inv);
-                        } else {
-                            row.dilColor = "red";
-                        }
-                    }
-
-                    // Set dilColor and ratingBg for child rows
-                    filteredRows.forEach(row => {
-                        const sku = row.Sku || '';
-                        const isParent = sku.toUpperCase().includes("PARENT");
-                        if (!isParent) {
-                            const inv = parseFloat(row.INV);
-                            const l30 = parseFloat(row.L30);
-                            if (!isNaN(inv) && !isNaN(l30) && inv !== 0) {
+                            const inv = parseFloat(row.INV) || 0;
+                            const l30 = parseFloat(row.L30) || 0;
+                            if (!isNaN(inv) && inv !== 0 && !isNaN(l30)) {
                                 row.dilColor = getDilColor(l30 / inv);
+                                row.Dil = (l30 / inv) * 100;
                             } else {
                                 row.dilColor = "red";
+                                row.Dil = 0;
                             }
 
                             const rating = parseFloat(row.product_rating);
@@ -565,44 +601,55 @@
                         }
                     });
 
-                    return filteredRows;
+                    return rows;
                 },
+
+                // Event handlers
+                dataProcessed: function() {
+                    setTimeout(() => updateTotalInvAndL30(table), 100);
+                },
+
+                dataLoaded: function() {
+                    updateSkuCount();
+                },
+
+                cellEdited: function(cell) {
+                    const rowData = cell.getRow().getData();
+                    const field = cell.getField();
+                    const value = cell.getValue();
+
+                    if (!rowData.Sku) return;
+
+                    $.ajax({
+                        url: '/amazon-product-reviews/save',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: rowData.Sku,
+                            field: field,
+                            value: value
+                        },
+                        success: function(response) {
+                            console.log(response);
+                        },
+                        error: function(xhr) {
+                            console.error(xhr.responseText);
+                        }
+                    });
+                },
+
+                // Handle changes to editable select fields
+                dataChanged: function(data) {
+                    // Reapply row formatting to update parent summaries
+                    table.getRows().forEach(row => {
+                        if (row.getData().Sku.toUpperCase().includes("PARENT")) {
+                            row.reformat();
+                        }
+                    });
+                }
             });
 
-            table.on("dataProcessed", function() {
-                setTimeout(() => updateTotalInvAndL30(table), 100);
-            });
-
-            table.on("dataLoaded", function() {
-                updateSkuCount();
-            });
-
-            table.on("cellEdited", function(cell) {
-                const rowData = cell.getRow().getData();
-                const field = cell.getField();
-                const value = cell.getValue();
-
-                if (!rowData.Sku) return;
-
-                $.ajax({
-                    url: '/amazon-product-reviews/save',
-                    type: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        sku: rowData.Sku,
-                        field: field,
-                        value: value
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        // Optional: Update any counters if needed
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-
+            // Handle changes to action select dropdown
             $(document).on('change', '.editable-select', function() {
                 const sku = $(this).data('row-id');
                 const field = $(this).data('type');
