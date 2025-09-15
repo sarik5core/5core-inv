@@ -1494,8 +1494,8 @@
                                             {{-- <div class="metric-total" id="ovdil-total">0%</div> --}}
                                         </div>
                                     </th>
-                                    <th data-field="s_bid">S BID</th>
                                     <th data-field="s_bid">ES BID</th>
+                                    <th data-field="s_bid">S BID</th>
 
                                     <th data-field="total_views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
@@ -2423,6 +2423,7 @@
                                     SHIP: item.Ship_productmaster || 0,
                                     VIEWS: item.ebay_views || 0,
                                     CBID: item.bid_percentage || 0,
+                                    ESBID: item.suggested_bid || 0,
                                     TPFT: item.TPFT || 0,
                                 };
                             });
@@ -2635,6 +2636,8 @@
                     $row.append($('<td class="el_30_col">').text(item['eBay L30']));
                     
                     $row.append($('<td>').text(item.CBID));
+
+                    $row.append($('<td>').text(item.ESBID));
                     
                     let sbid = 0;
                     let sbidColor = "";
@@ -2659,8 +2662,6 @@
                            ${sbid}
                         </span>`
                     ));
-
-                    $row.append($('<td>').text(""));
                     $row.append($('<td>').text(item.VIEWS));
 
                     // CVR with color coding and tooltip
