@@ -22,6 +22,10 @@ class GoogleShoppingAdsController extends Controller
         return view('campaign.google-shopping-ads-pmax');
     }
 
+    public function googleShoppingAdsRunning(){
+        return view('campaign.google-shopping-ads-running');
+    }
+
     public function getGoogleShoppingAdsData(){
 
         $productMasters = ProductMaster::orderBy('parent', 'asc')

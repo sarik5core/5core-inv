@@ -157,6 +157,7 @@ use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingControl
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
 use App\Http\Controllers\Campaigns\AmazonAdRunningController;
+use App\Http\Controllers\Campaigns\AmazonCampaignReportsController;
 use App\Http\Controllers\Campaigns\AmazonPinkDilAdController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
@@ -1689,6 +1690,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     });
 
+    Route::controller(AmazonCampaignReportsController::class)->group(function () {
+        Route::get('/amazon/campaign/reports', 'index')->name('amazon.campaign.reports');
+        Route::get('/amazon/campaign/reports/data', 'getAmazonCampaignsData');
+
+    });
+
     Route::controller(EbayACOSController::class)->group(function () {
         Route::get('/ebay-acos-control/list', 'index')->name('ebay.acos.index');
         Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
@@ -1715,6 +1722,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/google/shopping', 'index')->name('google.shopping');
         Route::get('/google/shopping/serp', 'googleShoppingSerp')->name('google.shopping.serp');
         Route::get('/google/shopping/pmax', 'googleShoppingPmax')->name('google.shopping.pmax');
+        Route::get('/google/shopping/running', 'googleShoppingAdsRunning')->name('google.shopping.running');
         Route::get('/google/shopping/data', 'getGoogleShoppingAdsData');
     });
 

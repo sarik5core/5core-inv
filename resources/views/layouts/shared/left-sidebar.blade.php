@@ -1185,6 +1185,9 @@
                                         <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('amazon.campaign.reports') }}">Amazon Ad Reports</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
                                     </li>
                                     <li>
@@ -1837,6 +1840,9 @@
                             </a>
                             <div class="collapse" id="sidebarGoogleShopping">
                                 <ul class="side-nav-third-level">
+                                    <li>
+                                        <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
+                                    </li>
                                     <li>
                                         <a href="{{ route('google.shopping') }}">Google Shopping</a>
                                     </li>
