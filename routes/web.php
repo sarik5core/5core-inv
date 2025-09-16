@@ -1426,8 +1426,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing_swgearexchange/export', [ListingSWGearExchangeController::class, 'export'])->name('listing_swgearexchange.export');
 
     // Permissions
-    Route::get('/permissions', [NewPermissionController::class, 'index'])->name('permissions.index');
-    Route::post('/permissions/store', [NewPermissionController::class, 'store'])->name('permissions.store');
+    // Route::get('/permissions', [NewPermissionController::class, 'index'])->name('permissions');
+    // Route::post('/permissions/store', [NewPermissionController::class, 'store'])->name('permissions.store');
 
     // listing Bestbuy USA
     Route::get('/zero-bestbuyusa', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroview'])->name('zero.bestbuyusa');

@@ -63,7 +63,13 @@
                                         <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>
                                             <i class="fas fa-shield-alt me-2"></i>Admin
                                         </option>
-                                        <option value="super admin" {{ $user->role === 'super admin' ? 'selected' : '' }}>
+                                        <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>
+                                            <i class="fas fa-crown me-2"></i>Super Admin
+                                        </option>
+                                        <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>
+                                            <i class="fas fa-crown me-2"></i>Super Admin
+                                        </option>
+                                        <option value="superadmin" {{ $user->role === '' ? 'selected' : '' }}>
                                             <i class="fas fa-crown me-2"></i>Super Admin
                                         </option>
                                     </select>

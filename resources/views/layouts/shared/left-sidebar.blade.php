@@ -52,11 +52,17 @@
                             <a href="{{ route('roles') }}">Roles</a>
                         </li>
                         <li>
-                            <a href="{{ route('permissions') }}">Permission</a>
+                            <a href="{{ route('permissions') }}"> Reset Permission</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('permissions.view') }}">View Permissions</a>
                         </li>
                     </ul>
                 </div>
+                
             </li>
+
+
 
             <li class="side-nav-item">
                 <a data-bs-toggle="collapse" href="#suppliers" aria-expanded="false" aria-controls="suppliers"
