@@ -1668,6 +1668,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ebay-under-uti-acos-pink', 'ebayUnderUtiAcosPink')->name('ebay-under-uti-acos-pink');
         Route::get('/ebay-under-uti-acos-green', 'ebayUnderUtiAcosGreen')->name('ebay-under-uti-acos-green');
         Route::get('/ebay-under-uti-acos-red', 'ebayUnderUtiAcosRed')->name('ebay-under-uti-acos-red');
+        Route::get('/ebay/under/utilized', 'ebayOverUtilized')->name('ebay-under-utilize');
 
         Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
         Route::post('/update-ebay-nr-data', 'updateNrData');

@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - UNDER UTILIZED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - OVER UTILIZED',
-        'sub_title' => 'Ebay - OVER UTILIZED',
+        'page_title' => 'Ebay - UNDER UTILIZED',
+        'sub_title' => 'Ebay - UNDER UTILIZED',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Ebay - OVER UTILIZED
+                            Ebay - UNDER UTILIZED
                         </h4>
 
                         <!-- Filters Row -->
