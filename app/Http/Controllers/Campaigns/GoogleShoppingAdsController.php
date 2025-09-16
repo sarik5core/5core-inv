@@ -67,6 +67,7 @@ class GoogleShoppingAdsController extends Controller
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
             $row['campaignName'] = $matchedCampaign->campaign_name ?? null;
+            $row['status'] = $matchedCampaign->campaign_status ?? null;
 
 
             $result[] = (object) $row;

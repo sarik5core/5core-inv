@@ -32,10 +32,6 @@
             transition: background 0.18s;
         }
 
-        .tabulator-row:nth-child(even) {
-            background-color: #f8fafc !important;
-        }
-
         .tabulator .tabulator-cell {
             text-align: center;
             padding: 14px 10px;
@@ -50,15 +46,6 @@
         .tabulator .tabulator-cell:focus {
             outline: 1px solid #262626;
             background: #e0eaff;
-        }
-
-        .tabulator-row:hover {
-            background-color: #dbeafe !important;
-        }
-
-        .parent-row {
-            background-color: #e0eaff !important;
-            font-weight: 700;
         }
 
         #account-health-master .tabulator {
@@ -113,6 +100,10 @@
         .tabulator .tabulator-footer .tabulator-paginator .tabulator-page.active {
             background: #2563eb;
             color: white;
+        }
+
+        .parent-row-bg{
+            background-color: #c3efff !important;
         }
 
         .green-bg {
@@ -208,20 +199,7 @@
             </div>
         </div>
     </div>
-
-    <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <div class="mt-3" style="color: white; font-size: 1.2rem; font-weight: 500;">
-                Updating campaigns...
-            </div>
-            <div style="color: #a3e635; font-size: 0.9rem; margin-top: 0.5rem;">
-                Please wait while we process your request
-            </div>
-        </div>
-    </div>
+    
 @endsection
 
 @section('script')
@@ -229,12 +207,6 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-
-            const invFilter  = document.querySelector("#inv-filter");
-            const nrlFilter  = document.querySelector("#nrl-filter");
-            const nraFilter  = document.querySelector("#nra-filter");
-            const fbaFilter  = document.querySelector("#fba-filter");
-
 
             const getDilColor = (value) => {
                 const percent = parseFloat(value) * 100;
@@ -254,10 +226,10 @@
                 resizableColumns: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
-                    const sku = data["Sku"] || '';
+                    const sku = (data.sku || "").toLowerCase().trim();
 
-                    if (sku.toUpperCase().includes("PARENT")) {
-                        row.getElement().classList.add("parent-row");
+                    if (sku.includes("parent ")) {
+                        row.getElement().classList.add("parent-row-bg");
                     }
                 },
                 columns: [
@@ -339,6 +311,28 @@
                     {
                         title: "CAMPAIGN",
                         field: "campaignName"
+                    },
+                    {
+                        title: "AD STATUS",
+                        field: "status",
+                        formatter: function(cell) {
+                            const row = cell.getRow();
+                            const sku = row.getData().sku;
+                            const value = cell.getValue()?.trim();
+
+                            return `
+                                <select class="form-select form-select-sm editable-select" 
+                                        data-sku="${sku}" 
+                                        data-field="status"
+                                        style="width: 100px;">
+                                    <option value="" selected></option>
+                                    <option value="RUNNING" ${value === 'RUNNING' ? 'selected' : ''}>RUNNING</option>
+                                    <option value="PAUSED" ${value === 'PAUSED' ? 'selected' : ''}>PAUSED</option>
+                                </select>
+                            `;
+                        },
+                        hozAlign: "center",
+                        // visible: false
                     },
                     
                 ],
