@@ -1734,6 +1734,7 @@
                                     'shopify b2c': '/shopifyB2C',
                                     'doba': '/doba',
                                     'walmart': '/walmartAnalysis',
+                                    'bestbuy usa': '/bestbuyusa-analytics',
                                 };
 
                                 const routeUrl = routeMap[channelName];

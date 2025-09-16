@@ -239,144 +239,144 @@ class VerificationAdjustmentController extends Controller
     //     }
     // }
 
-    public function getViewVerificationAdjustmentData(Request $request)       //13/09 working
-    {
-        $shopifyInventoryController = new ShopifyApiInventoryController();
-        $inventoryResponse = $shopifyInventoryController->fetchInventoryWithCommitment();
-        Log::info('Fetched inventory response:', $inventoryResponse);
+    // public function getViewVerificationAdjustmentData(Request $request)       //13/09 working
+    // {
+    //     $shopifyInventoryController = new ShopifyApiInventoryController();
+    //     $inventoryResponse = $shopifyInventoryController->fetchInventoryWithCommitment();
+    //     Log::info('Fetched inventory response:', $inventoryResponse);
 
-        $inventoryData = collect($inventoryResponse); 
-        Log::info('Shopify Inventory Data:', $inventoryData->toArray());
+    //     $inventoryData = collect($inventoryResponse); 
+    //     Log::info('Shopify Inventory Data:', $inventoryData->toArray());
 
-        $response = $this->apiController->fetchDataFromProductMasterGoogleSheet();
+    //     $response = $this->apiController->fetchDataFromProductMasterGoogleSheet();
 
-        if ($response->getStatusCode() === 200) {
-            $data = $response->getData();
+    //     if ($response->getStatusCode() === 200) {
+    //         $data = $response->getData();
 
-            // use trimmed SKUs only (no strtoupper)
-            $skus = collect($data->data)
-                ->map(function ($item) {
-                    return trim($item->{'SKU'} ?? '');
-                })
-                ->filter()
-                ->unique()
-                ->toArray();
+    //         // use trimmed SKUs only (no strtoupper)
+    //         $skus = collect($data->data)
+    //             ->map(function ($item) {
+    //                 return trim($item->{'SKU'} ?? '');
+    //             })
+    //             ->filter()
+    //             ->unique()
+    //             ->toArray();
 
-            // use exact-case SKU keys
-            $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-                return trim($item->sku); 
-            });
+    //         // use exact-case SKU keys
+    //         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+    //             return trim($item->sku); 
+    //         });
 
-            $latestInventoryIds = Inventory::select(DB::raw('MAX(id) as latest_id'))
-                ->whereIn('sku', $skus)
-                ->groupBy('sku')
-                ->pluck('latest_id');
+    //         $latestInventoryIds = Inventory::select(DB::raw('MAX(id) as latest_id'))
+    //             ->whereIn('sku', $skus)
+    //             ->groupBy('sku')
+    //             ->pluck('latest_id');
 
-            $latestInventoryData = Inventory::whereIn('id', $latestInventoryIds)->get();
-
-
-            $verifiedStockData = $latestInventoryData
-                ->filter(fn ($inv) => $inv->is_hide == 0)
-                ->mapWithKeys(fn ($inv) => [trim($inv->sku) => $inv]);
-
-            $hiddenSkuSet = $latestInventoryData
-                ->filter(fn ($inv) => $inv->is_hide == 1)
-                ->pluck('sku')
-                ->map(fn ($sku) => trim($sku))
-                ->toArray();
-
-            // $verifiedStockData = Inventory::whereIn('sku', $skus)->get()
-            //     ->mapWithKeys(function ($item) {
-            //         return [trim($item->sku) => $item]; 
-            //     });
+    //         $latestInventoryData = Inventory::whereIn('id', $latestInventoryIds)->get();
 
 
-            $filteredData = array_filter($data->data, function ($item) use ($hiddenSkuSet) {
-                $sku = trim($item->SKU ?? '');
-                return !(empty(trim($item->Parent ?? '')) && empty($sku)) && !in_array($sku, $hiddenSkuSet);
-            });
+    //         $verifiedStockData = $latestInventoryData
+    //             ->filter(fn ($inv) => $inv->is_hide == 0)
+    //             ->mapWithKeys(fn ($inv) => [trim($inv->sku) => $inv]);
 
-            // $filteredData = array_filter($data->data, function ($item) {
-            //     return !(empty(trim($item->Parent ?? '')) && empty(trim($item->{'SKU'} ?? '')));
-            // });
+    //         $hiddenSkuSet = $latestInventoryData
+    //             ->filter(fn ($inv) => $inv->is_hide == 1)
+    //             ->pluck('sku')
+    //             ->map(fn ($sku) => trim($sku))
+    //             ->toArray();
 
-            $mergedData = collect($filteredData)->map(function ($item) use ($shopifyData, $inventoryData, $verifiedStockData) {
-                $childSku = trim($item->{'SKU'} ?? ''); 
-                $lp = isset($item->LP) && is_numeric($item->LP) ? floatval($item->LP) : 0;
+    //         // $verifiedStockData = Inventory::whereIn('sku', $skus)->get()
+    //         //     ->mapWithKeys(function ($item) {
+    //         //         return [trim($item->sku) => $item]; 
+    //         //     });
 
-                if (!empty($childSku) && stripos($childSku, 'PARENT') === false) {
-                    if ($shopifyData->has($childSku)) {
-                        $item->INV = $shopifyData[$childSku]->inv;
-                        $item->L30 = $shopifyData[$childSku]->quantity;
-                        $item->IMAGE_URL = $shopifyData[$childSku]->image_url ?? null;
-                    } else {
-                        $item->INV = 0;
-                        $item->L30 = 0;
-                        $item->IMAGE_URL = null;
-                    }
 
-                    if (isset($inventoryData[$childSku])) {
-                        $item->ON_HAND = $inventoryData[$childSku]['on_hand'];
-                        $item->COMMITTED = $inventoryData[$childSku]['committed'];
-                        $item->AVAILABLE_TO_SELL = $inventoryData[$childSku]['available_to_sell'];
-                        $item->IMAGE_URL = $inventoryData[$childSku]['image_url'] ?? $item->IMAGE_URL;
+    //         $filteredData = array_filter($data->data, function ($item) use ($hiddenSkuSet) {
+    //             $sku = trim($item->SKU ?? '');
+    //             return !(empty(trim($item->Parent ?? '')) && empty($sku)) && !in_array($sku, $hiddenSkuSet);
+    //         });
 
-                        ShopifyInventory::updateOrCreate(
-                            ['sku' => $childSku],
-                            [
-                                'parent' => $item->Parent ?? null,
-                                'on_hand' => $inventoryData[$childSku]['on_hand'],
-                                'committed' => $inventoryData[$childSku]['committed'],
-                                'available_to_sell' => $inventoryData[$childSku]['available_to_sell'],
-                            ]
-                        );
-                    } else {
-                        $item->ON_HAND = 'N/A';
-                        $item->AVAILABLE_TO_SELL = 'N/A';
-                        $item->COMMITTED = 'N/A';
-                    }
+    //         // $filteredData = array_filter($data->data, function ($item) {
+    //         //     return !(empty(trim($item->Parent ?? '')) && empty(trim($item->{'SKU'} ?? '')));
+    //         // });
 
-                    if ($verifiedStockData->has($childSku)) {
-                        $verifiedStockRow = $verifiedStockData[$childSku];
-                        $item->VERIFIED_STOCK = $verifiedStockRow->verified_stock ?? null;
-                        $item->TO_ADJUST = $verifiedStockRow->to_adjust ?? null;
-                        $item->REASON = $verifiedStockRow->reason ?? null;
-                        $item->REMARKS = $verifiedStockRow->REMARKS ?? null;
-                        $item->APPROVED = (bool) $verifiedStockRow->approved;
-                        $item->APPROVED_BY = $verifiedStockRow->approved_by ?? null;
-                        $item->APPROVED_AT = $verifiedStockRow->approved_at ?? null;
-                    } else {
-                        $item->VERIFIED_STOCK = null;
-                        $item->TO_ADJUST = null;
-                        $item->REASON = null;
-                        $item->REMARKS = null;
-                        $item->APPROVED = false;
-                        $item->APPROVED_BY = null;
-                        $item->APPROVED_AT = null;
-                    }
+    //         $mergedData = collect($filteredData)->map(function ($item) use ($shopifyData, $inventoryData, $verifiedStockData) {
+    //             $childSku = trim($item->{'SKU'} ?? ''); 
+    //             $lp = isset($item->LP) && is_numeric($item->LP) ? floatval($item->LP) : 0;
 
-                    $adjustedQty = isset($item->TO_ADJUST) && is_numeric($item->TO_ADJUST) ? floatval($item->TO_ADJUST) : 0;
-                    $item->LOSS_GAIN = round($adjustedQty * $lp, 2);
-                }
+    //             if (!empty($childSku) && stripos($childSku, 'PARENT') === false) {
+    //                 if ($shopifyData->has($childSku)) {
+    //                     $item->INV = $shopifyData[$childSku]->inv;
+    //                     $item->L30 = $shopifyData[$childSku]->quantity;
+    //                     $item->IMAGE_URL = $shopifyData[$childSku]->image_url ?? null;
+    //                 } else {
+    //                     $item->INV = 0;
+    //                     $item->L30 = 0;
+    //                     $item->IMAGE_URL = null;
+    //                 }
 
-                return $item;
-            });
+    //                 if (isset($inventoryData[$childSku])) {
+    //                     $item->ON_HAND = $inventoryData[$childSku]['on_hand'];
+    //                     $item->COMMITTED = $inventoryData[$childSku]['committed'];
+    //                     $item->AVAILABLE_TO_SELL = $inventoryData[$childSku]['available_to_sell'];
+    //                     $item->IMAGE_URL = $inventoryData[$childSku]['image_url'] ?? $item->IMAGE_URL;
 
-            $processedData = $mergedData->values();
-            Log::info('Processed data count: ' . count($processedData));
+    //                     ShopifyInventory::updateOrCreate(
+    //                         ['sku' => $childSku],
+    //                         [
+    //                             'parent' => $item->Parent ?? null,
+    //                             'on_hand' => $inventoryData[$childSku]['on_hand'],
+    //                             'committed' => $inventoryData[$childSku]['committed'],
+    //                             'available_to_sell' => $inventoryData[$childSku]['available_to_sell'],
+    //                         ]
+    //                     );
+    //                 } else {
+    //                     $item->ON_HAND = 'N/A';
+    //                     $item->AVAILABLE_TO_SELL = 'N/A';
+    //                     $item->COMMITTED = 'N/A';
+    //                 }
 
-            return response()->json([
-                'message' => 'Data fetched successfully',
-                'data' => $processedData,
-                'status' => 200
-            ]);
-        } else {
-            return response()->json([
-                'message' => 'Failed to fetch data from Google Sheet',
-                'status' => $response->getStatusCode()
-            ], $response->getStatusCode());
-        }
-    }
+    //                 if ($verifiedStockData->has($childSku)) {
+    //                     $verifiedStockRow = $verifiedStockData[$childSku];
+    //                     $item->VERIFIED_STOCK = $verifiedStockRow->verified_stock ?? null;
+    //                     $item->TO_ADJUST = $verifiedStockRow->to_adjust ?? null;
+    //                     $item->REASON = $verifiedStockRow->reason ?? null;
+    //                     $item->REMARKS = $verifiedStockRow->REMARKS ?? null;
+    //                     $item->APPROVED = (bool) $verifiedStockRow->approved;
+    //                     $item->APPROVED_BY = $verifiedStockRow->approved_by ?? null;
+    //                     $item->APPROVED_AT = $verifiedStockRow->approved_at ?? null;
+    //                 } else {
+    //                     $item->VERIFIED_STOCK = null;
+    //                     $item->TO_ADJUST = null;
+    //                     $item->REASON = null;
+    //                     $item->REMARKS = null;
+    //                     $item->APPROVED = false;
+    //                     $item->APPROVED_BY = null;
+    //                     $item->APPROVED_AT = null;
+    //                 }
+
+    //                 $adjustedQty = isset($item->TO_ADJUST) && is_numeric($item->TO_ADJUST) ? floatval($item->TO_ADJUST) : 0;
+    //                 $item->LOSS_GAIN = round($adjustedQty * $lp, 2);
+    //             }
+
+    //             return $item;
+    //         });
+
+    //         $processedData = $mergedData->values();
+    //         Log::info('Processed data count: ' . count($processedData));
+
+    //         return response()->json([
+    //             'message' => 'Data fetched successfully',
+    //             'data' => $processedData,
+    //             'status' => 200
+    //         ]);
+    //     } else {
+    //         return response()->json([
+    //             'message' => 'Failed to fetch data from Google Sheet',
+    //             'status' => $response->getStatusCode()
+    //         ], $response->getStatusCode());
+    //     }
+    // }
 
 
 
@@ -530,144 +530,147 @@ class VerificationAdjustmentController extends Controller
 
 
 
-    // public function getViewVerificationAdjustmentData(Request $request)  //current
-    // {
-    //     // Fetch inventory data from Shopify
-    //     $shopifyInventoryController = new ShopifyApiInventoryController();
-    //     $inventoryResponse = $shopifyInventoryController->fetchInventoryWithCommitment();
-    //     Log::info('Fetched inventory response:', $inventoryResponse);
+    public function getViewVerificationAdjustmentData(Request $request)  //current
+    {
+        // Fetch inventory data from Shopify
+        $shopifyInventoryController = new ShopifyApiInventoryController();
+        $inventoryResponse = $shopifyInventoryController->fetchInventoryWithCommitment();
+        Log::info('Fetched inventory response:', $inventoryResponse);
 
-    //     $inventoryData = collect($inventoryResponse); 
-    //     Log::info('Shopify Inventory Data:', $inventoryData->toArray());
+        $inventoryData = collect($inventoryResponse); 
+        Log::info('Shopify Inventory Data:', $inventoryData->toArray());
 
-    //     // Fetch data from the local product_master table
-    //     $productMasterData = ProductMaster::all();
+        // Fetch data from the local product_master table
+        $productMasterData = ProductMaster::all();
 
-    //     if ($productMasterData) {
-    //         $skus = $productMasterData
-    //             ->pluck('sku')
-    //             ->filter()
-    //             ->unique()
-    //             ->map(fn ($sku) => trim($sku))
-    //             ->toArray();
+        if ($productMasterData) {
+            $skus = $productMasterData
+                ->pluck('sku')
+                ->filter()
+                ->unique()
+                ->map(fn ($sku) => trim($sku))
+                ->toArray();
 
-    //         // Fetch Shopify SKU data
-    //         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-    //             return trim($item->sku); 
-    //         });
+            // Fetch Shopify SKU data
+            $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+                return trim($item->sku); 
+            });
 
-    //         // Get the latest inventory data for each SKU
-    //         $latestInventoryIds = Inventory::select(DB::raw('MAX(id) as latest_id'))
-    //             ->whereIn('sku', $skus)
-    //             ->groupBy('sku')
-    //             ->pluck('latest_id');
+            // Get the latest inventory data for each SKU
+            $latestInventoryIds = Inventory::select(DB::raw('MAX(id) as latest_id'))
+                ->whereIn('sku', $skus)
+                ->groupBy('sku')
+                ->pluck('latest_id');
 
-    //         $latestInventoryData = Inventory::whereIn('id', $latestInventoryIds)->get();
+            $latestInventoryData = Inventory::whereIn('id', $latestInventoryIds)->get();
 
-    //         // Separate verified and hidden stock data
-    //         $verifiedStockData = $latestInventoryData
-    //             ->filter(fn ($inv) => $inv->is_hide == 0)
-    //             ->mapWithKeys(fn ($inv) => [trim($inv->sku) => $inv]);
+            // Separate verified and hidden stock data
+            $verifiedStockData = $latestInventoryData
+                ->filter(fn ($inv) => $inv->is_hide == 0)
+                ->mapWithKeys(fn ($inv) => [trim($inv->sku) => $inv]);
 
-    //         $hiddenSkuSet = $latestInventoryData
-    //             ->filter(fn ($inv) => $inv->is_hide == 1)
-    //             ->pluck('sku')
-    //             ->map(fn ($sku) => trim($sku))
-    //             ->toArray();
+            $hiddenSkuSet = $latestInventoryData
+                ->filter(fn ($inv) => $inv->is_hide == 1)
+                ->pluck('sku')
+                ->map(fn ($sku) => trim($sku))
+                ->toArray();
 
-    //         // Filter out hidden SKUs from the main dataset
-    //         $filteredData = $productMasterData->filter(function ($item) use ($hiddenSkuSet) {
-    //             $sku = trim($item->sku ?? '');
-    //             return !in_array($sku, $hiddenSkuSet);
-    //         });
+            // Filter out hidden SKUs from the main dataset
+            $filteredData = $productMasterData->filter(function ($item) use ($hiddenSkuSet) {
+                $sku = trim($item->sku ?? '');
+                return !in_array($sku, $hiddenSkuSet);
+            });
 
-    //         // Merge all data sources
-    //         $mergedData = $filteredData->map(function ($item) use ($shopifyData, $inventoryData, $verifiedStockData) {
-    //             $childSku = trim($item->sku ?? ''); 
+            // Merge all data sources
+            $mergedData = $filteredData->map(function ($item) use ($shopifyData, $inventoryData, $verifiedStockData) {
+                $childSku = trim($item->sku ?? ''); 
+                // $item->IS_PARENT = (stripos($childSku, 'PARENT') === 0);
+                $isParent = (stripos($childSku, 'PARENT') === 0);
+                $item->IS_PARENT = $isParent;
 
-    //             // Decode the JSON string in the 'Values' column
-    //             // $values = json_decode($item->Values, true);
-    //             $values = $item->values;
-    //             $lp = $values['lp'] ?? 0;
+                // Decode the JSON string in the 'Values' column
+                // $values = json_decode($item->Values, true);
+                $values = $item->values;
+                $lp = $values['lp'] ?? 0;
 
-    //             if (!empty($childSku) && stripos($childSku, 'PARENT') === false) {
-    //                 // Add Shopify data
-    //                 if ($shopifyData->has($childSku)) {
-    //                     $item->INV = $shopifyData[$childSku]->inv;
-    //                     $item->L30 = $shopifyData[$childSku]->quantity;
-    //                     $item->IMAGE_URL = $shopifyData[$childSku]->image_url ?? null;
-    //                 } else {
-    //                     $item->INV = 0;
-    //                     $item->L30 = 0;
-    //                     $item->IMAGE_URL = null;
-    //                 }
+                if (!$isParent) {
+                    // Add Shopify data
+                    if ($shopifyData->has($childSku)) {
+                        $item->INV = $shopifyData[$childSku]->inv;
+                        $item->L30 = $shopifyData[$childSku]->quantity;
+                        $item->IMAGE_URL = $shopifyData[$childSku]->image_url ?? null;
+                    } else {
+                        $item->INV = 0;
+                        $item->L30 = 0;
+                        $item->IMAGE_URL = null;
+                    }
 
-    //                 // Add Shopify inventory data
-    //                 if (isset($inventoryData[$childSku])) {
-    //                     $item->ON_HAND = $inventoryData[$childSku]['on_hand'];
-    //                     $item->COMMITTED = $inventoryData[$childSku]['committed'];
-    //                     $item->AVAILABLE_TO_SELL = $inventoryData[$childSku]['available_to_sell'];
-    //                     $item->IMAGE_URL = $inventoryData[$childSku]['image_url'] ?? $item->IMAGE_URL;
+                    // Add Shopify inventory data
+                    if (isset($inventoryData[$childSku])) {
+                        $item->ON_HAND = $inventoryData[$childSku]['on_hand'];
+                        $item->COMMITTED = $inventoryData[$childSku]['committed'];
+                        $item->AVAILABLE_TO_SELL = $inventoryData[$childSku]['available_to_sell'];
+                        $item->IMAGE_URL = $inventoryData[$childSku]['image_url'] ?? $item->IMAGE_URL;
 
-    //                     // Update or create ShopifyInventory record
-    //                     ShopifyInventory::updateOrCreate(
-    //                         ['sku' => $childSku],
-    //                         [
-    //                             'parent' => $item->parent ?? null,
-    //                             'on_hand' => $inventoryData[$childSku]['on_hand'],
-    //                             'committed' => $inventoryData[$childSku]['committed'],
-    //                             'available_to_sell' => $inventoryData[$childSku]['available_to_sell'],
-    //                         ]
-    //                     );
-    //                 } else {
-    //                     $item->ON_HAND = 'N/A';
-    //                     $item->AVAILABLE_TO_SELL = 'N/A';
-    //                     $item->COMMITTED = 'N/A';
-    //                 }
+                        // Update or create ShopifyInventory record
+                        ShopifyInventory::updateOrCreate(
+                            ['sku' => $childSku],
+                            [
+                                'parent' => $item->parent ?? null,
+                                'on_hand' => $inventoryData[$childSku]['on_hand'],
+                                'committed' => $inventoryData[$childSku]['committed'],
+                                'available_to_sell' => $inventoryData[$childSku]['available_to_sell'],
+                            ]
+                        );
+                    } else {
+                        $item->ON_HAND = 'N/A';
+                        $item->AVAILABLE_TO_SELL = 'N/A';
+                        $item->COMMITTED = 'N/A';
+                    }
 
-    //                 // Add verified stock data
-    //                 if ($verifiedStockData->has($childSku)) {
-    //                     $verifiedStockRow = $verifiedStockData[$childSku];
-    //                     $item->VERIFIED_STOCK = $verifiedStockRow->verified_stock ?? null;
-    //                     $item->TO_ADJUST = $verifiedStockRow->to_adjust ?? null;
-    //                     $item->REASON = $verifiedStockRow->reason ?? null;
-    //                     $item->REMARKS = $verifiedStockRow->REMARKS ?? null;
-    //                     $item->APPROVED = (bool) $verifiedStockRow->approved;
-    //                     $item->APPROVED_BY = $verifiedStockRow->approved_by ?? null;
-    //                     $item->APPROVED_AT = $verifiedStockRow->approved_at ?? null;
-    //                 } else {
-    //                     $item->VERIFIED_STOCK = null;
-    //                     $item->TO_ADJUST = null;
-    //                     $item->REASON = null;
-    //                     $item->REMARKS = null;
-    //                     $item->APPROVED = false;
-    //                     $item->APPROVED_BY = null;
-    //                     $item->APPROVED_AT = null;
-    //                 }
+                    // Add verified stock data
+                    if ($verifiedStockData->has($childSku)) {
+                        $verifiedStockRow = $verifiedStockData[$childSku];
+                        $item->VERIFIED_STOCK = $verifiedStockRow->verified_stock ?? null;
+                        $item->TO_ADJUST = $verifiedStockRow->to_adjust ?? null;
+                        $item->REASON = $verifiedStockRow->reason ?? null;
+                        $item->REMARKS = $verifiedStockRow->REMARKS ?? null;
+                        $item->APPROVED = (bool) $verifiedStockRow->approved;
+                        $item->APPROVED_BY = $verifiedStockRow->approved_by ?? null;
+                        $item->APPROVED_AT = $verifiedStockRow->approved_at ?? null;
+                    } else {
+                        $item->VERIFIED_STOCK = null;
+                        $item->TO_ADJUST = null;
+                        $item->REASON = null;
+                        $item->REMARKS = null;
+                        $item->APPROVED = false;
+                        $item->APPROVED_BY = null;
+                        $item->APPROVED_AT = null;
+                    }
 
-    //                 // Calculate loss/gain
-    //                 $adjustedQty = isset($item->TO_ADJUST) && is_numeric($item->TO_ADJUST) ? floatval($item->TO_ADJUST) : 0;
-    //                 $item->LOSS_GAIN = round($adjustedQty * $lp, 2);
-    //             }
+                    // Calculate loss/gain
+                    $adjustedQty = isset($item->TO_ADJUST) && is_numeric($item->TO_ADJUST) ? floatval($item->TO_ADJUST) : 0;
+                    $item->LOSS_GAIN = round($adjustedQty * $lp, 2);
+                }
 
-    //             return $item;
-    //         });
+                return $item;
+            });
 
-    //         $processedData = $mergedData->values();
-    //         Log::info('Processed data count: ' . count($processedData));
+            $processedData = $mergedData->values();
+            Log::info('Processed data count: ' . count($processedData));
 
-    //         return response()->json([
-    //             'message' => 'Data fetched successfully',
-    //             'data' => $processedData,
-    //             'status' => 200
-    //         ]);
-    //     } else {
-    //         return response()->json([
-    //             'message' => 'Failed to fetch data from product_master table',
-    //             'status' => 500
-    //         ], 500);
-    //     }
-    // }
+            return response()->json([
+                'message' => 'Data fetched successfully',
+                'data' => $processedData,
+                'status' => 200
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Failed to fetch data from product_master table',
+                'status' => 500
+            ], 500);
+        }
+    }
 
 
 
@@ -885,17 +888,27 @@ class VerificationAdjustmentController extends Controller
             'is_approved' => 'required|boolean',
         ]);
 
-        $lp = 0;    
-        $response = $this->apiController->fetchDataFromProductMasterGoogleSheet(); 
-        if ($response->getStatusCode() === 200) { 
-            $sheetData = $response->getData()->data; 
-            foreach ($sheetData as $row) { 
-                if (isset($row->SKU) && strtoupper(trim($row->SKU)) === strtoupper(trim($validated['sku']))) { 
-                    $lp = isset($row->LP) && is_numeric($row->LP) ? floatval($row->LP) : 0; 
-                    break; 
-                }
+        $lp = 0;
+        $sku = trim($validated['sku']);
+        $product = ProductMaster::whereRaw('LOWER(sku) = ?', [strtolower($sku)])->first();
+
+        if ($product) {
+            // $values = json_decode($product->Values, true);
+            $values = $product->Values; 
+            if (isset($values['lp']) && is_numeric($values['lp'])) {
+                $lp = floatval($values['lp']);
             }
-        }
+        } 
+        // $response = $this->apiController->fetchDataFromProductMasterGoogleSheet(); 
+        // if ($response->getStatusCode() === 200) { 
+        //     $sheetData = $response->getData()->data; 
+        //     foreach ($sheetData as $row) { 
+        //         if (isset($row->SKU) && strtoupper(trim($row->SKU)) === strtoupper(trim($validated['sku']))) { 
+        //             $lp = isset($row->LP) && is_numeric($row->LP) ? floatval($row->LP) : 0; 
+        //             break; 
+        //         }
+        //     }
+        // }
 
         $toAdjust = $validated['verified_stock'] - ($validated['on_hand'] ?? 0);
         $lossGain = round($toAdjust * $lp, 2);
