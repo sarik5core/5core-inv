@@ -2104,7 +2104,7 @@
                         </li>
 
                         <!-- DHGate -->
-                        <li class="side-nav-item">
+                        {{-- <li class="side-nav-item">
                             <a data-bs-toggle="collapse" href="#sidebarDHGate" aria-expanded="false"
                                 aria-controls="sidebarDHGate">
                                 <span>DHGate</span>
@@ -2117,7 +2117,7 @@
                                     <li><a href="{{ route('listing.dhgate') }}">Listing DHGate</a></li>
                                 </ul>
                             </div>
-                        </li>
+                        </li> --}}
                         <!-- Bestbuy USA -->
                         <li class="side-nav-item">
                             <a data-bs-toggle="collapse" href="#sidebarBestbuyUSA" aria-expanded="false"
