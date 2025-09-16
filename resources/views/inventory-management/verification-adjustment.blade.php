@@ -155,7 +155,7 @@
 
         /* ========== PARENT ROWS ========== */
         .parent-row {
-            background-color: rgba(69, 233, 255, 0.1) !important;
+            /* background-color: rgba(69, 233, 255, 0.1) !important; */
         }
 
         /* ========== SKU TOOLTIPS ========== */
@@ -2060,8 +2060,8 @@
                                     // sl_no: index + 1, // Serial number
                                     IMAGE_URL: item.IMAGE_URL || '',
                                     Parent: item.Parent || item.parent || item.parent_asin || item.Parent_ASIN || '(No Parent)',
-                                    SKU: item['SKU'] || '', // Normalize SKU field
-                                    // SKU: item.sku || '', // Normalize SKU field
+                                    // SKU: item['SKU'] || '', // Normalize SKU field
+                                    SKU: item.sku || '', // Normalize SKU field
                                     TITLE: item['TITLE'] || '', // Title field from the sheet
 
                                     INV: INV, // Inventory
@@ -2504,7 +2504,8 @@
                     const isParentRow = item.SKU && item.SKU.toUpperCase().startsWith('PARENT');
                     if (isParentRow) {
                         $row.css({
-                            backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                            // backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                            backgroundColor: 'rgba(69, 233, 255, 0.1)',
                             fontWeight: '500'
                         });
 

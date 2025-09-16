@@ -21,7 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'google_id' // Add this
+        'google_id',
+        'role'
     ];
 
     /**
@@ -44,13 +45,8 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function hasPermission(string $permissionKey, string $action = 'can_view'): bool
+    public function permission()
     {
-        $permission = \App\Models\NewPermission::where('role', $this->role)
-            ->where('permission_key', $permissionKey)
-            ->first();
-
-        return $permission ? (bool) $permission->$action : false;
+        return $this->hasOne(Permission::class);
     }
-
 }

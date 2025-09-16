@@ -788,8 +788,8 @@ class PricingMasterViewsController extends Controller
                 $walmartDataView = WalmartDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($walmartDataView->value) ? $walmartDataView->value : (json_decode($walmartDataView->value, true) ?: []);
 
-                $spft = $sprice > 0 ? ((($sprice * 0.68) - $lp - $ship) / $sprice) * 100 : 0;
-                $sroi = $lp > 0 ? ((($sprice * 0.68) - $lp - $ship) / $lp) * 100 : 0;
+                $spft = $sprice > 0 ? ((($sprice * 0.80) - $lp - $ship) / $sprice) * 100 : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.80) - $lp - $ship) / $lp) * 100 : 0;
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
                 $existing['SPFT'] = number_format($spft, 2, '.', '');
                 $existing['SROI'] = number_format($sroi, 2, '.', '');

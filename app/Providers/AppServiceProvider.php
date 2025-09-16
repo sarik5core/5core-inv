@@ -21,23 +21,22 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    // public function boot(): void
-    // {
-    //     View::composer('*', function ($view) {
-    //         $permissions = [];
-    //         if (Auth::check()) {
-    //             $permissions = Permission::where('user_id', Auth::id())->value('permissions') ?? [];
-    //         }
-    //         $view->with('permissions', $permissions);
-    //     });
-    // }
+    public function boot(): void
+    {
+        View::composer('*', function ($view) {
+            // Only set permissions if not already set by controller
+            if (!$view->offsetExists('permissions')) {
+                $permissions = [];
+                if (Auth::check()) {
+                    $userRole = Auth::user()->role;
+                    $rolePermission = Permission::where('role', $userRole)->first();
+                    $permissions = $rolePermission ? $rolePermission->permissions : [];
+                }
+                $view->with('permissions', $permissions);
+            }
+        });
+    }
 
-        public function boot()
-        {
-            Blade::if('canDo', function ($permissionKey, $action = 'can_view') {
-                return auth()->check() && auth()->user()->hasPermission($permissionKey, $action);
-            });
-        }
 
 
 }

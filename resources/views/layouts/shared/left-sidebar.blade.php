@@ -52,11 +52,17 @@
                             <a href="{{ route('roles') }}">Roles</a>
                         </li>
                         <li>
-                            <a href="{{ route('permissions') }}">Permission</a>
+                            <a href="{{ route('permissions') }}" class="text-danger bg-light"><i class="ri-error-warning-line text-danger"></i> Reset Permission</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('permissions.view') }}">View Permissions</a>
                         </li>
                     </ul>
                 </div>
+                
             </li>
+
+
 
             <li class="side-nav-item">
                 <a data-bs-toggle="collapse" href="#suppliers" aria-expanded="false" aria-controls="suppliers"
@@ -1185,6 +1191,9 @@
                                         <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('amazon.campaign.reports') }}">Amazon Ad Reports</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
                                     </li>
                                     <li>
@@ -1837,6 +1846,9 @@
                             </a>
                             <div class="collapse" id="sidebarGoogleShopping">
                                 <ul class="side-nav-third-level">
+                                    <li>
+                                        <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
+                                    </li>
                                     <li>
                                         <a href="{{ route('google.shopping') }}">Google Shopping</a>
                                     </li>
