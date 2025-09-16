@@ -78,7 +78,7 @@ class WalmartControllerMarket extends Controller
         // Fetch NR values for these SKUs from walmartDataView
         $walmartDataViews = WalmartDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
-        // NEW: Fetch Walmart product sheet data
+        // Fetch Walmart product sheet data
         $walmartMetrics = WalmartMetrics::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $nrValues = [];
@@ -125,19 +125,30 @@ class WalmartControllerMarket extends Controller
                 $shopifyItem = $shopifyData[$sku];
                 $processedItem['INV'] = $shopifyItem->inv ?? 0;
                 $processedItem['L30'] = $shopifyItem->quantity ?? 0;
+                // FIXED: Add A L30 and A Dil% from Shopify if available
+                $processedItem['A L30'] = $shopifyItem->a_l30 ?? 0;
+                $processedItem['A Dil%'] = $shopifyItem->a_dil ?? 0;
+                $processedItem['Sess30'] = $shopifyItem->sess30 ?? 0;
+                $processedItem['Tacos30'] = $shopifyItem->tacos30 ?? 0;
+                $processedItem['SCVR'] = $shopifyItem->scvr ?? 0;
             } else {
                 $processedItem['INV'] = 0;
                 $processedItem['L30'] = 0;
+                $processedItem['A L30'] = 0;
+                $processedItem['A Dil%'] = 0;
+                $processedItem['Sess30'] = 0;
+                $processedItem['Tacos30'] = 0;
+                $processedItem['SCVR'] = 0;
             }
 
-            // NEW: Add data from walmart_product_sheets if available
+            // Add data from walmart_product_sheets if available
             if (isset($walmartMetrics[$sku])) {
                 $walmartMetric = $walmartMetrics[$sku];
                 $processedItem['sheet_price'] = $walmartMetric->price ?? 0;
                 $processedItem['sheet_pft'] = $walmartMetric->pft ?? 0;
                 $processedItem['sheet_roi'] = $walmartMetric->roi ?? 0;
-                $processedItem['sheet_l30'] = $walmartMetric->l30 ?? 0;
-                $processedItem['sheet_dil'] = $walmartMetric->dil ?? 0;
+                $processedItem['sheet_l30'] = $walmartMetric->l30 ?? 0; // Walmart L30
+                $processedItem['sheet_dil'] = $walmartMetric->dil ?? 0; // Walmart Dilution
                 $processedItem['buy_link'] = $walmartMetric->buy_link ?? '';
             } else {
                 $processedItem['sheet_price'] = 0;
@@ -154,8 +165,6 @@ class WalmartControllerMarket extends Controller
             $processedItem['Live'] = $liveValues[$sku] ?? false;
 
             // Default values for other fields
-            $processedItem['A L30'] = 0;
-            $processedItem['Sess30'] = 0;
             $processedItem['price'] = $processedItem['sheet_price'] ?? 0;
             $processedItem['TOTAL PFT'] = 0;
             $processedItem['T Sales L30'] = $processedItem['sheet_l30'] ?? 0;
