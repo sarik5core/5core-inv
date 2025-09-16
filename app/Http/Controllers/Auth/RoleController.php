@@ -16,7 +16,7 @@ class RoleController extends Controller
 
         if ($currentUser->role === 'admin') {
             // Admins can't see super admins
-            $query->where('role', '!=', 'super admin');
+            $query->where('role', '!=', 'superadmin');
         }
 
         $users = $query->get();
@@ -32,7 +32,7 @@ class RoleController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|in:user,admin,super admin',
+            'role' => 'required|in:user,admin,superadmin,super admin,manager,viewer',
         ]);
 
         $user->role = $request->role;

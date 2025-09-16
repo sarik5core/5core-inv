@@ -63,14 +63,14 @@
                                         <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>
                                             <i class="fas fa-shield-alt me-2"></i>Admin
                                         </option>
-                                        <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>
+                                        <option value="super admin" {{ $user->role === 'super admin' || $user->role === 'superadmin' ? 'selected' : '' }}>
                                             <i class="fas fa-crown me-2"></i>Super Admin
                                         </option>
-                                        <option value="superadmin" {{ $user->role === 'superadmin' ? 'selected' : '' }}>
-                                            <i class="fas fa-crown me-2"></i>Super Admin
+                                        <option value="manager" {{ $user->role === 'manager' ? 'selected' : '' }}>
+                                            <i class="fas fa-crown me-2"></i>Manager
                                         </option>
-                                        <option value="superadmin" {{ $user->role === '' ? 'selected' : '' }}>
-                                            <i class="fas fa-crown me-2"></i>Super Admin
+                                        <option value="viewer" {{ $user->role === 'viewer' ? 'selected' : '' }}>
+                                            <i class="fas fa-crown me-2"></i>Viewer
                                         </option>
                                     </select>
                                     <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">

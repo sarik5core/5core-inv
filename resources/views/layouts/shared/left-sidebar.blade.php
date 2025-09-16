@@ -52,7 +52,7 @@
                             <a href="{{ route('roles') }}">Roles</a>
                         </li>
                         <li>
-                            <a href="{{ route('permissions') }}"> Reset Permission</a>
+                            <a href="{{ route('permissions') }}" class="text-danger bg-light"><i class="ri-error-warning-line text-danger"></i> Reset Permission</a>
                         </li>
                         <li>
                             <a href="{{ route('permissions.view') }}">View Permissions</a>

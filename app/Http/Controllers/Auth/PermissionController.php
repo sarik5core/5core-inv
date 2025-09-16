@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PermissionController extends Controller
 {
@@ -73,7 +74,7 @@ class PermissionController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Permission update error: ' . $e->getMessage());
+            Log::error('Permission update error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
