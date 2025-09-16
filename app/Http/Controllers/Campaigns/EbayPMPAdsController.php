@@ -54,7 +54,7 @@ class EbayPMPAdsController extends Controller
             ->whereIn('report_range', ['L60', 'L30', 'L7'])
             ->get();
 
-        $campaignListings = DB::connection('apicentral')->table('ebay_campaign_ads_listings')->pluck('bid_percentage', 'listing_id')->toArray();
+        $campaignListings = DB::connection('apicentral')->table('ebay_campaign_ads_listings')->select('listing_id', 'bid_percentage', 'suggested_bid')->get()->keyBy('listing_id')->toArray();
 
         $adMetricsBySku = [];
 
@@ -119,10 +119,13 @@ class EbayPMPAdsController extends Controller
             $row['ebay_views'] = $ebayMetric->views ?? 0;
 
             if ($ebayMetric && isset($campaignListings[$ebayMetric->item_id])) {
-                $row['bid_percentage'] = $campaignListings[$ebayMetric->item_id];
+                $row['bid_percentage'] = $campaignListings[$ebayMetric->item_id]->bid_percentage ?? null;
+                $row['suggested_bid']  = $campaignListings[$ebayMetric->item_id]->suggested_bid ?? null;
             } else {
                 $row['bid_percentage'] = null;
+                $row['suggested_bid']  = null;
             }
+
 
             $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
                 ? round(($row["eBay L30"] / $row["INV"]), 2)

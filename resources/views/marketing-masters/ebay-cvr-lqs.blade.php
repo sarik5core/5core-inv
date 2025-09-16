@@ -2238,11 +2238,9 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
-                        console.log("Ajax success:", response);
 
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
-                                    // console.log('ressss',item);
 
                                 // Calculate A Dil% as (A L30 / INV), handle division by zero
                                 const inv = Number(item.INV) || 0;
@@ -2252,9 +2250,9 @@
                                 const aDil = inv > 0 ? aL30 / inv : 0;
 
                                 let scvr = 0;
-                                if (Number(item['PmtClkL30']) > 0) {
+                                if (Number(item['views']) > 0) {
                                     scvr = Number(item['E_L30']) / Number(item[
-                                        'PmtClkL30']);
+                                        'views']);
                                 }
 
                                 return {
@@ -2280,7 +2278,7 @@
                                     TPFT: item.TPFT || 0,
                                     ROI_percentage: item.ROI_percentage || 0,
                                     Tacos30: item.Tacos30 || 0,
-                                    SCVR: item.SCVR || 0,
+                                    // SCVR: item.SCVR || 0,
                                     LP: item.LP_productmaster || 0,
                                     SHIP: item.Ship_productmaster || 0,
                                     'ad cost/ pc': item['ad cost/ pc'] || '',
@@ -2302,6 +2300,7 @@
                             // console.log('Data loaded successfully:', tableData);
                             // filteredData = [...tableData];
                             filteredData = tableData.filter(row => row.SCVR * 100 < 7);
+
 
                         }
                     },

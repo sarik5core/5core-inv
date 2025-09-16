@@ -73,8 +73,6 @@ class RoutingController extends Controller
 
         if ($first == "assets")
             return redirect('home');
-
-        dd($first,$second,$third);
         
         return view($first . '.' . $second . '.' . $third, ['mode' => $mode, 'demo' => $demo]);
     }

@@ -2238,11 +2238,9 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
-                        console.log("Ajax success:", response);
 
                         if (response && response.data) {
                             tableData = response.data.map((item, index) => {
-                                    // console.log('ressss',item);
 
                                 // Calculate A Dil% as (A L30 / INV), handle division by zero
                                 const inv = Number(item.INV) || 0;
@@ -2250,6 +2248,12 @@
                                 const l30 = Number(item.L30) || 0;
                                 const ovDil = inv > 0 ? l30 / inv : 0;
                                 const aDil = inv > 0 ? aL30 / inv : 0;
+
+                                let scvr = 0;
+                                if (Number(item.Sess30) > 0) {
+                                    scvr = Number(item['A_L30']) / Number(item[
+                                        'Sess30']);
+                                }
 
                                 return {
                                     sl_no: index + 1,
@@ -2274,7 +2278,7 @@
                                     TPFT: item.TPFT || 0,
                                     ROI_percentage: item.ROI_percentage || 0,
                                     Tacos30: item.Tacos30 || 0,
-                                    SCVR: item.SCVR || 0,
+                                    // SCVR: item.SCVR || 0,
                                     LP: item.LP_productmaster || 0,
                                     SHIP: item.Ship_productmaster || 0,
                                     'ad cost/ pc': item['ad cost/ pc'] || '',
@@ -2287,6 +2291,7 @@
                                     raw_data: item || {},
                                     NR: item.NR !== undefined ? item.NR : '',
                                     status: item.status || (item.value && item.value.status) || 'Pending',
+                                    SCVR: scvr,
 
                                 };
                             });

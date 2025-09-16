@@ -176,6 +176,11 @@
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Search by SKU, Supplier, Parent..." 
                         style="max-width: 200px; border: 2px solid #2185ff; font-size: 0.95rem;">
 
+                    {{-- push Inventory --}}
+                    <button id="push-inventory-btn" class="btn btn-primary btn-sm">
+                        <i class="fas fa-dolly"></i> Push Inventory
+                    </button>
+
                     <!-- ➕ Add Container Button -->
                     <button id="add-tab-btn" class="btn btn-success btn-sm">
                         <i class="fas fa-plus"></i> Add Container
@@ -555,6 +560,66 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
     window.tabTables[index] = table;
 
 });
+
+//push container to inventory warehouse 
+document.getElementById("push-inventory-btn").addEventListener("click", function () {
+    // Find the active tab index
+    const activeTab = document.querySelector(".nav-link.active");
+    if (!activeTab) {
+        alert("No container tab selected.");
+        return;
+    }
+
+    const tabId = activeTab.getAttribute("data-bs-target"); // e.g. #tab-0
+    const index = tabId.replace("#tab-", ""); // get the index
+    const table = window.tabTables[index];
+
+    if (!table) {
+        alert("No data found for this container.");
+        return;
+    }
+
+    // Get data from the active container tab
+    const containerData = table.getData();
+
+    if (containerData.length === 0) {
+        alert("This container has no data to push.");
+        return;
+    }
+
+    // Confirm before pushing
+    if (!confirm("Are you sure you want to push this container’s inventory?")) {
+        return;
+    }
+
+    // Send data to backend
+    fetch("/inventory-warehouse/push", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            tab_name: activeTab.textContent.trim(),
+            data: containerData
+        })
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            alert("Inventory pushed successfully!");
+            // redirect to warehouse page
+            window.location.href = "/inventory-warehouse";
+        } else {
+            alert(response.message || "Push failed!");
+        }
+    })
+    .catch(err => {
+        console.error("Push error:", err);
+        alert("Something went wrong while pushing inventory.");
+    });
+});
+
 
 // Tab Add Button
 document.getElementById('add-tab-btn').addEventListener('click', async function () {
