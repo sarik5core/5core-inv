@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PermissionController extends Controller
 {
@@ -62,7 +63,7 @@ class PermissionController extends Controller
 
         try {
             $permission = Permission::updateOrCreate(
-                ['user_id' => $user->id],
+                ['role' => $user->role],
                 ['permissions' => $request->permissions]
             );
 
@@ -73,7 +74,7 @@ class PermissionController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Permission update error: ' . $e->getMessage());
+            Log::error('Permission update error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -103,7 +104,7 @@ class PermissionController extends Controller
             return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
 
-        $permission = Permission::firstOrCreate(['user_id' => $user->id]);
+        $permission = Permission::firstOrCreate(['role' => $user->role]);
         $module = $request->input('module');
 
         // Always treat columns as a simple array

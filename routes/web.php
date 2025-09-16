@@ -186,6 +186,7 @@ use App\Http\Controllers\Channels\SetupAccountChannelController;
 use App\Http\Controllers\Channels\ShippingMasterController;
 use App\Http\Controllers\Channels\TrafficMasterController;
 use App\Http\Controllers\InventoryManagement\StockBalanceController;
+use App\Http\Controllers\InventoryWarehouseController;
 use App\Http\Controllers\MarketPlace\DobaController;
 use App\Http\Controllers\PurchaseMaster\ClaimReimbursementController;
 use App\Http\Controllers\MarketingMaster\VideoAdsMasterController;
@@ -986,6 +987,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/transit-container-changes', [TransitContainerDetailsController::class, 'transitContainerChanges'])->name('transit.container.changes');
     Route::get('/transit-container-new', [TransitContainerDetailsController::class, 'transitContainerNew'])->name('transit.container.new');
 
+
+    Route::post('/inventory-warehouse/push', [InventoryWarehouseController::class, 'pushInventory'])->name('inventory.push');
+    Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');
+
+
+
     Route::controller(QualityEnhanceController::class)->group(function () {
         Route::get('/quality-enhance/list', 'index')->name('quality.enhance');
         Route::post('/quality-enhance/get-parent', 'getParentFromSKU')->name('quality.enhance.getParent');
@@ -1427,8 +1434,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing_swgearexchange/export', [ListingSWGearExchangeController::class, 'export'])->name('listing_swgearexchange.export');
 
     // Permissions
-    Route::get('/permissions', [NewPermissionController::class, 'index'])->name('permissions.index');
-    Route::post('/permissions/store', [NewPermissionController::class, 'store'])->name('permissions.store');
+    // Route::get('/permissions', [NewPermissionController::class, 'index'])->name('permissions');
+    // Route::post('/permissions/store', [NewPermissionController::class, 'store'])->name('permissions.store');
 
     // listing Bestbuy USA
     Route::get('/zero-bestbuyusa', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroview'])->name('zero.bestbuyusa');

@@ -9,10 +9,13 @@ class PermissionHelper
 {
     public static function cacheUserPermissions($userId)
     {
-        $permission = Permission::where('user_id', $userId)->first();
-        if ($permission) {
-            Cache::put('user_permissions_' . $userId, $permission->permissions, now()->addHours(2));
-            Cache::put('user_column_permissions_' . $userId, $permission->culomn_permission, now()->addHours(2));
+        $user = \App\Models\User::find($userId);
+        if ($user) {
+            $permission = Permission::where('role', $user->role)->first();
+            if ($permission) {
+                Cache::put('user_permissions_' . $userId, $permission->permissions, now()->addHours(2));
+                Cache::put('user_column_permissions_' . $userId, $permission->culomn_permission, now()->addHours(2));
+            }
         }
     }
 }

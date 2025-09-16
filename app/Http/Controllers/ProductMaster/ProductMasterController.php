@@ -62,18 +62,26 @@ class ProductMasterController extends Controller
 
         $emails = User::pluck('email')->toArray();
 
-        // Fetch all permissions for these users
-        $permissions = Permission::whereIn('user_id', User::pluck('id'))->get()->keyBy('user_id');
+        // Fetch all role-based permissions
+        $rolePermissions = Permission::all()->keyBy('role');
 
-        // Build a map: email => columns
+        // Build a map: email => columns based on user role
         $emailColumnMap = [];
         foreach ($emails as $email) {
             $user = User::where('email', $email)->first();
             $columns = [];
-            if ($user && isset($permissions[$user->id])) {
-                $columns = $permissions[$user->id]->culomn_permission['product_master'] ?? [];
+            if ($user && isset($rolePermissions[$user->role])) {
+                $columns = $rolePermissions[$user->role]->permissions['product_lists'] ?? [];
             }
             $emailColumnMap[$email] = $columns;
+        }
+
+        // Get current user permissions based on role
+        $userPermissions = [];
+        if (auth()->check()) {
+            $userRole = auth()->user()->role;
+            $rolePermission = Permission::where('role', $userRole)->first();
+            $userPermissions = $rolePermission ? $rolePermission->permissions : [];
         }
 
         return view('productmaster', [
@@ -84,6 +92,7 @@ class ProductMasterController extends Controller
             'totalCP' => number_format($totalCP, 2),
             'emails' => $emails,
             'emailColumnMap' => $emailColumnMap, // Pass this to Blade
+            'permissions' => $userPermissions, // Pass user permissions to view
         ]);
     }
 

@@ -17,7 +17,8 @@ class Controller extends BaseController
     public function __construct()
     {
         if (Auth::check()) {
-            $this->userPermissions = Permission::where('user_id', Auth::id())->value('permissions') ?? [];
+            $userRole = Auth::user()->role;
+            $this->userPermissions = Permission::where('role', $userRole)->value('permissions') ?? [];
         }
     }
 
