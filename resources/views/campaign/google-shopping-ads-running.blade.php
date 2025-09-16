@@ -140,6 +140,15 @@
                             <!-- Inventory Filters -->
                             <div class="col-md-6">
                                 <div class="d-flex gap-2">
+                                    <select id="dil-filter" class="form-select form-select-md" style="width: 140px;">
+                                        <option value="">All DIL%</option>
+                                        <option value="RED">Red</option>
+                                        <option value="YELLOW">Yellow</option>
+                                        <option value="GREEN">Green</option>
+                                        <option value="PINK">Pink</option>
+                                    </select>
+
+
                                     <select id="inv-filter" class="form-select form-select-md">
                                         <option value="ALL">ALL</option>
                                         <option value="INV_0">0 INV</option>
@@ -155,23 +164,6 @@
 
                                 </div>
                             </div>
-
-                            <!-- Stats -->
-                            <div class="col-md-6">
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
-                                        APR ALL SBID
-                                    </button>
-                                    <button class="btn btn-success btn-md">
-                                        <i class="fa fa-arrow-down me-1"></i>
-                                        Need to decrease bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
-                                    </button>
-                                    <button class="btn btn-primary btn-md">
-                                        <i class="fa fa-percent me-1"></i>
-                                        of Total: <span id="percentage-campaigns" class="fw-bold ms-1 fs-4">0%</span>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Search and Controls Row -->
@@ -184,9 +176,8 @@
                                     </div>
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
-                                        <option value="ENABLED">Enabled</option>
-                                        <option value="PAUSED">Paused</option>
-                                        <option value="ARCHIVED">Archived</option>
+                                        <option value="RUNNING">RUNNING</option>
+                                        <option value="PAUSED">PAUSED</option>
                                     </select>
                                 </div>
                             </div>
@@ -213,7 +204,8 @@
                 if (percent < 16.66) return 'red';
                 if (percent >= 16.66 && percent < 25) return 'yellow';
                 if (percent >= 25 && percent < 50) return 'green';
-                return 'pink';
+                if (percent >= 50 && isFinite(percent)) return "pink";
+                return '';
             };
 
             var table = new Tabulator("#budget-under-table", {
@@ -382,7 +374,7 @@
                     }
 
                     let statusVal = $("#status-filter").val();
-                    if (statusVal && data.campaignStatus !== statusVal) {
+                    if (statusVal && data.status !== statusVal) {
                         return false;
                     }
 
@@ -402,6 +394,15 @@
                         if (rowVal !== nrlFilterVal) return false;
                     }
 
+                    let dilFilterVal = $("#dil-filter").val();
+                    if (dilFilterVal) {
+                        const dilDecimal = (data.L30 / data.INV);
+                        let dilColor = getDilColor(dilDecimal);
+                        if (dilFilterVal.toLowerCase() !== dilColor.toLowerCase()) {
+                            return false;
+                        }
+                    }
+
                     return true;
                 }
 
@@ -410,8 +411,11 @@
                     let filtered = table.getDataCount("active");      
                     let percentage = total > 0 ? ((filtered / total) * 100).toFixed(0) : 0;
 
-                    document.getElementById("total-campaigns").innerText = filtered;
-                    document.getElementById("percentage-campaigns").innerText = percentage + "%";
+                    const totalEl = document.getElementById("total-campaigns");
+                    const percentageEl = document.getElementById("percentage-campaigns");
+
+                    if (totalEl) totalEl.innerText = filtered;
+                    if (percentageEl) percentageEl.innerText = percentage + "%";
                 }
 
                 function refreshFilters() {
@@ -426,7 +430,7 @@
                 table.on("dataProcessed", updateCampaignStats);
 
                 $("#global-search").on("keyup", refreshFilters);
-                $("#status-filter, #nrl-filter, #inv-filter").on("change", refreshFilters);
+                $("#status-filter, #nrl-filter, #inv-filter, #dil-filter").on("change", refreshFilters);
 
                 updateCampaignStats();
             });
