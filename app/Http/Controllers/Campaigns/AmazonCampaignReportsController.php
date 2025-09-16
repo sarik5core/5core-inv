@@ -109,6 +109,7 @@ class AmazonCampaignReportsController extends Controller
             $row['clicks_L30'] = $matchedCampaignL30->clicks ?? 0;
             $row['spend_L30'] = $matchedCampaignL30->spend ?? 0;
             $row['sales_L30'] = $matchedCampaignL30->sales30d ?? 0;
+            $row['sold_L30'] = $matchedCampaignL30->unitsSoldSameSku30d ?? 0;
 
             $row['NRL']  = '';
             $row['NRA'] = '';

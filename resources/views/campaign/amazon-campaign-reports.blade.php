@@ -228,20 +228,6 @@
             </div>
         </div>
     </div>
-
-    <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <div class="mt-3" style="color: white; font-size: 1.2rem; font-weight: 500;">
-                Updating campaigns...
-            </div>
-            <div style="color: #a3e635; font-size: 0.9rem; margin-top: 0.5rem;">
-                Please wait while we process your request
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('script')
@@ -466,7 +452,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
                             `;
                         }
                     },
@@ -476,7 +462,7 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
                             `;
                         }
                     },
@@ -486,7 +472,17 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
+                            `;
+                        }
+                    },
+                    {
+                        title: "Ad Sold L30",
+                        field: "sold_L30",
+                        hozAlign: "right",
+                        formatter: function(cell) {
+                            return `
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
                             `;
                         }
                     },
@@ -651,9 +647,9 @@
     </script>
 
     <script>
-    const ctx = document.getElementById('campaignChart').getContext('2d');
+        const ctx = document.getElementById('campaignChart').getContext('2d');
 
-    const chart = new Chart(ctx, {
+        const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: {!! json_encode($dates) !!},
@@ -772,7 +768,8 @@
             }
         }
     });
-</script>
+
+    </script>
 
 @endsection
 

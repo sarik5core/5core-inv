@@ -336,6 +336,10 @@
                         hozAlign: "center",
                         // visible: false
                     },
+                    {
+                        title: "CAMPAIGN",
+                        field: "campaignName"
+                    },
                     
                 ],
                 ajaxResponse: function(url, params, response) {
@@ -389,9 +393,7 @@
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    if (invFilterVal === "ALL") {
-                        if (parseFloat(data.INV) === 0) return false;
-                    } else if (invFilterVal === "INV_0") {
+                    if (invFilterVal === "INV_0") {
                         if (parseFloat(data.INV) !== 0) return false;
                     } else if (invFilterVal === "OTHERS") {
                         if (parseFloat(data.INV) === 0) return false;
