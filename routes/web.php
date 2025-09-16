@@ -166,6 +166,8 @@ use App\Http\Controllers\Campaigns\CampaignImportController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
 use App\Http\Controllers\Campaigns\EbayPinkDilAdController;
 use App\Http\Controllers\Campaigns\EbayPMPAdsController;
+use App\Http\Controllers\Campaigns\GoogleShoppingAdsController;
+use App\Http\Controllers\Campaigns\WalmartUtilisationController;
 use App\Http\Controllers\Channels\ApprovalsChannelMasterController;
 use App\Http\Controllers\EbayDataUpdateController;
 use App\Http\Controllers\PurchaseMaster\PurchaseController;
@@ -1051,6 +1053,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/push-ebay3-price', action: [PricingMasterViewsController::class, 'pushEbayThreePriceBySku'])->name('ebay3.priceChange');
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
     Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
+    Route::post('/push-walmart-price', [PricingMasterViewsController::class, 'pushPricewalmart']);
+
     Route::post('/update-reverb-price', [PricingMasterViewsController::class, 'updateReverbPrice'])->name('reverb.priceChange');
 
     Route::post('/update-macy-price', [PricingMasterViewsController::class, 'updateMacyPrice'])->name('macy.priceChange');
@@ -1704,8 +1708,21 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(EbayPMPAdsController::class)->group(function(){
         Route::get('/ebay/pmp/ads', 'index')->name('ebay.pmp.ads');
-        Route::get('/ebay/pmp/ads/data','getViewEbayData');
+        Route::get('/ebay/pmp/ads/data','getEbayPmpAdsData');
         Route::post('/update-ebay-pmt-percenatge','updateEbayPercentage');
+        Route::post('/update-ebay-pmt-sprice','saveEbayPMTSpriceToDatabase');
+    });
+
+    Route::controller(WalmartUtilisationController::class)->group(function(){
+        Route::get('/walmart/utilized/kw', 'index')->name('walmart.utilized.kw');
+        Route::get('/walmart/utilized/kw/data', 'getWalmartAdsData');
+    });
+
+    Route::controller(GoogleShoppingAdsController::class)->group(function(){
+        Route::get('/google/shopping', 'index')->name('google.shopping');
+        Route::get('/google/shopping/serp', 'googleShoppingSerp')->name('google.shopping.serp');
+        Route::get('/google/shopping/pmax', 'googleShoppingPmax')->name('google.shopping.pmax');
+        Route::get('/google/shopping/data', 'getGoogleShoppingAdsData');
     });
 
     Route::post('/channel-promotion/store', [ChannelPromotionMasterController::class, 'storeOrUpdatePromotion']);

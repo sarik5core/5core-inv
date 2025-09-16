@@ -20,11 +20,12 @@ class EbayPMPAdsController extends Controller
 
         $marketplaceData = MarketplacePercentage::where("marketplace", "Ebay" )->first();
         $ebayPercentage = $marketplaceData ? $marketplaceData->percentage : 100;
+        $ebayAdPercentage = $marketplaceData ? $marketplaceData->ad_updates : 100;
 
-        return view('campaign.ebay-pmp-ads', compact('ebayPercentage'));
+        return view('campaign.ebay-pmp-ads', compact('ebayPercentage','ebayAdPercentage'));
     }
 
-    public function getViewEbayData()
+    public function getEbayPmpAdsData()
     {
         $productMasters = ProductMaster::orderBy("parent", "asc")
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -53,7 +54,7 @@ class EbayPMPAdsController extends Controller
             ->whereIn('report_range', ['L60', 'L30', 'L7'])
             ->get();
 
-        $campaignListings = DB::connection('apicentral')->table('ebay_campaign_ads_listings')->pluck('bid_percentage', 'listing_id')->toArray();
+        $campaignListings = DB::connection('apicentral')->table('ebay_campaign_ads_listings')->select('listing_id', 'bid_percentage', 'suggested_bid')->get()->keyBy('listing_id')->toArray();
 
         $adMetricsBySku = [];
 
@@ -91,6 +92,7 @@ class EbayPMPAdsController extends Controller
 
         $marketplaceData = MarketplacePercentage::where("marketplace", "Ebay" )->first();
         $percentage = $marketplaceData ? ($marketplaceData->percentage / 100) : 1;
+        $adPercentage = $marketplaceData ? ($marketplaceData->ad_updates / 100) : 1;
 
         $result = [];
 
@@ -117,10 +119,13 @@ class EbayPMPAdsController extends Controller
             $row['ebay_views'] = $ebayMetric->views ?? 0;
 
             if ($ebayMetric && isset($campaignListings[$ebayMetric->item_id])) {
-                $row['bid_percentage'] = $campaignListings[$ebayMetric->item_id];
+                $row['bid_percentage'] = $campaignListings[$ebayMetric->item_id]->bid_percentage ?? null;
+                $row['suggested_bid']  = $campaignListings[$ebayMetric->item_id]->suggested_bid ?? null;
             } else {
                 $row['bid_percentage'] = null;
+                $row['suggested_bid']  = null;
             }
+
 
             $row["E Dil%"] = ($row["eBay L30"] && $row["INV"] > 0)
                 ? round(($row["eBay L30"] / $row["INV"]), 2)
@@ -172,6 +177,7 @@ class EbayPMPAdsController extends Controller
                 $lp > 0 ? (($price * $percentage - $lp - $ship) / $lp) : 0,
                 2
             );
+            $row["TPFT"] = $row["PFT %"] + $adPercentage - $row["bid_percentage"];
             $row["percentage"] = $percentage;
             $row["LP_productmaster"] = $lp;
             $row["Ship_productmaster"] = $ship;
@@ -220,19 +226,45 @@ class EbayPMPAdsController extends Controller
         return (float) preg_replace('/[^\d.]/', '', $value);
     }
 
+    public function saveEbayPMTSpriceToDatabase(Request $request)
+    {
+        $sku = $request->input('sku');
+        $spriceData = $request->only(['sprice', 'spft_percent', 'sroi_percent']);
+
+        if (!$sku || !$spriceData['sprice']) {
+            return response()->json(['error' => 'SKU and sprice are required.'], 400);
+        }
+
+
+        $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
+
+        $existing = is_array($ebayDataView->value)
+            ? $ebayDataView->value
+            : (json_decode($ebayDataView->value, true) ?: []);
+
+        $merged = array_merge($existing, [
+            'SPRICE' => $spriceData['sprice'],
+            'SPFT' => $spriceData['spft_percent'],
+            'SROI' => $spriceData['sroi_percent'],
+        ]);
+
+        $ebayDataView->value = $merged;
+        $ebayDataView->save();
+
+        return response()->json(['message' => 'Data saved successfully.']);
+    }
+
     public function updateEbayPercentage(Request $request)
     {
         try {
             $type = $request->input('type');
             $value = $request->input('value');
 
-            // Current record fetch
             $marketplace = MarketplacePercentage::where('marketplace', 'Ebay')->first();
 
             $percent = $marketplace->percentage ?? 0;
             $adUpdates = $marketplace->ad_updates ?? 0;
 
-            // Handle percentage update
             if ($type === 'percentage') {
                 if (!is_numeric($value) || $value < 0 || $value > 100) {
                     return response()->json(['status' => 400, 'message' => 'Invalid percentage value'], 400);
@@ -240,7 +272,6 @@ class EbayPMPAdsController extends Controller
                 $percent = $value;
             }
 
-            // Handle ad_updates update
             if ($type === 'ad_updates') {
                 if (!is_numeric($value) || $value < 0) {
                     return response()->json(['status' => 400, 'message' => 'Invalid ad_updates value'], 400);
@@ -248,7 +279,6 @@ class EbayPMPAdsController extends Controller
                 $adUpdates = $value;
             }
 
-            // Save both fields
             $marketplace = MarketplacePercentage::updateOrCreate(
                 ['marketplace' => 'Ebay'],
                 [
@@ -274,98 +304,4 @@ class EbayPMPAdsController extends Controller
         }
     }
 
-    public function getEbayPmpAdsData(){
-
-        $productMasters = ProductMaster::orderBy('parent', 'asc')
-            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
-            ->orderBy('sku', 'asc')
-            ->get();
-
-        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
-
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $ebayMetricData = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $nrValues = EbayDataView::whereIn('sku', $skus)->pluck('value', 'sku');
-
-        $ebayCampaignReportsL7 = EbayPriorityReport::where('report_range', 'L7')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
-                }
-            })
-            ->get();
-
-        $ebayCampaignReportsL1 = EbayPriorityReport::where('report_range', 'L1')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
-                }
-            })
-            ->get();
-
-        $ebayCampaignReportsL30 = EbayPriorityReport::where('report_range', 'L30')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
-                }
-            })
-            ->get();
-
-        $result = [];
-
-        foreach ($productMasters as $pm) {
-            $sku = strtoupper($pm->sku);
-            $parent = $pm->parent;
-
-            $shopify = $shopifyData[$pm->sku] ?? null;
-
-            $ebay = $ebayMetricData[$pm->sku] ?? null;
-
-            $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
-            });
-
-            $matchedCampaignL1 = $ebayCampaignReportsL1->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
-            });
-
-            $matchedCampaignL30 = $ebayCampaignReportsL30->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
-            });
-
-            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
-                continue;
-            }
-
-            $row = [];
-            $row['parent'] = $parent;
-            $row['sku']    = $pm->sku;
-            $row['INV']    = $shopify->inv ?? 0;
-            $row['L30']    = $shopify->quantity ?? 0;
-            $row['e_l30']  = $ebay->ebay_l30 ?? 0;
-            $row['views']  = $ebay->views ?? 0;
-            $row['ebay_price']  = $ebay->ebay_price ?? 0;
-
-             $row['NR'] = '';
-            if (isset($nrValues[$pm->sku])) {
-                $raw = $nrValues[$pm->sku];
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
-                }
-                if (is_array($raw)) {
-                    $row['NR'] = $raw['NR'] ?? null;
-                }
-            }
-
-            $result[] = (object) $row;
-        }
-
-        return response()->json([
-            'message' => 'Data fetched successfully',
-            'data'    => $result,
-            'status'  => 200,
-        ]);
-    }
 }

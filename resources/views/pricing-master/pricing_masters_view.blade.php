@@ -638,6 +638,7 @@
     </div>
 </div>
 
+
 @endsection
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -875,7 +876,6 @@
                 const price = parseFloat(mp.price) || 0;
                 const l30 = parseFloat(mp.l30) || 0;
                 if (price && l30) {
-                    // 👇 Temu ke liye alag SHIP cost
                     const shippingCost = mp.name === "temu" ? temuship : SHIP;
 
                     totalProfit += ((price * mp.percent) - LP - shippingCost) * l30;
@@ -954,7 +954,11 @@
                 }
             });
         });
- 
+   
+        
+        
+
+
 
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-master-data-views",
@@ -2069,7 +2073,7 @@
                             let value, textColor, bgColor;
                             
                             if (r.prefix === 'amz' && data.amz_spft) {
-                                value = Math.round(data.amz_spft);
+                                value = Math.round(data.amz_spfst);
                             } else if (r.prefix === 'ebay' && data.ebay_spft) {
                                 value = Math.round(data.ebay_spft);
                             } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_spft) {
@@ -2849,7 +2853,7 @@
                 }
                 else if(type === 'walmart') {
                     $.ajax({
-                        url: '/update-walmart-price',
+                        url: '/push-walmart-price',
                         type: 'POST',
                         data: {
                             _token: $('meta[name="csrf-token"]').attr('content'),
@@ -2857,20 +2861,17 @@
                             price: sprice
                         },
                         success: function(res) {
-                        alert('Walmart price updated successfully!');
+                            alert('Walmart Price Change Requested, Will Be Completed after 10  Minutes!');
                         },
                         error: function(err) {
-                            alert('Error updating Walmart price: ' + err);
+                            alert('Error updating Walmart price: ' + err.responseText);
                         },
                         complete: function() {
                             $btn.html('Push to Marketplace');
                         }
                     });
                 }
-           
-            
-            // You can add more marketplaces here
-        });
+          });
 
        
     </script>
