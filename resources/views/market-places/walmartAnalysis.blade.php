@@ -1487,6 +1487,33 @@
                                             </div>
                                         </div>
                                     </th>
+                                    <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                PFT <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="pft-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                ROI <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="roi-total">0%</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                CVR <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="cvr-total">0%</div>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2219,12 +2246,12 @@
                 $tbody.empty();
 
                 if (isLoading) {
-                    $tbody.append('<tr><td colspan="15" class="text-center">Loading data...</td></tr>');
+                    $tbody.append('<tr><td colspan="17" class="text-center">Loading data...</td></tr>');
                     return;
                 }
 
                 if (filteredData.length === 0) {
-                    $tbody.append('<tr><td colspan="15" class="text-center">No matching records found</td></tr>');
+                    $tbody.append('<tr><td colspan="17" class="text-center">No matching records found</td></tr>');
                     return;
                 }
 
@@ -2250,7 +2277,7 @@
 
                     // Helper functions for color coding
                     const getDilColor = (value) => {
-                        const percent = parseFloat(value) * 100;
+                        const percent = parseFloat(value) || 0;
                         if (percent < 16.66) return 'red';
                         if (percent >= 16.66 && percent < 25) return 'yellow';
                         if (percent >= 25 && percent < 50) return 'green';
@@ -2258,7 +2285,7 @@
                     };
 
                     const getPftColor = (value) => {
-                        const percent = parseFloat(value) * 100;
+                        const percent = parseFloat(value) || 0;
                         if (percent < 10) return 'red';
                         if (percent >= 10 && percent < 15) return 'yellow';
                         if (percent >= 15 && percent < 20) return 'blue';
@@ -2267,7 +2294,7 @@
                     };
 
                     const getRoiColor = (value) => {
-                        const percent = parseFloat(value) * 100;
+                        const percent = parseFloat(value) || 0;
                         if (percent >= 0 && percent < 50) return 'red';
                         if (percent >= 50 && percent < 75) return 'yellow';
                         if (percent >= 75 && percent <= 100) return 'green';
@@ -2275,7 +2302,7 @@
                     };
 
                     const getTacosColor = (value) => {
-                        const percent = parseFloat(value) * 100;
+                        const percent = parseFloat(value) || 0;
                         if (percent <= 5) return 'pink';
                         if (percent > 5 && percent <= 10) return 'green';
                         if (percent > 10 && percent <= 15) return 'blue';
@@ -2284,7 +2311,7 @@
                     };
 
                     const getCvrColor = (value) => {
-                        const percent = parseFloat(value) * 100;
+                        const percent = parseFloat(value) || 0;
                         if (percent <= 7) return 'red';
                         if (percent > 7 && percent <= 13) return 'green';
                         return 'pink';
@@ -2298,19 +2325,19 @@
                     if (item.is_parent) {
                         $skuCell.html(`<strong>${item.Sku}</strong>`);
                     } else {
-                        const buyerLink = item.raw_data[''] || '';
-                        const sellerLink = item.raw_data[''] || '';
+                        const buyerLink = item.buy_link || '';
+                        const sellerLink = item.raw_data['seller_link'] || '';
 
                         if (buyerLink || sellerLink) {
                             $skuCell.html(`
-                                <div class="sku-tooltip-container">
-                                    <span class="sku-text">${item['Sku']}</span>
-                                    <div class="sku-tooltip">
-                                        ${buyerLink ? `<div class="sku-link"><a href="${buyerLink}" target="_blank" rel="noopener noreferrer">Buyer link</a></div>` : ''}
-                                        ${sellerLink ? `<div class="sku-link"><a href="${sellerLink}" target="_blank" rel="noopener noreferrer">Seller link</a></div>` : ''}
-                                    </div>
-                                </div>
-                            `);
+                    <div class="sku-tooltip-container">
+                        <span class="sku-text">${item['Sku']}</span>
+                        <div class="sku-tooltip">
+                            ${buyerLink ? `<div class="sku-link"><a href="${buyerLink}" target="_blank" rel="noopener noreferrer">Buyer link</a></div>` : ''}
+                            ${sellerLink ? `<div class="sku-link"><a href="${sellerLink}" target="_blank" rel="noopener noreferrer">Seller link</a></div>` : ''}
+                        </div>
+                    </div>
+                `);
                         } else {
                             $skuCell.text(item.Sku);
                         }
@@ -2351,22 +2378,24 @@
                     $row.append($('<td>').text(item.INV));
                     $row.append($('<td>').text(item.L30));
 
-                    // T Sales column
+                    // T Sales column (Walmart L30)
                     $row.append($('<td>').html(`
-                     <div class="sku-tooltip-container">
-                     <span class="sku-text">${item.raw_data.sheet_l30 || 0}</span>
-                     <div class="sku-tooltip">
-                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.raw_data.sheet_l30 || 0}</div>
-                     </div>
-                     </div>
-                      `));
+            <div class="sku-tooltip-container">
+                <span class="sku-text">${item.sheet_l30 || 0}</span>
+                <div class="sku-tooltip">
+                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.sheet_l30 || 0}</div>
+                </div>
+            </div>
+        `));
 
                     // T DIL with color coding - using the calculated T_DIL value
+                    const sheetDilValue = item.sheet_dil || 0;
                     $row.append($('<td>').html(`
-                     <span class="dil-percent-value ${getDilColor(item.raw_data.sheet_dil / 100 || 0)}">
-                     ${Math.round(item.raw_data.sheet_dil || 0)}%
-                     </span>
-                    `));
+            <span class="dil-percent-value ${getDilColor(sheetDilValue)}">
+                ${Math.round(sheetDilValue)}%
+            </span>
+        `));
+
 
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
@@ -2375,12 +2404,12 @@
                             item.NR : 'RA';
 
                         const $select = $(`
-                            <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
-                                <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
-                                <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
-                                <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
-                            </select>
-                        `);
+                <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
+                    <option value="NRA" ${currentNR === 'NRA' ? 'selected' : ''}>NRA</option>
+                    <option value="RA" ${currentNR === 'RA' ? 'selected' : ''}>RA</option>
+                    <option value="LATER" ${currentNR === 'LATER' ? 'selected' : ''}>LATER</option>
+                </select>
+            `);
 
                         // Set background color based on value
                         if (currentNR === 'NRA') {
@@ -2395,11 +2424,14 @@
                         $row.append($('<td>').append($select));
                     }
 
+                    // Listed checkbox
+                    let listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1';
 
+                    // If price is 0, force listed to true
+                    if ((Number(item.price_wo_ship) || 0) !== 0) {
+                        listedVal = true;
+                    }
 
-                    //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
-                        .Listed === 1 || rawData.Listed === '1';
                     const $listedCb = $('<input>', {
                         type: 'checkbox',
                         class: 'listed-checkbox',
@@ -2422,15 +2454,38 @@
                     // Price without shipping with tooltip
                     $row.append($('<td>').html(
                         `$${(Number(item.price_wo_ship) || 0).toFixed(2)}
-                        <span class="tooltip-container" style="margin-left:8px">
-                            <i class="fas fa-tag text-warning price-view-trigger" 
-                            style="transform:translateY(1px)"
-                            data-bs-toggle="tooltip" 
-                            data-bs-placement="top-end" 
-                            title="Pricing view"
-                            data-item='${JSON.stringify(item.raw_data)}'"></i>
-                        </span>`
+            <span class="tooltip-container" style="margin-left:8px">
+                <i class="fas fa-tag text-warning price-view-trigger" 
+                style="transform:translateY(1px)"
+                data-bs-toggle="tooltip" 
+                data-bs-placement="top-end" 
+                title="Pricing view"
+                data-item='${JSON.stringify(item.raw_data)}'></i>
+            </span>`
                     ));
+
+
+                    // PFT with color coding (always show 0% if value is missing)
+                    const pftValue = (typeof item['PFT %'] === 'number' && !isNaN(item['PFT %'])) ? Math
+                        .round(item['PFT %'] * 100) : 0;
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getPftColor(item['PFT %'])}">${pftValue}%</span>`
+                    ));
+
+                    // ROI with color coding (always show 0% if value is missing)
+                    const roiValue = (typeof item.Roi === 'number' && !isNaN(item.Roi)) ? Math.round(item
+                        .Roi * 100) : 0;
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getRoiColor(item.Roi)}">${roiValue}%</span>`
+                    ));
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.SCVR || 0)}">${Math.round((item.SCVR || 0)  * 100)}%</span>
+    <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                    ));
+
 
                     $tbody.append($row);
                 });
@@ -3759,8 +3814,10 @@
                         totalSalesL30Sum: 0,
                         totalCogsSum: 0,
                         listedCount: 0,
-                        liveCount: 0
-
+                        liveCount: 0,
+                        // NEW: Add metrics for Walmart data
+                        wl30Total: 0, // Walmart L30 total
+                        wDilTotal: 0 // Walmart Dilution total
                     };
 
                     filteredData.forEach(item => {
@@ -3777,7 +3834,6 @@
                             }
                         } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
                             rawData = item.raw_data;
-
                         }
 
                         // Count listed checkboxes
@@ -3803,6 +3859,9 @@
                         metrics.scvrSum += parseFloat(item.SCVR) || 0;
                         metrics.rowCount++;
 
+                        // NEW: Add Walmart metrics
+                        metrics.wl30Total += parseFloat(item.sheet_l30) || 0;
+
                         // Only sum if not a parent row
                         if (
                             item.Sku &&
@@ -3827,30 +3886,27 @@
                         }
                     });
 
+                    // FIXED: Calculate OVDIL correctly
                     metrics.ovDilTotal = metrics.invTotal > 0 ?
                         (metrics.ovL30Total / metrics.invTotal) * 100 : 0;
+
+                    // FIXED: Calculate WDIL correctly as (WL30 / INV) * 100
+                    metrics.wDilTotal = metrics.invTotal > 0 ?
+                        (metrics.wl30Total / metrics.invTotal) * 100 : 0;
+
                     const divisor = metrics.rowCount || 1;
-
-                    const sheetL30Sum = filteredData.reduce((sum, item) => {
-                        return sum + (parseFloat(item.sheet_l30) || 0);
-                    }, 0);
-
-                    const sheetDilSum = filteredData.reduce((sum, item) => {
-                        return sum + (parseFloat(item.sheet_dil) || 0);
-                    }, 0);
 
                     // Update metric displays
                     $('#inv-total').text(metrics.invTotal.toLocaleString());
                     $('#ovl30-total').text(metrics.ovL30Total.toLocaleString());
                     $('#ovdil-total').text(Math.round(metrics.ovDilTotal) + '%');
-                    $('#wl30-total').text(sheetL30Sum.toLocaleString());
-                    $('#wDil-total').text(Math.round(sheetDilSum / divisor * 100) + '%');
+                    $('#wl30-total').text(metrics.wl30Total.toLocaleString()); // FIXED: Use Walmart L30
+                    $('#wDil-total').text(Math.round(metrics.wDilTotal) + '%'); // FIXED: Use calculated WDIL
                     $('#al30-total').text(metrics.el30Total.toLocaleString());
                     $('#lDil-total').text(Math.round(metrics.eDilTotal / divisor * 100) + '%');
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
                     $('#listed-total').text(metrics.listedCount.toLocaleString());
                     $('#live-total').text(metrics.liveCount.toLocaleString());
-
 
                     // --- Custom PFT TOTAL calculation ---
                     let pftTotalDisplay = '0%';
