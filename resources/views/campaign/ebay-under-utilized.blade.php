@@ -363,7 +363,7 @@
                                 td.classList.add('red-bg'); 
                             }
 
-                            return acos.toFixed(2) + "%";
+                            return acos.toFixed(0) + "%";
                         }
                     },
                     {

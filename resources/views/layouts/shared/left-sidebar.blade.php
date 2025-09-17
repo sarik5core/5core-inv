@@ -1371,6 +1371,12 @@
                                         <a href="{{ route('ebay-under-utilize') }}">EBAY UNDER UTIL.</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('ebay-correctly-utilize') }}">EBAY CORRECTLY UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
                                     </li>
                                     <li>

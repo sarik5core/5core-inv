@@ -356,15 +356,15 @@
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            // if (acos < 7) {
-                            //     td.classList.add('pink-bg'); 
-                            // } else if (acos >= 7 && acos <= 14) {
-                            //     td.classList.add('green-bg'); 
-                            // } else if (acos > 14) {
-                            //     td.classList.add('red-bg'); 
-                            // }
+                            if (acos < 7) {
+                                td.classList.add('pink-bg'); 
+                            } else if (acos >= 7 && acos <= 14) {
+                                td.classList.add('green-bg'); 
+                            } else if (acos > 14) {
+                                td.classList.add('red-bg'); 
+                            }
 
-                            return acos.toFixed(2) + "%";
+                            return acos.toFixed(0) + "%";
                         }
                     },
                     {

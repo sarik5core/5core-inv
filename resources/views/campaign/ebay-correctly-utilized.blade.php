@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - CORRECTLY UTILIZED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - OVER UTILIZED',
-        'sub_title' => 'Ebay - OVER UTILIZED',
+        'page_title' => 'Ebay - CORRECTLY UTILIZED',
+        'sub_title' => 'Ebay - CORRECTLY UTILIZED',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Ebay - OVER UTILIZED
+                            Ebay - CORRECTLY UTILIZED
                         </h4>
 
                         <!-- Filters Row -->
@@ -176,8 +176,8 @@
                                         <i class="fas fa-file-export me-1"></i> Export Excel/CSV
                                     </a>
                                     <button class="btn btn-success btn-md">
-                                        <i class="fa fa-arrow-down me-1"></i>
-                                        Need to decrease bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
+                                        <i class="fa fa-arrow-up me-1"></i>
+                                        Need to increase bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
                                     </button>
                                     <button class="btn btn-primary btn-md">
                                         <i class="fa fa-percent me-1"></i>
@@ -436,14 +436,7 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
-
-                            var sbid = 0;
-                            if(l1_cpc > l7_cpc){
-                                sbid = (l1_cpc * 0.95).toFixed(2);
-                            }else{
-                                sbid = (l1_cpc * 0.95).toFixed(2);
-                            }
+                            var sbid = (l1_cpc * 0.90).toFixed(2);
                             return sbid;
                         },
                     },
@@ -532,7 +525,7 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    if (!(ub7 > 90)) return false;
+                    if (!(ub7 >= 70 && ub7 <= 90)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
