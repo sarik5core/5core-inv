@@ -52,11 +52,17 @@
                             <a href="{{ route('roles') }}">Roles</a>
                         </li>
                         <li>
-                            <a href="{{ route('permissions') }}">Permission</a>
+                            <a href="{{ route('permissions') }}" class="text-danger bg-light"><i class="ri-error-warning-line text-danger"></i> Reset Permission</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('permissions.view') }}">View Permissions</a>
                         </li>
                     </ul>
                 </div>
+                
             </li>
+
+
 
             <li class="side-nav-item">
                 <a data-bs-toggle="collapse" href="#suppliers" aria-expanded="false" aria-controls="suppliers"
@@ -1188,6 +1194,9 @@
                                         <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('amazon.campaign.reports') }}">Amazon Ad Reports</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
                                     </li>
                                     <li>
@@ -1359,7 +1368,16 @@
                                         <a href="{{ route('ebay.pmp.ads') }}">Ebay PMT Ads</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
+                                        <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY OVER UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-under-utilize') }}">EBAY UNDER UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-correctly-utilize') }}">EBAY CORRECTLY UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
@@ -1841,6 +1859,9 @@
                             <div class="collapse" id="sidebarGoogleShopping">
                                 <ul class="side-nav-third-level">
                                     <li>
+                                        <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('google.shopping') }}">Google Shopping</a>
                                     </li>
                                     <li>
@@ -2107,7 +2128,7 @@
                         </li>
 
                         <!-- DHGate -->
-                        <li class="side-nav-item">
+                        {{-- <li class="side-nav-item">
                             <a data-bs-toggle="collapse" href="#sidebarDHGate" aria-expanded="false"
                                 aria-controls="sidebarDHGate">
                                 <span>DHGate</span>
@@ -2120,7 +2141,7 @@
                                     <li><a href="{{ route('listing.dhgate') }}">Listing DHGate</a></li>
                                 </ul>
                             </div>
-                        </li>
+                        </li> --}}
                         <!-- Bestbuy USA -->
                         <li class="side-nav-item">
                             <a data-bs-toggle="collapse" href="#sidebarBestbuyUSA" aria-expanded="false"

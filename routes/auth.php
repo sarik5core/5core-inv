@@ -12,6 +12,8 @@ use App\Http\Controllers\Auth\RoleController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\Auth\UserProfileController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\NewPermissionController;
+use App\Models\NewPermission;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/register', [RegisteredUserController::class, 'create'])
@@ -81,12 +83,12 @@ Route::put('/profile', [UserProfileController::class, 'updateProfile'])->middlew
 // Update password
 Route::put('/profile/password', [UserProfileController::class, 'updatePassword'])->middleware('auth')->name('password.update');
 
-Route::get('/permissions', [PermissionController::class, 'index'])->middleware('auth')->name('permissions');
+// Route::get('/permissions', [PermissionController::class, 'index'])->middleware('auth')->name('permissions');
 // Add these specific routes ABOVE any catch-all routes
 
 Route::get('users/{user}/permissions', [PermissionController::class, 'getUserPermissionData'])
     ->name('users.permissions.get');
-    
+
 Route::post('users/{user}/permissions', [PermissionController::class, 'updatePermissions'])
     ->name('users.permissions.update');
 
@@ -101,3 +103,9 @@ Route::put('/roles/{user}', [RoleController::class, 'update'])
 Route::post('/save-column-permission', [PermissionController::class, 'saveColumnPermission'])->middleware('auth');
 
 
+Route::get('/permissions', [NewPermissionController::class, 'index'])->name('permissions');
+Route::post('/permissions/store', [NewPermissionController::class, 'store'])->name('permissions.store');
+
+Route::get('/permissions/edit', [NewPermissionController::class, 'edit'])->name('permissions.edit');
+
+Route::get('/permissions/view', [NewPermissionController::class, 'view'])->name('permissions.view');

@@ -525,7 +525,7 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    if (!(acos > 14 && ub7 < 10 && ub1 < 10)) {
+                    if (!(acos > 14 && ub7 < 10)) {
                         return false;
                     }
 
