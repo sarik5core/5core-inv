@@ -124,7 +124,7 @@ class AutoUpdateAmazonPtBids extends Command
             $ub7 = $budget > 0 ? ($l7_spend / ($budget * 7)) * 100 : 0;
             $ub1 = $budget > 0 ? ($l1_spend / $budget) * 100 : 0;
 
-            if ($row['INV'] > 0 && $ub7 > 90 && $ub1 > 90) {
+            if ($row['INV'] > 0 && $ub7 > 90) {
                 $result[] = (object) $row;
             }
         }
