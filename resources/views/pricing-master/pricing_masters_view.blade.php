@@ -1637,7 +1637,7 @@
             let avgPft = countPft > 0 ? (totalPft / countPft) : 0;
 
             let pftHeader = document.getElementById("avgPftHeader");
-            pftHeader.innerText = Math.round(avgPft) + "%";
+            pftHeader.innerText = avgPft.toFixed(1) + "%";
 
 
             // Style for AVG PFT%
