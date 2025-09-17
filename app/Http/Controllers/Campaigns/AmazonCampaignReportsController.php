@@ -278,6 +278,10 @@ class AmazonCampaignReportsController extends Controller
                 continue;
             }
 
+            $costPerClick7 = ($matchedCampaignL30 && $matchedCampaignL30->clicks > 0)
+                ? ($matchedCampaignL30->cost / $matchedCampaignL30->clicks)
+                : 0;
+
             $row = [
                 'parent' => $parent,
                 'sku' => $pm->sku,
@@ -289,11 +293,11 @@ class AmazonCampaignReportsController extends Controller
                 'campaignBudgetAmount' => $matchedCampaignL30->campaignBudgetAmount ?? 0,
                 'impressions_l30' => $matchedCampaignL30->impressions ?? 0,
                 'clicks_l30' => $matchedCampaignL30->clicks ?? 0,
-                'spend_l30' => $matchedCampaignL30->spend ?? 0,
-                'ad_sales_l30' => $matchedCampaignL30->sales30d ?? 0,
-                'ad_sold_l30' => $matchedCampaignL30->unitsSoldSameSku30d ?? 0,
-                'acos_l30' => ($matchedCampaignL30 && $matchedCampaignL30->sales30d > 0) ? round(($matchedCampaignL30->spend / $matchedCampaignL30->sales30d) * 100, 2): 0,
-                'cpc_l30' => $matchedCampaignL30->costPerClick ?? 0,
+                'spend_l30' => $matchedCampaignL30->cost ?? 0,
+                'ad_sales_l30' => $matchedCampaignL30->sales ?? 0,
+                'ad_sold_l30' => $matchedCampaignL30->unitsSold ?? 0,
+                'acos_l30' => ($matchedCampaignL30 && $matchedCampaignL30->sales > 0) ? round(($matchedCampaignL30->cost / $matchedCampaignL30->sales) * 100, 2): 0,
+                'cpc_l30' => $costPerClick7,
                 'NRL' => '',
                 'NRA' => '',
                 'FBA' => '',

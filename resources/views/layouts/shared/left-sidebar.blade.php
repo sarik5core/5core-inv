@@ -1211,10 +1211,10 @@
                                                     <a href="{{ route('amazon.kw.ads') }}">Amazon KW Ads</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('amazon.hl.ads') }}">Amazon HL Ads</a>
+                                                    <a href="{{ route('amazon.pt.ads') }}">Amazon PT Ads</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('amazon.pt.ads') }}">Amazon PT Ads</a>
+                                                    <a href="{{ route('amazon.hl.ads') }}">Amazon HL Ads</a>
                                                 </li>
                                             </ul>
                                         </div>

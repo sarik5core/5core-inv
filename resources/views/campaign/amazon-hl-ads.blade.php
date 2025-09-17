@@ -444,8 +444,8 @@
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l30_cpc = parseFloat(row.l30_cpc) || 0;
-                            return l30_cpc.toFixed(2);
+                            var cpc_l30 = parseFloat(row.cpc_l30) || 0;
+                            return cpc_l30.toFixed(2);
                         }
                     },
                 ],
