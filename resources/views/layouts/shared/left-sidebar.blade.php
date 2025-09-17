@@ -138,6 +138,9 @@
                         <li>
                             <a href="{{ route('quality.enhance') }}">Quality Enhance</a>
                         </li>
+                        <li>
+                            <a href="{{ route('inventory.index') }}">Inventory Warehouse</a>
+                        </li>
                     </ul>
                 </div>
             </li>

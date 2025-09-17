@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class TemuProductSheet extends Model
 {
+    protected $table = 'temu_product_sheets';
+
     protected $fillable = [
-        'sku', 'price', 'pft', 'roi', 'l30', 'dil', 'buy_link'
+        'sku', 'price', 'pft', 'roi', 'l30', 'dil', 'buy_link','l60'
     ];
     use HasFactory;
 }
