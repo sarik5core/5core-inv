@@ -54,12 +54,14 @@ use App\Models\Ebay3Metric;
 use App\Models\EbayMetric;
 use App\Models\MacyProduct;
 use App\Models\MarketplacePercentage;
+use App\Models\PLSProduct;
 use App\Models\ProductMaster;
 use App\Models\ReverbProduct;
 use App\Models\ShopifySku;
 use App\Models\TemuMetric;
 use App\Models\TemuProductSheet;
 use App\Models\TiendamiaProduct;
+use App\Models\WaifairProductSheet;
 use App\Models\WalmartMetrics;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -629,6 +631,8 @@ class ChannelMasterController extends Controller
             'doba'      => 'getDobaChannelData',
             'temu'      => 'getTemuChannelData',
             'walmart'   => 'getWalmartChannelData',
+            'pls'       => 'getPlsChannelData',
+            'wayfair'   => 'getWayfairChannelData',
             // add all other 40 channels here like:
             // 'walmart' => 'getWalmartChannelData',
             // 'shopify' => 'getShopifyChannelData',
@@ -1388,10 +1392,10 @@ class ChannelMasterController extends Controller
         $query = TemuProductSheet::where('sku', 'not like', '%Parent%');
 
         $l30Orders = $query->sum('l30');
-        $l60Orders = $query->sum('l30');
+        $l60Orders = $query->sum('l60');
 
         $l30Sales  = (clone $query)->selectRaw('SUM(l30 * price) as total')->value('total') ?? 0;
-        $l60Sales  = (clone $query)->selectRaw('SUM(l30 * price) as total')->value('total') ?? 0;
+        $l60Sales  = (clone $query)->selectRaw('SUM(l60 * price) as total')->value('total') ?? 0;
 
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
@@ -1674,7 +1678,7 @@ class ChannelMasterController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Macys channel data fetched successfully',
+            'message' => 'Tiendamia channel data fetched successfully',
             'data' => $result,
         ]);
     }
@@ -1774,7 +1778,206 @@ class ChannelMasterController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Macys channel data fetched successfully',
+            'message' => 'Bestbuy USA channel data fetched successfully',
+            'data' => $result,
+        ]);
+    }
+
+    public function getPlsChannelData(Request $request)
+    {
+        $result = [];
+
+        $query = PLSProduct::where('sku', 'not like', '%Parent%');
+
+        $l30Orders = $query->sum('p_l30');
+        $l60Orders = $query->sum('p_l60');
+
+        $l30Sales  = (clone $query)->selectRaw('SUM(p_l30 * price) as total')->value('total') ?? 0;
+        $l60Sales  = (clone $query)->selectRaw('SUM(p_l60 * price) as total')->value('total') ?? 0;
+
+        $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
+
+        // Get eBay marketing percentage
+        $percentage = MarketplacePercentage::where('marketplace', 'Pls')->value('percentage') ?? 100;
+        $percentage = $percentage / 100; // convert % to fraction
+
+        // Load product masters (lp, ship) keyed by SKU
+        $productMasters = ProductMaster::all()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        // Calculate total profit
+        $ebayRows     = $query->get(['sku', 'price', 'p_l30']);
+        $totalProfit  = 0;
+
+        foreach ($ebayRows as $row) {
+            $sku       = strtoupper($row->sku);
+            $price     = (float) $row->price;
+            $unitsL30  = (int) $row->p_l30;
+
+            $soldAmount = $unitsL30 * $price;
+            if ($soldAmount <= 0) {
+                continue;
+            }
+
+            $lp   = 0;
+            $ship = 0;
+
+            if (isset($productMasters[$sku])) {
+                $pm = $productMasters[$sku];
+
+                $values = is_array($pm->Values) ? $pm->Values :
+                        (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+                $lp   = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
+                $ship = isset($values['ship']) ? (float) $values['ship'] : ($pm->ship ?? 0);
+            }
+
+            // Profit per unit
+            $profitPerUnit = ($price * $percentage) - $lp - $ship;
+            $profitTotal   = $profitPerUnit * $unitsL30;
+
+            $totalProfit += $profitTotal;
+        }
+
+        // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
+        $ebaySkus   = $ebayRows->pluck('sku')->map(fn($s) => strtoupper($s))->toArray();
+        $ebayPMs    = ProductMaster::whereIn('sku', $ebaySkus)->get();
+
+        $totalLpValue = 0;
+        foreach ($ebayPMs as $pm) {
+            $values = is_array($pm->Values) ? $pm->Values :
+                    (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+            $lp = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
+            $totalLpValue += $lp;
+        }
+
+        // Use L30 Sales for denominator
+        $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
+        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+
+        // Channel data
+        $channelData = ChannelMaster::where('channel', 'PLS')->first();
+
+        $result[] = [
+            'Channel '   => 'PLS',
+            'L-60 Sales' => intval($l60Sales),
+            'L30 Sales'  => intval($l30Sales),
+            'Growth'     => round($growth, 2) . '%',
+            'L60 Orders' => $l60Orders,
+            'L30 Orders' => $l30Orders,
+            'Gprofit%'   => round($gProfitPct, 2) . '%',
+            'G Roi'      => round($gRoi, 2),
+            'type'       => $channelData->type ?? '',
+            'W/Ads'      => $channelData->w_ads ?? 0,
+            'NR'         => $channelData->nr ?? 0,
+            'Update'     => $channelData->update ?? 0,
+        ];
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'PLS channel data fetched successfully',
+            'data' => $result,
+        ]);
+    }
+
+
+    public function getWayfairChannelData(Request $request)
+    {
+        $result = [];
+
+        $query = WaifairProductSheet::where('sku', 'not like', '%Parent%');
+
+        $l30Orders = $query->sum('l30');
+        $l60Orders = $query->sum('l60');
+
+        $l30Sales  = (clone $query)->selectRaw('SUM(l30 * price) as total')->value('total') ?? 0;
+        $l60Sales  = (clone $query)->selectRaw('SUM(l60 * price) as total')->value('total') ?? 0;
+
+        $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
+
+        // Get eBay marketing percentage
+        $percentage = MarketplacePercentage::where('marketplace', 'Wayfair')->value('percentage') ?? 100;
+        $percentage = $percentage / 100; // convert % to fraction
+
+        // Load product masters (lp, ship) keyed by SKU
+        $productMasters = ProductMaster::all()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        // Calculate total profit
+        $ebayRows     = $query->get(['sku', 'price', 'l30']);
+        $totalProfit  = 0;
+
+        foreach ($ebayRows as $row) {
+            $sku       = strtoupper($row->sku);
+            $price     = (float) $row->price;
+            $unitsL30  = (int) $row->l30;
+
+            $soldAmount = $unitsL30 * $price;
+            if ($soldAmount <= 0) {
+                continue;
+            }
+
+            $lp   = 0;
+            $ship = 0;
+
+            if (isset($productMasters[$sku])) {
+                $pm = $productMasters[$sku];
+
+                $values = is_array($pm->Values) ? $pm->Values :
+                        (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+                $lp   = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
+                $ship = isset($values['ship']) ? (float) $values['ship'] : ($pm->ship ?? 0);
+            }
+
+            // Profit per unit
+            $profitPerUnit = ($price * $percentage) - $lp - $ship;
+            $profitTotal   = $profitPerUnit * $unitsL30;
+
+            $totalProfit += $profitTotal;
+        }
+
+        // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
+        $ebaySkus   = $ebayRows->pluck('sku')->map(fn($s) => strtoupper($s))->toArray();
+        $ebayPMs    = ProductMaster::whereIn('sku', $ebaySkus)->get();
+
+        $totalLpValue = 0;
+        foreach ($ebayPMs as $pm) {
+            $values = is_array($pm->Values) ? $pm->Values :
+                    (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+            $lp = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
+            $totalLpValue += $lp;
+        }
+
+        // Use L30 Sales for denominator
+        $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
+        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+
+        // Channel data
+        $channelData = ChannelMaster::where('channel', 'Wayfair')->first();
+
+        $result[] = [
+            'Channel '   => 'Wayfair',
+            'L-60 Sales' => intval($l60Sales),
+            'L30 Sales'  => intval($l30Sales),
+            'Growth'     => round($growth, 2) . '%',
+            'L60 Orders' => $l60Orders,
+            'L30 Orders' => $l30Orders,
+            'Gprofit%'   => round($gProfitPct, 2) . '%',
+            'G Roi'      => round($gRoi, 2),
+            'type'       => $channelData->type ?? '',
+            'W/Ads'      => $channelData->w_ads ?? 0,
+            'NR'         => $channelData->nr ?? 0,
+            'Update'     => $channelData->update ?? 0,
+        ];
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'wayfair channel data fetched successfully',
             'data' => $result,
         ]);
     }

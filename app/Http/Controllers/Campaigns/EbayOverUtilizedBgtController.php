@@ -346,23 +346,146 @@ class EbayOverUtilizedBgtController extends Controller
         $field = $request->input('field');
         $value = $request->input('value');
 
-        $ebayDataView = EbayDataView::where('sku', $sku)->first();
+        $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
 
-        $jsonData = $ebayDataView && $ebayDataView->value ? $ebayDataView->value : [];
+        $jsonData = $ebayDataView->value ?? [];
 
         $jsonData[$field] = $value;
 
-        $ebayDataView = EbayDataView::updateOrCreate(
-            ['sku' => $sku],
-            ['value' => $jsonData]
-        );
+        $ebayDataView->value = $jsonData;
+        $ebayDataView->save();
 
         return response()->json([
             'status' => 200,
-            'message' => "...",
+            'message' => "Field updated successfully",
             'updated_json' => $jsonData
         ]);
-
     }
 
+
+
+    public function ebayOverUtilized(){
+        return view('campaign.ebay-under-utilized');
+    }
+
+    public function ebayCorrectlyUtilized(){
+        return view('campaign.ebay-correctly-utilized');
+    }
+
+    public function ebayMakeCampaignKw(){
+        return view('campaign.ebay-make-campaign-kw');
+    }
+
+    public function getEbayMakeNewCampaignKw()
+    {
+        $productMasters = ProductMaster::orderBy('parent', 'asc')
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy('sku', 'asc')
+            ->get();
+
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $nrValues = EbayDataView::whereIn('sku', $skus)->pluck('value', 'sku');
+
+        $ebayCampaignReportsL7 = EbayPriorityReport::where('report_range', 'L7')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
+        $ebayCampaignReportsL1 = EbayPriorityReport::where('report_range', 'L1')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
+        $ebayCampaignReportsL30 = EbayPriorityReport::where('report_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaign_name', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->get();
+
+        $result = [];
+
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
+
+            $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
+                return stripos($item->campaign_name, $sku) !== false;
+            });
+
+            $matchedCampaignL1 = $ebayCampaignReportsL1->first(function ($item) use ($sku) {
+                return stripos($item->campaign_name, $sku) !== false;
+            });
+
+            $matchedCampaignL30 = $ebayCampaignReportsL30->first(function ($item) use ($sku) {
+                return stripos($item->campaign_name, $sku) !== false;
+            });
+
+            // if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+            //     continue;
+            // }
+
+            $row = [];
+            $row['parent'] = $parent;
+            $row['sku']    = $pm->sku;
+            $row['INV']    = $shopify->inv ?? 0;
+            $row['L30']    = $shopify->quantity ?? 0;
+            $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
+            $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
+            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
+
+            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_ad_fees_payout_currency ?? 0);
+            $sales    = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_sale_amount_payout_currency ?? 0 );
+
+            $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
+            
+            if($adFees > 0 && $sales === 0){
+                $row['acos'] = 100;
+            }else{
+                $row['acos'] = $acos;
+            }
+
+            $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
+            $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
+            $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
+
+            $row['NR'] = '';
+            $row['NRL'] = '';
+            if (isset($nrValues[$pm->sku])) {
+                $raw = $nrValues[$pm->sku];
+                if (!is_array($raw)) {
+                    $raw = json_decode($raw, true);
+                }
+                if (is_array($raw)) {
+                    $row['NR'] = $raw['NR'] ?? null;
+                    $row['NRL'] = $raw['NRL'] ?? null;
+
+                }
+            }
+            if ($row['campaignName'] === '' && ($row['NR'] !== 'NRA' && $row['NRL'] !== 'NRL')) {
+                $result[] = (object) $row;
+            }
+
+
+        }
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data'    => $result,
+            'status'  => 200,
+        ]);
+    }
 }

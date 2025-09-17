@@ -157,12 +157,14 @@ use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingControl
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
 use App\Http\Controllers\Campaigns\AmazonAdRunningController;
+use App\Http\Controllers\Campaigns\AmazonCampaignReportsController;
 use App\Http\Controllers\Campaigns\AmazonPinkDilAdController;
 use App\Http\Controllers\Campaigns\AmazonSbBudgetController;
 use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\Campaigns\AmzCorrectlyUtilizedController;
 use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
+use App\Http\Controllers\Campaigns\EbayKwAdsController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
 use App\Http\Controllers\Campaigns\EbayPinkDilAdController;
 use App\Http\Controllers\Campaigns\EbayPMPAdsController;
@@ -1144,6 +1146,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing-audit-reverb', [ListingAuditReverbController::class, 'listingAuditReverb'])->name('listing.audit.reverb');
     Route::get('/listing_audit_reverb/view-data', [ListingAuditReverbController::class, 'getViewListingAuditReverbData']);
     Route::post('/reverb/save-nr', [ReverbController::class, 'saveNrToDatabase']);
+    Route::post('/reverb/update-listed-live', [ReverbController::class, 'updateListedLive']);
     Route::post('/listing_audit_reverb/save-na', [ListingAuditReverbController::class, 'saveAuditToDatabase']);
     Route::post('/reverb-zero/reason-action/update', [ReverbZeroController::class, 'updateReasonAction']);
     Route::post('/reverb-low-visibility/reason-action/update', [ReverbLowVisibilityController::class, 'updateReasonAction']);
@@ -1444,6 +1447,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/zero-bestbuyusa', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroview'])->name('zero.bestbuyusa');
     Route::get('/bestbuyusa-analytics', [BestbuyUSAZeroController::class, 'bestbuyUSAZeroAnalytics'])->name('zero.bestbuyusa.analytics');
     Route::get('/zero_bestbuyusa/view-data', [BestbuyUSAZeroController::class, 'getViewBestbuyUSAZeroData']);
+    Route::post('/zero_bestbuyusa/update-listed-live', [BestbuyUSAZeroController::class, 'updateListedLive']);
     Route::post('/zero_bestbuyusa/reason-action/update-data', [BestbuyUSAZeroController::class, 'updateReasonAction']);
     Route::get('/listing-bestbuyusa', [ListingBestbuyUSAController::class, 'listingBestbuyUSA'])->name('listing.bestbuyusa');
     Route::get('/listing_bestbuyusa/view-data', [ListingBestbuyUSAController::class, 'getViewListingBestbuyUSAData']);
@@ -1673,6 +1677,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ebay-under-uti-acos-pink', 'ebayUnderUtiAcosPink')->name('ebay-under-uti-acos-pink');
         Route::get('/ebay-under-uti-acos-green', 'ebayUnderUtiAcosGreen')->name('ebay-under-uti-acos-green');
         Route::get('/ebay-under-uti-acos-red', 'ebayUnderUtiAcosRed')->name('ebay-under-uti-acos-red');
+        Route::get('/ebay/under/utilized', 'ebayOverUtilized')->name('ebay-under-utilize');
+        Route::get('/ebay/correctly/utlized', 'ebayCorrectlyUtilized')->name('ebay-correctly-utilize');
+        Route::get('/ebay/make-new/campaign/kw', 'ebayMakeCampaignKw')->name('ebay-make-new-campaign-kw');
+        Route::get('/ebay/make-new/campaign/kw/data', 'getEbayMakeNewCampaignKw');
 
         Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
         Route::post('/update-ebay-nr-data', 'updateNrData');
@@ -1702,6 +1710,19 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     });
 
+    Route::controller(AmazonCampaignReportsController::class)->group(function () {
+        Route::get('/amazon/campaign/reports', 'index')->name('amazon.campaign.reports');
+        Route::get('/amazon/kw/ads', 'amazonKwAdsView')->name('amazon.kw.ads');
+        Route::get('/amazon/kw/ads/data', 'getAmazonKwAdsData');
+        Route::get('/amazon/pt/ads', 'amazonPtAdsView')->name('amazon.pt.ads');
+        Route::get('/amazon/pt/ads/data', 'getAmazonPtAdsData');
+        Route::get('/amazon/hl/ads', 'amazonHlAdsView')->name('amazon.hl.ads');
+        Route::get('/amazon/hl/ads/data', 'getAmazonHlAdsData');
+
+        Route::get('/amazon/campaign/reports/data', 'getAmazonCampaignsData');
+
+    });
+
     Route::controller(EbayACOSController::class)->group(function () {
         Route::get('/ebay-acos-control/list', 'index')->name('ebay.acos.index');
         Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
@@ -1719,6 +1740,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/update-ebay-pmt-sprice','saveEbayPMTSpriceToDatabase');
     });
 
+    Route::controller(EbayKwAdsController::class)->group(function(){
+        Route::get('/ebay/keywords/ads', 'index')->name('ebay.keywords.ads');
+        Route::get('/ebay/keywords/ads/data','getEbayKwAdsData');
+    });
+
     Route::controller(WalmartUtilisationController::class)->group(function(){
         Route::get('/walmart/utilized/kw', 'index')->name('walmart.utilized.kw');
         Route::get('/walmart/utilized/kw/data', 'getWalmartAdsData');
@@ -1728,6 +1754,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/google/shopping', 'index')->name('google.shopping');
         Route::get('/google/shopping/serp', 'googleShoppingSerp')->name('google.shopping.serp');
         Route::get('/google/shopping/pmax', 'googleShoppingPmax')->name('google.shopping.pmax');
+        Route::get('/google/shopping/running', 'googleShoppingAdsRunning')->name('google.shopping.running');
         Route::get('/google/shopping/data', 'getGoogleShoppingAdsData');
     });
 

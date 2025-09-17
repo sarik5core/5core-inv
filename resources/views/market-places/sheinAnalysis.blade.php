@@ -1441,6 +1441,24 @@
                                             <div class="metric-total" id="ovl30-total">0</div>
                                         </div>
                                     </th>
+                                    <th data-field="sl_30" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                SL 30 <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="lDil-total">0</div>
+                                        </div>
+                                    </th>
+                                    <th data-field="w_dil" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                S DIL <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="wDil-total">0%</div>
+                                        </div>
+                                    </th>
                                     <th>NRL</th>
 
                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
@@ -2368,6 +2386,23 @@
 
                     $row.append($('<td>').text(item.INV));
                     $row.append($('<td>').text(item.L30));
+                    // S Sales column
+                    $row.append($('<td>').html(`
+            <div class="sku-tooltip-container">
+                <span class="sku-text">${item.l30 || 0}</span>
+                <div class="sku-tooltip">
+                    <div class="sku-link"><strong>Sheet L30:</strong> ${item.l30 || 0}</div>
+                </div>
+            </div>
+        `));
+
+                    // S DIL with color coding - using the calculated S_DIL value
+                    const sheetDilValue = item.dil || 0;
+                    $row.append($('<td>').html(`
+            <span class="dil-percent-value ${getDilColor(sheetDilValue)}">
+                ${Math.round(sheetDilValue)}%
+            </span>
+        `));
 
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent

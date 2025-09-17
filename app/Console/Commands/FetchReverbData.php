@@ -31,8 +31,18 @@ class FetchReverbData extends Command
         $this->info('Fetching Reverb Listings...');
         $listings = $this->fetchAllListings();
 
-        $rL30 = $this->getOrderQuantities(30);
-        $rL60 = $this->getOrderQuantities(60);
+        $today = Carbon::today();
+        $l30Start = $today->copy()->subDays(30);
+        $l30End   = $today->copy()->subDay();
+        $l60Start = $today->copy()->subDays(60);
+        $l60End   = $l30Start->copy()->subDay();
+
+
+        // $rL30 = $this->getOrderQuantities(30);
+        // $rL60 = $this->getOrderQuantities(60);
+
+        $rL30 = $this->getOrderQuantities($l30Start, $l30End);
+        $rL60 = $this->getOrderQuantities($l60Start, $l60End);
 
         foreach ($listings as $item) {
             $sku = $item['sku'] ?? null;
@@ -89,11 +99,12 @@ class FetchReverbData extends Command
         return $listings;
     }
 
-    protected function getOrderQuantities($days): array
+    protected function getOrderQuantities(Carbon $startDate, Carbon $endDate): array
     {
-        $this->info("Fetching orders for last {$days} days...");
-        $since = now()->subDays($days)->toIso8601String();
-        $url = "https://api.reverb.com/api/my/orders/selling/all?updated_start_date={$since}";
+        $this->info("Fetching orders from {$startDate->toDateString()} to {$endDate->toDateString()}...");
+
+        
+        $url = "https://api.reverb.com/api/my/orders/selling/all?updated_start_date={$startDate->toIso8601String()}&updated_end_date={$endDate->toIso8601String()}";
         $quantityMap = [];
 
         do {
@@ -104,7 +115,7 @@ class FetchReverbData extends Command
             ])->get($url);
 
             if ($response->failed()) {
-                $this->error("Failed to fetch orders for R_L{$days}");
+                $this->error("Failed to fetch orders");
                 return [];
             }
 
@@ -122,7 +133,7 @@ class FetchReverbData extends Command
             $url = $response->json()['_links']['next']['href'] ?? null;
         } while ($url);
 
-        $this->info("R_L{$days} order quantities calculated.");
+        $this->info("Orders processed from {$startDate->toDateString()} to {$endDate->toDateString()}.");
         return $quantityMap;
     }
 

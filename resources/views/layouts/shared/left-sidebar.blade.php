@@ -144,6 +144,9 @@
                         <li>
                             <a href="{{ route('quality.enhance') }}">Quality Enhance</a>
                         </li>
+                        <li>
+                            <a href="{{ route('inventory.index') }}">Inventory Warehouse</a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -1193,6 +1196,29 @@
                                     <li>
                                         <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
                                     </li>
+                                    {{-- <li>
+                                        <a href="{{ route('amazon.campaign.reports') }}">Amazon Ads Report</a>
+                                    </li> --}}
+                                    <li>
+                                        <a data-bs-toggle="collapse" href="#amazonAdsReport" aria-expanded="false"
+                                            aria-controls="amazonAdsReport">
+                                            <span>Amazon Ads Report</span>
+                                            <span class="menu-arrow"></span>
+                                        </a>
+                                        <div class="collapse" id="amazonAdsReport">
+                                            <ul class="side-nav-fourth-level">
+                                                <li>
+                                                    <a href="{{ route('amazon.kw.ads') }}">Amazon KW Ads</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('amazon.pt.ads') }}">Amazon PT Ads</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('amazon.hl.ads') }}">Amazon HL Ads</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
                                     <li>
                                         <a data-bs-toggle="collapse" href="#amazonACOS" aria-expanded="false"
                                             aria-controls="amazonACOS">
@@ -1362,7 +1388,19 @@
                                         <a href="{{ route('ebay.pmp.ads') }}">Ebay PMT Ads</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > UTI ACOS PINK</a>
+                                        <a href="{{ route('ebay.keywords.ads') }}">Ebay Keywords Ads</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY OVER UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-under-utilize') }}">EBAY UNDER UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-correctly-utilize') }}">EBAY CORRECTLY UTIL.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
@@ -1843,6 +1881,9 @@
                             </a>
                             <div class="collapse" id="sidebarGoogleShopping">
                                 <ul class="side-nav-third-level">
+                                    <li>
+                                        <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
+                                    </li>
                                     <li>
                                         <a href="{{ route('google.shopping') }}">Google Shopping</a>
                                     </li>
