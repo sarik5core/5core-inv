@@ -1362,6 +1362,15 @@
                                     <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
                                         NRL
                                     </th>
+                                    <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LIVE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="live-total">0</div>
+                                        </div>
+                                    </th>
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -2189,6 +2198,7 @@
                     if (item.NR === 'NR') {
                         $row.addClass('nr-hide');
                     }
+
                     // Helper functions for color coding
                     const getDilColor = (value) => {
                         const percent = parseFloat(value) * 100;
@@ -2357,6 +2367,17 @@
                         }
                         $select.data('sku', item['sku']);
                         $row.append($('<td>').append($select));
+
+
+                        const liveVal = item.raw_data.Live === true || item.raw_data.Live === 'true' || item
+                            .raw_data.Live === 1 || item.raw_data.Live === '1';
+                        const $liveCb = $('<input>', {
+                            type: 'checkbox',
+                            class: 'live-checkbox',
+                            checked: liveVal
+                        }).data('sku', item['sku']);
+
+                        $row.append($('<td>').append($liveCb));
                     }
 
                     // Sess30 with tooltip icon (no color coding)
@@ -2493,6 +2514,36 @@
                     }
                 });
             });
+
+            $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
+                const $cb = $(this);
+                console.log($cb);
+                const sku = $cb.data('sku');
+                const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
+                const value = $cb.is(':checked') ? 1 : 0;
+
+                console.log(sku, field, value);
+
+                $.ajax({
+                    url: '/zero_bestbuyusa/update-listed-live',
+                    method: 'POST',
+                    data: {
+                        sku: sku,
+                        field: field,
+                        value: value,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        console.log(`${field} updated for SKU ${sku}`);
+                    },
+                    error: function(err) {
+                        console.error('Update failed', err);
+                        alert('Failed to update. Try again.');
+                        $cb.prop('checked', !value); // revert on error
+                    }
+                });
+            });
+
 
 
             function initNREditHandlers() {
@@ -4146,10 +4197,21 @@
                         rowCount: 0,
                         totalPftSum: 0,
                         totalSalesL30Sum: 0,
-                        totalCogsSum: 0
+                        totalCogsSum: 0,
+                        listedCount: 0, // ADDED
+                        liveCount: 0 // ADDED
                     };
 
                     filteredData.forEach(item => {
+                        // Count Listed and Live checkboxes - ADDED
+                        if (item.listed === true || item.listed === 'true' || item.listed === 1 || item
+                            .listed === '1') {
+                            metrics.listedCount++;
+                        }
+                        if (item.raw_data.Live === true || item.raw_data.Live === 'true' || item.raw_data.Live === 1 || item.raw_data.Live === '1') {
+                            metrics.liveCount++;
+                        }
+
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['A L30']) || 0;
@@ -4216,6 +4278,10 @@
                     $('#tacos-total').text(Math.round(metrics.tacosTotal / divisor * 100) + '%');
                     $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
 
+                    // ADDED: Display listed and live counts
+                    $('#listed-total').text(metrics.listedCount.toLocaleString());
+                    $('#live-total').text(metrics.liveCount.toLocaleString());
+
                 } catch (error) {
                     console.error('Error in calculateTotals:', error);
                     resetMetricsToZero();
@@ -4233,6 +4299,8 @@
                 $('#roi-total').text('0%');
                 $('#tacos-total').text('0%');
                 $('#cvr-total').text('0%');
+                $('#listed-total').text('0'); // ADDED
+                $('#live-total').text('0'); // ADDED
             }
 
             // Initialize enhanced dropdowns

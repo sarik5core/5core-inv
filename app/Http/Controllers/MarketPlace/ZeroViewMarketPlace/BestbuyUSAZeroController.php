@@ -58,6 +58,12 @@ class BestbuyUSAZeroController extends Controller
                     $value = json_decode($value, true) ?: [];
                 }
 
+                // Get Live value from value array - ADDED
+                $live = false;
+                if (isset($value['Live'])) {
+                    $live = filter_var($value['Live'], FILTER_VALIDATE_BOOLEAN);
+                }
+
                 // Get price - use BestBuy price if available, otherwise fall back to Shopify price
                 $bestbuy_price = $value['price'] ?? 0;
                 $shopify_price = $shopify ? $shopify->price : 0;
@@ -69,11 +75,12 @@ class BestbuyUSAZeroController extends Controller
                     'inv' => $inv,
                     'ov_l30' => $ov_l30,
                     'ov_dil' => $ov_dil,
-                    'price' => $price, // Added price field with fallback to Shopify
+                    'price' => $price,
                     'NR' => isset($value['NR']) && in_array($value['NR'], ['REQ', 'NR']) ? $value['NR'] : 'REQ',
                     'A_Z_Reason' => $value['A_Z_Reason'] ?? '',
                     'A_Z_ActionRequired' => $value['A_Z_ActionRequired'] ?? '',
                     'A_Z_ActionTaken' => $value['A_Z_ActionTaken'] ?? '',
+                    'Live' => $live, // ADDED Live field
                 ];
                 $result[] = $row;
             }
@@ -120,5 +127,34 @@ class BestbuyUSAZeroController extends Controller
             'status' => 200,
             'message' => 'Reason and actions updated successfully.'
         ]);
+    }
+
+    public function updateListedLive(Request $request)
+    {
+        $request->validate([
+            'sku'   => 'required|string',
+            'field' => 'required|in:Listed,Live',
+            'value' => 'required|boolean'
+        ]);
+
+        // Find or create the product without overwriting existing value
+        $product = BestbuyUSADataView::firstOrCreate(
+            ['sku' => $request->sku],
+            ['value' => []]
+        );
+
+        // Decode current value (ensure it's an array)
+        $currentValue = is_array($product->value)
+            ? $product->value
+            : (json_decode($product->value, true) ?? []);
+
+        // Store as actual boolean
+        $currentValue[$request->field] = filter_var($request->value, FILTER_VALIDATE_BOOLEAN);
+
+        // Save back to DB
+        $product->value = $currentValue;
+        $product->save();
+
+        return response()->json(['success' => true]);
     }
 }

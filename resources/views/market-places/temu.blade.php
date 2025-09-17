@@ -2297,9 +2297,9 @@
                                     'R&A': item['R&A'] !== undefined ? item['R&A'] : '',
                                     INV: item.INV || 0,
                                     L30: item.L30 || 0,
-                                    price: (parseFloat(item.sheet_price) || 0) < 26.99
-                                        ? (parseFloat(item.sheet_price) || 0) + 2.99
-                                        : parseFloat(item.sheet_price) || 0,
+                                    price: (parseFloat(item.sheet_price) || 0) < 26.99 ?
+                                        (parseFloat(item.sheet_price) || 0) + 2.99 :
+                                        parseFloat(item.sheet_price) || 0,
                                     price_wo_ship: item.sheet_price || 0,
                                     views_l30: views_l30,
                                     views_l60: views_l60,
@@ -4097,14 +4097,24 @@
                         rowCount: 0,
                         totalPftSum: 0,
                         totalSalesL30Sum: 0,
-                        totalCogsSum: 0
-
+                        totalCogsSum: 0,
+                        listedCount: 0, 
+                        liveCount: 0
                     };
 
                     filteredData.forEach(item => {
                         if (item.NR === 'NR') {
                             return;
                         }
+
+                        // Count Listed and Live checkboxes - ADDED
+                        if (item.raw_data.Listed === true || item.raw_data.Listed === 'true' || item.raw_data.Listed === 1 || item.raw_data.Listed === '1') {
+                            metrics.listedCount++;
+                        }
+                        if (item.raw_data.Live === true || item.raw_data.Live === 'true' || item.raw_data.Live === 1 || item.raw_data.Live === '1') {
+                            metrics.liveCount++;
+                        }
+
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item['A L30']) || 0;
@@ -4178,6 +4188,10 @@
                     $('#tacos-total').text(Math.round(metrics.tacosTotal / divisor * 100) + '%');
                     $('#cvr-total').text(Math.round(metrics.scvrSum / divisor * 100) + '%');
 
+                    // ADDED: Display listed and live counts
+                    $('#listed-total').text(metrics.listedCount.toLocaleString());
+                    $('#live-total').text(metrics.liveCount.toLocaleString());
+
                 } catch (error) {
                     console.error('Error in calculateTotals:', error);
                     resetMetricsToZero();
@@ -4195,6 +4209,8 @@
                 $('#roi-total').text('0%');
                 $('#tacos-total').text('0%');
                 $('#cvr-total').text('0%');
+                $('#listed-total').text('0'); // ADDED
+                $('#live-total').text('0'); // ADDED
             }
 
             // Initialize enhanced dropdowns
