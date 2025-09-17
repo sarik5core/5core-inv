@@ -894,9 +894,11 @@
         option[value="Q-Task"] {
             background-color: #ff00ff;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
+
         /*popup modal style end */
     </style>
 @endsection
@@ -921,7 +923,8 @@
                         <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
                             0 SOLD - <span id="zero-sold-count">0</span>
                         </div>
-                        <div class="badge bg-primary text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
+                        <div class="badge bg-primary text-white px-3 py-2 me-2"
+                            style="font-size: 1rem; border-radius: 8px;">
                             SOLD - <span id="sold-count">0</span>
                         </div>
                         <div class="badge bg-danger text-white px-3 py-2" style="font-size: 1rem; border-radius: 8px;">
@@ -1391,7 +1394,7 @@
                                     </th>
                                     <th>NRL</th>
 
-                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 LISTED <span class="sort-arrow">↓</span>
@@ -2125,12 +2128,19 @@
                         if (response && response.product_master_data) {
                             tableData = response.product_master_data.map((item, index) => {
                                 const sheet = item.sheet_data || {};
-                                // Ensure raw_data.price always matches item.price
                                 sheet.Price = item.price;
                                 sheet.SKU = item.sku;
-                                const valueJson = item.value ? JSON.parse(item.value) : {};
-                                const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
-                                const liveVal   = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
+
+                                // DIRECT VALUES - NO JSON PARSE NEEDED
+                                const listedVal = item.Listed !== undefined ?
+                                    (item.Listed === true || item.Listed === 'true' || item
+                                        .Listed === 1 || item.Listed === '1') :
+                                    false;
+
+                                const liveVal = item.Live !== undefined ?
+                                    (item.Live === true || item.Live === 'true' || item.Live ===
+                                        1 || item.Live === '1') :
+                                    false;
 
                                 return {
                                     sl_no: index + 1,
@@ -2154,17 +2164,21 @@
                                     Tacos30: sheet['TACOS'] || 0,
                                     SCVR: sheet['SCVR'] || 0,
                                     'ad cost/ pc': sheet['ad cost/ pc'] || 0,
-                                    is_parent: (item.sku || '').toUpperCase().includes("PARENT"),
-                                    raw_data: sheet, // sheet now has price from item.price
+                                    is_parent: (item.sku || '').toUpperCase().includes(
+                                        "PARENT"),
+                                    raw_data: sheet,
                                     NR: item.NR || '',
                                     listed: listedVal,
                                     live: liveVal,
-
                                 };
                             });
 
                             window.macySheetData = response.sheet_data;
                             filteredData = [...tableData];
+
+                            // Data load होने के बाद render करें
+                            renderTable();
+                            calculateTotals();
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2203,28 +2217,29 @@
                 $('#zero-sold-count').text(zeroSold);
                 $('#sold-count').text(totalSku - zeroSold);
                 $('#red-margin-count').text(lowProfitCount);
-                
+
                 updateRedMarginDataToChannelMaster(lowProfitCount);
             }
 
-            function updateRedMarginDataToChannelMaster(lowProfitCount){
+            function updateRedMarginDataToChannelMaster(lowProfitCount) {
                 console.log(lowProfitCount);
-                
+
                 fetch('/macys/saveLowProfit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ count: lowProfitCount })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Saved low profit count:', data);
-                })
-                .catch(error => {
-                    console.error('Error saving low profit count:', error);
-                });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            count: lowProfitCount
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                    })
+                    .catch(error => {
+                        console.error('Error saving low profit count:', error);
+                    });
             }
 
             // Render table with current data
@@ -2243,7 +2258,8 @@
                 }
 
                 filteredData.forEach(item => {
-                    
+
+
                     const $row = $('<tr>');
                     if (item.is_parent) {
                         $row.addClass('parent-row');
@@ -2396,7 +2412,8 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ? item.NR : 'RA';
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
@@ -2417,9 +2434,9 @@
                         $select.data('sku', item['sku']);
                         $row.append($('<td>').append($select));
                     }
-
-                     //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1';
+                    // Listed checkbox
+                    const listedVal = item.listed === true || item.listed === 'true' || item.listed === 1 ||
+                        item.listed === '1';
                     const $listedCb = $('<input>', {
                         type: 'checkbox',
                         class: 'listed-checkbox',
@@ -2429,7 +2446,8 @@
                     $row.append($('<td>').append($listedCb));
 
                     // Live checkbox
-                    const liveVal   = rawData.Live === true   || rawData.Live === 'true'   || rawData.Live === 1   || rawData.Live === '1';
+                    const liveVal = item.live === true || item.live === 'true' || item.live === 1 || item
+                        .live === '1';
                     const $liveCb = $('<input>', {
                         type: 'checkbox',
                         class: 'live-checkbox',
@@ -2561,28 +2579,28 @@
             }
 
             function initNRSelectChangeHandler() {
-                    $(document).on('change', '.nr-select', function () {
-                        const $select = $(this);
-                        const newValue = $select.val();
-                        const sku = $select.data('sku');
+                $(document).on('change', '.nr-select', function() {
+                    const $select = $(this);
+                    const newValue = $select.val();
+                    const sku = $select.data('sku');
 
-                        // Change background color based on selected value
-                        if (newValue === 'NRA') {
-                            $select.css('background-color', '#dc3545').css('color', '#ffffff');
-                        } else {
-                            $select.css('background-color', '#28a745').css('color', '#ffffff');
-                        }
+                    // Change background color based on selected value
+                    if (newValue === 'NRA') {
+                        $select.css('background-color', '#dc3545').css('color', '#ffffff');
+                    } else {
+                        $select.css('background-color', '#28a745').css('color', '#ffffff');
+                    }
 
-                        // Send AJAX
-                        $.ajax({
-                            url: '/macy/save-nr',
-                            type: 'POST',
-                            data: {
-                                sku: sku,
-                                nr: newValue,
-                                _token: $('meta[name="csrf-token"]').attr('content')
+                    // Send AJAX
+                    $.ajax({
+                        url: '/macy/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: sku,
+                            nr: newValue,
+                            _token: $('meta[name="csrf-token"]').attr('content')
                         },
-                        success: function (response) {
+                        success: function(response) {
                             showNotification('success', 'NR updated successfully!');
 
                             // Update tableData and filteredData
@@ -2599,7 +2617,7 @@
                             calculateTotals();
                             renderTable();
                         },
-                        error: function (xhr) {
+                        error: function(xhr) {
                             showNotification('danger', 'Failed to update NR.');
                         }
                     });
@@ -2609,7 +2627,7 @@
             $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
                 const $cb = $(this);
                 const sku = $cb.data('sku');
-                
+
                 const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
                 const value = $cb.is(':checked') ? 1 : 0;
 
@@ -3990,30 +4008,18 @@
                         liveCount: 0
                     };
 
-                    filteredData.forEach(item => {
-
-                        let rawData = {};
-                        if (typeof item.raw_data === 'string') {
-                            try {
-                                rawData = JSON.parse(item.raw_data || '{}');
-                            } catch (e) {
-                                console.error(`Invalid JSON in raw_data for SKU ${item['(Child) sku']}`, e);
-                            }
-                        } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
-                            rawData = item.raw_data;
-                        }
-
-                        // Count listed checkboxes
-                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1') {
+                    filteredData.forEach((item, index) => {
+                        // Count Listed checkboxes - SIMPLIFIED
+                        if (Boolean(item.listed) === true) {
                             metrics.listedCount++;
                         }
 
-                        // Count Live checkboxes
-                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 || rawData.Live === '1') {
+                        // Count Live checkboxes - SIMPLIFIED
+                        if (Boolean(item.live) === true) {
                             metrics.liveCount++;
                         }
 
-
+                        // ... rest of your calculations
                         metrics.invTotal += parseFloat(item.INV) || 0;
                         metrics.ovL30Total += parseFloat(item.L30) || 0;
                         metrics.el30Total += parseFloat(item.m_l30) || 0;

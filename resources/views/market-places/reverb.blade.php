@@ -1477,6 +1477,15 @@
                                         </div>
                                     </th>
                                     <th>NRL</th>
+                                    <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                LIVE <span class="sort-arrow">↓</span>
+                                            </div>
+                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                            <div class="metric-total" id="live-total">0</div>
+                                        </div>
+                                    </th>
                                     <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -2217,6 +2226,15 @@
                                 const rDil = inv !== 0 ? rl30 / inv : 0; // R L30 / INV
                                 const growth = rl30 !== 0 ? ((rl30 - rl60) / rl30) : 0;
 
+                                // Extract Live value from raw_data (similar to Wayfair)
+                                const rawData = item.raw_data || {};
+                                const valueJson = rawData.value ? JSON.parse(rawData.value) :
+                                {};
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
+
                                 return {
                                     sl_no: index + 1,
                                     'SL No.': item['SL No.'] || index + 1,
@@ -2240,11 +2258,12 @@
                                     ROI_percentage: item.ROI_percentage,
                                     growth: growth,
                                     NR: item.NR !== undefined ? item.NR : '',
+                                    listed: listedVal, // Added listed value
+                                    live: liveVal, // Added live value
                                 };
                             });
 
                             filteredData = [...tableData];
-
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2481,6 +2500,17 @@
                         $row.append($('<td>').append($select));
                     }
 
+                    // Live checkbox
+                    const liveVal = item.raw_data.Live === true || item.raw_data.Live === 'true' || item.raw_data.Live === 1 || item.raw_data.Live === '1';
+                    const $liveCb = $('<input>', {
+                        type: 'checkbox',
+                        class: 'live-checkbox',
+                        checked: liveVal
+                    }).data('sku', item['Sku']);
+
+                    $row.append($('<td>').append($liveCb));
+
+
                     // views with tooltip icon (no color coding)
                     $row.append($('<td>').html(
                         `<span>${Math.round(item.views)}</span>
@@ -2511,7 +2541,7 @@
                     // PFT with color coding
                     $row.append($('<td>').html(
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
-                        'PFT_percentage']) ?
+                            'PFT_percentage']) ?
                         `
     <span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
         ${Math.round(item['PFT_percentage'])}%
@@ -2688,6 +2718,33 @@
                     });
                 });
             }
+
+            $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
+                const $cb = $(this);
+                console.log($cb);
+                const sku = $cb.data('sku');
+                const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
+                const value = $cb.is(':checked') ? 1 : 0;
+
+                $.ajax({
+                    url: '/reverb/update-listed-live',
+                    method: 'POST',
+                    data: {
+                        sku: sku,
+                        field: field,
+                        value: value,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        console.log(`${field} updated for SKU ${sku}`);
+                    },
+                    error: function(err) {
+                        console.error('Update failed', err);
+                        alert('Failed to update. Try again.');
+                        $cb.prop('checked', !value); // revert on error
+                    }
+                });
+            });
 
             window.openModal = function(selectedItem, type) {
                 try {
@@ -3885,7 +3942,8 @@
                         rowCount: 0,
                         totalPftSum: 0,
                         totalSalesL30Sum: 0,
-                        totalCogsSum: 0
+                        totalCogsSum: 0,
+                        liveCount: 0  
                     };
 
                     filteredData.forEach(item => {
@@ -3900,6 +3958,26 @@
                         metrics.scvrSum += parseFloat(item.SCVR) || 0;
                         metrics.rowCount++;
 
+                      let rawData = {};
+                        if (typeof item.raw_data === 'string') {
+                            try {
+                                rawData = JSON.parse(item.raw_data || '{}');
+                            } catch (e) {
+                                console.error(`Invalid JSON in raw_data for SKU ${item['(Child) sku']}`, e);
+                            }
+                        } else if (typeof item.raw_data === 'object' && item.raw_data !== null) {
+                            rawData = item.raw_data;
+                        }
+
+                        // Count listed checkboxes
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1') {
+                            metrics.listedCount++;
+                        }
+
+                        // Count Live checkboxes
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 || rawData.Live === '1') {
+                            metrics.liveCount++;
+                        }
                         // Only sum if not a parent row
                         if (
                             item.Sku &&
@@ -3935,6 +4013,8 @@
                     $('#rl30-total').text(metrics.rl30Total.toLocaleString());
                     $('#rDil-total').text(Math.round(metrics.rDilTotal / divisor * 100) + '%');
                     $('#views-total').text(metrics.viewsTotal.toLocaleString());
+                    $('#listed-total').text(metrics.listedCount);
+                    $('#live-total').text(metrics.liveCount);
 
                     // --- Custom PFT TOTAL calculation ---
                     let pftTotalDisplay = '0%';
@@ -3980,6 +4060,8 @@
                 $('#roi-total').text('0%');
                 $('#tacos-total').text('0%');
                 $('#cvr-total').text('0%');
+                $('#listed-total').text('0');
+                $('#live-total').text('0');
             }
 
             // Initialize enhanced dropdowns
