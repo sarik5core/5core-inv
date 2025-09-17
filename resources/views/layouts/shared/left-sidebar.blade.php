@@ -1388,6 +1388,9 @@
                                         <a href="{{ route('ebay.pmp.ads') }}">Ebay PMT Ads</a>
                                     </li>
                                     <li>
+                                        <a href="{{ route('ebay.keywords.ads') }}">Ebay Keywords Ads</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY OVER UTIL.</a>
                                     </li>
                                     <li>

@@ -164,6 +164,7 @@ use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\Campaigns\AmzCorrectlyUtilizedController;
 use App\Http\Controllers\Campaigns\AmzUnderUtilizedBgtController;
 use App\Http\Controllers\Campaigns\CampaignImportController;
+use App\Http\Controllers\Campaigns\EbayKwAdsController;
 use App\Http\Controllers\Campaigns\EbayOverUtilizedBgtController;
 use App\Http\Controllers\Campaigns\EbayPinkDilAdController;
 use App\Http\Controllers\Campaigns\EbayPMPAdsController;
@@ -1731,6 +1732,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/ebay/pmp/ads/data','getEbayPmpAdsData');
         Route::post('/update-ebay-pmt-percenatge','updateEbayPercentage');
         Route::post('/update-ebay-pmt-sprice','saveEbayPMTSpriceToDatabase');
+    });
+
+    Route::controller(EbayKwAdsController::class)->group(function(){
+        Route::get('/ebay/keywords/ads', 'index')->name('ebay.keywords.ads');
+        Route::get('/ebay/keywords/ads/data','getEbayKwAdsData');
     });
 
     Route::controller(WalmartUtilisationController::class)->group(function(){
