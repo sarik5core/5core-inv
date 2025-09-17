@@ -38,7 +38,6 @@
                     <tbody>
                 @foreach ($users as $user)
                     @if (auth()->id() !== $user->id)
-                        <!-- Skip the logged-in user's row -->
                         <tr class="border-bottom">
                             <td class="px-4 py-3">
                                 <div class="d-flex align-items-center">
@@ -63,8 +62,8 @@
                                         <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>
                                             <i class="fas fa-shield-alt me-2"></i>Admin
                                         </option>
-                                        <option value="super admin" {{ $user->role === 'super admin' || $user->role === 'superadmin' ? 'selected' : '' }}>
-                                            <i class="fas fa-crown me-2"></i>Super Admin
+                                        <option value="superadmin" {{ $user->role === 'superadmin' || $user->role === 'superadmin' ? 'selected' : '' }}>
+                                            <i class="fas fa-crown me-2"></i>SuperAdmin
                                         </option>
                                         <option value="manager" {{ $user->role === 'manager' ? 'selected' : '' }}>
                                             <i class="fas fa-crown me-2"></i>Manager

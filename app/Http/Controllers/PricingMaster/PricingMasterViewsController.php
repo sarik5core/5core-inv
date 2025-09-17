@@ -226,6 +226,7 @@ class PricingMasterViewsController extends Controller
                 'amz_req_view' => $amazon && $amazon->sessions_l30 > 0 && $amazon->units_ordered_l30 > 0
                     ? (($inv / 90) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30))
                     : 0,
+                    
 
                 // eBay
                 'ebay_price' => $ebay ? ($ebay->ebay_price ?? 0) : 0,
@@ -297,7 +298,7 @@ class PricingMasterViewsController extends Controller
                 'ebay2_dil'   => $ebay2 ? (float) ($ebay2->{'dil'} ?? 0) : 0,
                 'ebay2_pft'   => $ebay2 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.80 - $lp - $ship) / $ebay2->ebay_price) : 0,
                 'ebay2_roi'   => $ebay2 && $lp > 0 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.80 - $lp - $ship) / $lp) : 0,
-                'ebay2_req_view' => $ebay2 && $ebay2->views > 0 && $ebay2->ebay_l30 > 0
+                'ebay2_req_view' => $ebay2 && $ebay2->views > 0 && $ebay2->ebay_l30 
                     ? (($inv / 90) * 30) / (($ebay2->ebay_l30 / $ebay2->views))
                     : 0,
 
@@ -315,7 +316,7 @@ class PricingMasterViewsController extends Controller
                 'ebay3_cvr'   => $ebay3 ? $this->calculateCVR($ebay3->ebay_l30 ?? 0, $ebay3->views ?? 0) : null,
                 'ebay3_pft'   => $ebay3 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.71 - $lp - $ship) / $ebay3->ebay_price) : 0,
                 'ebay3_roi'   => $ebay3 && $lp > 0 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.71 - $lp - $ship) / $lp) : 0,
-                'ebay3_req_view' => $ebay3 && $ebay3->views > 0 && $ebay3->ebay_l30 > 0
+                'ebay3_req_view' => $ebay3 && $ebay3->views && $ebay3->ebay_l30 
                     ? (($inv / 90) * 30) / (($ebay3->ebay_l30 / $ebay3->views))
                     : 0,
 
@@ -327,10 +328,10 @@ class PricingMasterViewsController extends Controller
 
                 // Total required views from all channels
                 'total_req_view' => (
-                    ($ebay && $ebay->views > 0 && $ebay->ebay_l30 > 0 ? (($inv / 90) * 30) / (($ebay->ebay_l30 / $ebay->views)) : 0) +
-                    ($ebay2 && $ebay2->views > 0 && $ebay2->ebay_l30 > 0 ? (($inv / 90) * 30) / (($ebay2->ebay_l30 / $ebay2->views)) : 0) +
-                    ($ebay3 && $ebay3->views > 0 && $ebay3->ebay_l30 > 0 ? (($inv / 90) * 30) / (($ebay3->ebay_l30 / $ebay3->views)) : 0) +
-                    ($amazon && $amazon->sessions_l30 > 0 && $amazon->units_ordered_l30 > 0 ? (($inv / 90) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30)) : 0)
+                    ($ebay && $ebay->views  && $ebay->ebay_l30 ? (($inv / 90) * 30) / (($ebay->ebay_l30 / $ebay->views)) : 0) +
+                    ($ebay2 && $ebay2->views  && $ebay2->ebay_l30 ? (($inv / 90) * 30) / (($ebay2->ebay_l30 / $ebay2->views)) : 0) +
+                    ($ebay3 && $ebay3->views  && $ebay3->ebay_l30 ? (($inv / 90) * 30) / (($ebay3->ebay_l30 / $ebay3->views)) : 0) +
+                    ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv / 90) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30)) : 0)
                 ),
 
                 // Amazon DataView values
