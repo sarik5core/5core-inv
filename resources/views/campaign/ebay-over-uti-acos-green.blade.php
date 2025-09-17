@@ -356,13 +356,13 @@
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
-                                td.classList.add('pink-bg'); 
-                            } else if (acos >= 7 && acos <= 14) {
-                                td.classList.add('green-bg'); 
-                            } else if (acos > 14) {
-                                td.classList.add('red-bg'); 
-                            }
+                            // if (acos < 7) {
+                            //     td.classList.add('pink-bg'); 
+                            // } else if (acos >= 7 && acos <= 14) {
+                            //     td.classList.add('green-bg'); 
+                            // } else if (acos > 14) {
+                            //     td.classList.add('red-bg'); 
+                            // }
 
                             return acos.toFixed(2) + "%";
                         }
@@ -379,16 +379,17 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 30 && ub7 <= 60) {
+                            if (ub7 >= 70 && ub7 <= 90) {
                                 td.classList.add('green-bg');
-                            } else if (ub7 > 60) {
+                            } else if (ub7 > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub7 < 30) {
+                            } else if (ub7 < 70) {
                                 td.classList.add('red-bg');
                             }
                             return ub7.toFixed(0) + "%";
                         }
-                    }, {
+                    }, 
+                    {
                         title: "1 UB%",
                         field: "l1_spend",
                         hozAlign: "right",
@@ -400,11 +401,11 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub1 >= 30 && ub1 <= 60) {
+                            if (ub1 >= 70 && ub1 <= 90) {
                                 td.classList.add('green-bg');
-                            } else if (ub1 > 60) {
+                            } else if (ub1 > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub1 < 30) {
+                            } else if (ub1 < 70) {
                                 td.classList.add('red-bg');
                             }
                             return ub1.toFixed(0) + "%";
@@ -525,7 +526,7 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    let isGreen = ( (acos >= 7 && acos <= 14) && ub7 > 60);
+                    let isGreen = (ub7 > 90);
 
                     if (!isGreen) return false;
 

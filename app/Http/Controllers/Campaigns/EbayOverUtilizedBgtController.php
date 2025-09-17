@@ -288,9 +288,9 @@ class EbayOverUtilizedBgtController extends Controller
                 return stripos($item->campaign_name, $sku) !== false;
             });
 
-            // if (!$matchedCampaignL7 && !$matchedCampaignL1) {
-            //     continue;
-            // }
+            if (!$matchedCampaignL7 && !$matchedCampaignL1) {
+                continue;
+            }
 
             $row = [];
             $row['parent'] = $parent;
