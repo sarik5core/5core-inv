@@ -1703,6 +1703,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(AmazonCampaignReportsController::class)->group(function () {
         Route::get('/amazon/campaign/reports', 'index')->name('amazon.campaign.reports');
+        Route::get('/amazon/kw/ads', 'amazonKwAdsView')->name('amazon.kw.ads');
+        Route::get('/amazon/kw/ads/data', 'getAmazonKwAdsData');
+        Route::get('/amazon/pt/ads', 'amazonPtAdsView')->name('amazon.pt.ads');
+        Route::get('/amazon/pt/ads/data', 'getAmazonPtAdsData');
+        Route::get('/amazon/hl/ads', 'amazonHlAdsView')->name('amazon.hl.ads');
+        Route::get('/amazon/hl/ads/data', 'getAmazonHlAdsData');
+
         Route::get('/amazon/campaign/reports/data', 'getAmazonCampaignsData');
 
     });

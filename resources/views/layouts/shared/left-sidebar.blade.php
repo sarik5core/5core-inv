@@ -1194,10 +1194,30 @@
                                         <a href="{{ route('amazon.pricing.inc') }}">Amz Price Increase CVR</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('amazon.campaign.reports') }}">Amazon Ad Reports</a>
-                                    </li>
-                                    <li>
                                         <a href="{{ route('amazon.ad-running.list') }}">Amazon Ad Running</a>
+                                    </li>
+                                    {{-- <li>
+                                        <a href="{{ route('amazon.campaign.reports') }}">Amazon Ads Report</a>
+                                    </li> --}}
+                                    <li>
+                                        <a data-bs-toggle="collapse" href="#amazonAdsReport" aria-expanded="false"
+                                            aria-controls="amazonAdsReport">
+                                            <span>Amazon Ads Report</span>
+                                            <span class="menu-arrow"></span>
+                                        </a>
+                                        <div class="collapse" id="amazonAdsReport">
+                                            <ul class="side-nav-fourth-level">
+                                                <li>
+                                                    <a href="{{ route('amazon.kw.ads') }}">Amazon KW Ads</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('amazon.hl.ads') }}">Amazon HL Ads</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('amazon.pt.ads') }}">Amazon PT Ads</a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </li>
                                     <li>
                                         <a data-bs-toggle="collapse" href="#amazonACOS" aria-expanded="false"
