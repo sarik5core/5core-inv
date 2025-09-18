@@ -727,7 +727,7 @@
                             var cpc_l7 = parseFloat(row.cpc_l7) || 0;
                             return `
                                 <span>
-                                    ${cpc_l7.toFixed(2)}%
+                                    ${cpc_l7.toFixed(2)}
                                 </span>
                                 <i class="fa fa-info-circle text-primary cpc_l7_btn" 
                                     data-cpc-l7="${cpc_l7}" 
