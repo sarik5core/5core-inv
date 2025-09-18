@@ -250,6 +250,9 @@ Route::get('/sku-match', [SkuMatchController::class, 'index']);
 Route::post('/sku-match', [SkuMatchController::class, 'match'])->name('sku.match.process');
 Route::post('/sku-match/update', [SkuMatchController::class, 'update'])->name('sku-match.update');
 
+
+
+
 Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
@@ -638,6 +641,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/amazonfba/view-data', [OverallAmazonFbaController::class, 'getViewAmazonFbaData'])->name('amazonfba.viewData');
     Route::get('/fbainv/view-data', [AmazonFbaInvController::class, 'getViewAmazonfbaInvData'])->name('fbainv.viewData');
     Route::get('/product-master-data', [ProductMasterController::class, 'product_master_data']);
+
 
 
 
@@ -1555,6 +1559,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/instagram-video-ads/save', 'saveInstagramVideoAds')->name('instagram_video_ads.save');
 
         Route::get('/instagram-feed-ad', 'instagramFeedAdView')->name('instagram.feed.ads.master');
+       
+    
         Route::get('/instagram-feed-ads', 'getInstagramFeedAdsData');
         Route::post('/instagram-feed-ads/save', 'saveInstagramFeedAds')->name('instagram_feed_ads.save');
 
@@ -1761,7 +1767,4 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::post('/ebay-product-price-update', [EbayDataUpdateController::class, 'updatePrice'])->name('ebay_product_price_update');
 
-
-
-    // Route::post('/import-amazon-listing-status', [ListingAmazonController::class, 'importAmazonListingStatus'])->name('import.amazon.listing.status');
 });

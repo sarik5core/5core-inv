@@ -18,23 +18,23 @@
         }
 
         .image-preview-container {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #f0f0f0;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+            width: 100px;
+            height: 100px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.image-preview-container:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
+        .image-preview-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
 
         .image-preview-container img {
             max-width: 100%;
@@ -579,7 +579,7 @@
                 <div class="modal-body p-0">
                     <div class="row g-0">
                         <div class="col-12">
-                            <div class="market-summary p-3 bg-light border-bottom">
+                            <div class="market-summary p-3 bg-light border-bottom position-sticky" style="top: 0; z-index: 1000; background-color: #f8f9fa !important;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="summary-stats">
                                         <div class="d-flex align-items-center gap-3 mb-2">
@@ -610,7 +610,7 @@
 
                                 </div>
                             </div>
-                            <div id="ovl30Content" class="p-3" style="color: #000000; width:100%">
+                            <div id="ovl30Content" class="p-3" style="color: #000000; width:100%; max-height: 70vh; overflow-y: auto;">
                                 <!-- Marketplace data table will be loaded here -->
                             </div>
                         </div>
@@ -1071,6 +1071,42 @@
                 },
              
 
+
+                    {
+                        title: "DIL%",
+                        field: "Dil%",
+                        hozAlign: "right",
+                        formatter: function (cell) {
+                            const data = cell.getRow().getData();
+                            const value = cell.getValue() || 0;
+                            const element = document.createElement("div");
+                        
+                            const rounded = Math.round(value);
+                            element.textContent = rounded + "%";
+                            if (rounded >= 0 && rounded <= 10) {
+                                element.style.color = "red"; // red text
+                            } else if (rounded >= 11 && rounded <= 15) {
+                                element.style.backgroundColor = "yellow"; // yellow background
+                                element.style.color = "black";
+                                element.style.padding = "2px 4px";
+                                element.style.borderRadius = "4px";
+                            } else if (rounded >= 16 && rounded <= 20) {
+                                element.style.color = "blue"; // blue text
+                            } else if (rounded >= 21 && rounded <= 40) {
+                                element.style.color = "green"; // green text
+                            } else if (rounded >= 41) {
+                                element.style.color = "purple"; // purple text (41 and above)
+                            }
+
+                            data.dilPercentage = rounded;
+                           
+                            return element;
+                        },
+                    }
+
+                    ,
+               
+
                 {
                     title: "Total Views",
                     field: "total_views",
@@ -1108,41 +1144,6 @@
                 },
 
 
-
-                    {
-                        title: "DIL%",
-                        field: "Dil%",
-                        hozAlign: "right",
-                        formatter: function (cell) {
-                            const data = cell.getRow().getData();
-                            const value = cell.getValue() || 0;
-                            const element = document.createElement("div");
-                        
-                            const rounded = Math.round(value);
-                            element.textContent = rounded + "%";
-                            if (rounded >= 0 && rounded <= 10) {
-                                element.style.color = "red"; // red text
-                            } else if (rounded >= 11 && rounded <= 15) {
-                                element.style.backgroundColor = "yellow"; // yellow background
-                                element.style.color = "black";
-                                element.style.padding = "2px 4px";
-                                element.style.borderRadius = "4px";
-                            } else if (rounded >= 16 && rounded <= 20) {
-                                element.style.color = "blue"; // blue text
-                            } else if (rounded >= 21 && rounded <= 40) {
-                                element.style.color = "green"; // green text
-                            } else if (rounded >= 41) {
-                                element.style.color = "purple"; // purple text (41 and above)
-                            }
-
-                            data.dilPercentage = rounded;
-                           
-                            return element;
-                        },
-                    }
-
-                    ,
-               
               
                 
                 {
@@ -1402,6 +1403,8 @@
 
                         TotalAvgpft= (avgPrice * ovl30 ) * avgPftPercent / 100;
                         TotalAvgSales = avgPrice * ovl30;
+
+
                         TotalAvgpftForTop = (TotalAvgpft / TotalAvgSales) * 100;
                         totalCogs = LP * ovl30;
                         TotalAvgRoiPer = (TotalAvgpft / totalCogs) * 100;
@@ -1634,7 +1637,7 @@
             let avgPft = countPft > 0 ? (totalPft / countPft) : 0;
 
             let pftHeader = document.getElementById("avgPftHeader");
-            pftHeader.innerText = Math.round(avgPft) + "%";
+            pftHeader.innerText = avgPft.toFixed(1) + "%";
 
 
             // Style for AVG PFT%
@@ -1773,8 +1776,9 @@
             <div class="mb-2 text-muted small">
                 <i class="bi bi-info-circle"></i> Default sorting: L30 (Highest to Lowest)
             </div>
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto; position: relative;">
             <table class="table table-sm table-bordered align-middle sortable-table">
-                <thead class="table-light">
+                <thead class="table-light position-sticky" style="top: 0; z-index: 1000;">
                 <tr>
                     <th data-sort="string">Channel <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">L60 <i class="bi bi-arrow-down-up"></i></th>
@@ -1830,138 +1834,57 @@
                 
 
                 html += `
-                    <tr>
+                 <tr>
                     <td>
                     <div class="d-flex flex-column align-items-center text-center">
-                        <img src="${r.logo}" alt="${r.label}" 
-                            class="channel-logo mb-1" 
-                            style="width:40px; height:40px; object-fit:contain;">
-                        <span class="small fw-bold">${r.label}</span>
-                        ${r.prefix === 'amz' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.amz_seller_link ? `
-                                    <a href="${data.amz_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.amz_buyer_link ? `
-                                    <a href="${data.amz_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-                        ` : r.prefix === 'ebay' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.ebay_seller_link ? `
-                                    <a href="${data.ebay_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.ebay_buyer_link ? `
-                                    <a href="${data.ebay_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-                              ` : r.prefix === 'ebay2' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.ebay2_seller_link ? `
-                                    <a href="${data.ebay2_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.ebay2_buyer_link ? `
-                                    <a href="${data.ebay2_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-                              ` : r.prefix === 'ebay3' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.ebay3_seller_link ? `
-                                    <a href="${data.ebay3_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.ebay3_buyer_link ? `
-                                    <a href="${data.ebay3_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-                             
-                              ` : r.prefix === 'macy' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.macy_seller_link ? `
-                                    <a href="${data.macy_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.macy_buyer_link ? `
-                                    <a href="${data.macy_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-                              ` : r.prefix === 'reverb' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.reverb_seller_link ? `
-                                    <a href="${data.reverb_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.reverb_buyer_link ? `
-                                    <a href="${data.reverb_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
+                        <div class="position-relative">
+                            <img src="${r.logo}" alt="${r.label}" 
+                                class="channel-logo mb-1" 
+                                style="width:30px; height:30px; object-fit:contain; cursor: pointer;"
+                                onmouseenter="showTooltip(this)"
+                                onmouseleave="hideTooltip(this)">
+                            
+                            <!-- Tooltip for links -->
+                            <div class="position-absolute bg-dark text-white p-2 rounded shadow-sm link-tooltip" 
+                                style="bottom: 0px; left: 70px; 
+                                       opacity: 0; visibility: hidden; transition: all 0.3s; 
+                                       white-space: nowrap; z-index: 1000; font-size: 11px;"
+                                onmouseenter="showTooltip(this.previousElementSibling)"
+                                onmouseleave="hideTooltip(this.previousElementSibling)">
+                                ${r.prefix === 'amz' ? `
+                                    ${data.amz_seller_link ? `<div><strong>SL:</strong> <a href="${data.amz_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.amz_buyer_link ? `<div><strong>BL:</strong> <a href="${data.amz_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'ebay' ? `
+                                    ${data.ebay_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.ebay_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'ebay2' ? `
+                                    ${data.ebay2_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay2_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.ebay2_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay2_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'ebay3' ? `
+                                    ${data.ebay3_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay3_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.ebay3_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay3_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'macy' ? `
+                                    ${data.macy_seller_link ? `<div><strong>SL:</strong> <a href="${data.macy_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.macy_buyer_link ? `<div><strong>BL:</strong> <a href="${data.macy_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'reverb' ? `
+                                    ${data.reverb_seller_link ? `<div><strong>SL:</strong> <a href="${data.reverb_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.reverb_buyer_link ? `<div><strong>BL:</strong> <a href="${data.reverb_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
                                 ` : r.prefix === 'walmart' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.walmart_seller_link ? `
-                                    <a href="${data.walmart_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.walmart_buyer_link ? `
-                                    <a href="${data.walmart_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
+                                    ${data.walmart_seller_link ? `<div><strong>SL:</strong> <a href="${data.walmart_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.walmart_buyer_link ? `<div><strong>BL:</strong> <a href="${data.walmart_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'doba' ? `
+                                    ${data.doba_seller_link ? `<div><strong>SL:</strong> <a href="${data.doba_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.doba_buyer_link ? `<div><strong>BL:</strong> <a href="${data.doba_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'temu' ? `
+                                    ${data.temu_seller_link ? `<div><strong>SL:</strong> <a href="${data.temu_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.temu_buyer_link ? `<div><strong>BL:</strong> <a href="${data.temu_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'shopifyb2c' ? `
+                                    ${data.shopifyb2c_seller_link ? `<div><strong>SL:</strong> <a href="${data.shopifyb2c_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.shopifyb2c_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shopifyb2c_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : ''}
                             </div>
-
-                            ` : r.prefix === 'doba' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.doba_seller_link ? `
-                                    <a href="${data.doba_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.doba_buyer_link ? `
-                                    <a href="${data.doba_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-                            ` : r.prefix === 'temu' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.temu_seller_link ? `
-                                    <a href="${data.temu_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.temu_buyer_link ? `
-                                    <a href="${data.temu_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-
-                    ` : r.prefix === 'shopifyb2c' ? `
-                            <div class="d-flex gap-2 mt-1">
-                                ${data.shopifyb2c_seller_link ? `
-                                    <a href="${data.shopifyb2c_seller_link}" target="_blank" title="Seller Link">
-                                        <i class="bi bi-shop text-primary" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                                ${data.shopifyb2c_buyer_link ? `
-                                    <a href="${data.shopifyb2c_buyer_link}" target="_blank" title="Buyer Link">
-                                        <i class="bi bi-cart text-success" style="font-size: 1.2rem;"></i>
-                                    </a>` : ''}
-                            </div>
-
-                            
-                            
-                        ` : ''}
-                        
+                        </div>
+                        <span class="small fw-bold">${r.label}</span>
                     </div>
                     </td>
 
@@ -2028,6 +1951,8 @@
                             ${r.prefix === 'amz' || r.prefix === 'ebay' ? fmtMoney(data.price_lmpa) : '-'}
                         </div>
                     </td>
+
+
                 
 
               <td>
@@ -2875,4 +2800,22 @@
 
        
     </script>
+
+    <script>
+function showTooltip(img) {
+    const tooltip = img.nextElementSibling;
+    if (tooltip && tooltip.classList.contains('link-tooltip')) {
+        tooltip.style.opacity = '1';
+        tooltip.style.visibility = 'visible';
+    }
+}
+
+function hideTooltip(img) {
+    const tooltip = img.nextElementSibling;
+    if (tooltip && tooltip.classList.contains('link-tooltip')) {
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+    }
+}
+</script>
 @endsection

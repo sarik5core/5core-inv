@@ -39,3 +39,6 @@ Route::post('/junglescout', [\App\Http\Controllers\JungleScoutController::class,
 Route::post('/sync-sheets', [GoogleSheetsController::class, 'syncAllSheets']);
 
 Route::get('/sync-inv-l30-to-sheet', [ApiController::class, 'syncInvAndL30ToSheet']);
+
+// Public API - No authentication required
+Route::get('/product', [ProductMasterController::class, 'getProductBySku']);

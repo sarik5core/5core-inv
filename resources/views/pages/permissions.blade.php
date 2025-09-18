@@ -198,48 +198,158 @@
                             'User Management' => [
                                 ['value' => 'roles', 'text' => 'Roles'],
                                 ['value' => 'permissions', 'text' => 'Permissions'],
+                                ['value' => 'view_permissions', 'text' => 'View Permissions'],
                             ],
                             'Purchase Masters' => [
                                 ['value' => 'purchase_master_categories', 'text' => 'Categories'],
                                 ['value' => 'purchase_master_suppliers', 'text' => 'Suppliers'],
+                                ['value' => 'purchase_master_claims_reimbursements', 'text' => 'Claims & Reimbursements'],
+                                ['value' => 'purchase_master_forecast_analysis', 'text' => 'Forecast Analysis'],
+                                ['value' => 'purchase_master_to_order_analysis', 'text' => 'To Order Analysis'],
+                                ['value' => 'purchase_master_list_all_purchase_orders', 'text' => 'Purchase Contract'],
+                                ['value' => 'purchase_master_purchase', 'text' => 'Purchase'],
+                                ['value' => 'purchase_master_sourcing', 'text' => 'Sourcing'],
+                                ['value' => 'purchase_master_ledger', 'text' => 'Ledger'],
+                                ['value' => 'purchase_master_advance_payments', 'text' => 'Advance & Payments'],
+                                ['value' => 'purchase_master_supplier_ledger', 'text' => 'Supplier Ledger'],
                                 ['value' => 'purchase_master_mfrg_in_progress', 'text' => 'MFRG In Progress'],
+                                ['value' => 'purchase_master_ready_to_ship', 'text' => 'Ready To Ship'],
+                                ['value' => 'purchase_master_mfrg_quality_check', 'text' => 'MFRG Quality Check'],
+                                ['value' => 'purchase_master_china_load', 'text' => 'China Load'],
+                                ['value' => 'purchase_master_transit_container_inv', 'text' => 'Transit Container INV'],
+                                ['value' => 'purchase_master_container_planning', 'text' => 'Container Planning'],
+                                ['value' => 'purchase_master_on_sea_transit', 'text' => 'On Sea Transit'],
+                                ['value' => 'purchase_master_on_road_transit', 'text' => 'On Road Transit'],
+                                ['value' => 'purchase_master_quality_enhance', 'text' => 'Quality Enhance'],
                             ],
                             'Product Masters' => [
-                                ['value' => 'product_lists', 'text' => 'Product Lists'],
-                                ['value' => 'tobedc_list', 'text' => 'To be DC'],
-                                ['value' => 'cp_masters', 'text' => 'CP Masters'], 
+                                ['value' => 'cp_masters', 'text' => 'CP Masters'],
                                 ['value' => 'pricing_masters', 'text' => 'Pricing Masters'],
                                 ['value' => 'pricing_masters_clone', 'text' => 'Pricing Masters Clone'],
                                 ['value' => 'listing_analysis', 'text' => 'Listing Analysis'],
                                 ['value' => 'cost_price_analysis', 'text' => 'Cost Price Analysis'],
                                 ['value' => 'movement_analysis', 'text' => 'Movement Analysis'],
-                                ['value' => 'forecast_analysis', 'text' => 'Forecast Analysis'],
-                                ['value' => 'to_order_analysis', 'text' => 'To Order Analysis'],
-                                ['value' => 'in_order_analysis', 'text' => 'In Order Analysis'],
+                                ['value' => 'tobedc_list', 'text' => '2BDC'],
                                 ['value' => 'transit_analysis', 'text' => 'Transit Analysis'],
                                 ['value' => 'review_analysis', 'text' => 'Review Analysis'],
                                 ['value' => 'profit_roi_analysis', 'text' => 'Profit & ROI Analysis'],
+                                ['value' => 'profit_returns_analysis', 'text' => 'Returns Analysis'],
                                 ['value' => 'returns_analysis', 'text' => 'Returns Analysis'],
                                 ['value' => 'stock_verification', 'text' => 'Stock Verification'],
                                 ['value' => 'shortfall_analysis', 'text' => 'Shortfall Analysis'],
+
+                               
                             ],
-                            'Marketing Masters' => [
-                                ['value' => 'listing_master', 'text' => 'Listing Masters'],
-                                ['value' => 'mm_video_posted', 'text' => 'Video Posted'],
-                                ['value' => 'listing_LQS_masters', 'text' => 'LQS - Listing'],
-                                ['value' => 'cvr_LQS_masters', 'text' => 'LQS - CVR'],
+                            'Advertisement Master' => [
+                                 ['value' => 'ppc', 'text' => 'PPC'],
+                                ['value' => 'advt_kw_amazon', 'text' => 'KW Advt - Amazon'],
+                                ['value' => 'advt_kw_ebay', 'text' => 'KW Advt - eBay'],
+                                ['value' => 'advt_kw_walmart', 'text' => 'KW Advt - Walmart'],
+                                ['value' => 'advt_prod_target_amazon', 'text' => 'Prod Target Advt - Amazon'],
+                                ['value' => 'advt_headline_amazon', 'text' => 'Headline Advt - Amazon'],
+                                ['value' => 'advt_promoted_ebay', 'text' => 'Promoted Advt - eBay'],
+                                ['value' => 'advt_shopping_google', 'text' => 'Shopping Advt - Google'],
+                                ['value' => 'advt_demand_gen_google', 'text' => 'Demand Gen Parents - Google Networks'],
+                                ['value' => 'advt_meta_parent_img_fb', 'text' => 'Meta Parent Advt Images - FB'],
+                                ['value' => 'advt_meta_parent_img_insta', 'text' => 'Meta Parent Advt Images - Insta'],
+                                ['value' => 'advt_meta_parent_video_fb', 'text' => 'Meta Parent Advt Video - FB'],
+                                ['value' => 'advt_meta_parent_video_insta', 'text' => 'Meta Parent Advt Video - Insta'],
+                                ['value' => 'advt_serp_google', 'text' => 'Serp Advt - Google SERP'],
+                                ['value' => 'advt_youtube_groups', 'text' => 'Youtube Advt Groups'],
+                                ['value' => 'advt_demand_gen_groups', 'text' => 'Demand Gen Groups - Google Networks'],
+                                ['value' => 'advt_budget_meta_img_fb', 'text' => 'Budget Control Meta Images - FB'],
+                                ['value' => 'advt_budget_meta_img_insta', 'text' => 'Budget Control Meta Images - Insta'],
+                                ['value' => 'advt_budget_meta_video_fb', 'text' => 'Budget Control Meta Video - FB'],
+                                ['value' => 'advt_budget_meta_video_insta', 'text' => 'Budget Control Meta Video - Insta'],
+                            
+
                             ],
+                           
                             'Channel' => [
                                 ['value' => 'channel_master', 'text' => 'Channel Master'],
+                                ['value' => 'channel_opportunities', 'text' => 'Opportunities'],
+                                ['value' => 'channel_application_approvals', 'text' => 'Application & Approvals'],
+                                ['value' => 'channel_setup_account_shop', 'text' => 'Setup Account & Shop'],
+                                ['value' => 'channel_price_adjustment_manager', 'text' => 'Price Adjustment Manager'],
+                                ['value' => 'channel_movement_analysis', 'text' => 'Movement Analysis'],
+                                ['value' => 'channel_sales_analysis', 'text' => 'Sales and Analysis'],
+                                ['value' => 'channel_new_marketplaces', 'text' => 'New Marketplaces'],
                                 ['value' => 'channel_promotion_master', 'text' => 'Promotion Master'],
-                                ['value' => 'return_analysis_channel', 'text' => 'Return Analysis (Channel)'],
-                                ['value' => 'expenses_analysis', 'text' => 'Expenses Analysis'],
-                                ['value' => 'review_analysis_channel', 'text' => 'Review Analysis (Channel)'],
-                                ['value' => 'health_analysis', 'text' => 'Health Analysis'],
-                                ['value' => 'listing_analysis_channel', 'text' => 'Listing Analysis (Channel)'],
-                                ['value' => 'shipping_analysis', 'text' => 'Shipping Analysis'],
-                                ['value' => 'c_care_analysis', 'text' => 'C Care Analysis'],
+                                ['value' => 'channel_odr_rate', 'text' => 'ODR Rate'],
+                                ['value' => 'channel_fulfillment_rate', 'text' => 'Fulfillment Rate'],
+                                ['value' => 'channel_valid_tracking_rate', 'text' => 'Valid Tracking Rate'],
+                                ['value' => 'channel_late_shipment', 'text' => 'Late Shipment'],
+                                ['value' => 'channel_on_time_delivery', 'text' => 'On Time Delivery'],
+                                ['value' => 'channel_negative_seller', 'text' => 'Negative Seller'],
+                                ['value' => 'channel_a_z_claims', 'text' => 'A-Z Claims'],
+                                ['value' => 'channel_violation_compliance', 'text' => 'Violation/Compliance'],
+                                ['value' => 'channel_refunds_returns', 'text' => 'Refunds / Returns'],
+                                ['value' => 'channel_review_dashboard', 'text' => 'Review Dashboard'],
+                                ['value' => 'channel_amazon_product_reviews', 'text' => 'Amazon Product Reviews'],
+                                ['value' => 'channel_return_analysis', 'text' => 'Return Analysis'],
+                                ['value' => 'channel_shipping_master', 'text' => 'Shipping Master'],
+                                ['value' => 'channel_traffic_master', 'text' => 'Traffic Master'],
+                                ['value' => 'channel_expenses_analysis', 'text' => 'Expenses Analysis'],
+                                ['value' => 'channel_review_analysis', 'text' => 'Review Analysis'],
+                                ['value' => 'channel_health_analysis', 'text' => 'Health Analysis'],
+                                ['value' => 'channel_listing_analysis', 'text' => 'Listing Analysis'],
+                                ['value' => 'channel_shipping_analysis', 'text' => 'Shipping Analysis'],
+                                ['value' => 'channel_c_care_analysis', 'text' => 'C Care Analysis'],
                             ],
+
+                             'Marketing Masters' => [
+                                ['value' => 'listing_master', 'text' => 'Listing Masters'],
+                                ['value' => 'low_visibility_masters', 'text' => 'Low Visibility Masters'],
+                                ['value' => 'listing_audit_masters', 'text' => 'Listing Audit Masters'],
+                                ['value' => 'zero_views_masters', 'text' => '0 Views Masters'],
+                                ['value' => 'movement_analysis_master', 'text' => 'Movement Analysis Master'],
+                                ['value' => 'carousel_sales_master', 'text' => 'Carousel Sales Master'],
+                                ['value' => 'email_marketing', 'text' => 'Email Marketing'],
+                                ['value' => 'whatsapp_marketing', 'text' => 'Whatsapp Marketing'],
+                                ['value' => 'sms_marketing', 'text' => 'SMS Marketing'],
+                                ['value' => 'dm_marketing', 'text' => 'DM Marketing'],
+                                ['value' => 'phone_marketing', 'text' => 'Phone Appt Marketing'],
+                                ['value' => 'letter_marketing', 'text' => 'Letter Marketing'],
+                                ['value' => 'video_directory', 'text' => 'Video Directory'],
+                                ['value' => 'product_videos', 'text' => 'Product Videos'],
+                                ['value' => 'product_video_upload', 'text' => 'Product Video Upload'],
+                                ['value' => 'assembly_video', 'text' => 'Assembly Video'],
+                                ['value' => 'assembly_video_upload', 'text' => 'Assembly Video Upload'],
+                                ['value' => '3d_video', 'text' => '3D Video'],
+                                ['value' => '3d_video_upload', 'text' => '3D Video Upload'],
+                                ['value' => '360_video', 'text' => '360 Video'],
+                                ['value' => '360_video_upload', 'text' => '360 Video Upload'],
+                                ['value' => 'benefits_video', 'text' => 'Benefits Video'],
+                                ['value' => 'benefits_video_upload', 'text' => 'Benefits Video Upload'],
+                                ['value' => 'diy_video', 'text' => 'DIY Video'],
+                                ['value' => 'diy_video_upload', 'text' => 'DIY Video Upload'],
+                                ['value' => 'shoppable_video_1_1_ratio', 'text' => '1:1 RATIO'],
+                                ['value' => 'shoppable_video_4_5_ratio', 'text' => '4:5 RATIO'],
+                                ['value' => 'shoppable_video_9_16_ratio', 'text' => '9:16 RATIO'],
+                                ['value' => 'shoppable_video_16_9_ratio', 'text' => '16:9 RATIO'],
+                                ['value' => 'video_ads_master', 'text' => 'Video Ads Master'],
+                                ['value' => 'facebook_ads', 'text' => 'Facebook Ads'],
+                                ['value' => 'facebook_feed_ads', 'text' => 'Facebook In Feed'],
+                                ['value' => 'facebook_reel_ads', 'text' => 'Facebook Reel Ads'],
+                                ['value' => 'instagram_ads', 'text' => 'Instagram Ads'],
+                                ['value' => 'instagram_feed_ads', 'text' => 'Instagram In Feed'],
+                                ['value' => 'instagram_reel_ads', 'text' => 'Instagram Reel Ads'],
+                                ['value' => 'youtube_ads', 'text' => 'YouTube Ads'],
+                                ['value' => 'youtube_shorts_ads', 'text' => 'YouTube Shorts Ads'],
+                                ['value' => 'tiktok_ads', 'text' => 'Tik Tok Video Ads'],
+                                ['value' => 'facebook_ads_manager', 'text' => 'Facebook Ads Manager'],
+                                ['value' => 'image_carousel_ad_running', 'text' => 'Image Carousel Ad Running'],
+                                ['value' => 'lqs_masters', 'text' => 'LQS Masters'],
+                                ['value' => 'overall_lqs_cvr', 'text' => 'OverAll LQS - CVR'],
+                                ['value' => 'listing_LQS_masters', 'text' => 'LQS - Listing'],
+                                ['value' => 'cvr_LQS_masters', 'text' => 'Amazon LQS - CVR'],
+                                ['value' => 'ebay_cvr_lqs_masters', 'text' => 'Ebay LQS - CVR'],
+                                ['value' => 'traffic_session_masters', 'text' => 'Traffic And Session Masters'],
+                                ['value' => 'conversion_content_masters', 'text' => 'Conversion Content Masters'],
+                                ['value' => 'conversion_other_masters', 'text' => 'Conversion Other Masters'],
+                                ['value' => 'pricing_masters_marketing', 'text' => 'Pricing Masters'],
+                            ],
+                               
                             'Shopify' => [
                                 ['value' => 'shopify_products', 'text' => 'Shopify Products'],
                                 ['value' => 'shopify_inventory', 'text' => 'Shopify Inventory'],
@@ -248,17 +358,31 @@
                                 ['value' => 'movement_analysis_s2s', 'text' => 'Movement Analysis S2S'],
                                 ['value' => 'shopify_forecast_analysis', 'text' => 'Forecast Analysis (Shopify)'],
                             ],
+
                             'Inventory Management' => [
+                                ['value' => 'view_inventory', 'text' => 'View Inventory'],
                                 ['value' => 'verifications_adjustments', 'text' => 'Verifications & Adjustments'],
-                                ['value' => 'incoming_returns', 'text' => 'Incoming Returns'],
-                                ['value' => 'outgoing_reissues', 'text' => 'Outgoing Reissues'],
-                                ['value' => 'incoming_shipments', 'text' => 'Incoming Shipments'],
-                                ['value' => 'outgoing_shipments', 'text' => 'Outgoing Shipments'],
+                                ['value' => 'incoming', 'text' => 'Incoming'],
+                                ['value' => 'outgoing', 'text' => 'Outgoing'],
+                                ['value' => 'stock_adjustment', 'text' => 'Stock Adjustment'],
+                                ['value' => 'stock_transfer', 'text' => 'Stock Transfer'],
+                                ['value' => 'stock_balance', 'text' => 'Stock Balance'],
                                 ['value' => 'trash_entries', 'text' => 'Trash Entries'],
                                 ['value' => 'pallete_sales', 'text' => 'Pallete Sales'],
-                                ['value' => 'view_inventory', 'text' => 'View Inventory'],
-                                ['value' => 'stock_adjustment', 'text' => 'Stock Adjustment'],
                             ],
+
+
+                            'Inventory Warehouse' => [
+                                ['value' => 'list_all_warehouses', 'text' => 'List All Warehouses'],
+                                ['value' => 'inventory_locator', 'text' => 'Inventory Locator'],
+                                ['value' => 'transfers', 'text' => 'Transfers'],
+                                ['value' => 'returns_godown', 'text' => 'Returns Godown'],
+                                ['value' => 'openbox_godown', 'text' => 'Open Box Godown'],
+                                ['value' => 'showroom_godown', 'text' => 'Showroom Godown'],
+                                ['value' => 'useditem_godown', 'text' => 'Used Item Godown'],
+                                ['value' => 'trash_godown', 'text' => 'Trash Godown'],
+                            ],
+                             
                             'Marketplace' => [
                                 ['value' => 'amazon_analytics', 'text' => 'Amazon Analytics'],
                                 ['value' => 'amz_zero_view', 'text' => 'Amazon 0 View'],
@@ -422,17 +546,20 @@
                                             </tr>
                                             @foreach ($items as $item)
                                                 <tr class="tab-pane fade" id="tab-{{ Str::slug($group) }}">
-                                                    <td>{{ $item['text'] }} <small class="text-muted">({{ $item['value'] }})</small></td>
+                                                    <td>{{ $item['text'] }} <small
+                                                            class="text-muted">({{ $item['value'] }})</small></td>
                                                     {{-- Viewer --}}
                                                     <td class="text-center">
                                                         <div class="form-check d-flex justify-content-center">
                                                             @php
-                                                                $viewerChecked = isset($permissions['viewer']) && isset($permissions['viewer'][$item['value']]);
+                                                                $viewerChecked =
+                                                                    isset($permissions['viewer']) &&
+                                                                    isset($permissions['viewer'][$item['value']]);
                                                             @endphp
                                                             {{-- Debug: viewer-{{ $item['value'] }}: {{ $viewerChecked ? 'CHECKED' : 'NOT CHECKED' }} --}}
                                                             <input type="checkbox" class="form-check-input"
                                                                 name="permissions[viewer][{{ $item['value'] }}]"
-                                                                @if($viewerChecked) checked @endif>
+                                                                @if ($viewerChecked) checked @endif>
                                                         </div>
                                                     </td>
 
@@ -441,7 +568,7 @@
                                                         <div class="form-check d-flex justify-content-center">
                                                             <input type="checkbox" class="form-check-input"
                                                                 name="permissions[user][{{ $item['value'] }}]"
-                                                                @if(isset($permissions['user']) && isset($permissions['user'][$item['value']])) checked @endif>
+                                                                @if (isset($permissions['user']) && isset($permissions['user'][$item['value']])) checked @endif>
                                                         </div>
                                                     </td>
                                                     {{-- Manager --}}
@@ -449,7 +576,7 @@
                                                         <div class="form-check d-flex justify-content-center">
                                                             <input type="checkbox" class="form-check-input"
                                                                 name="permissions[manager][{{ $item['value'] }}]"
-                                                                @if(isset($permissions['manager']) && isset($permissions['manager'][$item['value']])) checked @endif>
+                                                                @if (isset($permissions['manager']) && isset($permissions['manager'][$item['value']])) checked @endif>
                                                         </div>
                                                     </td>
                                                     {{-- Admin --}}
@@ -457,7 +584,7 @@
                                                         <div class="form-check d-flex justify-content-center">
                                                             <input type="checkbox" class="form-check-input"
                                                                 name="permissions[admin][{{ $item['value'] }}]"
-                                                                @if(isset($permissions['admin']) && isset($permissions['admin'][$item['value']])) checked @endif>
+                                                                @if (isset($permissions['admin']) && isset($permissions['admin'][$item['value']])) checked @endif>
                                                         </div>
                                                     </td>
                                                     {{-- Superadmin --}}
@@ -465,7 +592,7 @@
                                                         <div class="form-check d-flex justify-content-center">
                                                             <input type="checkbox" class="form-check-input"
                                                                 name="permissions[superadmin][{{ $item['value'] }}]"
-                                                                @if(isset($permissions['superadmin']) && isset($permissions['superadmin'][$item['value']])) checked @endif>
+                                                                @if (isset($permissions['superadmin']) && isset($permissions['superadmin'][$item['value']])) checked @endif>
                                                         </div>
                                                     </td>
                                                 </tr>
