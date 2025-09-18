@@ -80,6 +80,8 @@ class Kernel extends ConsoleKernel
             ->dailyAt('00:00')
             ->timezone('UTC');
 
+           
+
         // Sync Main sheet update command
         $schedule->command('app:sync-sheet')
             ->dailyAt('02:10')

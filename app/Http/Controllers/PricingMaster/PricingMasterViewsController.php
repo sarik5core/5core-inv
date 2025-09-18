@@ -18,6 +18,7 @@ use App\Models\ShopifyB2CListingStatus;
 use App\Models\DobaListingStatus;
 use App\Models\AmazonDatasheet;
 use App\Models\AmazonDataView;
+use Exception;
 use App\Models\DobaDataView;
 use App\Models\DobaMetric;
 use App\Models\EbayMetric;
@@ -43,6 +44,7 @@ use App\Models\TemuListingStatus;
 use App\Models\WalmartListingStatus;
 use App\Models\WalmartMetrics;
 use App\Services\AmazonSpApiService;
+use App\Services\DobaApiService;
 use App\Services\WalmartService;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
@@ -55,11 +57,13 @@ class PricingMasterViewsController extends Controller
 {
     protected $apiController;
     protected $walmart;
+    protected $doba;
 
     public function __construct(ApiController $apiController)
     {
         $this->apiController = $apiController;
         $this->walmart = new WalmartService();
+        $this->doba = new DobaApiService();
     }
 
 
@@ -226,7 +230,7 @@ class PricingMasterViewsController extends Controller
                 'amz_req_view' => $amazon && $amazon->sessions_l30 > 0 && $amazon->units_ordered_l30 > 0
                     ? (($inv / 90) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30))
                     : 0,
-                    
+
 
                 // eBay
                 'ebay_price' => $ebay ? ($ebay->ebay_price ?? 0) : 0,
@@ -298,7 +302,7 @@ class PricingMasterViewsController extends Controller
                 'ebay2_dil'   => $ebay2 ? (float) ($ebay2->{'dil'} ?? 0) : 0,
                 'ebay2_pft'   => $ebay2 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.80 - $lp - $ship) / $ebay2->ebay_price) : 0,
                 'ebay2_roi'   => $ebay2 && $lp > 0 && ($ebay2->ebay_price ?? 0) > 0 ? (($ebay2->ebay_price * 0.80 - $lp - $ship) / $lp) : 0,
-                'ebay2_req_view' => $ebay2 && $ebay2->views > 0 && $ebay2->ebay_l30 
+                'ebay2_req_view' => $ebay2 && $ebay2->views > 0 && $ebay2->ebay_l30
                     ? (($inv / 90) * 30) / (($ebay2->ebay_l30 / $ebay2->views))
                     : 0,
 
@@ -316,7 +320,7 @@ class PricingMasterViewsController extends Controller
                 'ebay3_cvr'   => $ebay3 ? $this->calculateCVR($ebay3->ebay_l30 ?? 0, $ebay3->views ?? 0) : null,
                 'ebay3_pft'   => $ebay3 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.71 - $lp - $ship) / $ebay3->ebay_price) : 0,
                 'ebay3_roi'   => $ebay3 && $lp > 0 && ($ebay3->ebay_price ?? 0) > 0 ? (($ebay3->ebay_price * 0.71 - $lp - $ship) / $lp) : 0,
-                'ebay3_req_view' => $ebay3 && $ebay3->views && $ebay3->ebay_l30 
+                'ebay3_req_view' => $ebay3 && $ebay3->views && $ebay3->ebay_l30
                     ? (($inv / 90) * 30) / (($ebay3->ebay_l30 / $ebay3->views))
                     : 0,
 
@@ -895,5 +899,174 @@ class PricingMasterViewsController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Price update submitted']);
+    }
+
+
+
+    // Doba prices 
+
+    public function pushdobaPriceBySku(Request $request)
+    {
+
+        $sku   = $request->input('sku');
+        $price = $request->input('price');
+
+        // Validate inputs
+        if (!$sku || !$price) {
+
+            return response()->json([
+                'error' => 'SKU and price are required'
+            ], 400);
+        }
+        // Find Doba Item ID from your DB
+        $itemId = DobaMetric::where('sku', $sku)->value('item_id');
+        if (!$itemId) {
+
+
+            return response()->json([
+                'error' => "Item not found for SKU: {$sku}"
+            ], 404);
+        }
+
+        // Update price directly on Doba
+        $result = $this->doba->updateItemPrice($itemId, $price);
+
+
+
+        if (isset($result['errors'])) {
+
+
+            return response()->json([
+                'error' => $result['errors'],
+                'debug' => $result['debug'] ?? null
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Price update submitted for SKU: {$sku}, Item ID: {$itemId}, New Price: {$price}",
+            'debug' => [
+                'doba_response' => $result,
+                'sku' => $sku,
+                'item_id' => $itemId,
+                'price' => $price,
+                'timestamp' => now()
+            ]
+        ]);
+    }
+
+    /**
+     * Test different approaches to fix Doba item validation
+     */
+    public function testDobaItemValidation(Request $request)
+    {
+        $sku = $request->input('sku', 'SP 12120 4OHMS');
+        $price = $request->input('price', 30.00);
+        
+        // Get item ID
+        $itemId = DobaMetric::where('sku', $sku)->value('item_id');
+        
+        if (!$itemId) {
+            return response()->json([
+                'error' => "Item not found for SKU: {$sku}"
+            ], 404);
+        }
+        
+        // Test different validation approaches
+        $results = $this->doba->testItemValidation($itemId, $price);
+        
+        return response()->json([
+            'sku' => $sku,
+            'item_id' => $itemId,
+            'price' => $price,
+            'validation_tests' => $results
+        ]);
+    }
+
+    /**
+     * Debug method to test Doba API
+     */
+    public function testDobaConnection(Request $request)
+    {
+        $sku = $request->input('sku');
+        $testPrice = $request->input('price', 25.99);
+
+        // Get item ID if SKU provided
+        $itemId = null;
+        if ($sku) {
+            $itemId = DobaMetric::where('sku', $sku)->value('item_id');
+        }
+
+        // Test connection with real endpoint
+        $connectionTest = $this->doba->testConnection($itemId);
+
+        // Test actual price update if item ID found
+        $priceUpdateTest = null;
+        if ($itemId) {
+            $priceUpdateTest = $this->doba->updateItemPrice($itemId, $testPrice);
+        }
+
+        // Test getting item details if item ID found
+        $itemTest = null;
+        if ($itemId) {
+            $itemTest = $this->doba->getItemDetail($itemId);
+        }
+
+        // Get a sample item ID from database for testing
+        $sampleItem = DobaMetric::first();
+
+        return response()->json([
+            'connection_test' => $connectionTest,
+            'price_update_test' => $priceUpdateTest,
+            'item_test' => $itemTest,
+            'debug_info' => [
+                'requested_sku' => $sku,
+                'test_price' => $testPrice,
+                'found_item_id' => $itemId,
+                'sample_item' => $sampleItem ? ['sku' => $sampleItem->sku, 'item_id' => $sampleItem->item_id] : null,
+            ],
+            'environment' => [
+                'doba_app_key' => env('DOBA_APP_KEY') ? 'SET (' . substr(env('DOBA_APP_KEY'), 0, 4) . '...)' : 'NOT SET',
+                'doba_private_key' => env('DOBA_PRIVATE_KEY') ? 'SET (length: ' . strlen(env('DOBA_PRIVATE_KEY')) . ')' : 'NOT SET',
+                'base_url' => 'https://openapi.doba.com/api',
+            ]
+        ]);
+    }
+
+    /**
+     * Debug signature generation
+     */
+    public function debugDobaSignature(Request $request)
+    {
+        $timestamp = $request->input('timestamp');
+        return response()->json($this->doba->debugSignature($timestamp));
+    }
+
+    /**
+     * Advanced debug Doba API request
+     */
+    public function advancedDobaDebug(Request $request)
+    {
+        try {
+            $sku = $request->input('sku', 'SP 12120 4OHMS');
+            $price = $request->input('price', 32.00);
+
+            $dobaService = new DobaApiService();
+            $result = $dobaService->advancedDebugRequest($sku, $price);
+
+            return response()->json([
+                'success' => true,
+                'sku' => $sku,
+                'price' => $price,
+                'debug_results' => $result
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
     }
 }
