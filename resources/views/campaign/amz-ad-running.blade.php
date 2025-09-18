@@ -147,20 +147,20 @@
                                         <option value="OTHERS">OTHERS</option>
                                     </select>
 
-                                    <select id="nrl-filter" class="form-select form-select-md">
+                                    <select id="nrl-filter" class="form-select form-select-md d-none">
                                         <option value="">Select NRL</option>
                                         <option value="NRL">NRL</option>
                                         <option value="RL">RL</option>
                                     </select>
 
-                                    <select id="nra-filter" class="form-select form-select-md">
+                                    <select id="nra-filter" class="form-select form-select-md d-none">
                                         <option value="">Select NRA</option>
                                         <option value="NRA">NRA</option>
                                         <option value="RA">RA</option>
                                         <option value="LATER">LATER</option>
                                     </select>
 
-                                    <select id="fba-filter" class="form-select form-select-md">
+                                    <select id="fba-filter" class="form-select form-select-md d-none">
                                         <option value="">Select FBA</option>
                                         <option value="FBA">FBA</option>
                                         <option value="FBM">FBM</option>
@@ -413,6 +413,21 @@
                         }
                     },
                     {
+                        title: "KW Clicks L30",
+                        field: "kw_clicks_L30",
+                        visible: false
+                    },
+                    {
+                        title: "PT Clicks L30",
+                        field: "pt_clicks_L30",
+                        visible: false
+                    },
+                    {
+                        title: "HL Clicks L30",
+                        field: "hl_clicks_L30",
+                        visible: false
+                    },
+                    {
                         title: "CLICKS L7",
                         field: "CLICKS_L7",
                         formatter: function(cell) {
@@ -424,6 +439,21 @@
                                 style="cursor:pointer; margin-left:8px;"></i>
                             `;
                         }
+                    },
+                    {
+                        title: "KW Clicks L7",
+                        field: "kw_clicks_L7",
+                        visible: false
+                    },
+                    {
+                        title: "PT Clicks L7",
+                        field: "pt_clicks_L7",
+                        visible: false
+                    },
+                    {
+                        title: "HL Clicks L7",
+                        field: "hl_clicks_L7",
+                        visible: false
                     },
                     {
                         title: "IMP L30",
@@ -439,6 +469,21 @@
                         }
                     },
                     {
+                        title: "KW IMP L30",
+                        field: "kw_impr_L30",
+                        visible: false,
+                    },
+                    {
+                        title: "PT IMP L30",
+                        field: "pt_impr_L30",
+                        visible: false
+                    },
+                    {
+                        title: "HL IMP L30",
+                        field: "hl_impr_L30",
+                        visible: false
+                    },
+                    {
                         title: "IMP L7",
                         field: "IMP_L7",
                         formatter: function(cell) {
@@ -451,32 +496,9 @@
                             `;
                         }
                     },
-                    // KW
-                    {
-                        title: "KW IMP L30",
-                        field: "kw_impr_L30",
-                        visible: false,
-                    },
                     {
                         title: "KW IMP L7",
                         field: "kw_impr_L7",
-                        visible: false
-                    },
-                    {
-                        title: "KW Clicks L30",
-                        field: "kw_clicks_L30",
-                        visible: false
-                    },
-                    {
-                        title: "KW Clicks L7",
-                        field: "kw_clicks_L7",
-                        visible: false
-                    },
-
-                    // PT
-                    {
-                        title: "PT IMP L30",
-                        field: "pt_impr_L30",
                         visible: false
                     },
                     {
@@ -485,36 +507,77 @@
                         visible: false
                     },
                     {
-                        title: "PT Clicks L30",
-                        field: "pt_clicks_L30",
-                        visible: false
-                    },
-                    {
-                        title: "PT Clicks L7",
-                        field: "pt_clicks_L7",
-                        visible: false
-                    },
-
-                    // HL
-                    {
-                        title: "HL IMP L30",
-                        field: "hl_impr_L30",
-                        visible: false
-                    },
-                    {
                         title: "HL IMP L7",
                         field: "hl_impr_L7",
                         visible: false
                     },
                     {
-                        title: "HL Clicks L30",
-                        field: "hl_clicks_L30",
-                        visible: false
+                        title: "START AD",
+                        field: "start_ad",
+                        formatter: function(cell) {
+                            const row = cell.getRow();
+                            const sku = row.getData().sku;
+                            const value = cell.getValue();
+
+                            let bgColor = "";
+                            if (value === "KW") {
+                                bgColor = "background-color:#28a745;color:#fff;";
+                            } else if (value === "HL") {
+                                bgColor = "background-color:#28a745;color:#fff;";
+                            } else if (value === "PT") {
+                                bgColor = "background-color:#28a745;color:#000;";
+                            } else if (value === "ALL") {
+                                bgColor = "background-color:#28a745;color:#000;";
+                            }
+
+                            return `
+                                <select class="form-select form-select-sm editable-select" 
+                                        data-sku="${sku}" 
+                                        data-field="start_ad"
+                                        style="${bgColor}">
+                                    <option value=""></option>
+                                    <option value="KW" ${value === 'KW' ? 'selected' : ''}>KW</option>
+                                    <option value="HL" ${value === 'HL' ? 'selected' : ''}>HL</option>
+                                    <option value="PT" ${value === 'PT' ? 'selected' : ''}>PT</option>
+                                    <option value="ALL" ${value === 'ALL' ? 'selected' : ''}>ALL</option>
+                                </select>
+                            `;
+                        },
+                        hozAlign: "center"
                     },
                     {
-                        title: "HL Clicks L7",
-                        field: "hl_clicks_L7",
-                        visible: false
+                        title: "STOP AD",
+                        field: "stop_ad",
+                        formatter: function(cell) {
+                            const row = cell.getRow();
+                            const sku = row.getData().sku;
+                            const value = cell.getValue();
+
+                            let bgColor = "";
+                            if (value === "KW") {
+                                bgColor = "background-color:#dc3545;color:#fff;";
+                            } else if (value === "HL") {
+                                bgColor = "background-color:#dc3545;color:#fff;";
+                            } else if (value === "PT") {
+                                bgColor = "background-color:#dc3545;color:#000;";
+                            } else if (value === "ALL") {
+                                bgColor = "background-color:#dc3545;color:#000;";
+                            }
+
+                            return `
+                                <select class="form-select form-select-sm editable-select" 
+                                        data-sku="${sku}" 
+                                        data-field="stop_ad"
+                                        style="${bgColor}">
+                                    <option value=""></option>
+                                    <option value="KW" ${value === 'KW' ? 'selected' : ''}>KW</option>
+                                    <option value="HL" ${value === 'HL' ? 'selected' : ''}>HL</option>
+                                    <option value="PT" ${value === 'PT' ? 'selected' : ''}>PT</option>
+                                    <option value="ALL" ${value === 'ALL' ? 'selected' : ''}>ALL</option>
+                                </select>
+                            `;
+                        },
+                        hozAlign: "center"
                     },
 
                 ],
