@@ -1053,295 +1053,313 @@
                     <h4 class="header-title">Amazon Product Analysis</h4>
 
                     <!-- Custom Dropdown Filters Row -->
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+                    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center justify-content-between">
                         <!-- Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
-                                <span class="status-circle default"></span> OV DIL%
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
+                                    <span class="status-circle default"></span> OV DIL%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All OV DIL</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- A Dil% Filter -->
+                            <div class="dropdown manual-dropdown-container ">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="aDilFilterDropdown">
+                                    <span class="status-circle default"></span> A Dil%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="aDilFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All A Dil</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- PFT % Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
+                                    <span class="status-circle default"></span> PFT%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="PFT_percentage" data-color="all">
+                                            <span class="status-circle default"></span> All PFT</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="PFT_percentage" data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="PFT_percentage" data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="PFT_percentage" data-color="blue">
+                                            <span class="status-circle blue"></span> Blue</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="PFT_percentage" data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="PFT_percentage" data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- ROI Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="roiFilterDropdown">
+                                    <span class="status-circle default"></span> ROI
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="ROI_percentage" data-color="all">
+                                            <span class="status-circle default"></span> All ROI</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="ROI_percentage" data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="ROI_percentage" data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="ROI_percentage" data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#"
+                                            data-column="ROI_percentage" data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Tacos Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="tacosFilterDropdown">
+                                    <span class="status-circle default"></span> TACOS
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="tacosFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All TACOS</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="blue">
+                                            <span class="status-circle blue"></span> Blue</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- CVR Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
+                                    <span class="status-circle default"></span> CVR
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All CVR</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Task Board Button -->
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#createTaskModal">
+                                <i class="bi bi-plus-circle me-2"></i>Create Task
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All OV DIL</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
 
-                        <!-- A Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container ">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="aDilFilterDropdown">
-                                <span class="status-circle default"></span> A Dil%
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="aDilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All A Dil</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
+                            <!-- for popup modal start Modal -->
+                            <div class="modal fade" id="createTaskModal" tabindex="-1"
+                                aria-labelledby="createTaskModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to
+                                                Task
+                                                Manager</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
 
-                        <!-- PFT % Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
-                                <span class="status-circle default"></span> PFT%
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All PFT</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT_percentage"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
+                                        <div class="modal-body">
+                                            <form id="taskForm">
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12">
+                                                            <label class="form-label">Group</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter Group">
+                                                        </div>
 
-                        <!-- ROI Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="roiFilterDropdown">
-                                <span class="status-circle default"></span> ROI
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All ROI</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ROI_percentage"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Tacos Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="tacosFilterDropdown">
-                                <span class="status-circle default"></span> TACOS
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="tacosFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All TACOS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- CVR Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
-                                <span class="status-circle default"></span> CVR
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All CVR</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Task Board Button -->
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#createTaskModal">
-                            <i class="bi bi-plus-circle me-2"></i>Create Task
-                        </button>
-
-                        <!-- for popup modal start Modal -->
-                        <div class="modal fade" id="createTaskModal" tabindex="-1"
-                            aria-labelledby="createTaskModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to Task
-                                            Manager</h4>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="taskForm">
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-12">
-                                                        <label class="form-label">Group</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Group">
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Title<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Title">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Priority</label>
-                                                        <select class="form-select">
-                                                            <option>Low</option>
-                                                            <option>Medium</option>
-                                                            <option>High</option>
-                                                        </select>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Title<span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter Title">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Priority</label>
+                                                            <select class="form-select">
+                                                                <option>Low</option>
+                                                                <option>Medium</option>
+                                                                <option>High</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assignor<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option selected disabled>Select Assignor</option>
-                                                            <option>Srabani Ghosh</option>
-                                                            <option>Rahul Mehta</option>
-                                                            <option>Anjali Verma</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Status</label>
-                                                        <select class="form-select">
-                                                            <option disabled selected>Select Status</option>
-                                                            <option value="Todo">Todo</option>
-                                                            <option value="Not Started">Not Started</option>
-                                                            <option value="Working">Working</option>
-                                                            <option value="In Progress">In Progress</option>
-                                                            <option value="Monitor">Monitor</option>
-                                                            <option value="Done">Done</option>
-                                                            <option value="Need Help">Need Help</option>
-                                                            <option value="Review">Review</option>
-                                                            <option value="Need Approval">Need Approval</option>
-                                                            <option value="Dependent">Dependent</option>
-                                                            <option value="Approved">Approved</option>
-                                                            <option value="Hold">Hold</option>
-                                                            <option value="Rework">Rework</option>
-                                                            <option value="Urgent">Urgent</option>
-                                                            <option value="Q-Task">Q-Task</option>
-                                                        </select>
-                                                    </div>
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Assignor<span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-select">
+                                                                <option selected disabled>Select Assignor</option>
+                                                                <option>Srabani Ghosh</option>
+                                                                <option>Rahul Mehta</option>
+                                                                <option>Anjali Verma</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Status</label>
+                                                            <select class="form-select">
+                                                                <option disabled selected>Select Status</option>
+                                                                <option value="Todo">Todo</option>
+                                                                <option value="Not Started">Not Started</option>
+                                                                <option value="Working">Working</option>
+                                                                <option value="In Progress">In Progress</option>
+                                                                <option value="Monitor">Monitor</option>
+                                                                <option value="Done">Done</option>
+                                                                <option value="Need Help">Need Help</option>
+                                                                <option value="Review">Review</option>
+                                                                <option value="Need Approval">Need Approval</option>
+                                                                <option value="Dependent">Dependent</option>
+                                                                <option value="Approved">Approved</option>
+                                                                <option value="Hold">Hold</option>
+                                                                <option value="Rework">Rework</option>
+                                                                <option value="Urgent">Urgent</option>
+                                                                <option value="Q-Task">Q-Task</option>
+                                                            </select>
+                                                        </div>
 
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assign To<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option>Please Select</option>
-                                                            <option>Dev Team</option>
-                                                            <option>QA Team</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Duration<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" id="duration" class="form-control"
-                                                            placeholder="Select start and end date/time">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Assign To<span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-select">
+                                                                <option>Please Select</option>
+                                                                <option>Dev Team</option>
+                                                                <option>QA Team</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Duration<span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" id="duration" class="form-control"
+                                                                placeholder="Select start and end date/time">
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L1</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L1">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L2</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L2">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Description</label>
-                                                        <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Image</label>
-                                                        <label class="choose-file">
-                                                            Choose File
-                                                            <input type="file" class="form-control d-none">
-                                                        </label>
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">L1</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter L1">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">L2</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter L2">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Description</label>
+                                                            <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Image</label>
+                                                            <label class="choose-file">
+                                                                Choose File
+                                                                <input type="file" class="form-control d-none">
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                            </form>
+                                        </div>
 
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-warning text-white"
-                                            id="createBtn">Create</button>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-warning text-white"
+                                                id="createBtn">Create</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!--for popup modal -->
+
+                            <!-- Close All Modals Button -->
+                            <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
+                                <i class="fas fa-times"></i> Close All Modals
+                            </button>
                         </div>
 
-                        <!--for popup modal -->
+                        <!-- Right side: Import and Export buttons -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Export Button -->
+                            <a href="{{ route('amazon.analytics.export') }}" class="btn btn-success">
+                                <i class="fas fa-file-export me-1"></i> Export Live/Listings
+                            </a>
 
-                        <!-- Close All Modals Button -->
-                        <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
-                            <i class="fas fa-times"></i> Close All Modals
-                        </button>
+                            <!-- Import Button -->
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#amazonImportModal">
+                                <i class="fas fa-file-import me-1"></i> Import Live/Listings
+                            </button>
+                        </div>
                     </div>
 
                     <!-- play backward forwad  -->
@@ -1407,214 +1425,254 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="table-container">
-                        <table class="custom-resizable-table" id="amazon-table">
-                            <thead>
-                                <tr>
-                                    <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th>
-                                    <th data-field="parent" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center sortable-header">
-                                                Parent <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="mt-1 dropdown-search-container">
-                                                <input type="text" class="form-control form-control-sm parent-search"
-                                                    placeholder="Search parent..." id="parentSearch">
-                                                <div class="dropdown-search-results" id="parentSearchResults"></div>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="sku" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center sortable">
-                                            <div class="d-flex align-items-center">
-                                                Sku <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="mt-1 dropdown-search-container">
-                                                <input type="text" class="form-control form-control-sm sku-search"
-                                                    placeholder="Search SKU..." id="skuSearch">
-                                                <div class="dropdown-search-results" id="skuSearchResults"></div>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="r&a" class="hide-column"
-                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                R&A <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="inv" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                INV <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="inv-total">0</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ov_l30" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                OV L30 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="ovl30-total">0</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ov_dil" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                OV DIL <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="ovdil-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="al_30" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                AL 30 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="al30-total">0</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="a_dil" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                A DIL <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="lDil-total">0%</div>
-                                        </div>
-                                    </th>
+                <div class="modal fade" id="amazonImportModal" tabindex="-1" aria-labelledby="amazonImportModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ route('amazon.analytics.import') }}" method="POST"
+                            enctype="multipart/form-data" class="modal-content" id="amazonImportForm">
+                            @csrf
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="amazonImportModalLabel">Import Amazon Data</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- File Input -->
+                                <div class="mb-3">
+                                    <label for="amazonExcelFile" class="form-label">Select Excel File</label>
+                                    <input type="file" class="form-control" id="amazonExcelFile" name="excel_file"
+                                        accept=".xlsx,.xls,.csv" required>
+                                </div>
 
-                                    <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
-                                        NRL
-                                    </th>
-                                    
-                                    <th data-field="nra" style="vertical-align: middle; white-space: nowrap;">
-                                        NRA
-                                    </th>
+                                <!-- Sample File Link -->
+                                <div class="alert alert-info">
+                                    <small>
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Download the <a href="{{ route('amazon.analytics.sample') }}"
+                                            class="alert-link">sample file</a>
+                                        to see the required format. Columns should be: SKU, Listed, Live.
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-file-import me-1"></i> Import
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-                                    <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
-                                        FBA
-                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LISTED <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="listed-total">0</div>
+                <div class="table-container">
+                    <table class="custom-resizable-table" id="amazon-table">
+                        <thead>
+                            <tr>
+                                <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th>
+                                <th data-field="parent" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center sortable-header">
+                                            Parent <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
-                                    <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                LIVE <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="live-total">0</div>
+                                        <div class="mt-1 dropdown-search-container">
+                                            <input type="text" class="form-control form-control-sm parent-search"
+                                                placeholder="Search parent..." id="parentSearch">
+                                            <div class="dropdown-search-results" id="parentSearchResults"></div>
                                         </div>
-                                    </th>
-                                    <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                VIEWS <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="views-total">0</div>
+                                    </div>
+                                </th>
+                                <th data-field="sku" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center sortable">
+                                        <div class="d-flex align-items-center">
+                                            Sku <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
+                                        <div class="mt-1 dropdown-search-container">
+                                            <input type="text" class="form-control form-control-sm sku-search"
+                                                placeholder="Search SKU..." id="skuSearch">
+                                            <div class="dropdown-search-results" id="skuSearchResults"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th data-field="r&a" class="hide-column"
+                                    style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            R&A <span class="sort-arrow">↓</span>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th data-field="inv" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            INV <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="inv-total">0</div>
+                                    </div>
+                                </th>
+                                <th data-field="ov_l30" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            OV L30 <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="ovl30-total">0</div>
+                                    </div>
+                                </th>
+                                <th data-field="ov_dil" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            OV DIL <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="ovdil-total">0%</div>
+                                    </div>
+                                </th>
+                                <th data-field="al_30" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            AL 30 <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="al30-total">0</div>
+                                    </div>
+                                </th>
+                                <th data-field="a_dil" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            A DIL <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="lDil-total">0%</div>
+                                    </div>
+                                </th>
 
+                                <th data-field="nr" style="vertical-align: middle; white-space: nowrap;">
+                                    NRL
+                                </th>
 
-                                    <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                CVR <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="cvr-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="price"
-                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
-                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
-                                            <div class="d-flex align-items-center">
-                                                PRICE <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="comp"
-                                        style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                COMP <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                GPRFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Total Profit <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
+                                <th data-field="nra" style="vertical-align: middle; white-space: nowrap;">
+                                    NRA
+                                </th>
 
-                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                AD Spend <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                <th data-field="fba" style="vertical-align: middle; white-space: nowrap;">
+                                    FBA
+                                <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            LISTED <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="listed-total">0</div>
+                                    </div>
+                                </th>
+                                <th data-field="live" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            LIVE <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="live-total">0</div>
+                                    </div>
+                                </th>
+                                <th data-field="views" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            VIEWS <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="views-total">0</div>
+                                    </div>
+                                </th>
 
 
-                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                TPFT<span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            CVR <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
-
-
-                                    <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                Profit After AD <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="Tpft-total">0%</div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="cvr-total">0%</div>
+                                    </div>
+                                </th>
+                                <th data-field="price"
+                                    style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                    <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                        <div class="d-flex align-items-center">
+                                            PRICE <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
-
-                                    <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                TPRFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="profit-total">0%</div>
+                                    </div>
+                                </th>
+                                <th data-field="comp"
+                                    style="vertical-align: middle; white-space: nowrap; padding-right: 4px;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            COMP <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
+                                    </div>
+                                </th>
+                                <th data-field="pft" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            GPRFT <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="pft-total">0%</div>
+                                    </div>
+                                </th>
+                                <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            Total Profit <span class="sort-arrow">↓</span>
+                                        </div>
+                                    </div>
+                                </th>
 
-                                    {{-- <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            AD Spend <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="Tpft-total">0%</div>
+                                    </div>
+                                </th>
+
+
+                                <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            TPFT<span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="Tpft-total">0%</div>
+                                    </div>
+                                </th>
+
+
+                                <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            Profit After AD <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="Tpft-total">0%</div>
+                                    </div>
+                                </th>
+
+                                <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            TPRFT <span class="sort-arrow">↓</span>
+                                        </div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="profit-total">0%</div>
+                                    </div>
+                                </th>
+
+                                {{-- <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
                                                 Sold Amount <span class="sort-arrow">↓</span>
@@ -1644,44 +1702,44 @@
                                         </div>
                                     </th> --}}
 
-                                    <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="roi-total">0%</div>
+                                <th data-field="roi" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            ROI <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
-                                    <th data-field="tacos" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                TACOS <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="tacos-total">0%</div>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="roi-total">0%</div>
+                                    </div>
+                                </th>
+                                <th data-field="tacos" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            TACOS <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="tacos-total">0%</div>
+                                    </div>
+                                </th>
 
-                                    <th data-field="ad cost/ pc" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                AD COST <br> PER PC<span class="sort-arrow">↓</span>
-                                            </div>
+                                <th data-field="ad cost/ pc" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            AD COST <br> PER PC<span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
+                                    </div>
+                                </th>
 
-                                    <th data-field="S-PRICE" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center" style="gap: 4px">
-                                                S-PRICE <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="pft-total">0%</div>
+                                <th data-field="S-PRICE" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center" style="gap: 4px">
+                                            S-PRICE <span class="sort-arrow">↓</span>
                                         </div>
-                                    </th>
+                                        <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
+                                        <div class="metric-total" id="pft-total">0%</div>
+                                    </div>
+                                </th>
 
-                                    {{-- <th data-field="S-PROFIT" style="vertical-align: middle; white-space: nowrap;">
+                                {{-- <th data-field="S-PROFIT" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="d-flex align-items-center" style="gap: 4px">
                                                 S-PROFIT <span class="sort-arrow">↓</span>
@@ -1701,38 +1759,38 @@
                                         </div>
                                     </th> --}}
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
 
-                    <!-- Pagination controls -->
-                    <div class="pagination-controls mt-2">
-                        <div class="form-group">
-                            <span id="visible-rows" class="badge badge-light" style="color: #dc3545;">Showing 1-25 of
-                                150</span>
-                        </div>
-                        <button id="first-page" class="btn btn-sm btn-outline-secondary mr-1">First</button>
-                        <button id="prev-page" class="btn btn-sm btn-outline-secondary mr-1">Previous</button>
-                        <span id="page-info" class="mx-2">Page 1 of 6</span>
-                        <button id="next-page" class="btn btn-sm btn-outline-secondary ml-1">Next</button>
-                        <button id="last-page" class="btn btn-sm btn-outline-secondary ml-1">Last</button>
+                <!-- Pagination controls -->
+                <div class="pagination-controls mt-2">
+                    <div class="form-group">
+                        <span id="visible-rows" class="badge badge-light" style="color: #dc3545;">Showing 1-25 of
+                            150</span>
                     </div>
+                    <button id="first-page" class="btn btn-sm btn-outline-secondary mr-1">First</button>
+                    <button id="prev-page" class="btn btn-sm btn-outline-secondary mr-1">Previous</button>
+                    <span id="page-info" class="mx-2">Page 1 of 6</span>
+                    <button id="next-page" class="btn btn-sm btn-outline-secondary ml-1">Next</button>
+                    <button id="last-page" class="btn btn-sm btn-outline-secondary ml-1">Last</button>
+                </div>
 
-                    <div id="data-loader" class="card-loader-overlay" style="display: none;">
-                        <div class="loader-content">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <div class="loader-text">Loading Amazon data...</div>
+                <div id="data-loader" class="card-loader-overlay" style="display: none;">
+                    <div class="loader-content">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
+                        <div class="loader-text">Loading Amazon data...</div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
 
@@ -2793,14 +2851,15 @@
 
                     // A DIL with color coding
                     $row.append($('<td>').html(
-    `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${Math.round(item['A Dil%'] * 100)}%</span>`
-));
+                        `<span class="dil-percent-value ${getDilColor(item['A Dil%'])}">${Math.round(item['A Dil%'] * 100)}%</span>`
+                    ));
 
                     // --- NR column ---
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NRL === 'RL' || item.NRL === 'NRL' || item.NRL === 'LATER') ?
+                        const currentNR = (item.NRL === 'RL' || item.NRL === 'NRL' || item.NRL ===
+                                'LATER') ?
                             item.NRL : 'RL';
 
                         const $select = $(`
@@ -2832,27 +2891,29 @@
                             item.NRA : 'RA';
 
                         const adilPercent = Math.round(item['A Dil%'] * 100);
-                        
-                            if (adilPercent > 50) {
-                                currentNR = 'NRA';
 
-                                // Auto-save NRA when adilPercent > 50
-                                $.ajax({
-                                    url: '/amazon/save-nr',
-                                    type: 'POST',
-                                    data: {
-                                        sku: item['(Child) sku'],
-                                        nr: JSON.stringify({ NRA: 'NRA' }),
-                                        _token: $('meta[name="csrf-token"]').attr('content')
-                                    },
-                                    success: function(res) {
-                                        console.log("Auto NRA saved for", item['(Child) sku']);
-                                    },
-                                    error: function(err) {
-                                        console.error("Auto-save failed:", err);
-                                    }
-                                });
-                            }
+                        if (adilPercent > 50) {
+                            currentNR = 'NRA';
+
+                            // Auto-save NRA when adilPercent > 50
+                            $.ajax({
+                                url: '/amazon/save-nr',
+                                type: 'POST',
+                                data: {
+                                    sku: item['(Child) sku'],
+                                    nr: JSON.stringify({
+                                        NRA: 'NRA'
+                                    }),
+                                    _token: $('meta[name="csrf-token"]').attr('content')
+                                },
+                                success: function(res) {
+                                    console.log("Auto NRA saved for", item['(Child) sku']);
+                                },
+                                error: function(err) {
+                                    console.error("Auto-save failed:", err);
+                                }
+                            });
+                        }
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" data-nr-type="NRA" style="min-width: 100px;">
@@ -2958,12 +3019,12 @@
                     ));
 
 
-                   $row.append($('<td>').html(
-    `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
     <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
         data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
         data-item='${JSON.stringify(item.raw_data)}'></i>`
-));
+                    ));
 
 
                     //price with tooltip
@@ -2990,9 +3051,10 @@
 
 
                     // PFT with color coding
-                   $row.append($('<td>').html(
-    typeof item['PFT_percentage'] === 'number' && !isNaN(item['PFT_percentage']) ?
-    `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
+                    $row.append($('<td>').html(
+                        typeof item['PFT_percentage'] === 'number' && !isNaN(item[
+                            'PFT_percentage']) ?
+                        `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
         ${Math.round(item['PFT_percentage'])}%
     </span>
     <span class="tooltip-container" style="margin-left:8px">
@@ -3003,8 +3065,8 @@
             title="Pricing view"
             data-item='${JSON.stringify(item.raw_data)}'></i>
     </span>` :
-    ''
-));
+                        ''
+                    ));
 
 
 
@@ -3037,18 +3099,18 @@
 
 
                     // profit after advertising
-                   const profitAfterAd = totalProfit - adSpend;
+                    const profitAfterAd = totalProfit - adSpend;
 
-                $row.append(
-                    $('<td>').html(
-                        `<span class="badge bg-success">$${Math.round(profitAfterAd)}</span>`
-                    )
-                );
+                    $row.append(
+                        $('<td>').html(
+                            `<span class="badge bg-success">$${Math.round(profitAfterAd)}</span>`
+                        )
+                    );
 
                     // TPFT 
-        $row.append($('<td>').html(
-            `<span class="badge bg-info">${Math.round((profitAfterAd / (price * aL30)) * 100)}%</span>`
-        ));
+                    $row.append($('<td>').html(
+                        `<span class="badge bg-info">${Math.round((profitAfterAd / (price * aL30)) * 100)}%</span>`
+                    ));
 
 
 
@@ -3071,16 +3133,16 @@
 
 
 
-                const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
+                    const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
 
-                $row.append($('<td>').html(
-                    typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
-                    `
+                    $row.append($('<td>').html(
+                        typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
+                        `
                     <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
                         ${Math.round(newPftPercentage)}%
                     </span>
                     ` : ''
-                ));
+                    ));
 
 
 
@@ -3359,7 +3421,7 @@
                         data: {
                             sku: sku,
                             nr: JSON.stringify({
-                                [ $select.data('nr-type') ]: nrValue
+                                [$select.data('nr-type')]: nrValue
                             }),
                             _token: $('meta[name="csrf-token"]').attr('content') // CSRF protection
                         },
@@ -6199,7 +6261,8 @@
                                 console.log('Amazon price update response:', resp);
                             },
                             error: function(err) {
-                                console.error('Error updating Amazon price:', err.responseText);
+                                console.error('Error updating Amazon price:', err
+                                    .responseText);
                             }
                         });
                     },
