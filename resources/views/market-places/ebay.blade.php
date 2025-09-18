@@ -979,320 +979,382 @@
                     <h4 class="header-title">eBay Product Analysis</h4>
 
                     <!-- Custom Dropdown Filters Row -->
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <!-- Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
-                                <span class="status-circle default"></span> OV DIL%
+                    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center justify-content-between">
+                        <!-- Left side: Filter buttons and Create Task -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Dil% Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
+                                    <span class="status-circle default"></span> OV DIL%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All OV DIL</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- A Dil% Filter -->
+                            <div class="dropdown manual-dropdown-container ">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="eDilFilterDropdown">
+                                    <span class="status-circle default"></span> E Dil%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="eDilFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All E Dil</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- A Dil% Filter -->
+                            <div class="dropdown manual-dropdown-container ">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="ovClicksFilterDropdown">
+                                    <span class="status-circle default"></span> PmtClkL30
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="ovClicksFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All OV CLICKS</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green </a></li>
+                                </ul>
+                            </div>
+
+                            <!-- PFT % Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
+                                    <span class="status-circle default"></span> PFT%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All PFT</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="blue">
+                                            <span class="status-circle blue"></span> Blue</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- ROI Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="roiFilterDropdown">
+                                    <span class="status-circle default"></span> ROI
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All ROI</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Tacos Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="tacosFilterDropdown">
+                                    <span class="status-circle default"></span> TACOS
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="tacosFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All TACOS</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="blue">
+                                            <span class="status-circle blue"></span> Blue</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- CVR Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
+                                    <span class="status-circle default"></span> SCVR
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All CVR</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="blue">
+                                            <span class="status-circle blue"></span> Low SCVR</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Task Board Button -->
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#createTaskModal">
+                                <i class="bi bi-plus-circle me-2"></i>Create Task
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All OV DIL</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="ov_dil"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
 
-                        <!-- A Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container ">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="eDilFilterDropdown">
-                                <span class="status-circle default"></span> E Dil%
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="eDilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="A Dil%"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All E Dil</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="E Dil%"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
+                            <!-- for popup modal start Modal -->
+                            <div class="modal fade" id="createTaskModal" tabindex="-1"
+                                aria-labelledby="createTaskModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to
+                                                Task
+                                                Manager</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
 
-                        <!-- A Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container ">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="ovClicksFilterDropdown">
-                                <span class="status-circle default"></span> PmtClkL30
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="ovClicksFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All OV CLICKS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PmtClkL30"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green </a></li>
-                            </ul>
-                        </div>
+                                        <div class="modal-body">
+                                            <form id="taskForm">
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12">
+                                                            <label class="form-label">Group</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter Group">
+                                                        </div>
 
-                        <!-- PFT % Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
-                                <span class="status-circle default"></span> PFT%
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All PFT</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- ROI Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="roiFilterDropdown">
-                                <span class="status-circle default"></span> ROI
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All ROI</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Tacos Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="tacosFilterDropdown">
-                                <span class="status-circle default"></span> TACOS
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="tacosFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All TACOS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- CVR Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
-                                <span class="status-circle default"></span> SCVR
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All CVR</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Low SCVR</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Task Board Button -->
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#createTaskModal">
-                            <i class="bi bi-plus-circle me-2"></i>Create Task
-                        </button>
-
-                        <!-- for popup modal start Modal -->
-                        <div class="modal fade" id="createTaskModal" tabindex="-1"
-                            aria-labelledby="createTaskModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to Task
-                                            Manager</h4>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="taskForm">
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-12">
-                                                        <label class="form-label">Group</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Group">
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Title<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Title">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Priority</label>
-                                                        <select class="form-select">
-                                                            <option>Low</option>
-                                                            <option>Medium</option>
-                                                            <option>High</option>
-                                                        </select>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Title<span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter Title">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Priority</label>
+                                                            <select class="form-select">
+                                                                <option>Low</option>
+                                                                <option>Medium</option>
+                                                                <option>High</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assignor<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option selected disabled>Select Assignor</option>
-                                                            <option>Srabani Ghosh</option>
-                                                            <option>Rahul Mehta</option>
-                                                            <option>Anjali Verma</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Status</label>
-                                                        <select class="form-select">
-                                                            <option disabled selected>Select Status</option>
-                                                            <option value="Todo">Todo</option>
-                                                            <option value="Not Started">Not Started</option>
-                                                            <option value="Working">Working</option>
-                                                            <option value="In Progress">In Progress</option>
-                                                            <option value="Monitor">Monitor</option>
-                                                            <option value="Done">Done</option>
-                                                            <option value="Need Help">Need Help</option>
-                                                            <option value="Review">Review</option>
-                                                            <option value="Need Approval">Need Approval</option>
-                                                            <option value="Dependent">Dependent</option>
-                                                            <option value="Approved">Approved</option>
-                                                            <option value="Hold">Hold</option>
-                                                            <option value="Rework">Rework</option>
-                                                            <option value="Urgent">Urgent</option>
-                                                            <option value="Q-Task">Q-Task</option>
-                                                        </select>
-                                                    </div>
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Assignor<span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-select">
+                                                                <option selected disabled>Select Assignor</option>
+                                                                <option>Srabani Ghosh</option>
+                                                                <option>Rahul Mehta</option>
+                                                                <option>Anjali Verma</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Status</label>
+                                                            <select class="form-select">
+                                                                <option disabled selected>Select Status</option>
+                                                                <option value="Todo">Todo</option>
+                                                                <option value="Not Started">Not Started</option>
+                                                                <option value="Working">Working</option>
+                                                                <option value="In Progress">In Progress</option>
+                                                                <option value="Monitor">Monitor</option>
+                                                                <option value="Done">Done</option>
+                                                                <option value="Need Help">Need Help</option>
+                                                                <option value="Review">Review</option>
+                                                                <option value="Need Approval">Need Approval</option>
+                                                                <option value="Dependent">Dependent</option>
+                                                                <option value="Approved">Approved</option>
+                                                                <option value="Hold">Hold</option>
+                                                                <option value="Rework">Rework</option>
+                                                                <option value="Urgent">Urgent</option>
+                                                                <option value="Q-Task">Q-Task</option>
+                                                            </select>
+                                                        </div>
 
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assign To<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option>Please Select</option>
-                                                            <option>Dev Team</option>
-                                                            <option>QA Team</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Duration<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" id="duration" class="form-control"
-                                                            placeholder="Select start and end date/time">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Assign To<span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-select">
+                                                                <option>Please Select</option>
+                                                                <option>Dev Team</option>
+                                                                <option>QA Team</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Duration<span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" id="duration" class="form-control"
+                                                                placeholder="Select start and end date/time">
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L1</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L1">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L2</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L2">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Description</label>
-                                                        <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Image</label>
-                                                        <label class="choose-file">
-                                                            Choose File
-                                                            <input type="file" class="form-control d-none">
-                                                        </label>
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">L1</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter L1">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">L2</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter L2">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Description</label>
+                                                            <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Image</label>
+                                                            <label class="choose-file">
+                                                                Choose File
+                                                                <input type="file" class="form-control d-none">
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                            </form>
+                                        </div>
 
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-warning text-white"
-                                            id="createBtn">Create</button>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-warning text-white"
+                                                id="createBtn">Create</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!--for popup modal -->
+
+                            <!-- Close All Modals Button -->
+                            <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
+                                <i class="fas fa-times"></i> Close All Modals
+                            </button>
                         </div>
 
-                        <!--for popup modal -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Export Button -->
+                            <a href="{{ route('ebay.analytics.export') }}" class="btn btn-success">
+                                <i class="fas fa-file-export me-1"></i> Export Live/Listings
+                            </a>
 
-                        <!-- Close All Modals Button -->
-                        <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
-                            <i class="fas fa-times"></i> Close All Modals
-                        </button>
+                            <!-- Import Button -->
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#ebayImportModal">
+                                <i class="fas fa-file-import me-1"></i> Import Live/Listings
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Ebay Import Modal -->
+                    <div class="modal fade" id="ebayImportModal" tabindex="-1" aria-labelledby="ebayImportModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form action="{{ route('ebay.analytics.import') }}" method="POST"
+                                enctype="multipart/form-data" class="modal-content" id="ebayImportForm">
+                                @csrf
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="ebayImportModalLabel">Import Ebay Data</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- File Input -->
+                                    <div class="mb-3">
+                                        <label for="reverbExcelFile" class="form-label">Select Excel File</label>
+                                        <input type="file" class="form-control" id="reverbExcelFile"
+                                            name="excel_file" accept=".xlsx,.xls,.csv" required>
+                                    </div>
+
+                                    <!-- Close All Modals Button -->
+                                    <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
+                                        <i class="fas fa-times"></i> Close All Modals
+                                        <!-- Sample File Link -->
+                                        <div class="alert alert-info">
+                                            <small>
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Download the <a href="{{ route('ebay.analytics.sample') }}"
+                                                    class="alert-link">sample file</a>
+                                                to see the required format. Columns should be: SKU, Listed, Live.
+                                            </small>
+                                        </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-file-import me-1"></i> Import
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
 
                     <!-- play backward forwad  -->
                     <div class="btn-group time-navigation-group" role="group" aria-label="Parent navigation">
@@ -1377,6 +1439,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <div class="table-container">
                         <table class="custom-resizable-table" id="ebay-table">
@@ -2559,7 +2622,7 @@
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getEDilColor(item['E Dil%'])}">${Math.round(item['E Dil%'] * 100)}%</span>`
                     ));
-                    
+
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
@@ -5639,6 +5702,37 @@
             initTable();
             // Make the static Hide SKU modal draggable using the existing logic
             ModalSystem.makeDraggable(document.getElementById('customHideSkuModal'));
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fix for Bootstrap modal backdrop issue
+            const modalElements = document.querySelectorAll('.modal');
+            modalElements.forEach(modal => {
+                modal.addEventListener('show.bs.modal', function() {
+                    // Ensure backdrop is properly initialized
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) {
+                            // Reinitialize if needed
+                            modalInstance._initializeBackDrop();
+                        }
+                    }
+                });
+            });
+
+            // Close all modals button functionality
+            const closeAllModalsBtn = document.getElementById('close-all-modals');
+            if (closeAllModalsBtn) {
+                closeAllModalsBtn.addEventListener('click', function() {
+                    const modals = document.querySelectorAll('.modal');
+                    modals.forEach(modal => {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    });
+                });
+            }
         });
     </script>
 @endsection
