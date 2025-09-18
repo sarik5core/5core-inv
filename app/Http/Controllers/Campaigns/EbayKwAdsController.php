@@ -7,7 +7,6 @@ use App\Models\EbayDataView;
 use App\Models\EbayPriorityReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
-use Illuminate\Http\Request;
 
 class EbayKwAdsController extends Controller
 {
