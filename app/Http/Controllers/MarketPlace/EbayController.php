@@ -19,8 +19,9 @@ use App\Models\ProductMaster; // Add this at the top with other use statements
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\EbayGeneralReports;
-
-
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class EbayController extends Controller
 {
@@ -313,7 +314,7 @@ class EbayController extends Controller
 
             // Price and units for calculations
             $price = floatval($row["eBay Price"] ?? 0);
-           
+
             $units_ordered_l30 = floatval($row["eBay L30"] ?? 0);
 
             // Set PmtClkL30 from adMetrics data
@@ -607,5 +608,162 @@ class EbayController extends Controller
         $channel->save();
 
         return response()->json(['success' => true]);
+    }
+
+    public function importEbayAnalytics(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            $file = $request->file('excel_file');
+            $spreadsheet = IOFactory::load($file->getPathName());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            // Clean headers
+            $headers = array_map(function ($header) {
+                return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '_', $header)));
+            }, $rows[0]);
+
+            unset($rows[0]);
+
+            $allSkus = [];
+            foreach ($rows as $row) {
+                if (!empty($row[0])) {
+                    $allSkus[] = $row[0];
+                }
+            }
+
+            $existingSkus = ProductMaster::whereIn('sku', $allSkus)
+                ->pluck('sku')
+                ->toArray();
+
+            $existingSkus = array_flip($existingSkus);
+
+            $importCount = 0;
+            foreach ($rows as $index => $row) {
+                if (empty($row[0])) { // Check if SKU is empty
+                    continue;
+                }
+
+                // Ensure row has same number of elements as headers
+                $rowData = array_pad(array_slice($row, 0, count($headers)), count($headers), null);
+                $data = array_combine($headers, $rowData);
+
+                if (!isset($data['sku']) || empty($data['sku'])) {
+                    continue;
+                }
+
+                // Only import SKUs that exist in product_masters (in-memory check)
+                if (!isset($existingSkus[$data['sku']])) {
+                    continue;
+                }
+
+                // Prepare values array
+                $values = [];
+
+                // Handle boolean fields
+                if (isset($data['listed'])) {
+                    $values['Listed'] = filter_var($data['listed'], FILTER_VALIDATE_BOOLEAN);
+                }
+
+                if (isset($data['live'])) {
+                    $values['Live'] = filter_var($data['live'], FILTER_VALIDATE_BOOLEAN);
+                }
+
+                // Update or create record
+                EbayDataView::updateOrCreate(
+                    ['sku' => $data['sku']],
+                    ['value' => $values]
+                );
+
+                $importCount++;
+            }
+
+            return back()->with('success', "Successfully imported $importCount records!");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error importing file: ' . $e->getMessage());
+        }
+    }
+
+    public function exportEbayAnalytics()
+    {
+        $ebayData = EbayDataView::all();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header Row
+        $headers = ['SKU', 'Listed', 'Live'];
+        $sheet->fromArray($headers, NULL, 'A1');
+
+        // Data Rows
+        $rowIndex = 2;
+        foreach ($ebayData as $data) {
+            $values = is_array($data->value)
+                ? $data->value
+                : (json_decode($data->value, true) ?? []);
+
+            $sheet->fromArray([
+                $data->sku,
+                isset($values['Listed']) ? ($values['Listed'] ? 'TRUE' : 'FALSE') : 'FALSE',
+                isset($values['Live']) ? ($values['Live'] ? 'TRUE' : 'FALSE') : 'FALSE',
+            ], NULL, 'A' . $rowIndex);
+
+            $rowIndex++;
+        }
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(10);
+        $sheet->getColumnDimension('C')->setWidth(10);
+
+        // Output Download
+        $fileName = 'Ebay_Analytics_Export_' . date('Y-m-d') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function downloadSample()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header Row
+        $headers = ['SKU', 'Listed', 'Live'];
+        $sheet->fromArray($headers, NULL, 'A1');
+
+        // Sample Data
+        $sampleData = [
+            ['SKU001', 'TRUE', 'FALSE'],
+            ['SKU002', 'FALSE', 'TRUE'],
+            ['SKU003', 'TRUE', 'TRUE'],
+        ];
+
+        $sheet->fromArray($sampleData, NULL, 'A2');
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(10);
+        $sheet->getColumnDimension('C')->setWidth(10);
+
+        // Output Download
+        $fileName = 'Ebay_Analytics_Sample.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
     }
 }

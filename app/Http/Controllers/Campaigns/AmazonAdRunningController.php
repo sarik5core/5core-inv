@@ -194,6 +194,8 @@ class AmazonAdRunningController extends Controller
             $row['NRL']  = '';
             $row['NRA'] = '';
             $row['FBA'] = '';
+            $row['start_ad'] = '';
+            $row['stop_ad'] = '';
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
                 if (!is_array($raw)) {
@@ -203,6 +205,8 @@ class AmazonAdRunningController extends Controller
                     $row['NRL']  = $raw['NRL'] ?? null;
                     $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
+                    $row['start_ad'] = $raw['start_ad'] ?? null;
+                    $row['stop_ad'] = $raw['stop_ad'] ?? null;
                 }
             }
 
