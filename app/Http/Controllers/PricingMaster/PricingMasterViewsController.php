@@ -260,8 +260,8 @@ class PricingMasterViewsController extends Controller
                 'amz_seller_link' => isset($amazonListingData[$sku]) ? ($amazonListingData[$sku]->value['seller_link'] ?? null) : null,
 
                 'price_lmpa' => $lmpa ? ($lmpa->lowest_price ?? 0) : ($amazon ? ($amazon->price_lmpa ?? 0) : 0),
-                'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.68 - $lp - $ship) / $amazon->price) : 0,
-                'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.68 - $lp - $ship) / $lp) : 0,
+                'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.70 - $lp - $ship) / $amazon->price) : 0,
+                'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.70 - $lp - $ship) / $lp) : 0,
                 'amz_req_view' => $amazon && $amazon->sessions_l30 > 0 && $amazon->units_ordered_l30 > 0
                     ? (($inv / 90) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30))
                     : 0,
@@ -274,8 +274,8 @@ class PricingMasterViewsController extends Controller
                 'ebay_views' => $ebay ? ($ebay->views ?? 0) : 0,
                 'ebay_price_lmpa' => $lmp ? ($lmp->lowest_price ?? 0) : ($ebay ? ($ebay->price_lmpa ?? 0) : 0),
                 'ebay_cvr'   => $ebay ? $this->calculateCVR($ebay->ebay_l30 ?? 0, $ebay->views ?? 0) : null,
-                'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.71 - $lp - $ship) / $ebay->ebay_price) : 0,
-                'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.71 - $lp - $ship) / $lp) : 0,
+                'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.72 - $lp - $ship) / $ebay->ebay_price) : 0,
+                'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.72 - $lp - $ship) / $lp) : 0,
 
                 'ebay_req_view' => $ebay && $ebay->views > 0 && $ebay->ebay_l30 > 0
                     ? (($inv / 90) * 30) / (($ebay->ebay_l30 / $ebay->views))
@@ -654,8 +654,8 @@ class PricingMasterViewsController extends Controller
                 $amazonDataView = AmazonDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($amazonDataView->value) ? $amazonDataView->value : (json_decode($amazonDataView->value, true) ?: []);
 
-                $spft = $sprice > 0 ? ((($sprice * 0.68) - $lp - $ship) / $sprice) * 100 : 0;
-                $sroi = $lp > 0 ? ((($sprice * 0.68) - $lp - $ship) / $lp) * 100 : 0;
+                $spft = $sprice > 0 ? ((($sprice * 0.70) - $lp - $ship) / $sprice) * 100 : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.70) - $lp - $ship) / $lp) * 100 : 0;
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
                 $existing['SPFT'] = number_format($spft, 2, '.', '');
                 $existing['SROI'] = number_format($sroi, 2, '.', '');
@@ -670,8 +670,8 @@ class PricingMasterViewsController extends Controller
                 $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
                 $existing = is_array($ebayDataView->value) ? $ebayDataView->value : (json_decode($ebayDataView->value, true) ?: []);
 
-                $spft = $sprice > 0 ? round(((($sprice * 0.71) - $lp - $ship) / $sprice) * 100, 2) : 0;
-                $sroi = $lp > 0 ? ((($sprice * 0.71) - $lp - $ship) / $lp) * 100 : 0;
+                $spft = $sprice > 0 ? round(((($sprice * 0.72) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.72) - $lp - $ship) / $lp) * 100 : 0;
 
                 // Round and store as string
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
