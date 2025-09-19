@@ -32,6 +32,7 @@ class IncomingController extends Controller
         $this->apiController = $apiController;
     }
 
+
     /**
      * Display a listing of the resource.
      */

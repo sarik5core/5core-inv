@@ -16,7 +16,7 @@ class ShopifyController extends Controller
     public function __construct()
     {
         $this->shopifyDomain = env('SHOPIFY_STORE_URL', '5-core.myshopify.com');
-        $this->accessToken = env('SHOPIFY_ACCESS_TOKEN', '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'); // Use access token
+        $this->accessToken = env('SHOPIFY_ACCESS_TOKEN', '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'); // Use correct token
     }
 
    public function getProducts()
@@ -201,8 +201,10 @@ class ShopifyController extends Controller
 
     private function getProductBySKU($sku)
     {
-        $response = Http::withBasicAuth(env('SHOPIFY_API_KEY'), env('SHOPIFY_PASSWORD'))
-            ->get("https://{$this->shopifyDomain}/admin/api/2025-01/products.json");
+        $response = Http::withHeaders([
+            'X-Shopify-Access-Token' => $this->accessToken,
+            'Content-Type' => 'application/json'
+        ])->get("https://{$this->shopifyDomain}/admin/api/2025-01/products.json");
 
         if ($response->failed()) return null;
 
@@ -220,10 +222,12 @@ class ShopifyController extends Controller
     
     private function getLocationIdForInventoryItem($inventoryItemId)
     {
-        $response = Http::withBasicAuth(env('SHOPIFY_API_KEY'), env('SHOPIFY_PASSWORD'))
-            ->get("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels.json", [
-                'inventory_item_id' => $inventoryItemId
-            ]);
+        $response = Http::withHeaders([
+            'X-Shopify-Access-Token' => $this->accessToken,
+            'Content-Type' => 'application/json'
+        ])->get("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels.json", [
+            'inventory_item_id' => $inventoryItemId
+        ]);
 
         if ($response->failed()) return null;
 
@@ -233,12 +237,14 @@ class ShopifyController extends Controller
 
     private function adjustInventory($inventoryItemId, $locationId, $adjustment)
     {
-        $response = Http::withBasicAuth(env('SHOPIFY_API_KEY'), env('SHOPIFY_PASSWORD'))
-            ->post("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels/adjust.json", [
-                'inventory_item_id' => $inventoryItemId,
-                'location_id' => $locationId,
-                'available_adjustment' => $adjustment
-            ]);
+        $response = Http::withHeaders([
+            'X-Shopify-Access-Token' => $this->accessToken,
+            'Content-Type' => 'application/json'
+        ])->post("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels/adjust.json", [
+            'inventory_item_id' => $inventoryItemId,
+            'location_id' => $locationId,
+            'available_adjustment' => $adjustment
+        ]);
 
         return $response->successful();
     }
