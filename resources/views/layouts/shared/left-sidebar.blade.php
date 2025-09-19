@@ -1074,18 +1074,17 @@
                         <li>
                             <a href="#">Transfers</a>
                         </li>
-
                         <li>
-                            <a href="{{ route('main.godown') }}">Main Godown</a>
+                            <a href="{{ route('showroom.godown') }}">Main Godown</a>
+                        </li>
+                        <li>
+                            <a href="{{ route('main.godown') }}">Showroom Godown</a>
                         </li>
                         <li>
                             <a href="{{ route('returns.godown') }}">Returns Godown</a>
                         </li>
                         <li>
                             <a href="{{ route('openbox.godown') }}">Open Box Godown</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('showroom.godown') }}">Showroom Godown</a>
                         </li>
                         <li>
                             <a href="{{ route('useditem.godown') }}">Used Item Godown</a>
