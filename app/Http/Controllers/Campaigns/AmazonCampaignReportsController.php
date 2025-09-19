@@ -105,17 +105,25 @@ class AmazonCampaignReportsController extends Controller
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
-            $matchedCampaignL60 = $amazonSpCampaignReportsL60->firstWhere('campaignName', $sku);
+            $matchedCampaignL60 = $amazonSpCampaignReportsL60->first(function ($item) use ($sku) {
+                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
+            });
 
-            $matchedCampaignL30 = $amazonSpCampaignReportsL30->firstWhere('campaignName', $sku);
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
+                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
+            });
 
-            $matchedCampaignL15 = $amazonSpCampaignReportsL15->firstWhere('campaignName', $sku);
+            $matchedCampaignL15 = $amazonSpCampaignReportsL15->first(function ($item) use ($sku) {
+                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
+            });
 
-            $matchedCampaignL7 = $amazonSpCampaignReportsL7->firstWhere('campaignName', $sku);
+            $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
+                return strtoupper(trim($item->campaignName)) === strtoupper(trim($sku));
+            });
 
-            // if(!$matchedCampaignL60 && !$matchedCampaignL30 && !$matchedCampaignL15 && !$matchedCampaignL7){
-            //     continue;
-            // }
+            if(!$matchedCampaignL60 && !$matchedCampaignL30 && !$matchedCampaignL15 && !$matchedCampaignL7){
+                continue;
+            }
 
             $row = [
                 'parent' => $parent,
