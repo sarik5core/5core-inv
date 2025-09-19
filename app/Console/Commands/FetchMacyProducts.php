@@ -379,51 +379,7 @@ class FetchMacyProducts extends Command
             $page++;
         } while ($pageToken);
 
-        // do {
-        //     $this->info("Fetching product page $page...");
-
-        //     $url = 'https://miraklconnect.com/api/products?limit=1000';
-        //     if ($pageToken) {
-        //         $url .= '&page_token=' . urlencode($pageToken);
-        //     }
-
-        //     $response = Http::withToken($token)->get($url);
-
-        //     if (!$response->successful()) {
-        //         $this->error('Product fetch failed: ' . $response->body());
-        //         return;
-        //     }
-
-        //     $json = $response->json();
-        //     $products = $json['data'] ?? [];
-        //     $pageToken = $json['next_page_token'] ?? null;
-
-        //     foreach ($products as $product) {
-        //         $sku = $product['id'] ?? null;
-        //         $price = $product['discount_prices'][0]['price']['amount'] ?? null;
-
-        //         if (!$sku || $price === null) continue;
-
-        //         // Only save if SKU exists in Macy's orders
-        //         $m_l30 = $skuSales[$sku]['m_l30'] ?? 0;
-        //         $m_l60 = $skuSales[$sku]['m_l60'] ?? 0;
-
-        //         MacyProduct::updateOrCreate(
-        //             ['sku' => $sku],
-        //             [
-        //                 'price' => $price,
-        //                 'm_l30' => $m_l30,
-        //                 'm_l60' => $m_l60,
-        //             ]
-        //         );
-
-        //         Log::info("Stored SKU: {$sku}, Price: {$price}, L30: {$m_l30}, L60: {$m_l60}");
-        //     }
-
-        //     $page++;
-        // } while ($pageToken);
-
-        $this->info("All Macy products stored successfully.");
+        $this->info("All Macy, Tiendamia, BestbuyUSA products stored successfully.");
     }
 
     private function getAccessToken()
@@ -453,56 +409,6 @@ class FetchMacyProducts extends Command
         $endL30   = $now->copy()->endOfDay();
         $startL60 = $now->copy()->subDays(59)->startOfDay();
         $endL60   = $now->copy()->subDays(30)->endOfDay();
-
-        // do {
-        //     $url = 'https://miraklconnect.com/api/v2/orders'
-        //         . '?fulfillment_type=FULFILLED_BY_SELLER'
-        //         . '&limit=100'
-        //         . '&created_from=' . urlencode($startDate);
-
-        //     if ($pageToken) {
-        //         $url .= '&page_token=' . urlencode($pageToken);
-        //     }
-
-        //     $response = Http::withToken($token)->get($url);
-
-        //     if (!$response->successful()) {
-        //         $this->error("Order fetch failed: " . $response->body());
-        //         break;
-        //     }
-
-        //     $json = $response->json();
-        //     $pageOrders = $json['data'] ?? [];
-        //     $pageToken = $json['next_page_token'] ?? null;
-
-        //     // Filter Macy's orders only
-        //     $macysOrders = array_filter($pageOrders, function ($order) {
-        //         return isset($order['origin']['channel_name']) && $order['origin']['channel_name'] === "Macy's, Inc.";
-        //     });
-
-        //     foreach ($macysOrders as $order) {
-        //         $created = Carbon::parse($order['created_at'], 'America/New_York');
-
-        //         foreach ($order['order_lines'] ?? [] as $line) {
-        //             $sku = $line['product']['id'] ?? null;
-        //             $qty = $line['quantity'] ?? 0;
-
-        //             if (!$sku) continue;
-
-        //             if (!isset($sales[$sku])) {
-        //                 $sales[$sku] = ['m_l30' => 0, 'm_l60' => 0];
-        //             }
-
-        //             if ($created->between($startL30, $endL30)) {
-        //                 $sales[$sku]['m_l30'] += $qty;
-        //             } elseif ($created->between($startL60, $endL60)) {
-        //                 $sales[$sku]['m_l60'] += $qty;
-        //             }
-        //         }
-        //     }
-
-        //     Log::info("Processed page with " . count($macysOrders) . " Macy's orders.");
-        // } while ($pageToken);
 
         do {
             $url = 'https://miraklconnect.com/api/v2/orders'
@@ -548,6 +454,9 @@ class FetchMacyProducts extends Command
 
 
         $this->info("Total Macy's SKUs: " . count($sales));
+        // foreach ($sales as $channel => $skuMap) {
+        //     $this->info("Channel {$channel} has " . count($skuMap) . " SKUs with orders.");
+        // }
 
         return $sales;
     }

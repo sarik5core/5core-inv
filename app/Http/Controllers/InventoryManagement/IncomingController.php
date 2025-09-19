@@ -12,6 +12,8 @@ use Carbon\Carbon;
 use App\Http\Controllers\ShopifyApiInventoryController;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ApiController;
+use App\Models\IncomingData;
+use App\Models\IncomingOrder;
 use Illuminate\Support\Facades\Http;
 
 
@@ -20,8 +22,8 @@ class IncomingController extends Controller
 {
 
     protected $shopifyDomain = '5-core.myshopify.com';
-    protected $shopifyApiKey = '01f70fee8001931b5a25e3df24d6d749';
-    protected $shopifyPassword = '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';
+    protected $shopifyApiKey = '818a43f8d3ae2f7bcfed50abb1e6deb9';
+    protected $shopifyPassword = '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';
 
     protected $apiController;
 
@@ -53,7 +55,7 @@ class IncomingController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
+    {   
 
         $request->validate([
             'sku' => 'required|string',
@@ -210,5 +212,79 @@ class IncomingController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+
+
+    public function incomingOrderIndex()
+    {
+        $warehouses = Warehouse::select('id', 'name')->get();
+        $skus = ProductMaster::select('id','parent','sku')->get();
+
+        return view('inventory-management.incoming-orders-view', compact('warehouses', 'skus'));
+    }
+
+   
+
+    public function incomingOrderStore(Request $request)
+    {
+        $request->validate([
+            'sku' => 'required|string',
+            'qty' => 'required|integer|min:1',
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'reason' => 'required|string',
+        ]);
+
+        $sku = trim($request->sku);
+
+        try {
+            // Store in incoming_data table
+            $incomingOrder = IncomingData::updateOrCreate(
+                ['sku' => $sku], // since sku is unique
+                [
+                    'warehouse_id' => $request->warehouse_id,
+                    'quantity'     => (int) $request->qty,
+                    'reason'       => $request->reason,
+                    'approved_by'  => Auth::user()->name ?? 'N/A',
+                    'approved_at'  => Carbon::now('America/New_York'),
+
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Incoming order stored successfully',
+                'data'    => $incomingOrder
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Incoming order store failed for SKU $sku: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Something went wrong.'], 500);
+        }
+    }
+
+
+    public function incomingOrderList()
+    {
+        $data = IncomingData::with('warehouse')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'sku' => $item->sku,
+                    'quantity' => $item->quantity,
+                    'reason' => $item->reason,
+                    'warehouse_name' => $item->warehouse->name ?? '',
+                    'approved_by' => $item->approved_by,
+                    'approved_at' =>  $item->approved_at
+                        ? Carbon::parse($item->approved_at)->timezone('America/New_York')->format('m-d-Y')
+                        : '',
+                ];
+            });
+
+        return response()->json(['data' => $data]);
+    }
+
+
+
 
 }

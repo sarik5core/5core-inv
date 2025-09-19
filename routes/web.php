@@ -428,6 +428,19 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/incoming-data-store', [IncomingController::class, 'store'])->name('incoming.store');
     Route::get('/incoming-data-list', [IncomingController::class, 'list']);
 
+    //incoming orders
+    Route::get('/incoming-orders-view', [IncomingController::class, 'incomingOrderIndex'])->name('incoming.orders.view');
+    Route::post('/incoming-orders-store', [IncomingController::class, 'incomingOrderStore'])->name('incoming.orders.store');
+    Route::get('/incoming-orders-list', [IncomingController::class, 'incomingOrderList']);
+
+    //auto stock balance
+    // Route::get('/auto-stock-balance', [IncomingController::class, 'autoStockBalanceView'])->name('autostock.balance.view');
+    // Route::post('/incoming-data-store', [IncomingController::class, 'store'])->name('incoming.store');
+    // Route::get('/incoming-data-list', [IncomingController::class, 'list']);
+
+
+
+
     //outgoing
     Route::get('/outgoing-view', [OutgoingController::class, 'index'])->name('outgoing.view');
     Route::post('/outgoing-data-store', [OutgoingController::class, 'store'])->name('outgoing.store');
@@ -486,6 +499,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/warehouses/update/{id}', [WarehouseController::class, 'update'])->name('warehouses.update');
     Route::delete('/warehouses/{id}', [WarehouseController::class, 'destroy']);
 
+    Route::get('/main-godown', [WarehouseController::class, 'mainGodown'])->name('main.godown');
     Route::get('/return-godown', [WarehouseController::class, 'returnGodown'])->name('returns.godown');
     Route::get('/openbox-godown', [WarehouseController::class, 'openBoxGodown'])->name('openbox.godown');
     Route::get('/showroom-godown', [WarehouseController::class, 'showroomGodown'])->name('showroom.godown');
@@ -583,7 +597,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/doba-pricing-cvr', [DobaController::class, 'dobaPricingCVR']);
     Route::post('/doba/save-sprice', [DobaController::class, 'saveSpriceToDatabase'])->name('doba.save-sprice');
     Route::post('/update-all-doba-skus', [DobaController::class, 'updateAllDobaSkus']);
-
+    Route::post('/doba-analytics/import', [DobaController::class, 'importDobaAnalytics'])->name('doba.analytics.import');
+    Route::get('/doba-analytics/export', [DobaController::class, 'exportDobaAnalytics'])->name('doba.analytics.export');
+    Route::get('/doba-analytics/sample', [DobaController::class, 'downloadSample'])->name('doba.analytics.sample');
 
 
     //update sku inv and l30
@@ -707,6 +723,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/ebay2/save-nr', [EbayTwoController::class, 'saveNrToDatabase']);
     Route::post('/ebay2/update-listed-live', [EbayTwoController::class, 'updateListedLive']);
     Route::post('/ebay2/save-low-profit-count', [EbayTwoController::class, 'saveLowProfit']);
+    Route::post('/ebay2-analytics/import', [EbayTwoController::class, 'importEbayTwoAnalytics'])->name('ebay2.analytics.import');
+    Route::get('/ebay2-analytics/export', [EbayTwoController::class, 'exportEbayTwoAnalytics'])->name('ebay2.analytics.export');
+    Route::get('/ebay2-analytics/sample', [EbayTwoController::class, 'downloadSample'])->name('ebay2.analytics.sample');
+
     //ebay 3
     Route::get('/zero-ebay3', [Ebay3ZeroController::class, 'ebay3Zeroview'])->name('zero.ebay3');
     Route::get('/zero_ebay3/view-data', [Ebay3ZeroController::class, 'getViewEbay3ZeroData']);
@@ -724,6 +744,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-all-ebay3-skus', [EbayThreeController::class, 'updateAllEbay3Skus']);
     Route::post('/ebay3/save-nr', [EbayThreeController::class, 'saveNrToDatabase']);
     Route::post('/ebay3/update-listed-live', [EbayThreeController::class, 'updateListedLive']);
+    Route::post('/ebay3-analytics/import', [EbayThreeController::class, 'importEbayThreeAnalytics'])->name('ebay3.analytics.import');
+    Route::get('/ebay3-analytics/export', [EbayThreeController::class, 'exportEbayThreeAnalytics'])->name('ebay3.analytics.export');
+    Route::get('/ebay3-analytics/sample', [EbayThreeController::class, 'downloadSample'])->name('ebay3.analytics.sample');
 
     //walmart
     Route::get('/zero-walmart', [WalmartZeroController::class, 'walmartZeroview'])->name('zero.walmart');
@@ -741,6 +764,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-all-walmart-skus', [WalmartControllerMarket::class, 'updateAllWalmartSkus']);
     Route::post('/walmart/save-nr', [WalmartControllerMarket::class, 'saveNrToDatabase']);
     Route::post('/walmart/update-listed-live', [WalmartControllerMarket::class, 'updateListedLive']);
+    Route::post('/walmart-analytics/import', [WalmartControllerMarket::class, 'importWalmartAnalytics'])->name('walmart.analytics.import');
+    Route::get('/walmart-analytics/export', [WalmartControllerMarket::class, 'exportWalmartAnalytics'])->name('walmart.analytics.export');
+    Route::get('/walmart-analytics/sample', [WalmartControllerMarket::class, 'downloadSample'])->name('walmart.analytics.sample');
 
     //Listing Audit amazon
     Route::get('/listing-audit-amazon', action: [ListingAuditAmazonController::class, 'listingAuditAmazon'])->name('listing.audit.amazon');
@@ -803,6 +829,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/macys/saveLowProfit', [MacyController::class, 'saveLowProfit']);
     Route::get('/macys-zero-view', action: [MacyZeroController::class, 'macyZeroView'])->name('macy.zero.view');
     Route::get('/macys-low-visibility-view', action: [MacyLowVisibilityController::class, 'macyLowVisibilityView'])->name('macy.low.visibility.view');
+    Route::post('/macys-analytics/import', [MacyController::class, 'importMacysAnalytics'])->name('macys.analytics.import');
+    Route::get('/macys-analytics/export', [MacyController::class, 'exportMacysAnalytics'])->name('macys.analytics.export');
+    Route::get('/macys-analytics/sample', [MacyController::class, 'downloadSample'])->name('macys.analytics.sample');
 
     //Listing Audit shopifyB2C
     Route::get('/listing-shopifyb2c', [ListingShopifyB2CController::class, 'listingShopifyB2C'])->name('listing.shopifyb2c');
@@ -812,6 +841,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing_shopifyb2c/export', [ListingShopifyB2CController::class, 'export'])->name('listing_shopifyb2c.export');
     Route::get('/shopifyB2C-zero-view', action: [Shopifyb2cZeroController::class, 'shopifyb2cZeroView'])->name('shopifyB2C.zero.view');
     Route::get('/shopifyB2C-low-visibility-view', action: [Shopifyb2cLowVisibilityController::class, 'shopifyb2cLowVisibilityView'])->name('shopifyB2C.low.visibility.view');
+    Route::get('/shopifyB2C', [Shopifyb2cController::class, 'shopifyb2cView'])->name('shopifyB2C');
+    Route::post('/shopifyb2c/saveLowProfit', [Shopifyb2cController::class, 'saveLowProfit']);
+    Route::post('/shopifyb2c-analytics/import', [Shopifyb2cController::class, 'importShopifyB2CAnalytics'])->name('shopifyb2c.analytics.import');
+    Route::get('/shopifyb2c-analytics/export', [Shopifyb2cController::class, 'exportShopifyB2CAnalytics'])->name('shopifyb2c.analytics.export');
+    Route::get('/shopifyb2c-analytics/sample', [Shopifyb2cController::class, 'downloadSample'])->name('shopifyb2c.analytics.sample');
 
     //listing Audit Wayfair
     Route::any('/update-wayfair-sku-pricing', [ListingWayfairController::class, 'updatePricing'])->name('wayfair.priceUpdate');
@@ -822,8 +856,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing_wayfair/export', [ListingWayfairController::class, 'export'])->name('listing_wayfair.export');
     Route::get('/Wayfair-zero-view', action: [WayfairZeroController::class, 'wayfairZeroView'])->name('wayfair.zero.view');
     Route::get('/Wayfair-low-visibility-view', action: [WayfairLowVisibilityController::class, 'wayfairLowVisibilityView'])->name('wayfair.low.visibility.view');
-    Route::get('/shopifyB2C', [Shopifyb2cController::class, 'shopifyb2cView'])->name('shopifyB2C');
-    Route::post('/shopifyb2c/saveLowProfit', [Shopifyb2cController::class, 'saveLowProfit']);
+    Route::get('/Wayfair', [WayfairController::class, 'wayfairView'])->name('Wayfair');
+    Route::post('/wayfair/saveLowProfit', [WayfairController::class, 'saveLowProfit']);
+    Route::post('/wayfair-analytics/import', [WayfairController::class, 'importWayfairAnalytics'])->name('wayfair.analytics.import');
+    Route::get('/wayfair-analytics/export', [WayfairController::class, 'exportWayfairAnalytics'])->name('wayfair.analytics.export');
+    Route::get('/wayfair-analytics/sample', [WayfairController::class, 'downloadSample'])->name('wayfair.analytics.sample');
+
 
     //listing Audit Neweggb2c
     Route::get('/neweggB2C', [Neweggb2cController::class, 'neweggB2CView'])->name('neweggB2C');
@@ -836,9 +874,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/listing-neweggb2c', [ListingNeweggB2CController::class, 'listingNeweggB2C'])->name('listing.neweggb2c');
     Route::get('/listing_neweggb2c/view-data', [ListingNeweggB2CController::class, 'getViewListingNeweggB2CData']);
     Route::post('/listing_neweggb2c/save-status', [ListingNeweggB2CController::class, 'saveStatus']);
-
-    Route::get('/Wayfair', [WayfairController::class, 'wayfairView'])->name('Wayfair');
-    Route::post('/wayfair/saveLowProfit', [WayfairController::class, 'saveLowProfit']);
 
     //listing audit reverb
     Route::get('/listing-reverb', [ListingReverbController::class, 'listingReverb'])->name('listing.reverb');
@@ -867,6 +902,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::get('/temu-zero-view', [TemuZeroController::class, 'temuZeroView'])->name('temu.zero.view');
     Route::get('/temu-low-visiblity-view', [TemuLowVisibilityController::class, 'temuLowVisibilityView'])->name('temu.low.visibility.view');
+    Route::post('/temu-analytics/import', [TemuController::class, 'importTemuAnalytics'])->name('temu.analytics.import');
+    Route::get('/temu-analytics/export', [TemuController::class, 'exportTemuAnalytics'])->name('temu.analytics.export');
+    Route::get('/temu-analytics/sample', [TemuController::class, 'downloadSample'])->name('temu.analytics.sample');
 
 
     // Advertisement Master view routes
@@ -1072,7 +1110,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']); // Added for compatibility
     Route::get('/test-doba-connection', [PricingMasterViewsController::class, 'testDobaConnection']); // Debug route
 
-    
+
     Route::post('/update-reverb-price', [PricingMasterViewsController::class, 'updateReverbPrice'])->name('reverb.priceChange');
 
     Route::post('/update-macy-price', [PricingMasterViewsController::class, 'updateMacyPrice'])->name('macy.priceChange');
@@ -1191,6 +1229,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     // Route::post('/update-all-aliexpress-skus', [AliexpressController::class, 'updateAllaliexpressSkus']);
     Route::post('/aliexpress/save-nr', [AliexpressController::class, 'saveNrToDatabase']);
     Route::post('/aliexpress/update-listed-live', [AliexpressController::class, 'updateListedLive']);
+    Route::post('/aliexpress-analytics/import', [AliexpressController::class, 'importAliexpressAnalytics'])->name('aliexpress.analytics.import');
+    Route::get('/aliexpress-analytics/export', [AliexpressController::class, 'exportAliexpressAnalytics'])->name('aliexpress.analytics.export');
+    Route::get('/aliexpress-analytics/sample', [AliexpressController::class, 'downloadSample'])->name('aliexpress.analytics.sample');
 
 
     // ebay variation
@@ -1243,6 +1284,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-all-tiktok-skus', [TiktokShopController::class, 'updateAllTiktokSkus']);
     Route::post('/tiktok/save-nr', [TiktokShopController::class, 'saveNrToDatabase']);
     Route::post('/tiktok/update-listed-live', [TiktokShopController::class, 'updateListedLive']);
+    Route::post('/tiktok-analytics/import', [TiktokShopController::class, 'importTiktokAnalytics'])->name('tiktok.analytics.import');
+    Route::get('/tiktok-analytics/export', [TiktokShopController::class, 'exportTiktokAnalytics'])->name('tiktok.analytics.export');
+    Route::get('/tiktok-analytics/sample', [TiktokShopController::class, 'downloadSample'])->name('tiktok.analytics.sample');
 
     // listing MercariWShip
     Route::get('/zero-mercariwship', [MercariWShipZeroController::class, 'mercariWShipZeroview'])->name('zero.mercariwship');
@@ -1347,7 +1391,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/update-all-shein-skus', [SheinController::class, 'updateAllSheinSkus']);
     Route::post('/shein/save-nr', [SheinController::class, 'saveNrToDatabase']);
     Route::post('/shein/update-listed-live', [SheinController::class, 'updateListedLive']);
-
+    Route::post('/shein-analytics/import', [SheinController::class, 'importSheinAnalytics'])->name('shein.analytics.import');
+    Route::get('/shein-analytics/export', [SheinController::class, 'exportSheinAnalytics'])->name('shein.analytics.export');
+    Route::get('/shein-analytics/sample', [SheinController::class, 'downloadSample'])->name('shein.analytics.sample');
 
     //  Spocket
     Route::get('/zero-spocket', [SpocketZeroController::class, 'spocketZeroview'])->name('zero.spocket');
@@ -1469,7 +1515,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/listing_bestbuyusa/save-status', [ListingBestbuyUSAController::class, 'saveStatus']);
     Route::post('/listing_bestbuyusa/import', [ListingBestbuyUSAController::class, 'import'])->name('listing_bestbuyusa.import');
     Route::get('/listing_bestbuyusa/export', [ListingBestbuyUSAController::class, 'export'])->name('listing_bestbuyusa.export');
-
+    Route::post('/bestbuyusa-analytics/import', [BestbuyUSAZeroController::class, 'importBestBuyUsaAnalytics'])->name('bestbuyusa.analytics.import');
+    Route::get('/bestbuyusa-analytics/export', [BestbuyUSAZeroController::class, 'exportBestBuyUsaAnalytics'])->name('bestbuyusa.analytics.export');
+    Route::get('/bestbuyusa-analytics/sample', [BestbuyUSAZeroController::class, 'downloadSample'])->name('bestbuyusa.analytics.sample');
 
 
     //listing Master

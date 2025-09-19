@@ -619,8 +619,23 @@
             <span class="ms-2">Loading datatable, please wait...</span>
         </div>
 
+        <div>
+            <label>
+                <input type="checkbox" id="showSales" checked> Sales Wise (L30 & L60)
+            </label>
+            <label style="margin-left:20px;">
+                <input type="checkbox" id="showOrders" checked> Orders wise (L30 & L60)
+            </label>
+            <label style="margin-left:20px;">
+                <input type="checkbox" id="showGProfit" checked> GProfit wise (L30 & L60)
+            </label>
+            <label style="margin-left:20px;">
+                <input type="checkbox" id="showGRoi" checked> GRoi wise (L30 & L60)
+            </label>
+        </div>
+
         <div class="mb-4">
-            <h5 class="mb-2">Channel-wise L30 Sales</h5>
+            {{-- <h5 class="mb-2">Channel-wise L30 Sales</h5> --}}
             <div id="channelSalesChart" style="width: 100%; height: 400px;"></div>
         </div>
 
@@ -869,9 +884,10 @@
             let totalCogs = 0;
             let totalL30Sales = 0;
             data.forEach(function(row) {
-                const pft = parseNumber(row['pft']);
+                
+                const pft = parseNumber(row['Gprofit%']);
                 totalPft += pft;
-                const cogs = parseNumber(row['COGS']);
+                const cogs = parseNumber(row['G ROI%']);
                 totalCogs += cogs;
                 const l30Sales = parseNumber(row['L30 Sales']);
                 totalL30Sales += l30Sales;
@@ -1680,6 +1696,7 @@
 
                                 let gprofit = pctFix(pick(item, ['gprofit_percentage', 'PFT_percentage', 'gprofit', 'Gprofit%'], 0));
                                 let groi    = pctFix(pick(item, ['G Roi', 'g_roi_percentage', 'roi'], 0));
+                                let gprofitL60  = pctFix(pick(item, ['Gprofitl60'], 0));
 
                                 return {
                                     'Channel': pick(item, ['channel', 'Channel', 'Channel '], ''),  // use per-row channel
@@ -1692,6 +1709,8 @@
                                     'L60 Orders': l60Orders,
                                     'L30 Orders': l30Orders,
                                     'Gprofit%': gprofit,
+                                    'GprofitL30': gprofit,
+                                    'GprofitL60': gprofitL60,
                                     'G ROI%': groi,
                                     'Red Margin': toNum(pick(item, ['red_margin', 'Total_pft', 'total_pft'], 0), 0),
                                     'NR': toNum(pick(item, ['nr','NR'], 0), 0),
@@ -1705,6 +1724,7 @@
                                     'Ac Health': pick(item, ['account_health', 'ac_health', 'accounthealth'], ''),
                                     
                                 };
+                                
                             });
                         },
 
@@ -1995,60 +2015,302 @@
         // }
 
 
+        // function drawChannelChart(data) {
+        //     if (!data || data.length === 0) return;
+
+        //     google.charts.load('current', { packages: ['corechart'] });
+        //     google.charts.setOnLoadCallback(function () {
+        //         // Header with annotation roles for each line
+        //         let chartData = [
+        //             ['Channel ', 'L30 Sales', { role: 'annotation' }, 'L60 Sales', { role: 'annotation' }]
+        //         ];
+
+        //         data.forEach(row => {
+        //             let channel = row['Channel '] || '';
+        //             let l30 = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+        //             let l60 = parseFloat(row['L-60 Sales'] || row['l60_sales'] || 0);
+
+        //             // Show channel name as annotation if value > 0
+        //             let l30Annotation = (l30 > 0) ? channel : null;
+        //             let l60Annotation = (l60 > 0) ? channel : null;
+
+        //             chartData.push([channel, l30, l30Annotation, l60, l60Annotation]);
+        //         });
+
+        //         let dataTable = google.visualization.arrayToDataTable(chartData);
+
+        //         let options = {
+        //             title: 'Channel-wise L30 vs L60 Sales',
+        //             curveType: 'function',
+        //             legend: { position: 'bottom' },
+        //             hAxis: {
+        //                 textPosition: 'none' // 🔹 Hide channel names under X-axis
+        //             },
+        //             vAxis: {
+        //                 title: 'Sales',
+        //                 minValue: 0
+        //             },
+        //             colors: ['#1E88E5', '#90CAF9'],
+        //             lineWidth: 3,
+        //             pointSize: 5,
+        //             annotations: {
+        //                 alwaysOutside: true,
+        //                 textStyle: {
+        //                     fontSize: 11,
+        //                     bold: true,
+        //                     color: '#000'
+        //                 }
+        //             }
+        //         };
+
+        //         let chart = new google.visualization.LineChart(
+        //             document.getElementById('channelSalesChart')
+        //         );
+        //         chart.draw(dataTable, options);
+        //     });
+        // }
+
+        // function drawChannelChart(data) {
+        //     if (!data || data.length === 0) return;
+
+        //     google.charts.load('current', { packages: ['corechart'] });
+        //     google.charts.setOnLoadCallback(function () {
+        //         let chartData = [
+        //             [
+        //                 'Channel',
+        //                 'L30 Sales', { role: 'annotation' },
+        //                 'L60 Sales', { role: 'annotation' },
+        //                 'L30 Orders', { role: 'annotation' },
+        //                 'L60 Orders', { role: 'annotation' }
+        //             ]
+        //         ];
+
+        //         data.forEach(row => {
+                    
+        //             let channel = row['Channel'] || row['Channel '] || '';
+
+        //             let l30Sales = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+        //             let l60Sales = parseFloat(row['L-60 Sales'] || row['l60_sales'] || 0);
+
+        //             let l30Orders = parseFloat(row['L30 Orders'] || row['l30_orders'] || 0);
+        //             let l60Orders = parseFloat(row['L60 Orders'] || row['l60_orders'] || 0);
+
+        //             let l30SalesAnn = (l30Sales > 0) ? channel : null;
+        //             let l60SalesAnn = (l60Sales > 0) ? channel : null;
+        //             let l30OrdersAnn = (l30Orders > 0) ? channel : null;
+        //             let l60OrdersAnn = (l60Orders > 0) ? channel : null;
+
+        //             chartData.push([
+        //                 channel,
+        //                 l30Sales, l30SalesAnn,
+        //                 l60Sales, l60SalesAnn,
+        //                 l30Orders, l30OrdersAnn,
+        //                 l60Orders, l60OrdersAnn
+        //             ]);
+        //         });
+
+        //         let dataTable = google.visualization.arrayToDataTable(chartData);
+
+        //         let options = {
+        //             title: 'Channel-wise L30 vs L60 Sales & Orders',
+        //             curveType: 'function',
+        //             legend: { position: 'bottom' },
+        //             hAxis: { textPosition: 'none' },
+        //             vAxis: { title: 'Count', minValue: 0 },
+        //             // 🎨 Styling for 4 lines
+        //             series: {
+        //                 0: { color: '#1E88E5', lineWidth: 4 },  // L30 Sales → dark blue
+        //                 1: { color: '#90CAF9', lineWidth: 2 },  // L60 Sales → light blue
+        //                 2: { color: '#43A047', lineWidth: 4 },  // L30 Orders → dark green
+        //                 3: { color: '#A5D6A7', lineWidth: 2 }   // L60 Orders → light green
+        //             },
+        //             pointSize: 5,
+        //             annotations: {
+        //                 alwaysOutside: true,
+        //                 textStyle: {
+        //                     fontSize: 11,
+        //                     bold: true,
+        //                     color: '#000'
+        //                 }
+        //             }
+        //         };
+
+        //         let chart = new google.visualization.LineChart(
+        //             document.getElementById('channelSalesChart')
+        //         );
+        //         chart.draw(dataTable, options);
+        //     });
+        // }
+
+        // function drawChannelChart(data) {
+        //     if (!data || data.length === 0) return;
+
+        //     google.charts.load('current', { packages: ['corechart'] });
+        //     google.charts.setOnLoadCallback(function () {
+        //         renderChart(data);
+
+        //         // Re-render chart when checkboxes change
+        //         document.getElementById("showSales").addEventListener("change", () => renderChart(data));
+        //         document.getElementById("showOrders").addEventListener("change", () => renderChart(data));
+        //     });
+        // }
+
+        // function renderChart(data) {
+        //     let chartData = [
+        //         ['Channel']
+        //     ];
+
+        //     // Push headers dynamically depending on checkbox
+        //     if (document.getElementById("showSales").checked) {
+        //         chartData[0].push('L30 Sales', { role: 'annotation' }, 'L60 Sales', { role: 'annotation' });
+        //     }
+        //     if (document.getElementById("showOrders").checked) {
+        //         chartData[0].push('L30 Orders', { role: 'annotation' }, 'L60 Orders', { role: 'annotation' });
+        //     }
+
+        //     data.forEach(row => {
+        //         let channel = row['Channel'] || row['Channel '] || '';
+        //         let l30Sales = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+        //         let l60Sales = parseFloat(row['L-60 Sales'] || row['l60_sales'] || 0);
+        //         let l30Orders = parseFloat(row['L30 Orders'] || row['l30_orders'] || 0);
+        //         let l60Orders = parseFloat(row['L60 Orders'] || row['l60_orders'] || 0);
+
+        //         let rowData = [channel];
+
+        //         if (document.getElementById("showSales").checked) {
+        //             rowData.push(l30Sales, (l30Sales > 0) ? channel : null);
+        //             rowData.push(l60Sales, (l60Sales > 0) ? channel : null);
+        //         }
+        //         if (document.getElementById("showOrders").checked) {
+        //             rowData.push(l30Orders, (l30Orders > 0) ? channel : null);
+        //             rowData.push(l60Orders, (l60Orders > 0) ? channel : null);
+        //         }
+
+        //         chartData.push(rowData);
+        //     });
+
+        //     let dataTable = google.visualization.arrayToDataTable(chartData);
+
+        //     let options = {
+        //         // title: 'Channel-wise L30 vs L60 Sales & Orders',
+        //         curveType: 'function',
+        //         legend: { position: 'bottom' },
+        //         hAxis: { textPosition: 'none' },
+        //         vAxis: { title: 'Count', minValue: 0 },
+        //         pointSize: 5,
+        //         annotations: {
+        //             alwaysOutside: true,
+        //             textStyle: { fontSize: 11, bold: true, color: '#000' }
+        //         },
+        //         series: {
+        //             0: { color: '#1E88E5', lineWidth: 4 },  // L30 Sales
+        //             1: { color: '#90CAF9', lineWidth: 2 },  // L60 Sales
+        //             2: { color: '#43A047', lineWidth: 4 },  // L30 Orders
+        //             3: { color: '#A5D6A7', lineWidth: 2 }   // L60 Orders
+        //         }
+        //     };
+
+        //     let chart = new google.visualization.LineChart(document.getElementById('channelSalesChart'));
+        //     chart.draw(dataTable, options);
+        // }
+
         function drawChannelChart(data) {
+            
             if (!data || data.length === 0) return;
 
             google.charts.load('current', { packages: ['corechart'] });
             google.charts.setOnLoadCallback(function () {
-                // Header with annotation roles for each line
-                let chartData = [
-                    ['Channel ', 'L30 Sales', { role: 'annotation' }, 'L60 Sales', { role: 'annotation' }]
-                ];
+                renderChart(data);
 
-                data.forEach(row => {
-                    let channel = row['Channel '] || '';
-                    let l30 = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
-                    let l60 = parseFloat(row['L-60 Sales'] || row['l60_sales'] || 0);
-
-                    // Show channel name as annotation if value > 0
-                    let l30Annotation = (l30 > 0) ? channel : null;
-                    let l60Annotation = (l60 > 0) ? channel : null;
-
-                    chartData.push([channel, l30, l30Annotation, l60, l60Annotation]);
-                });
-
-                let dataTable = google.visualization.arrayToDataTable(chartData);
-
-                let options = {
-                    title: 'Channel-wise L30 vs L60 Sales',
-                    curveType: 'function',
-                    legend: { position: 'bottom' },
-                    hAxis: {
-                        textPosition: 'none' // 🔹 Hide channel names under X-axis
-                    },
-                    vAxis: {
-                        title: 'Sales',
-                        minValue: 0
-                    },
-                    colors: ['#1E88E5', '#90CAF9'],
-                    lineWidth: 3,
-                    pointSize: 5,
-                    annotations: {
-                        alwaysOutside: true,
-                        textStyle: {
-                            fontSize: 11,
-                            bold: true,
-                            color: '#000'
-                        }
-                    }
-                };
-
-                let chart = new google.visualization.LineChart(
-                    document.getElementById('channelSalesChart')
-                );
-                chart.draw(dataTable, options);
+                // Re-render chart when checkboxes change
+                document.getElementById("showSales").addEventListener("change", () => renderChart(data));
+                document.getElementById("showOrders").addEventListener("change", () => renderChart(data));
+                document.getElementById("showGProfit").addEventListener("change", () => renderChart(data));
+                document.getElementById("showGRoi").addEventListener("change", () => renderChart(data));
             });
         }
+
+        function renderChart(data) {
+            
+            let chartData = [['Channel']];
+
+            if (document.getElementById("showSales").checked) {
+                chartData[0].push('L30 Sales', { role: 'annotation' }, 'L60 Sales', { role: 'annotation' });
+            }
+            if (document.getElementById("showOrders").checked) {
+                chartData[0].push('L30 Orders', { role: 'annotation' }, 'L60 Orders', { role: 'annotation' });
+            }
+            if (document.getElementById("showGProfit").checked) {
+                chartData[0].push('L30 GProfit', { role: 'annotation' }, 'L60 GProfit', { role: 'annotation' });
+            }
+            if (document.getElementById("showGRoi").checked) {
+                chartData[0].push('L30 GROI', { role: 'annotation' }, 'L60 GROI', { role: 'annotation' });
+            }
+
+            data.forEach(row => {
+                
+                let channel = row['Channel'] || row['Channel '] || '';
+
+                let l30Sales   = parseFloat(row['L30 Sales'] || row['l30_sales'] || 0);
+                let l60Sales   = parseFloat(row['L-60 Sales'] || row['l60_sales'] || 0);
+                let l30Orders  = parseFloat(row['L30 Orders'] || row['l30_orders'] || 0);
+                let l60Orders  = parseFloat(row['L60 Orders'] || row['l60_orders'] || 0);
+                let l30GProfit = parseFloat(row['Gprofit%'] || row['l30_gprofit'] || 0);
+                let l60GProfit = parseFloat(row['gprofitL60'] || row['l60_gprofit'] || 0);
+                let l30Groi    = parseFloat(row['L30 Groi'] || row['G Roi'] || 0);
+                let l60Groi    = parseFloat(row['L60 Groi'] || row['G RoiL60'] || 0);
+
+                let rowData = [channel];
+
+                if (document.getElementById("showSales").checked) {
+                    rowData.push(l30Sales, l30Sales > 0 ? channel : null);
+                    rowData.push(l60Sales, l60Sales > 0 ? channel : null);
+                }
+                if (document.getElementById("showOrders").checked) {
+                    rowData.push(l30Orders, l30Orders > 0 ? channel : null);
+                    rowData.push(l60Orders, l60Orders > 0 ? channel : null);
+                }
+                if (document.getElementById("showGProfit").checked) {
+                    rowData.push(l30GProfit, l30GProfit > 0 ? channel : null);
+                    rowData.push(l60GProfit, l60GProfit > 0 ? channel : null);
+                }
+                if (document.getElementById("showGRoi").checked) {
+                    rowData.push(l30Groi, channel);
+                    rowData.push(l60Groi, channel);
+                }
+
+                chartData.push(rowData);
+            });
+
+            let dataTable = google.visualization.arrayToDataTable(chartData);
+
+            let options = {
+                // title: 'Channel-wise L30 vs L60 Sales, Orders & GProfit',
+                curveType: 'function',
+                legend: { position: 'bottom' },
+                hAxis: { textPosition: 'none' },
+                vAxis: { title: 'Value', minValue: 0 },
+                pointSize: 5,
+                annotations: {
+                    alwaysOutside: true,
+                    textStyle: { fontSize: 11, bold: true, color: '#000' }
+                },
+                series: {
+                    0: { color: '#1E88E5', lineWidth: 4 }, // L30 Sales (blue)
+                    1: { color: '#90CAF9', lineWidth: 2 }, // L60 Sales (light blue)
+                    2: { color: '#43A047', lineWidth: 4 }, // L30 Orders (green)
+                    3: { color: '#A5D6A7', lineWidth: 2 }, // L60 Orders (light green)
+                    4: { color: '#F4511E', lineWidth: 4 }, // L30 GProfit (orange)
+                    5: { color: '#FFAB91', lineWidth: 2 },  // L60 GProfit (light orange)
+                    6: { color: '#6A1B9A', lineWidth: 4 }, // L30 GROI (purple)
+                    7: { color: '#CE93D8', lineWidth: 2 }  // L60 GROI (light purple)
+                }
+            };
+
+            let chart = new google.visualization.LineChart(document.getElementById('channelSalesChart'));
+            chart.draw(dataTable, options);
+        }
+
 
 
         function updatePlayButtonColor() {

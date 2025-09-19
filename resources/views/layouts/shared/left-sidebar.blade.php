@@ -1033,13 +1033,18 @@
                         <li>
                             <a href="{{ route('stock.transfer.view') }}">Stock Transfer</a>
                         </li>
-
                         <li>
                             <a href="{{ route('stock.balance.view') }}">Stock Balance</a>
                         </li>
                         <li>
-                            <a href="#">Trash Entries</a>
+                            <a href="{{ route('incoming.orders.view') }}">Incoming Orders</a>
                         </li>
+                        {{-- <li>
+                            <a href="{{ route('incoming.view') }}">Auto Stock Balance</a>
+                        </li> --}}
+                        {{-- <li>
+                            <a href="#">Trash Entries</a>
+                        </li> --}}
                         <li>
                             <a href="#">Pallete Sales</a>
                         </li>
@@ -1070,6 +1075,9 @@
                             <a href="#">Transfers</a>
                         </li>
 
+                        <li>
+                            <a href="{{ route('main.godown') }}">Main Godown</a>
+                        </li>
                         <li>
                             <a href="{{ route('returns.godown') }}">Returns Godown</a>
                         </li>

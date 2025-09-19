@@ -34,9 +34,9 @@ class EbayApiService
 
             return Cache::get('ebay_bearer');
         }
-
-
+       
         echo "Generating New Ebay Token";
+
 
         // 2. Otherwise, request new token from eBay
         $clientId     = env('EBAY_APP_ID');
@@ -143,8 +143,8 @@ class EbayApiService
 
         // Parse XML response
         libxml_use_internal_errors(true);
-        $xmlResp = simplexml_load_string(data: $body);
-        dd($xmlResp);
+        $xmlResp = simplexml_load_string($body);
+        
         if ($xmlResp === false) {
             return [
                 'success' => false,

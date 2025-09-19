@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Openbox Godown', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Incoming Orders', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite(['node_modules/admin-resources/rwd-table/rwd-table.min.css'])
@@ -101,8 +101,8 @@
 
 @section('content')
     @include('layouts.shared/page-title', [
-        'page_title' => 'Openbox Warehouse',
-        'sub_title' => 'Openbox Warehouse',
+        'page_title' => 'Incoming Orders Inventory',
+        'sub_title' => 'Incoming Orders',
     ])
 
     <div class="row">
@@ -110,19 +110,20 @@
             <div class="card">
                 <div class="card-body">
 
+
                     <!-- Search Box and Add Button-->
                     <div class="row mb-3">
-                        <!-- <div class="col-md-6 d-flex align-items-center">
+                        <div class="col-md-6 d-flex align-items-center">
                             <button type="button" class="btn btn-primary" id="openAddWarehouseModal" data-bs-toggle="modal" data-bs-target="#addWarehouseModal">
-                                <i class="fas fa-plus me-1"></i> CREATE INCOMING
+                                <i class="fas fa-plus me-1"></i> CREATE INCOMING ORDERS
                             </button>
                             <div class="dataTables_length ms-3"></div>
-                        </div> -->
+                        </div>
 
-                        <div class="col-md-3 offset-md-9">
+                        <div class="col-md-3 offset-md-3">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                <input type="text" id="customSearch" class="form-control" placeholder="Search all columns">
+                                <input type="text" id="customSearch" class="form-control" placeholder="Search Incoming Orders">
                                 <button class="btn btn-outline-secondary" type="button" id="clearSearch">Clear</button>
                             </div>
                         </div>
@@ -139,123 +140,84 @@
                         </button>
                     </div> -->
 
-
-
-
-                    <!-- Add Purchase Order Modal -->
-                    <!-- <div class="modal fade" id="addWarehouseModal1" tabindex="-1" aria-labelledby="addWarehouseModalLabel" aria-hidden="true">
+                    <!-- Incoming Modal -->
+                    <div class="modal fade" id="addWarehouseModal" tabindex="-1" aria-labelledby="incomingModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-xl">
-                            <form id="purchaseOrderForm" method="POST">
-                            @csrf
-                            <div class="modal-content" style="border: none; border-radius: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                            <form id="incomingForm">
+                                @csrf
+                                <div class="modal-content">
 
-                                <div class="modal-header" style="background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%); border-bottom: 4px solid #4D55E6; padding: 1.5rem; border-radius: 0;">
-                                    <h5 class="modal-title" id="warehouseModalLabel"
-                                        style="color: white; font-weight: 800; font-size: 1.8rem; letter-spacing: 1px;">
-                                        <i class="fas fa-plus-circle me-2"></i>ADD NEW PURCHASE ORDER
-                                    </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="incomingModalLabel">Add Incoming Orders</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
 
-                                <div class="modal-body" style="background-color: #F8FAFF; padding: 2rem;">
-                                    <input type="hidden" id="warehouseId" name="id">
-                                    <div id="form-errors-warehouse" class="mb-3"></div>
-                                        <div class="row mb-4">
-                                            
-                                            <div class="col-md-6 mb-3">
-                                                <label for="po_date" class="form-label fw-bold text-secondary">Date</label>
-                                                <input type="text" id="po_date" name="po_date" class="form-control" readonly>
-                                            </div>
-                                           
-                                            <div class="col-md-6 mb-3">
-                                                <label for="purchase_order_no" class="form-label fw-bold text-secondary">PO Number</label>
-                                                <input type="text" id="purchase_order_no" name="purchase_order_no" class="form-control" readonly>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="supplier" class="form-label fw-bold text-secondary">Supplier</label>
-                                                <select id="supplier_id" name="supplier_id" class="form-select" required>
-                                                    <option value="" disabled selected>Select Supplier</option>
-                                                        <option value=""></option>
-                                                </select>
-                                            </div>
-                                           
-                                            <div class="col-md-6 mb-3">
-                                                <label for="warehouse" class="form-label fw-bold text-secondary">Warehouse</label>
-                                                <select id="warehouse_id" name="warehouse_id" class="form-select" required>
-                                                    <option value="" disabled selected>Select Warehouse</option>
-                                                        <option value=""></option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="parent" class="form-label fw-bold text-secondary">Parent</label>
-                                                <select id="parent" name="parent" class="form-select" required>
-                                                    <option value="" disabled selected>Select Parent</option>
-                                                        <option value=""></option>
-                                                </select>
-                                            </div>
-                                           
-                                            <div class="col-md-6 mb-3">
-                                                <label for="sku" class="form-label fw-bold text-secondary">SKU</label>
-                                                <select id="sku" name="sku" class="form-select" required>
-                                                    <option value="" disabled selected>Select SKU</option>
-                                                        <option value=""></option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="qty" class="form-label fw-bold text-secondary">Quantity</label>
-                                                <input type="number" id="qty" name="qty" class="form-control">
-                                            </div>
-                                           
-                                            <div class="col-md-6 mb-3">
-                                                <label for="rate" class="form-label fw-bold text-secondary">Rate</label>
-                                                <input type="number" id="rate" name="rate" class="form-control">
-                                            </div>
+                                    <div class="modal-body">
+                                        <div id="incoming-errors" class="mb-2 text-danger"></div>
 
-                                            <div class="col-md-12 mb-3">
-                                                <div class="form-group">
-                                                    <label for="currency" class="form-label fw-bold" style="color: #4A5568;">Currency</label>
-                                                    <select class="form-select" id="currency" name="currency"
-                                                        style="border: 2px solid #E2E8F0; border-radius: 6px; padding: 0.75rem; background-color: white;" required>
-                                                        <option selected disabled>Select Currency</option>
-                                                        <option value="RMB">RMB</option>
-                                                        <option value="USD">USD</option>
-                                                    </select>
-                                                    <div class="invalid-feedback"></div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="rmb_amt" class="form-label fw-bold text-secondary">Amount-RMB</label>
-                                                <input type="number" id="rmb_amt" name="rmb_amt" class="form-control" readonly>
-                                            </div>
-                                           
-                                            <div class="col-md-6 mb-3">
-                                                <label for="usd_amt" class="form-label fw-bold text-secondary">Amount-USD</label>
-                                                <input type="number" id="usd_amt" name="usd_amt" class="form-control" readonly>
-                                            </div>
-                                            <div class="col-md-12">
-                                                <label for="cbm" class="form-label fw-bold text-secondary">CBM</label>
-                                                <input type="text" id="cbm" name="cbm" class="form-control">
-                                            </div>
-                                           
+                                        <!-- SKU Dropdown -->
+                                        <div class="mb-3">
+                                            <label for="sku" class="form-label fw-bold">SKU</label>
+                                            <select class="form-select" id="sku" name="sku" required>
+                                                <option selected disabled>Select SKU</option>
+                                                @foreach($skus as $item)
+                                                    <option value="{{ $item->sku }}" data-parent="{{ $item->parent }}">{{ $item->sku }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
-                                    </form>
-                                </div>
 
-                                <input type="hidden" id="warehouseId">
-                                <div class="modal-footer"
-                                    style="background: linear-gradient(135deg, #F8FAFF 0%, #E6F0FF 100%); border-top: 4px solid #E2E8F0; padding: 1.5rem; border-radius: 0;">
-                                    <button type="button" class="btn btn-lg" data-bs-dismiss="modal"
-                                        style="background: linear-gradient(135deg, #FF6B6B 0%, #FF0000 100%); color: white; border: none; border-radius: 6px; padding: 0.75rem 2rem; font-weight: 700; letter-spacing: 0.5px;">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" class="btn btn-lg" id="saveWarehouseBtn"
-                                        style="background: linear-gradient(135deg, #4ADE80 0%, #22C55E 100%); color: white; border: none; border-radius: 6px; padding: 0.75rem 2rem; font-weight: 700; letter-spacing: 0.5px;">
-                                        Save
-                                    </button>
+                                        <!-- Auto-filled Parent -->
+                                        <div class="mb-3">
+                                            <label for="parent" class="form-label fw-bold">Parent</label>
+                                            <input type="text" class="form-control" id="parent" name="parent" readonly>
+                                        </div>
+
+                                        <!-- Qty -->
+                                        <div class="mb-3">
+                                            <label for="qty" class="form-label fw-bold">Quantity</label>
+                                            <input type="number" class="form-control" id="qty" name="qty" required>
+                                        </div>
+
+                                        <!-- Warehouse Dropdown -->
+                                        <div class="mb-3">
+                                            <label for="warehouse_id" class="form-label fw-bold">Warehouse</label>
+                                            <select class="form-select" id="warehouse_id" name="warehouse_id" required>
+                                                <option selected disabled>Select Warehouse</option>
+                                                @foreach($warehouses as $warehouse)
+                                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <!-- Reason Dropdown -->
+                                        <div class="mb-3">
+                                            <label for="reason" class="form-label fw-bold">Reason</label>
+                                            <select class="form-select" id="reason" name="reason" required>
+                                                <option selected disabled>Select Reason</option>
+                                                <option value="Returns">Returns</option>
+                                                <option value="Purchase">Purchase</option>
+                                                <option value="Recovered">Recovered</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Auto Date -->
+                                        <div class="mb-3">
+                                            <label for="date" class="form-label fw-bold">Date</label>
+                                            <input type="text" class="form-control" id="date" name="date" readonly>
+                                        </div>
+                                    </div>
+
+                                    <!-- type -->
+                                    <input type="hidden" name="type" value="incoming"> 
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-success">Save Incoming</button>
+                                    </div>
                                 </div>
-                            </div>
+                            </form>
                         </div>
-                    </div> -->
+                    </div>
 
 
                     <!-- Progress Modal -->
@@ -288,7 +250,7 @@
                                     <th>SKU</th>
                                     <th>QUANTITY</th>
                                     <th>WAREHOUSE</th>
-                                    <!-- <th>REASON</th> -->
+                                    <th>REASON</th>
                                     <th>CREATED BY</th>
                                     <th>DATE</th>
                                 </tr>
@@ -459,7 +421,7 @@
                     const formData = $(this).serialize();
 
                     $.ajax({
-                        url: '{{ route("incoming.store") }}',
+                        url: '{{ route("incoming.orders.store") }}',
                         method: 'POST',
                         data: formData,
                         success: function (response) {
@@ -469,7 +431,7 @@
                         },
                         error: function (xhr) {
                             console.log(xhr.responseJSON);
-                            alert('Error storing purchase order.');
+                            alert('Error storing Incoming.');
                         }
                     });
                 });
@@ -523,7 +485,7 @@
 
             function loadData() {
                 $.ajax({
-                    url: '/openbox-godown',
+                    url: '/incoming-orders-list',
                     method: 'GET',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -545,7 +507,6 @@
 
             
             function renderTable(data) {
-                console.log(data,'data');
                 
                 const tbody = document.getElementById('inventory-table-body');
                 tbody.innerHTML = '';
@@ -560,8 +521,9 @@
 
                     row.innerHTML = `
                         <td>${item.sku || '-'}</td>
-                        <td>${item.verified_stock || '-'}</td>
-                        <td>${item.warehouse.name  || '-'}</td>
+                        <td>${item.quantity || '-'}</td>
+                        <td>${item.warehouse_name  || '-'}</td>
+                        <td>${item.reason || '-'}</td>
                         <td>${item.approved_by || '-'}</td>
                         <td>${item.approved_at || '-'}</td>
                     `;
