@@ -431,6 +431,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //incoming orders
     Route::get('/incoming-orders-view', [IncomingController::class, 'incomingOrderIndex'])->name('incoming.orders.view');
     Route::post('/incoming-orders-store', [IncomingController::class, 'incomingOrderStore'])->name('incoming.orders.store');
+    Route::get('/incoming-orders-list', [IncomingController::class, 'incomingOrderList']);
+
+    //auto stock balance
+    // Route::get('/auto-stock-balance', [IncomingController::class, 'autoStockBalanceView'])->name('autostock.balance.view');
+    // Route::post('/incoming-data-store', [IncomingController::class, 'store'])->name('incoming.store');
+    // Route::get('/incoming-data-list', [IncomingController::class, 'list']);
+
 
 
 
@@ -492,6 +499,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/warehouses/update/{id}', [WarehouseController::class, 'update'])->name('warehouses.update');
     Route::delete('/warehouses/{id}', [WarehouseController::class, 'destroy']);
 
+    Route::get('/main-godown', [WarehouseController::class, 'mainGodown'])->name('main.godown');
     Route::get('/return-godown', [WarehouseController::class, 'returnGodown'])->name('returns.godown');
     Route::get('/openbox-godown', [WarehouseController::class, 'openBoxGodown'])->name('openbox.godown');
     Route::get('/showroom-godown', [WarehouseController::class, 'showroomGodown'])->name('showroom.godown');

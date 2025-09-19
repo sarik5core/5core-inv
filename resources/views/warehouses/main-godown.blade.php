@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Openbox Godown', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Main Godown', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite(['node_modules/admin-resources/rwd-table/rwd-table.min.css'])
@@ -101,8 +101,8 @@
 
 @section('content')
     @include('layouts.shared/page-title', [
-        'page_title' => 'Openbox Warehouse',
-        'sub_title' => 'Openbox Warehouse',
+        'page_title' => 'Main Warehouse',
+        'sub_title' => 'Main Warehouse',
     ])
 
     <div class="row">
@@ -523,7 +523,7 @@
 
             function loadData() {
                 $.ajax({
-                    url: '/openbox-godown',
+                    url: '/main-godown',
                     method: 'GET',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -545,7 +545,7 @@
 
             
             function renderTable(data) {
-                console.log(data,'data');
+                console.log('data',data);
                 
                 const tbody = document.getElementById('inventory-table-body');
                 tbody.innerHTML = '';
@@ -560,7 +560,7 @@
 
                     row.innerHTML = `
                         <td>${item.sku || '-'}</td>
-                        <td>${item.verified_stock || '-'}</td>
+                        <td>${item.quantity || '-'}</td>
                         <td>${item.warehouse.name  || '-'}</td>
                         <td>${item.approved_by || '-'}</td>
                         <td>${item.approved_at || '-'}</td>

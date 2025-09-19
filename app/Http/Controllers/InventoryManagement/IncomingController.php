@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Http\Controllers\ShopifyApiInventoryController;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\ApiController;
+use App\Models\IncomingData;
 use App\Models\IncomingOrder;
 use Illuminate\Support\Facades\Http;
 
@@ -21,8 +22,8 @@ class IncomingController extends Controller
 {
 
     protected $shopifyDomain = '5-core.myshopify.com';
-    protected $shopifyApiKey = '01f70fee8001931b5a25e3df24d6d749';
-    protected $shopifyPassword = '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';
+    protected $shopifyApiKey = '818a43f8d3ae2f7bcfed50abb1e6deb9';
+    protected $shopifyPassword = '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';
 
     protected $apiController;
 
@@ -54,7 +55,7 @@ class IncomingController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
+    {   
 
         $request->validate([
             'sku' => 'required|string',
@@ -213,6 +214,7 @@ class IncomingController extends Controller
     }
 
 
+
     public function incomingOrderIndex()
     {
         $warehouses = Warehouse::select('id', 'name')->get();
@@ -221,143 +223,36 @@ class IncomingController extends Controller
         return view('inventory-management.incoming-orders-view', compact('warehouses', 'skus'));
     }
 
-    // public function incomingOrderStore(Request $request)
-    // {
-
-    //     $request->validate([
-    //         'sku' => 'required|string',
-    //         'parent' => 'required|string',
-    //         'qty' => 'required|integer|min:1',
-    //         'warehouse_id' => 'required|exists:warehouses,id',
-    //         'reason' => 'required|string',
-    //         'date' => 'nullable',
-    //     ]);
-
-    //     $sku = trim($request->sku);
-    //     $incomingQty = (int) $request->qty;
-
-    //     try {
-    //         //  Fetch inventory item ID and location ID from Shopify
-    //         $shopifyApi = new ShopifyApiInventoryController();
-
-    //         // Use same logic as updateVerifiedStock to get inventory_item_id
-    //         $inventoryItemId = null;
-    //         $pageInfo = null;
-
-    //         do {
-    //             $queryParams = ['limit' => 250];
-    //             if ($pageInfo) $queryParams['page_info'] = $pageInfo;
-
-    //             $response = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
-    //                 ->get("https://{$this->shopifyDomain}/admin/api/2025-01/products.json", $queryParams);
-
-    //             $products = $response->json('products');
-
-    //             foreach ($products as $product) {
-    //                 foreach ($product['variants'] as $variant) {
-    //                     if (trim($variant['sku']) === $sku) {
-    //                         $inventoryItemId = $variant['inventory_item_id'];
-    //                         break 2;
-    //                     }
-    //                 }
-    //             }
-
-    //             // Pagination support
-    //             $linkHeader = $response->header('Link');
-    //             $pageInfo = null;
-    //             if ($linkHeader && preg_match('/<([^>]+page_info=([^&>]+)[^>]*)>; rel="next"/', $linkHeader, $matches)) {
-    //                 $pageInfo = $matches[2];
-    //             }
-    //         } while (!$inventoryItemId && $pageInfo);
-
-    //         if (!$inventoryItemId) {
-    //             Log::error("Inventory Item ID not found for SKU: $sku");
-    //             return response()->json(['error' => 'SKU not found in Shopify'], 404);
-    //         }
-
-    //         //  Get location ID from inventory_levels
-    //         $invLevelResponse = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
-    //             ->get("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels.json", [
-    //                 'inventory_item_ids' => $inventoryItemId,
-    //             ]);
-
-    //         $levels = $invLevelResponse->json('inventory_levels');
-    //         $locationId = $levels[0]['location_id'] ?? null;
-
-    //         if (!$locationId) {
-    //             Log::error("Location ID not found for inventory item: $inventoryItemId");
-    //             return response()->json(['error' => 'Location ID not found'], 404);
-    //         }
-
-    //         // Send adjustment to Shopify (increase available by qty)
-    //         $adjustResponse = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
-    //             ->post("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels/adjust.json", [
-    //                 'inventory_item_id' => $inventoryItemId,
-    //                 'location_id' => $locationId,
-    //                 'available_adjustment' => $incomingQty,
-    //             ]);
-
-    //         if (!$adjustResponse->successful()) {
-    //             Log::error("Failed to update Shopify for SKU $sku", $adjustResponse->json());
-    //             return response()->json(['error' => 'Failed to update Shopify inventory'], 500);
-    //         }
-
-    //         //  Store in database
-    //         Inventory::create([
-    //             'sku' => $sku,
-    //             'verified_stock' => $incomingQty,
-    //             'to_adjust' => $incomingQty,
-    //             'reason' => $request->reason,
-    //             'is_approved' => true,
-    //             'approved_by' => Auth::user()->name ?? 'N/A',
-    //             'approved_at' => Carbon::now('America/New_York'),
-    //             'type' => 'incoming',
-    //             'warehouse_id' => $request->warehouse_id,
-    //         ]);
-
-    //         return response()->json(['message' => 'Incoming inventory stored and updated in Shopify successfully']);
-
-    //     } catch (\Exception $e) {
-    //         Log::error("Incoming store failed for SKU $sku: " . $e->getMessage(), [
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-    //         return response()->json(['error' => 'Something went wrong.'], 500);
-    //     }
-    // }
-
+   
 
     public function incomingOrderStore(Request $request)
     {
         $request->validate([
             'sku' => 'required|string',
-            'parent' => 'required|string',
             'qty' => 'required|integer|min:1',
             'warehouse_id' => 'required|exists:warehouses,id',
             'reason' => 'required|string',
-            'date' => 'nullable|date',
         ]);
 
         $sku = trim($request->sku);
 
         try {
-            // Try to find product master entry for this SKU
-            $productMaster = ProductMaster::where('sku', $sku)->first();
+            // Store in incoming_data table
+            $incomingOrder = IncomingData::updateOrCreate(
+                ['sku' => $sku], // since sku is unique
+                [
+                    'warehouse_id' => $request->warehouse_id,
+                    'quantity'     => (int) $request->qty,
+                    'reason'       => $request->reason,
+                    'approved_by'  => Auth::user()->name ?? 'N/A',
+                    'approved_at'  => Carbon::now('America/New_York'),
 
-            // Store in incoming_orders table
-            $incomingOrder = IncomingOrder::create([
-                'warehouse_id'       => $request->warehouse_id,
-                'sku'                => $sku,
-                'parent'             => $request->parent,
-                'qty'                => (int) $request->qty,
-                'reason'             => $request->reason,
-                'date'               => $request->date,
-                // 'status'             => 'pending', // default
-                'product_master_id'  => $productMaster?->id,
-            ]);
+                ]
+            );
 
             return response()->json([
                 'message' => 'Incoming order stored successfully',
-                'data' => $incomingOrder
+                'data'    => $incomingOrder
             ]);
 
         } catch (\Exception $e) {
@@ -367,6 +262,28 @@ class IncomingController extends Controller
             return response()->json(['error' => 'Something went wrong.'], 500);
         }
     }
+
+
+    public function incomingOrderList()
+    {
+        $data = IncomingData::with('warehouse')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'sku' => $item->sku,
+                    'quantity' => $item->quantity,
+                    'reason' => $item->reason,
+                    'warehouse_name' => $item->warehouse->name ?? '',
+                    'approved_by' => $item->approved_by,
+                    'approved_at' =>  $item->approved_at
+                        ? Carbon::parse($item->approved_at)->timezone('America/New_York')->format('m-d-Y')
+                        : '',
+                ];
+            });
+
+        return response()->json(['data' => $data]);
+    }
+
 
 
 
