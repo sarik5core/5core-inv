@@ -45,6 +45,7 @@ use App\Models\WalmartListingStatus;
 use App\Models\WalmartMetrics;
 use App\Services\AmazonSpApiService;
 use App\Services\DobaApiService;
+use App\Services\EbayApiService;
 use App\Services\WalmartService;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
@@ -58,12 +59,14 @@ class PricingMasterViewsController extends Controller
     protected $apiController;
     protected $walmart;
     protected $doba;
+    protected $ebay;
 
     public function __construct(ApiController $apiController)
     {
         $this->apiController = $apiController;
         $this->walmart = new WalmartService();
         $this->doba = new DobaApiService();
+        $this->ebay = new EbayApiService();
     }
 
 
@@ -141,7 +144,37 @@ class PricingMasterViewsController extends Controller
         $reverbDataView = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyDataView = MacyDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
+        // Fetch LMPA data from 5core_repricer database - get lowest price per SKU (excluding 0 prices)
+        $lmpaLookup = collect();
+        try {
+            $lmpaLookup = DB::connection('repricer')
+                ->table('lmpa_data')
+                ->select('sku', DB::raw('MIN(price) as lowest_price'))
+                ->where('price', '>', 0)
+                ->whereIn('sku', $skus)
+                ->groupBy('sku')
+                ->get()
+                ->keyBy('sku');
+        } catch (Exception $e) {
+            Log::warning('Could not fetch LMPA data from repricer database: ' . $e->getMessage());
+            // Fallback to empty collection - will use Amazon's price_lmpa instead
+        }
 
+        // Fetch LMP data from 5core_repricer database for eBay - get lowest price per SKU (excluding 0 prices)
+        $lmpLookup = collect();
+        try {
+            $lmpLookup = DB::connection('repricer')
+                ->table('lmp_data')
+                ->select('sku', DB::raw('MIN(price) as lowest_price'))
+                ->where('price', '>', 0)
+                ->whereIn('sku', $skus)
+                ->groupBy('sku')
+                ->get()
+                ->keyBy('sku');
+        } catch (Exception $e) {
+            Log::warning('Could not fetch LMP data from repricer database: ' . $e->getMessage());
+            // Fallback to empty collection - will use eBay's price_lmpa instead
+        }
 
 
 
@@ -176,6 +209,8 @@ class PricingMasterViewsController extends Controller
             $walmart = $walmartLookup[$sku] ?? null;
             $ebay2   = $ebay2Lookup[$sku] ?? null;
             $ebay3   = $ebay3Lookup[$sku] ?? null;
+            $lmpa    = $lmpaLookup[$sku] ?? null;
+            $lmp     = $lmpLookup[$sku] ?? null;
 
             // Get Shopify data for L30 and INV
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
@@ -224,7 +259,7 @@ class PricingMasterViewsController extends Controller
                 'amz_buyer_link' => isset($amazonListingData[$sku]) ? ($amazonListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'amz_seller_link' => isset($amazonListingData[$sku]) ? ($amazonListingData[$sku]->value['seller_link'] ?? null) : null,
 
-                'price_lmpa' => $amazon ? ($amazon->price_lmpa ?? 0) : 0,
+                'price_lmpa' => $lmpa ? ($lmpa->lowest_price ?? 0) : ($amazon ? ($amazon->price_lmpa ?? 0) : 0),
                 'amz_pft'   => $amazon && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.68 - $lp - $ship) / $amazon->price) : 0,
                 'amz_roi'   => $amazon && $lp > 0 && ($amazon->price ?? 0) > 0 ? (($amazon->price * 0.68 - $lp - $ship) / $lp) : 0,
                 'amz_req_view' => $amazon && $amazon->sessions_l30 > 0 && $amazon->units_ordered_l30 > 0
@@ -236,8 +271,8 @@ class PricingMasterViewsController extends Controller
                 'ebay_price' => $ebay ? ($ebay->ebay_price ?? 0) : 0,
                 'ebay_l30'   => $ebay ? ($ebay->ebay_l30 ?? 0) : 0,
                 'ebay_l60'   => $ebay ? ($ebay->ebay_l60 ?? 0) : 0,
-                'price_lmpa'   => $ebay ? ($ebay->price_lmpa ?? 0) : 0,
                 'ebay_views' => $ebay ? ($ebay->views ?? 0) : 0,
+                'ebay_price_lmpa' => $lmp ? ($lmp->lowest_price ?? 0) : ($ebay ? ($ebay->price_lmpa ?? 0) : 0),
                 'ebay_cvr'   => $ebay ? $this->calculateCVR($ebay->ebay_l30 ?? 0, $ebay->views ?? 0) : null,
                 'ebay_pft'   => $ebay && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.71 - $lp - $ship) / $ebay->ebay_price) : 0,
                 'ebay_roi'   => $ebay && $lp > 0 && ($ebay->ebay_price ?? 0) > 0 ? (($ebay->ebay_price * 0.71 - $lp - $ship) / $lp) : 0,
@@ -248,6 +283,7 @@ class PricingMasterViewsController extends Controller
                 'ebay_buyer_link' => isset($ebayListingData[$sku]) ? ($ebayListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'ebay_seller_link' => isset($ebayListingData[$sku]) ? ($ebayListingData[$sku]->value['seller_link'] ?? null) : null,
                 // 'ebay_buyer_link' --- IGNORE ---
+
 
                 // Doba
                 'doba_price' => $doba ? ($doba->anticipated_income ?? 0) : 0,
@@ -863,8 +899,43 @@ class PricingMasterViewsController extends Controller
         $sku = $request->input('sku');
         $price = $request->input('price');
 
+        if (!$sku || !$price) {
+            return response()->json([
+                'error' => 'SKU and price are required'
+            ], 400);
+        }
+
         $itemId = EbayMetric::where('sku', $sku)->value('item_id');
-        UpdateEbayOnePriceJob::dispatch($itemId, $price);
+        
+        if (!$itemId) {
+            return response()->json([
+                'error' => "eBay Item ID not found for SKU: {$sku}"
+            ], 404);
+        }
+
+        try {
+            // Use direct eBay API call for instant update
+            $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
+            
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "eBay price updated successfully for SKU: {$sku}",
+                    'data' => $result
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['errors'] ?? 'Unknown error',
+                    'data' => $result
+                ], 400);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'eBay API Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function pushEbayTwoPriceBySku(Request $request)
@@ -872,8 +943,43 @@ class PricingMasterViewsController extends Controller
         $sku = $request->input('sku');
         $price = $request->input('price');
 
+        if (!$sku || !$price) {
+            return response()->json([
+                'error' => 'SKU and price are required'
+            ], 400);
+        }
+
         $itemId = Ebay2Metric::where('sku', $sku)->value('item_id');
-        EbayTwoPriceJob::dispatch($itemId, $price);
+        
+        if (!$itemId) {
+            return response()->json([
+                'error' => "eBay2 Item ID not found for SKU: {$sku}"
+            ], 404);
+        }
+
+        try {
+            // Use direct eBay API call for instant update
+            $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
+            
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "eBay2 price updated successfully for SKU: {$sku}",
+                    'data' => $result
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['errors'] ?? 'Unknown error',
+                    'data' => $result
+                ], 400);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'eBay2 API Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function pushEbayThreePriceBySku(Request $request)
@@ -881,8 +987,43 @@ class PricingMasterViewsController extends Controller
         $sku = $request->input('sku');
         $price = $request->input('price');
 
+        if (!$sku || !$price) {
+            return response()->json([
+                'error' => 'SKU and price are required'
+            ], 400);
+        }
+
         $itemId = Ebay3Metric::where('sku', $sku)->value('item_id');
-        UpdateEbayThreePriceJob::dispatch($itemId, $price);
+        
+        if (!$itemId) {
+            return response()->json([
+                'error' => "eBay3 Item ID not found for SKU: {$sku}"
+            ], 404);
+        }
+
+        try {
+            // Use direct eBay API call for instant update
+            $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
+            
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "eBay3 price updated successfully for SKU: {$sku}",
+                    'data' => $result
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['errors'] ?? 'Unknown error',
+                    'data' => $result
+                ], 400);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'eBay3 API Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 

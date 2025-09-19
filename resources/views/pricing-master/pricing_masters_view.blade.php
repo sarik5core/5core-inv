@@ -1948,7 +1948,7 @@
 
                     <td>
                         <div class="value-indicator">
-                            ${r.prefix === 'amz' || r.prefix === 'ebay' ? fmtMoney(data.price_lmpa) : '-'}
+                            ${r.prefix === 'amz' ? fmtMoney(data.price_lmpa) : r.prefix === 'ebay' ? fmtMoney(data.ebay_price_lmpa) : '-'}
                         </div>
                     </td>
 
@@ -2615,13 +2615,19 @@
                         price: sprice
                     },
                     success: function(res) {
-                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
+                        if (res.success) {
+                            alert('eBay price updated successfully!');
+                        } else {
+                            alert('Error: ' + (res.error || 'Unknown error'));
+                        }
                     },
                     error: function(err) {
-                        alert('Error updating eBay price: ' + err);
+                        const errorMsg = err.responseJSON && err.responseJSON.error ? 
+                            err.responseJSON.error : 'Error updating eBay price';
+                        alert(errorMsg);
                     },
                     complete: function() {
-                        $btn.html('Push to Marketplace');
+                        $btn.html('<i class="bi bi-cloud-arrow-up"></i>');
                     }
                 });
             }
@@ -2636,13 +2642,19 @@
                         price: sprice
                     },
                     success: function(res) {
-                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
+                        if (res.success) {
+                            alert('eBay2 price updated successfully!');
+                        } else {
+                            alert('Error: ' + (res.error || 'Unknown error'));
+                        }
                     },
                     error: function(err) {
-                        alert('Error updating eBay price: ' + err);
+                        const errorMsg = err.responseJSON && err.responseJSON.error ? 
+                            err.responseJSON.error : 'Error updating eBay2 price';
+                        alert(errorMsg);
                     },
                     complete: function() {
-                        $btn.html('Push to Marketplace');
+                        $btn.html('<i class="bi bi-cloud-arrow-up"></i>');
                     }
                 });
             }
@@ -2656,13 +2668,19 @@
                         price: sprice
                     },
                     success: function(res) {
-                     alert('Price Change Requested, Will Be Completed after 5 Minutes!');
+                        if (res.success) {
+                            alert('eBay3 price updated successfully!');
+                        } else {
+                            alert('Error: ' + (res.error || 'Unknown error'));
+                        }
                     },
                     error: function(err) {
-                        alert('Error updating eBay price: ' + err);
+                        const errorMsg = err.responseJSON && err.responseJSON.error ? 
+                            err.responseJSON.error : 'Error updating eBay3 price';
+                        alert(errorMsg);
                     },
                     complete: function() {
-                        $btn.html('Push to Marketplace');
+                        $btn.html('<i class="bi bi-cloud-arrow-up"></i>');
                     }
                 });
             }
