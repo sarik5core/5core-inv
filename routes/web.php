@@ -1068,7 +1068,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
     Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
     Route::post('/push-walmart-price', [PricingMasterViewsController::class, 'pushPricewalmart']);
+    // Route::post('/push-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']);
+    Route::post('/update-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']); // Added for compatibility
+    Route::get('/test-doba-connection', [PricingMasterViewsController::class, 'testDobaConnection']); // Debug route
 
+    
     Route::post('/update-reverb-price', [PricingMasterViewsController::class, 'updateReverbPrice'])->name('reverb.priceChange');
 
     Route::post('/update-macy-price', [PricingMasterViewsController::class, 'updateMacyPrice'])->name('macy.priceChange');

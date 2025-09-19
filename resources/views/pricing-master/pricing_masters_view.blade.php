@@ -2715,32 +2715,11 @@
                         $btn.html('Push to Marketplace');
                     }
                 });
-            }
-                else if(type === 'doba') {
-                    $.ajax({
-                        url: '/update-doba-price',
-                        type: 'POST',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content'),
-                            sku: sku,
-                            price: sprice
-                        },
-                        success: function(res) {
-                        alert('Doba price updated successfully!');
-                        },
-                        error: function(err) {
-                            alert('Error updating Doba price: ' + err);
-                        },
-                        complete: function() {
-                            $btn.html('Push to Marketplace');
-                        }
-                    });
-                }
-                else if(type === 'macy') {
-                    $.ajax({
-                        url: '/update-macy-price',
-                        type: 'POST',
-                        data: {
+            } else if(type === 'macy') {
+                $.ajax({
+                    url: '/update-macy-price',
+                    type: 'POST',
+                    data: {
                             _token: $('meta[name="csrf-token"]').attr('content'),
                             sku: sku,
                             price: sprice
@@ -2790,6 +2769,27 @@
                         },
                         error: function(err) {
                             alert('Error updating Walmart price: ' + err.responseText);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+
+                else if(type === 'doba') {
+                    $.ajax({
+                        url: '/update-doba-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                            alert('Doba Price Change Requested, Will Be Completed after 10  Minutes!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Doba price: ' + err.responseText);
                         },
                         complete: function() {
                             $btn.html('Push to Marketplace');
