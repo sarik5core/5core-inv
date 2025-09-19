@@ -346,24 +346,23 @@ class EbayOverUtilizedBgtController extends Controller
         $field = $request->input('field');
         $value = $request->input('value');
 
-        $ebayDataView = EbayDataView::where('sku', $sku)->first();
+        $ebayDataView = EbayDataView::firstOrNew(['sku' => $sku]);
 
-        $jsonData = $ebayDataView && $ebayDataView->value ? $ebayDataView->value : [];
+        $jsonData = $ebayDataView->value ?? [];
 
         $jsonData[$field] = $value;
 
-        $ebayDataView = EbayDataView::updateOrCreate(
-            ['sku' => $sku],
-            ['value' => $jsonData]
-        );
+        $ebayDataView->value = $jsonData;
+        $ebayDataView->save();
 
         return response()->json([
             'status' => 200,
-            'message' => "...",
+            'message' => "Field updated successfully",
             'updated_json' => $jsonData
         ]);
-
     }
+
+
 
     public function ebayOverUtilized(){
         return view('campaign.ebay-under-utilized');
@@ -476,10 +475,11 @@ class EbayOverUtilizedBgtController extends Controller
 
                 }
             }
-
-            if (($row['NR'] !== 'NRA') && $row['campaignName'] == '') {
+            if ($row['campaignName'] === '' && ($row['NR'] !== 'NRA' && $row['NRL'] !== 'NRL')) {
                 $result[] = (object) $row;
             }
+
+
         }
 
         return response()->json([

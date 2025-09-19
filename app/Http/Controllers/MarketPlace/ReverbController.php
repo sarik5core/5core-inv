@@ -5,13 +5,16 @@ namespace App\Http\Controllers\MarketPlace;
 use App\Http\Controllers\Controller;
 use App\Models\ProductMaster;
 use App\Models\ReverbProduct;
-use App\Models\ReverbViewData;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
 use App\Models\MarketplacePercentage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use App\Models\ReverbViewData;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ReverbController extends Controller
 {
@@ -71,7 +74,7 @@ class ReverbController extends Controller
         ]);
     }
 
-      public function reverbPricingIncreaseCvr(Request $request)
+    public function reverbPricingIncreaseCvr(Request $request)
     {
         $mode = $request->query("mode");
         $demo = $request->query("demo");
@@ -97,7 +100,7 @@ class ReverbController extends Controller
     }
 
 
-      public function reverbPricingdecreaseCvr(Request $request)
+    public function reverbPricingdecreaseCvr(Request $request)
     {
         $mode = $request->query("mode");
         $demo = $request->query("demo");
@@ -151,10 +154,8 @@ class ReverbController extends Controller
         // Fetch reverb data for these SKUs
         $reverbData = ReverbProduct::whereIn("sku", $skus)->get()->keyBy("sku");
 
-        // Fetch bump, S bump, s price from reverb_view_data
-        $reverbViewData = ReverbViewData::whereIn("sku", $skus)
-            ->get()
-            ->keyBy("sku");
+        // Fetch all required data from ReverbViewData in a single query
+        $reverbViewData = ReverbViewData::whereIn("sku", $skus)->get()->keyBy("sku");
 
         // Process data from product master and shopify tables
         $processedData = [];
@@ -163,20 +164,21 @@ class ReverbController extends Controller
         foreach ($productMasterRows as $productMaster) {
             $sku = $productMaster->sku;
             $isParent = stripos($sku, "PARENT") !== false;
-            
 
             // Initialize the data structure
             $processedItem = [
                 "SL No." => $slNo++,
                 "Parent" => $productMaster->parent ?? null,
                 "Sku" => $sku,
-                "R&A" => false, // Default value, can be updated as needed
+                "R&A" => false,
                 "is_parent" => $isParent,
                 "raw_data" => [
                     "parent" => $productMaster->parent,
                     "sku" => $sku,
                     "Values" => $productMaster->Values,
                 ],
+                "Listed" => false,
+                "Live" => false,
             ];
 
             // Add values from product_master
@@ -201,8 +203,7 @@ class ReverbController extends Controller
                 $reverbPrice = $reverbItem->price ?? 0;
                 $ship = $values["ship"] ?? 0;
 
-                $processedItem["price"] =
-                    $reverbPrice > 0 ? $reverbPrice + $ship : 0;
+                $processedItem["price"] = $reverbPrice > 0 ? $reverbPrice + $ship : 0;
                 $processedItem["price_wo_ship"] = $reverbPrice;
                 $processedItem["views"] = $reverbItem->views ?? 0;
                 $processedItem["r_l30"] = $reverbItem->r_l30 ?? 0;
@@ -215,40 +216,44 @@ class ReverbController extends Controller
                 $processedItem["r_l60"] = 0;
             }
 
-            // Add bump, S bump, s price from reverb_view_data if available
+            // Add all data from reverb_view_data if available
             if (isset($reverbViewData[$sku])) {
                 $viewData = $reverbViewData[$sku];
-                // Log the SKU and values for debugging
-                Log::info("Processing ReverbViewData", [
-                    "sku" => $sku,
-                    "viewData_values" => $viewData->values,
-                ]);
-                $valuesArr = $viewData->values ?: [];
 
+                // Process values column (cast to array)
+                $valuesArr = $viewData->values ?: [];
                 $processedItem["Bump"] = $valuesArr["bump"] ?? null;
                 $processedItem["s bump"] = $valuesArr["s_bump"] ?? null;
-                $processedItem["sprice"] = isset($valuesArr["SPRICE"])
-                    ? floatval($valuesArr["SPRICE"])
-                    : null;
-
-                $processedItem["spft_percent"] = isset($valuesArr["SPFT"])
-                    ? floatval(str_replace("%", "", $valuesArr["SPFT"]))
-                    : null;
-
-                $processedItem["sroi_percent"] = isset($valuesArr["SROI"])
-                    ? floatval(str_replace("%", "", $valuesArr["SROI"]))
-                    : null;
-
+                $processedItem["sprice"] = isset($valuesArr["SPRICE"]) ? floatval($valuesArr["SPRICE"]) : null;
+                $processedItem["spft_percent"] = isset($valuesArr["SPFT"]) ? floatval(str_replace("%", "", $valuesArr["SPFT"])) : null;
+                $processedItem["sroi_percent"] = isset($valuesArr["SROI"]) ? floatval(str_replace("%", "", $valuesArr["SROI"])) : null;
                 $processedItem["R&A"] = $valuesArr["R&A"] ?? false;
                 $processedItem["NR"] = $valuesArr["NR"] ?? '';
-            } else {
-                $processedItem["Bump"] = null;
-                $processedItem["s bump"] = null;
-                $processedItem["sprice"] = null;
-                $processedItem["spft_percent"] = null;
-                $processedItem["sroi_percent"] = null;
-                $processedItem["R&A"] = false;
-                $processedItem["NR"] = '';
+
+                // Check if Listed and Live are in the values column
+                if (isset($valuesArr['Listed'])) {
+                    $processedItem["Listed"] = filter_var($valuesArr['Listed'], FILTER_VALIDATE_BOOLEAN);
+                }
+                if (isset($valuesArr['Live'])) {
+                    $processedItem["Live"] = filter_var($valuesArr['Live'], FILTER_VALIDATE_BOOLEAN);
+                }
+
+                // Process value column (for Listed and Live, if not in values)
+                $value = $viewData->value;
+                if ($value !== null) {
+                    if (is_array($value)) {
+                        $processedItem["Listed"] = isset($value['Listed']) ? filter_var($value['Listed'], FILTER_VALIDATE_BOOLEAN) : $processedItem["Listed"];
+                        $processedItem["Live"] = isset($value['Live']) ? filter_var($value['Live'], FILTER_VALIDATE_BOOLEAN) : $processedItem["Live"];
+                    } else {
+                        $decoded = json_decode($value, true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                            $processedItem["Listed"] = isset($decoded['Listed']) ? filter_var($decoded['Listed'], FILTER_VALIDATE_BOOLEAN) : $processedItem["Listed"];
+                            $processedItem["Live"] = isset($decoded['Live']) ? filter_var($decoded['Live'], FILTER_VALIDATE_BOOLEAN) : $processedItem["Live"];
+                        } else {
+                            Log::error("JSON decode error for SKU {$sku}: " . json_last_error_msg());
+                        }
+                    }
+                }
             }
 
             // Default values for other fields
@@ -264,16 +269,14 @@ class ReverbController extends Controller
             $ship = floatval($processedItem["Ship"]);
 
             if ($price > 0) {
-                $pft_percentage =
-                    (($price * $percentage - $lp - $ship) / $price) * 100;
+                $pft_percentage = (($price * $percentage - $lp - $ship) / $price) * 100;
                 $processedItem["PFT_percentage"] = round($pft_percentage, 2);
             } else {
                 $processedItem["PFT_percentage"] = 0;
             }
 
             if ($lp > 0) {
-                $roi_percentage =
-                    (($price * $percentage - $lp - $ship) / $lp) * 100;
+                $roi_percentage = (($price * $percentage - $lp - $ship) / $lp) * 100;
                 $processedItem["ROI_percentage"] = round($roi_percentage, 2);
             } else {
                 $processedItem["ROI_percentage"] = 0;
@@ -299,7 +302,7 @@ class ReverbController extends Controller
                     [
                         "status" => 400,
                         "message" =>
-                            "Invalid percentage value. Must be between 0 and 100.",
+                        "Invalid percentage value. Must be between 0 and 100.",
                     ],
                     400
                 );
@@ -414,7 +417,7 @@ class ReverbController extends Controller
         $values = is_array($reverbDataView->values)
             ? $reverbDataView->values
             : (json_decode($reverbDataView->values, true) ?:
-            []);
+                []);
 
         // Update values safely
         if ($request->has("nr")) {
@@ -434,5 +437,191 @@ class ReverbController extends Controller
         $reverbDataView->save();
 
         return response()->json(["success" => true, "data" => $reverbDataView]);
+    }
+
+    public function updateListedLive(Request $request)
+    {
+        $request->validate([
+            'sku'   => 'required|string',
+            'field' => 'required|in:Listed,Live',
+            'value' => 'required|boolean' // validate as boolean
+        ]);
+
+        // Find or create the product without overwriting existing value
+        $product = ReverbViewData::firstOrCreate(
+            ['sku' => $request->sku],
+            ['values' => []]
+        );
+
+        // Decode current value (ensure it's an array)
+        $currentValue = is_array($product->values)
+            ? $product->values
+            : (json_decode($product->values, true) ?? []);
+
+        // Store as actual boolean
+        $currentValue[$request->field] = filter_var($request->value, FILTER_VALIDATE_BOOLEAN);
+
+        // Save back to DB
+        $product->values = $currentValue;
+        $product->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function importReverbAnalytics(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            $file = $request->file('excel_file');
+            $spreadsheet = IOFactory::load($file->getPathName());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            // Clean headers
+            $headers = array_map(function ($header) {
+                return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '_', $header)));
+            }, $rows[0]);
+
+            unset($rows[0]);
+
+            $allSkus = [];
+            foreach ($rows as $row) {
+                if (!empty($row[0])) {
+                    $allSkus[] = $row[0];
+                }
+            }
+
+            $existingSkus = ProductMaster::whereIn('sku', $allSkus)
+                ->pluck('sku')
+                ->toArray();
+
+            $existingSkus = array_flip($existingSkus); 
+
+            $importCount = 0;
+            foreach ($rows as $index => $row) {
+                if (empty($row[0])) { // Check if SKU is empty
+                    continue;
+                }
+
+                // Ensure row has same number of elements as headers
+                $rowData = array_pad(array_slice($row, 0, count($headers)), count($headers), null);
+                $data = array_combine($headers, $rowData);
+
+                if (!isset($data['sku']) || empty($data['sku'])) {
+                    continue;
+                }
+
+                // Only import SKUs that exist in product_masters (in-memory check)
+                if (!isset($existingSkus[$data['sku']])) {
+                    continue;
+                }
+
+                // Prepare values array
+                $values = [];
+
+                // Handle boolean fields
+                if (isset($data['listed'])) {
+                    $values['Listed'] = filter_var($data['listed'], FILTER_VALIDATE_BOOLEAN);
+                }
+
+                if (isset($data['live'])) {
+                    $values['Live'] = filter_var($data['live'], FILTER_VALIDATE_BOOLEAN);
+                }
+
+                // Update or create record
+                ReverbViewData::updateOrCreate(
+                    ['sku' => $data['sku']],
+                    ['values' => $values]
+                );
+
+                $importCount++;
+            }
+
+            return back()->with('success', "Successfully imported $importCount records!");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error importing file: ' . $e->getMessage());
+        }
+    }
+
+    public function exportReverbAnalytics()
+    {
+        $reverbData = ReverbViewData::all();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header Row
+        $headers = ['SKU', 'Listed', 'Live'];
+        $sheet->fromArray($headers, NULL, 'A1');
+
+        // Data Rows
+        $rowIndex = 2;
+        foreach ($reverbData as $data) {
+            $values = is_array($data->values)
+                ? $data->values
+                : (json_decode($data->values, true) ?? []);
+
+            $sheet->fromArray([
+                $data->sku,
+                isset($values['Listed']) ? ($values['Listed'] ? 'TRUE' : 'FALSE') : 'FALSE',
+                isset($values['Live']) ? ($values['Live'] ? 'TRUE' : 'FALSE') : 'FALSE',
+            ], NULL, 'A' . $rowIndex);
+
+            $rowIndex++;
+        }
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(10);
+        $sheet->getColumnDimension('C')->setWidth(10);
+
+        // Output Download
+        $fileName = 'Reverb_Analytics_Export_' . date('Y-m-d') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function downloadSample()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header Row
+        $headers = ['SKU', 'Listed', 'Live'];
+        $sheet->fromArray($headers, NULL, 'A1');
+
+        // Sample Data
+        $sampleData = [
+            ['SKU001', 'TRUE', 'FALSE'],
+            ['SKU002', 'FALSE', 'TRUE'],
+            ['SKU003', 'TRUE', 'TRUE'],
+        ];
+
+        $sheet->fromArray($sampleData, NULL, 'A2');
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(10);
+        $sheet->getColumnDimension('C')->setWidth(10);
+
+        // Output Download
+        $fileName = 'Reverb_Analytics_Sample.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
     }
 }

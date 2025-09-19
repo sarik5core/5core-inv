@@ -358,8 +358,8 @@
 
                                 <!-- @php
                                     $isAdmin =
-                                        auth()->check() && in_array(auth()->user()->role, ['admin', 'super admin']);
-                                @endphp -->
+                                        auth()->check() && in_array(auth()->user()->role, ['admin', 'superadmin']);
+                                    @endphp -->
 
                                 <!-- @if ($isAdmin) -->
                                     <button class="btn btn-outline-primary ms-2" type="button" id="culomnPermissionBtn">

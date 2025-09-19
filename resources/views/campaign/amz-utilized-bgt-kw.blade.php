@@ -615,7 +615,7 @@
                                 }else{
                                     sbid = (l7_cpc * 0.95).toFixed(2);
                                 }
-                                updateBid(sbid, rowData.campaign_id);
+                                updateBid(sbid, row.campaign_id);
                             }
                         }
                     },

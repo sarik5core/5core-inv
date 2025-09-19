@@ -55,7 +55,6 @@ class ShopifyApiInventoryController extends Controller
             $duration = round(microtime(true) - $startTime, 2);
             Log::info("Successfully synced " . count($simplifiedData) . " SKUs in {$duration}s");
             return true;
-
         } catch (\Exception $e) {
             Log::error('Shopify Inventory Error: ' . $e->getMessage());
             return false;
@@ -64,10 +63,14 @@ class ShopifyApiInventoryController extends Controller
 
     protected function getAllInventoryData(): array
     {
-        $inventoryData = [];   
+        $inventoryData = [];
         $pageInfo = null;
         $hasMore = true;
         $pageCount = 0;
+        $totalProducts = 0;
+        $totalVariants = 0;
+
+        Log::info("🔄 Starting Shopify inventory fetch...");
 
         while ($hasMore) {
             $pageCount++;
@@ -82,36 +85,53 @@ class ShopifyApiInventoryController extends Controller
                 ->get("https://{$this->shopifyStoreUrl}/admin/api/2025-01/products.json", $queryParams);
 
             if (!$response->successful()) {
-                Log::error("Failed to fetch products page {$pageCount}: " . $response->body());
+                Log::error("❌ Failed to fetch products (Page {$pageCount}): " . $response->body());
                 break;
             }
 
             $products = $response->json()['products'] ?? [];
+            $productCount = count($products);
+            $totalProducts += $productCount;
+
+            Log::info("✅ Page {$pageCount} fetched successfully. Products: {$productCount}");
+
             foreach ($products as $product) {
                 foreach ($product['variants'] as $variant) {
+                    $totalVariants++;
+                    $imageUrl = $this->sanitizeImageUrl(
+                        $product['image']['src']
+                            ?? (!empty($product['images']) ? $product['images'][0]['src'] : null)
+                    );
+
                     if (!empty($variant['sku'])) {
                         $inventoryData[$variant['sku']] = [
-                            'variant_id' => $variant['id'],
-                            'inventory' => $variant['inventory_quantity'] ?? 0,
-                            'product_title' => $product['title'] ?? '',
-                            'sku' => $variant['sku'] ?? '',
-                            'variant_title' => $variant['title'] ?? '',
+                            'variant_id'        => $variant['id'],
+                            'inventory'         => $variant['inventory_quantity'] ?? 0,
+                            'product_title'     => $product['title'] ?? '',
+                            'sku'               => $variant['sku'] ?? '',
+                            'variant_title'     => $variant['title'] ?? '',
                             'inventory_item_id' => $variant['inventory_item_id'],
-                            'on_hand' => $variant['old_inventory_quantity'] ?? 0,          // old inventory qty = OnHand
-                            'available_to_sell' => $variant['inventory_quantity'] ?? 0,    // inventory qty = AvailableToSell
-                            'price' => $variant['price'],
-                            'image_src' => $product['image']['src'] ?? (!empty($product['images']) ? $product['images'][0]['src'] : null),
-                            // 'on_hand' => 0,
-                            // 'committed' => 0,
-                            // 'available_to_sell' => 0,
-
+                            'on_hand'           => $variant['old_inventory_quantity'] ?? 0,   // OnHand
+                            'available_to_sell' => $variant['inventory_quantity'] ?? 0,       // AvailableToSell
+                            'price'             => $variant['price'],
+                            'image_src'         => $imageUrl,
                         ];
+
+                        // Log first 3 SKUs + images per page (to avoid huge logs)
+                        if ($totalVariants <= 3 || $totalVariants % 500 === 0) {
+                            Log::info("🖼️ Variant preview", [
+                                'product_title' => $product['title'] ?? '',
+                                'sku'           => $variant['sku'],
+                                'image'         => $imageUrl,
+                            ]);
+                        }
                     } else {
-                        Log::warning('Variant without SKU', [
+                        Log::warning('⚠️ Variant without SKU', [
                             'product_id' => $product['id'],
-                            'variant_id' => $variant['id'], 
-                            'on_hand' => $variant['old_inventory_quantity'] ?? 0,         
+                            'variant_id' => $variant['id'],
+                            'on_hand'    => $variant['old_inventory_quantity'] ?? 0,
                             'available_to_sell' => $variant['inventory_quantity'] ?? 0,
+                            'image'      => $imageUrl,
                         ]);
                     }
                 }
@@ -120,18 +140,40 @@ class ShopifyApiInventoryController extends Controller
             // Pagination handling
             $pageInfo = $this->getNextPageInfo($response);
             $hasMore = (bool) $pageInfo;
-            
+
             // Avoid rate limiting
             if ($hasMore) {
-                usleep(500000); // 0.5s delay between requests
+                Log::info("⏳ Waiting 0.5s before next page...");
+                usleep(500000); // 0.5s delay
             }
         }
 
-        Log::info("Processed {$pageCount} product pages");
+        Log::info("✅ Finished fetching Shopify inventory. Pages: {$pageCount}, Products: {$totalProducts}, Variants: {$totalVariants}");
+
         return $inventoryData;
     }
 
-    
+    /**
+     * Clean Shopify image URL
+     */
+    protected function sanitizeImageUrl(?string $url): ?string
+    {
+        if (empty($url)) {
+            return null;
+        }
+
+        // Remove line breaks and spaces
+        $cleanUrl = trim(preg_replace('/\s+/', '', $url));
+
+        // Remove ?v= query string (Shopify versioning param)
+        $cleanUrl = strtok($cleanUrl, '?');
+
+        return $cleanUrl;
+    }
+
+
+
+
 
     // public function fetchAllInventoryUsingRest()
     // {
@@ -515,7 +557,7 @@ class ShopifyApiInventoryController extends Controller
             $products = $response->json('products');
             foreach ($products as $product) {
 
-                $mainImage = $product['image']['src'] ?? null; 
+                $mainImage = $product['image']['src'] ?? null;
 
                 foreach ($product['variants'] as $variant) {
                     $sku = trim($variant['sku']);
@@ -524,7 +566,6 @@ class ShopifyApiInventoryController extends Controller
                     if (!empty($sku)) {
                         $skuMap[$sku] = $iid;
                         $imageMap[$sku] = $mainImage;
-
                     }
                 }
             }
@@ -594,7 +635,7 @@ class ShopifyApiInventoryController extends Controller
                 'available_to_sell' => $available,
                 'committed' => $committed,
                 'on_hand' => $onHand,
-                'image_url' => $imageMap[$sku] ?? null, 
+                'image_url' => $imageMap[$sku] ?? null,
             ];
         }
 
@@ -630,7 +671,7 @@ class ShopifyApiInventoryController extends Controller
                 $pageInfo = $this->getNextPageInfo($response);
                 $hasMore = (bool) $pageInfo;
                 $attempts = 0;
-                
+
                 if ($hasMore) {
                     usleep(500000); // 0.5s delay
                 }
@@ -776,7 +817,7 @@ class ShopifyApiInventoryController extends Controller
     protected function getInventoryLevels(array $inventoryItemIds): array
     {
         $inventoryLevels = [];
-        $chunks = array_chunk($inventoryItemIds, 50); 
+        $chunks = array_chunk($inventoryItemIds, 50);
 
         foreach ($chunks as $chunk) {
             $query = http_build_query(['inventory_item_ids' => implode(',', $chunk)]);
@@ -829,6 +870,4 @@ class ShopifyApiInventoryController extends Controller
 
         return $committed;
     }
-
-
 }

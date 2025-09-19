@@ -281,7 +281,7 @@ class PricingMasterController extends Controller
                     $item->neweegb2c_roi = (float) ($newegg->{'roi'} ?? 0);
                     $item->neweegb2c_l30 = (float) ($newegg->{'l30'} ?? 0);
                     $item->neweegb2c_dil = (float) ($newegg->{'dil'} ?? 0);
-                    $item->neweegb2c_buy_link = $newegg->{'Buyer Link'} ?? '';
+                    // $item->neweegb2c_buy_link = $newegg->{'Buyer Link'} ?? '';
                 }
 
                 // ✅ Temu from Sheet
@@ -292,7 +292,7 @@ class PricingMasterController extends Controller
                     $item->temu_roi = (float) ($temu->{'roi'} ?? 0);
                     $item->temu_l30 = (float) ($temu->{'l30'} ?? 0);
                     $item->temu_dil = (float) ($temu->{'dil'} ?? 0);
-                    $item->temu_buy_link = $temu->{'Buyer Link'} ?? '';
+                    // $item->temu_buy_link = $temu->{'Buyer Link'} ?? '';
                 }
 
                 $wayfair = $wayfairLookup[$sku] ?? null;
@@ -302,7 +302,7 @@ class PricingMasterController extends Controller
                     $item->wayfair_roi = (float) ($wayfair->{'roi'} ?? 0);
                     $item->wayfair_l30 = (float) ($wayfair->{'l30'} ?? 0);
                     $item->wayfair_dil = (float) ($wayfair->{'dil'} ?? 0);
-                    $item->wayfair_buy_link = $wayfair->{'Buyer Link'} ?? '';
+                    // $item->wayfair_buy_link = $wayfair->{'Buyer Link'} ?? '';
                 }
 
                 // ✅ Ebay3 from Sheet
@@ -313,7 +313,7 @@ class PricingMasterController extends Controller
                     $item->ebay3_roi = (float) ($ebay3->{'roi'} ?? 0);
                     $item->ebay3_l30 = (float) ($ebay3->{'l30'} ?? 0);
                     $item->ebay3_dil = (float) ($ebay3->{'dil'} ?? 0);
-                    $item->ebay3_buy_link = $ebay3->{'buyer_link'} ?? '';
+                    // $item->ebay3_buy_link = $ebay3->{'buyer_link'} ?? '';
                 }
 
 
@@ -324,7 +324,7 @@ class PricingMasterController extends Controller
                     $item->ebay2_pft = (float) ($ebay2->{'pft'} ?? 0);
                     $item->ebay2_roi = (float) ($ebay2->{'roi'} ?? 0);
                     $item->ebay2_dil = (float) ($ebay2->{'dil'} ?? 0);
-                    $item->ebay2_buy_link = $ebay2->{'buyer_link'} ?? '';
+                    // $item->ebay2_buy_link = $ebay2->{'buyer_link'} ?? '';
                 }
 
                 // ✅ Walmart from Sheet
@@ -335,7 +335,7 @@ class PricingMasterController extends Controller
                     $item->walmart_roi = (float) ($walmart->{'roi'} ?? 0);
                     $item->walmart_l30 = (float) ($walmart->{'l30'} ?? 0);
                     $item->walmart_dil = (float) ($walmart->{'dil'} ?? 0);
-                    $item->walmart_buy_link = $walmart->{'buyer_link'} ?? '';
+                    // $item->walmart_buy_link = $walmart->{'buyer_link'} ?? '';
                 }
 
 

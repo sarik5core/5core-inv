@@ -7,10 +7,6 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\FetchReverbData;
 use App\Console\Commands\FetchMacyProducts;
 use App\Console\Commands\FetchWayfairData;
-use App\Console\Commands\LogClear;
-use App\Console\Commands\SyncTemuSheet;
-use App\Http\Controllers\ApiController;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
@@ -21,10 +17,11 @@ class Kernel extends ConsoleKernel
         FetchWayfairData::class,
         \App\Console\Commands\LogClear::class,
         \App\Console\Commands\SyncTemuSheet::class,
-        \App\Console\Commands\UpdateCampaignBid::class,
         \App\Console\Commands\AutoUpdateAmazonKwBids::class,
         \App\Console\Commands\AutoUpdateAmazonPtBids::class,
         \App\Console\Commands\AutoUpdateAmazonHlBids::class,
+        \App\Console\Commands\AutoUpdateAmzUnderKwBids::class,
+        \App\Console\Commands\AutoUpdateAmzUnderPtBids::class,
         \App\Console\Commands\AutoUpdateAmazonBgtKw::class,
         \App\Console\Commands\AutoUpdateAmazonBgtPt::class,
         \App\Console\Commands\AutoUpdateAmazonBgtHl::class,
@@ -83,6 +80,8 @@ class Kernel extends ConsoleKernel
             ->dailyAt('00:00')
             ->timezone('UTC');
 
+           
+
         // Sync Main sheet update command
         $schedule->command('app:sync-sheet')
             ->dailyAt('02:10')
@@ -120,9 +119,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:ebay2-campaign-reports')
             ->dailyAt('01:15')
             ->timezone('America/Los_Angeles');
-        // $schedule->command('update:campaign-bid')
-        //     ->dailyAt('23:00')
-        //     ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-over-kw-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
@@ -132,6 +128,15 @@ class Kernel extends ConsoleKernel
         $schedule->command('amazon:auto-update-over-hl-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
+        // $schedule->command('amazon:auto-update-under-kw-bids')
+        //     ->dailyAt('12:00')
+        //     ->timezone('Asia/Kolkata');
+        // $schedule->command('amazon:auto-update-under-pt-bids')
+        //     ->dailyAt('12:00')
+        //     ->timezone('Asia/Kolkata');
+        // $schedule->command('amazon:auto-update-under-hl-bids')
+        //     ->dailyAt('12:00')
+        //     ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-amz-bgt-kw')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');

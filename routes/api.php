@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\ProductMaster\ProductMasterController;
+use App\Http\Controllers\PricingMaster\PricingMasterViewsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,3 +40,11 @@ Route::post('/junglescout', [\App\Http\Controllers\JungleScoutController::class,
 Route::post('/sync-sheets', [GoogleSheetsController::class, 'syncAllSheets']);
 
 Route::get('/sync-inv-l30-to-sheet', [ApiController::class, 'syncInvAndL30ToSheet']);
+
+// Public API - No authentication required
+Route::get('/product', [ProductMasterController::class, 'getProductBySku']);
+Route::get('/test-doba-connection', [PricingMasterViewsController::class, 'testDobaConnection']); // Debug route
+Route::get('/debug-doba-signature', [PricingMasterViewsController::class, 'debugDobaSignature']); // Signature debug
+Route::get('/test-doba-item-validation', [PricingMasterViewsController::class, 'testDobaItemValidation']); // Test item validation
+Route::get('/advanced-doba-debug', [PricingMasterViewsController::class, 'advancedDobaDebug']); // Advanced debug with multiple methods
+Route::post('/update-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']); // Doba price update API

@@ -153,6 +153,76 @@ class ProductMasterController extends Controller
     }
 
 
+    public function getProductBySku(Request $request)
+{
+    // Get SKU from query param (with spaces)
+    $sku = $request->query('sku');
+
+    if (!$sku) {
+        return response()->json([
+            'message' => 'SKU is required',
+            'status' => 400
+        ], 400);
+    }
+
+    // Normalize spaces (remove extra, keep inside)
+    $sku = preg_replace('/\s+/', ' ', trim($sku));
+
+    // Fetch product
+    $product = ProductMaster::where('sku', $sku)->first();
+
+    if (!$product) {
+        return response()->json([
+            'message' => "Product not found for SKU: {$sku}",
+            'status' => 404
+        ], 404);
+    }
+
+    // Shopify data
+    $shopifySku = ShopifySku::where('sku', $sku)->first();
+
+    // Build response
+    $row = [
+        'id'     => $product->id,
+        'Parent' => $product->parent,
+        'SKU'    => $product->sku,
+    ];
+
+    // Merge values JSON
+    $values = $product->Values;
+    if (is_array($values)) {
+        $row = array_merge($row, $values);
+    } elseif (is_string($values)) {
+        $decoded = json_decode($values, true);
+        if (is_array($decoded)) {
+            $row = array_merge($row, $decoded);
+        }
+    }
+
+    // Shopify fields
+    $row['shopify_inv'] = $shopifySku->inv ?? null;
+    $row['shopify_quantity'] = $shopifySku->quantity ?? null;
+
+    // Image
+    $shopifyImage = $shopifySku->image_src ?? null;
+    $localImage = $row['image_path'] ?? null;
+    if ($shopifyImage) {
+        $row['image_path'] = $shopifyImage;
+    } elseif ($localImage) {
+        $row['image_path'] = '/' . ltrim($localImage, '/');
+    } else {
+        $row['image_path'] = null;
+    }
+
+    return response()->json([
+        'message' => 'Product loaded successfully',
+        'data' => $row,
+        'status' => 200
+    ]);
+}
+
+
+
     
     /**
      * Store a newly created product in storage.
