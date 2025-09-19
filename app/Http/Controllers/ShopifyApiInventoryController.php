@@ -18,7 +18,7 @@ class ShopifyApiInventoryController extends Controller
 
 
     protected $shopifyStoreUrlName = '5-core.myshopify.com';
-    protected $shopifyAccessToken = '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';
+    protected $shopifyAccessToken = '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';
 
     public function __construct()
     {
@@ -79,7 +79,10 @@ class ShopifyApiInventoryController extends Controller
                 $queryParams['page_info'] = $pageInfo;
             }
 
-            $response = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
+            $response = Http::withHeaders([
+                'X-Shopify-Access-Token' => $this->shopifyAccessToken,
+                'Content-Type' => 'application/json'
+            ])
                 ->timeout(120)
                 ->retry(3, 500)
                 ->get("https://{$this->shopifyStoreUrl}/admin/api/2025-01/products.json", $queryParams);
@@ -710,7 +713,10 @@ class ShopifyApiInventoryController extends Controller
             }
         }
 
-        return Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
+        return Http::withHeaders([
+            'X-Shopify-Access-Token' => $this->shopifyAccessToken,
+            'Content-Type' => 'application/json'
+        ])
             ->timeout(120)
             ->retry(3, 500)
             ->get("https://{$this->shopifyStoreUrl}/admin/api/2025-01/orders.json", $queryParams);
@@ -822,7 +828,10 @@ class ShopifyApiInventoryController extends Controller
         foreach ($chunks as $chunk) {
             $query = http_build_query(['inventory_item_ids' => implode(',', $chunk)]);
 
-            $response = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
+            $response = Http::withHeaders([
+                'X-Shopify-Access-Token' => $this->shopifyAccessToken,
+                'Content-Type' => 'application/json'
+            ])
                 ->get("https://{$this->shopifyStoreUrl}/admin/api/2025-01/inventory_levels.json?$query");
 
             if ($response->successful()) {
@@ -850,7 +859,10 @@ class ShopifyApiInventoryController extends Controller
                 $queryParams['page_info'] = $pageInfo;
             }
 
-            $response = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
+            $response = Http::withHeaders([
+                'X-Shopify-Access-Token' => $this->shopifyAccessToken,
+                'Content-Type' => 'application/json'
+            ])
                 ->get("https://{$this->shopifyStoreUrl}/admin/api/2025-01/orders.json", $queryParams);
 
             if (!$response->successful()) {

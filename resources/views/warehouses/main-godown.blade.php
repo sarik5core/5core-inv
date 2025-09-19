@@ -101,7 +101,7 @@
 
 @section('content')
     @include('layouts.shared/page-title', [
-        'page_title' => 'Main Warehouse',
+        'page_title' => 'Inventory Warehouse',
         'sub_title' => 'Main Warehouse',
     ])
 

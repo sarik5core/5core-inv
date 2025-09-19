@@ -819,9 +819,9 @@
             const temuship = parseFloat(data.temu_ship) || 0;
 
             // Calculate profits
-            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.68) - LP - SHIP) * (parseFloat(data
+            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.70) - LP - SHIP) * (parseFloat(data
                 .amz_l30) || 0) : 0;
-            const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.71) - LP - SHIP) * (parseFloat(data
+            const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.72) - LP - SHIP) * (parseFloat(data
                 .ebay_l30) || 0) : 0;
             const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * (
                 parseFloat(data.shopifyb2c_l30) || 0) : 0;
@@ -857,8 +857,8 @@
 
             // Calculate profits and revenue for each marketplace
             const marketplaces = [
-                { name: "amz", price: data.amz_price, l30: data.amz_l30, percent: 0.68 },
-                { name: "ebay", price: data.ebay_price, l30: data.ebay_l30, percent: 0.71 },
+                { name: "amz", price: data.amz_price, l30: data.amz_l30, percent: 0.70 },
+                { name: "ebay", price: data.ebay_price, l30: data.ebay_l30, percent: 0.72 },
                 { name: "shopifyb2c", price: data.shopifyb2c_price, l30: data.shopifyb2c_l30, percent: 0.75 },
                 { name: "macy", price: data.macy_price, l30: data.macy_l30, percent: 0.76 },
                 { name: "reverb", price: data.reverb_price, l30: data.reverb_l30, percent: 0.84 },
@@ -1322,8 +1322,8 @@
                         const walmartL30 = parseFloat(data.walmart_l30) || 0;
 
                         // Calculate profit for each marketplace
-                        const amzProfit = ((amzPrice * 0.68) - LP - SHIP)  ;
-                        const ebayProfit = ((ebayPrice * 0.71) - LP - SHIP) ;
+                        const amzProfit = ((amzPrice * 0.70) - LP - SHIP)  ;
+                        const ebayProfit = ((ebayPrice * 0.72) - LP - SHIP) ;
                         const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) ;
                         const macyProfit = ((macyPrice * 0.76) - LP - SHIP) ;
                         const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) ;
@@ -1469,8 +1469,8 @@
                                             ebay3L30 + ebay2L30 + walmartL30;
 
                             // Profit calculations (use parsed *_L30 variables)
-                            const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.68) - LP - SHIP) * amzL30 : 0;
-                            const ebayProfit    = data.ebay_price       ? ((parseFloat(data.ebay_price) * 0.71) - LP - SHIP) * ebayL30 : 0;
+                            const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.70) - LP - SHIP) * amzL30 : 0;
+                            const ebayProfit    = data.ebay_price       ? ((parseFloat(data.ebay_price) * 0.72) - LP - SHIP) * ebayL30 : 0;
                             const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * shopifyL30 : 0;
                             const macyProfit    = data.macy_price       ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) * macyL30 : 0;
                             const reverbProfit  = data.reverb_price     ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * reverbL30 : 0;

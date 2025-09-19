@@ -30,7 +30,7 @@ class ApiController extends Controller
 
         // Step 1: Find variant by SKU
         $productsResponse = Http::withHeaders([
-            'X-Shopify-Access-Token' => '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',
+            'X-Shopify-Access-Token' => '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',
         ])->get("https://5-core.myshopify.com/admin/api/2025-01/products.json", [
             'fields' => 'id,title,variants'
         ]);
@@ -42,7 +42,7 @@ class ApiController extends Controller
 
                     // Step 2: Create or update metafield
                     $metafieldResponse = Http::withHeaders([
-                        'X-Shopify-Access-Token' => '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',
+                        'X-Shopify-Access-Token' => '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',
                         'Content-Type' => 'application/json'
                     ])->post("https://5-core.myshopify.com/admin/api/2025-01/metafields.json", [
                         'metafield' => [
