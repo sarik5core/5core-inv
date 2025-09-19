@@ -428,6 +428,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/incoming-data-store', [IncomingController::class, 'store'])->name('incoming.store');
     Route::get('/incoming-data-list', [IncomingController::class, 'list']);
 
+    //incoming orders
+    Route::get('/incoming-orders-view', [IncomingController::class, 'incomingOrderIndex'])->name('incoming.orders.view');
+    Route::post('/incoming-orders-store', [IncomingController::class, 'incomingOrderStore'])->name('incoming.orders.store');
+
+
+
     //outgoing
     Route::get('/outgoing-view', [OutgoingController::class, 'index'])->name('outgoing.view');
     Route::post('/outgoing-data-store', [OutgoingController::class, 'store'])->name('outgoing.store');

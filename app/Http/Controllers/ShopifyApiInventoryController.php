@@ -514,8 +514,9 @@ class ShopifyApiInventoryController extends Controller
     public function fetchInventoryWithCommitment(): array
     {
         set_time_limit(60);
-        $shopUrl = 'https://5-core.myshopify.com';
-        $token = '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';
+        $shopUrl = 'https://5-core.myshopify.com'; 
+        // $token = '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'; 
+        $token = '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'; 
 
         // Step 1: Get Ohio Location ID
         $locationId = null;
