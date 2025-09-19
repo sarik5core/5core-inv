@@ -697,9 +697,17 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
-                            let color = "green";
+                            let row = cell.getRow().getData();
+                            let adSales = parseFloat(row.ad_sales_l30 || 0);
 
-                            if (value < 7) {
+                            if (adSales === 0) {
+                                value = 100;
+                            }
+
+                            let color = "green";
+                            if(value == 100){
+                                color = "#000000";
+                            }else if (value < 7) {
                                 color = "#e83e8c";
                             } else if (value >= 7 && value <= 14) {
                                 color = "green";
@@ -723,11 +731,19 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
-                            let color = "green";
+                            let row = cell.getRow().getData();
+                            let adSales = parseFloat(row.ad_sales_l60 || 0);
 
-                            if (value < 7) {
+                            if (adSales === 0) {
+                                value = 100;
+                            }
+
+                            let color = "green";
+                            if(value == 100){
+                                color = "#000000";
+                            }else if (value < 7) {
                                 color = "#e83e8c";
-                            } else if (value >= 7 && value <= 14) {
+                            }else if (value >= 7 && value <= 14) {
                                 color = "green";
                             } else if (value > 14) {
                                 color = "red";
@@ -747,11 +763,19 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
-                            let color = "green";
+                            let row = cell.getRow().getData();
+                            let adSales = parseFloat(row.ad_sales_l15 || 0);
 
-                            if (value < 7) {
+                            if (adSales === 0) {
+                                value = 100;
+                            }
+
+                            let color = "green";
+                            if(value == 100){
+                                color = "#000000";
+                            }else if (value < 7) {
                                 color = "#e83e8c";
-                            } else if (value >= 7 && value <= 14) {
+                            }else if (value >= 7 && value <= 14) {
                                 color = "green";
                             } else if (value > 14) {
                                 color = "red";
@@ -771,11 +795,19 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
-                            let color = "green"; // default
+                            let row = cell.getRow().getData();
+                            let adSales = parseFloat(row.ad_sales_l7 || 0);
 
-                            if (value < 7) {
+                            if (adSales === 0) {
+                                value = 100;
+                            }
+
+                            let color = "green";
+                            if(value == 100){
+                                color = "#000000";
+                            }else if (value < 7) {
                                 color = "#e83e8c";
-                            } else if (value >= 7 && value <= 14) {
+                            }else if (value >= 7 && value <= 14) {
                                 color = "green";
                             } else if (value > 14) {
                                 color = "red";

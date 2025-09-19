@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Warehouse;
 
 use App\Http\Controllers\Controller;
+use App\Models\IncomingData;
 use Illuminate\Http\Request;
 use App\Models\Warehouse;
 use App\Models\Inventory;
@@ -184,6 +185,19 @@ class WarehouseController extends Controller
         }
 
         return view('warehouses.trash-godown', compact('data'));
+    }
+
+
+    public function mainGodown(Request $request)
+    {
+        $warehouseId = 6;
+        $data = IncomingData::with('warehouse')->where('warehouse_id', $warehouseId)->get();
+
+        if ($request->ajax()) {
+            return response()->json(['data' => $data]);
+        }
+
+        return view('warehouses.main-godown', compact('data'));
     }
 
 
