@@ -95,35 +95,44 @@ class EbayOverUtilizedBgtController extends Controller
     function getKeywords($campaignId, $adGroupId)
     {
         $accessToken = $this->getEbayAccessToken();
-        $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/keyword?ad_group_ids={$adGroupId}";
+        $keywords = [];
+        $offset = 0;
+        $limit = 200;
 
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $endpoint,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                "Authorization: Bearer {$accessToken}",
-                "Content-Type: application/json",
-            ],
-        ]);
+        do {
+            $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/keyword"."?ad_group_ids={$adGroupId}&keyword_status=ACTIVE&limit={$limit}&offset={$offset}";
 
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            throw new \Exception(curl_error($ch));
-        }
-        curl_close($ch);
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $endpoint,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "Authorization: Bearer {$accessToken}",
+                    "Content-Type: application/json",
+                ],
+            ]);
 
-        $data = json_decode($response, true);
+            $response = curl_exec($ch);
+            if (curl_errno($ch)) {
+                throw new \Exception(curl_error($ch));
+            }
+            curl_close($ch);
 
-        if (isset($data['keywords']) && is_array($data['keywords'])) {
-            return collect($data['keywords'])->map(function($k){
-                return $k['keywordId'] ?? $k['id'] ?? null;
-            })->filter()->toArray();
-        }
+            $data = json_decode($response, true);
 
-        return [];
+            if (isset($data['keywords']) && is_array($data['keywords'])) {
+                foreach ($data['keywords'] as $k) {
+                    $keywords[] = $k['keywordId'] ?? $k['id'] ?? null;
+                }
+            }
+
+            $total = $data['total'] ?? count($keywords);
+            $offset += $limit;
+
+        } while ($offset < $total);
+
+        return array_filter($keywords);
     }
-
 
     public function updateKeywordsBidDynamic(Request $request)
     {
@@ -149,37 +158,46 @@ class EbayOverUtilizedBgtController extends Controller
                 $adGroupId = $adGroup['adGroupId'];
                 $keywords = $this->getKeywords($campaignId, $adGroupId);
 
-                foreach ($keywords as $keywordId) {
-                    $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/keyword/{$keywordId}";
-
+                foreach (array_chunk($keywords, 100) as $keywordChunk) {
                     $payload = [
-                        "bid" => [
-                            "currency" => "USD",
-                            "value"    => $newBid,
-                        ],
-                        "keywordStatus" => "ACTIVE"
+                        "requests" => []
                     ];
-                    
+
+                    foreach ($keywordChunk as $keywordId) {
+                        $payload["requests"][] = [
+                            "bid" => [
+                                "currency" => "USD",
+                                "value"    => $newBid,
+                            ],
+                            "keywordId" => $keywordId,
+                            "keywordStatus" => "ACTIVE"
+                        ];
+                    }
+
+                    $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/bulk_update_keyword";
+
                     try {
                         $response = Http::withHeaders([
                             'Authorization' => "Bearer {$accessToken}",
                             'Content-Type'  => 'application/json',
-                        ])->put($endpoint, $payload);
+                        ])->post($endpoint, $payload);
 
                         if ($response->successful()) {
-                            $results[] = [
-                                "campaign_id" => $campaignId,
-                                "ad_group_id" => $adGroupId,
-                                "keyword_id"  => $keywordId,
-                                "status"      => "success",
-                                "message"     => "Keyword bid updated successfully",
-                            ];
+                            $respData = $response->json();
+                            foreach ($respData['responses'] ?? [] as $r) {
+                                $results[] = [
+                                    "campaign_id" => $campaignId,
+                                    "ad_group_id" => $adGroupId,
+                                    "keyword_id"  => $r['keywordId'] ?? null,
+                                    "status"      => $r['status'] ?? "unknown",
+                                    "message"     => $r['message'] ?? "Updated",
+                                ];
+                            }
                         } else {
                             $hasError = true;
                             $results[] = [
                                 "campaign_id" => $campaignId,
                                 "ad_group_id" => $adGroupId,
-                                "keyword_id"  => $keywordId,
                                 "status"      => "error",
                                 "message"     => $response->json()['errors'][0]['message'] ?? "Unknown error",
                                 "http_code"   => $response->status(),
@@ -191,15 +209,14 @@ class EbayOverUtilizedBgtController extends Controller
                         $results[] = [
                             "campaign_id" => $campaignId,
                             "ad_group_id" => $adGroupId,
-                            "keyword_id"  => $keywordId,
                             "status"      => "error",
                             "message"     => $e->getMessage(),
                         ];
                     }
-
                 }
             }
         }
+
         return response()->json([
             "status" => $hasError ? 207 : 200,
             "message" => $hasError ? "Some keywords failed to update" : "All keyword bids updated successfully",
@@ -361,8 +378,6 @@ class EbayOverUtilizedBgtController extends Controller
             'updated_json' => $jsonData
         ]);
     }
-
-
 
     public function ebayOverUtilized(){
         return view('campaign.ebay-under-utilized');

@@ -54,7 +54,7 @@ class EbayKwAdsController extends Controller
             ];
 
             $matchedCampaignL30 = $campaignReports['L30']->first(function ($item) use ($sku) {
-                return stripos($item->campaign_name, $sku) !== false;
+                return strtoupper(trim($item->campaign_name)) === strtoupper(trim($sku));
             });
 
             $row['campaignName'] = $matchedCampaignL30->campaign_name ?? '';
@@ -76,7 +76,7 @@ class EbayKwAdsController extends Controller
 
             foreach ($periods as $period) {
                 $matchedCampaign = $campaignReports[$period]->first(function ($item) use ($sku) {
-                    return stripos($item->campaign_name, $sku) !== false;
+                    return strtoupper(trim($item->campaign_name)) === strtoupper(trim($sku));
                 });
                 
                 if (!$matchedCampaign) {
