@@ -21,8 +21,8 @@ class IncomingController extends Controller
 {
 
     protected $shopifyDomain = '5-core.myshopify.com';
-    protected $shopifyApiKey = '01f70fee8001931b5a25e3df24d6d749';
-    protected $shopifyPassword = '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';
+    protected $shopifyApiKey = '818a43f8d3ae2f7bcfed50abb1e6deb9';
+    protected $shopifyPassword = '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';
 
     protected $apiController;
 
@@ -30,6 +30,7 @@ class IncomingController extends Controller
     {
         $this->apiController = $apiController;
     }
+
 
     /**
      * Display a listing of the resource.
