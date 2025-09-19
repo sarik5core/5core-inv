@@ -431,40 +431,18 @@
                         }
                     },
                     {
-                        title: "IMP L7",
-                        field: "impressions_l7",
-                        hozAlign: "right",
-                        formatter: function(cell) {
-                            let impressions_l7 = cell.getValue();
-                            return `
-                                <span>${impressions_l7}</span>
-                                <i class="fa fa-info-circle text-primary impressions_l7_btn" 
-                                data-impression-l7="${impressions_l7}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
-                            `;
-                        }
-                    },
-                    {
-                        title: "IMP L15",
-                        field: "impressions_l15",
-                        hozAlign: "right",
-                        formatter: function(cell) {
-                            return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
-                            `;
-                        },
-                        visible: false
-                    },
-                    {
                         title: "IMP L30",
                         field: "impressions_l30",
                         hozAlign: "right",
                         formatter: function(cell) {
+                            let impressions_l30 = cell.getValue();
                             return `
                                 <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary impressions_l30_btn" 
+                                    data-impression-l30="${impressions_l30}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        },
-                        visible: false
+                        }
                     },
                     {
                         title: "IMP L60",
@@ -478,33 +456,24 @@
                         visible: false
                     },
                     {
-                        title: "Clicks L7",
-                        field: "clicks_l7",
+                        title: "IMP L15",
+                        field: "impressions_l15",
                         hozAlign: "right",
                         formatter: function(cell) {
-                            let value = parseFloat(cell.getValue() || 0);
-                            let color = value < 50 ? "red" : "green";
                             return `
-                                <span style="color:${color}; font-weight:600;">
-                                    ${value.toFixed(0)}
-                                </span>
-                                <i class="fa fa-info-circle text-primary clicks_l7_btn" 
-                                data-clicks-l7="${value}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
                             `;
-                        }
+                        },
+                        visible: false
                     },
                     {
-                        title: "Clicks L15",
-                        field: "clicks_l15",
+                        title: "IMP L7",
+                        field: "impressions_l7",
                         hozAlign: "right",
                         formatter: function(cell) {
-                            let value = parseFloat(cell.getValue() || 0);
-                            let color = value < 50 ? "red" : "green";
+                            let impressions_l7 = cell.getValue();
                             return `
-                                <span style="color:${color}; font-weight:600;">
-                                    ${value.toFixed(0)}
-                                </span>
+                                <span>${impressions_l7}</span>
                             `;
                         },
                         visible: false
@@ -520,9 +489,11 @@
                                 <span style="color:${color}; font-weight:600;">
                                     ${value.toFixed(0)}
                                 </span>
+                                <i class="fa fa-info-circle text-primary clicks_l30_btn" 
+                                data-clicks-l30="${value}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        },
-                        visible: false
+                        }
                     },
                     {
                         title: "Clicks L60",
@@ -540,27 +511,31 @@
                         visible: false
                     },
                     {
-                        title: "Spend L7",
-                        field: "spend_l7",
+                        title: "Clicks L15",
+                        field: "clicks_l15",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
+                            let color = value < 50 ? "red" : "green";
                             return `
-                                <span>${value.toFixed(0)}</span>
-                                <i class="fa fa-info-circle text-primary spend_l7_btn" 
-                                data-spend-l7="${value}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
+                                <span style="color:${color}; font-weight:600;">
+                                    ${value.toFixed(0)}
+                                </span>
                             `;
-                        }
+                        },
+                        visible: false
                     },
                     {
-                        title: "Spend L15",
-                        field: "spend_l15",
+                        title: "Clicks L7",
+                        field: "clicks_l7",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
+                            let color = value < 50 ? "red" : "green";
                             return `
-                                <span>${value.toFixed(0)}</span>
+                                <span style="color:${color}; font-weight:600;">
+                                    ${value.toFixed(0)}
+                                </span>
                             `;
                         },
                         visible: false
@@ -573,9 +548,11 @@
                             let value = parseFloat(cell.getValue() || 0);
                             return `
                                 <span>${value.toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary spend_l30_btn" 
+                                data-spend-l30="${value}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        },
-                        visible: false
+                        }
                     },
                     {
                         title: "Spend L60",
@@ -590,22 +567,20 @@
                         visible: false
                     },
                     {
-                        title: "Ad Sales L7",
-                        field: "ad_sales_l7",
+                        title: "Spend L15",
+                        field: "spend_l15",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
                             return `
                                 <span>${value.toFixed(0)}</span>
-                                <i class="fa fa-info-circle text-primary ad_sales_l7_btn" 
-                                    data-ad_sales-l7="${value}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        }
+                        },
+                        visible: false
                     },
                     {
-                        title: "Ad Sales L15",
-                        field: "ad_sales_l15",
+                        title: "Spend L7",
+                        field: "spend_l7",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
@@ -623,9 +598,11 @@
                             let value = parseFloat(cell.getValue() || 0);
                             return `
                                 <span>${value.toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary ad_sales_l30_btn" 
+                                    data-ad_sales-l30="${value}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        },
-                        visible: false
+                        }
                     },
                     {
                         title: "Ad Sales L60",
@@ -640,22 +617,20 @@
                         visible: false
                     },
                     {
-                        title: "Ad Sold L7",
-                        field: "ad_sold_l7",
+                        title: "Ad Sales L15",
+                        field: "ad_sales_l15",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
                             return `
                                 <span>${value.toFixed(0)}</span>
-                                <i class="fa fa-info-circle text-primary ad_sold_l7_btn" 
-                                    data-ad_sold-l7="${value}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        }
+                        },
+                        visible: false
                     },
                     {
-                        title: "Ad Sold L15",
-                        field: "ad_sold_l15",
+                        title: "Ad Sales L7",
+                        field: "ad_sales_l7",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
@@ -673,9 +648,11 @@
                             let value = parseFloat(cell.getValue() || 0);
                             return `
                                 <span>${value.toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary ad_sold_l30_btn" 
+                                    data-ad_sold-l30="${value}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        },
-                        visible: false
+                        }
                     },
                     {
                         title: "Ad Sold L60",
@@ -690,51 +667,25 @@
                         visible: false
                     },
                     {
-                        title: "ACOS L7",
-                        field: "acos_l7",
+                        title: "Ad Sold L15",
+                        field: "ad_sold_l15",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
-                            let color = "green"; // default
-
-                            if (value < 7) {
-                                color = "#e83e8c";
-                            } else if (value >= 7 && value <= 14) {
-                                color = "green";
-                            } else if (value > 14) {
-                                color = "red";
-                            }
-
                             return `
-                                <span style="color:${color}; font-weight:600;">
-                                    ${value.toFixed(0)}%
-                                </span>
-                                <i class="fa fa-info-circle text-primary acos_l7_btn" 
-                                    data-acos-l7="${value}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
+                                <span>${value.toFixed(0)}</span>
                             `;
-                        }
+                        },
+                        visible: false
                     },
                     {
-                        title: "ACOS L15",
-                        field: "acos_l15",
+                        title: "Ad Sold L7",
+                        field: "ad_sold_l7",
                         hozAlign: "right",
                         formatter: function(cell) {
                             let value = parseFloat(cell.getValue() || 0);
-                            let color = "green";
-
-                            if (value < 7) {
-                                color = "#e83e8c";
-                            } else if (value >= 7 && value <= 14) {
-                                color = "green";
-                            } else if (value > 14) {
-                                color = "red";
-                            }
-
                             return `
-                                <span style="color:${color}; font-weight:600;">
-                                    ${value.toFixed(0)}%
-                                </span>
+                                <span>${value.toFixed(0)}</span>
                             `;
                         },
                         visible: false
@@ -759,9 +710,11 @@
                                 <span style="color:${color}; font-weight:600;">
                                     ${value.toFixed(0)}%
                                 </span>
+                                <i class="fa fa-info-circle text-primary acos_l30_btn" 
+                                    data-acos-l30="${value}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        },
-                        visible: false
+                        }
                     },
                     {
                         title: "ACOS L60",
@@ -788,30 +741,50 @@
                         visible: false
                     },
                     {
-                        title: "CPC L7",
-                        field: "cpc_l7",
-                        hozAlign: "center",
+                        title: "ACOS L15",
+                        field: "acos_l15",
+                        hozAlign: "right",
                         formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
+                            let value = parseFloat(cell.getValue() || 0);
+                            let color = "green";
+
+                            if (value < 7) {
+                                color = "#e83e8c";
+                            } else if (value >= 7 && value <= 14) {
+                                color = "green";
+                            } else if (value > 14) {
+                                color = "red";
+                            }
+
                             return `
-                                <span>
-                                    ${cpc_l7.toFixed(2)}
+                                <span style="color:${color}; font-weight:600;">
+                                    ${value.toFixed(0)}%
                                 </span>
-                                <i class="fa fa-info-circle text-primary cpc_l7_btn" 
-                                    data-cpc-l7="${cpc_l7}" 
-                                style="cursor:pointer; margin-left:8px;"></i>
                             `;
-                        }
+                        },
+                        visible: false
                     },
                     {
-                        title: "CPC L15",
-                        field: "cpc_l15",
-                        hozAlign: "center",
+                        title: "ACOS L7",
+                        field: "acos_l7",
+                        hozAlign: "right",
                         formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var cpc_l15 = parseFloat(row.cpc_l15) || 0;
-                            return cpc_l15.toFixed(2);
+                            let value = parseFloat(cell.getValue() || 0);
+                            let color = "green"; // default
+
+                            if (value < 7) {
+                                color = "#e83e8c";
+                            } else if (value >= 7 && value <= 14) {
+                                color = "green";
+                            } else if (value > 14) {
+                                color = "red";
+                            }
+
+                            return `
+                                <span style="color:${color}; font-weight:600;">
+                                    ${value.toFixed(0)}%
+                                </span>
+                            `;
                         },
                         visible: false
                     },
@@ -822,9 +795,16 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var cpc_l30 = parseFloat(row.cpc_l30) || 0;
-                            return cpc_l30.toFixed(2);
-                        },
-                        visible: false
+
+                            return `
+                                <span>
+                                    ${cpc_l30.toFixed(2)}
+                                </span>
+                                <i class="fa fa-info-circle text-primary cpc_l30_btn" 
+                                    data-cpc-l30="${cpc_l30}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
                     },
                     {
                         title: "CPC L60",
@@ -838,32 +818,85 @@
                         visible: false
                     },
                     {
-                        title: "CVR L7",
-                        field: "cvr_l7",
+                        title: "CPC L15",
+                        field: "cpc_l15",
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var ad_sold_l7 = parseFloat(row.ad_sold_l7) || 0;
-                            var clicks_l7 = parseFloat(row.clicks_l7) || 0;
-
-                            var cvr_l7 = (clicks_l7 > 0) ? (ad_sold_l7 / clicks_l7) * 100 : 0;
+                            var cpc_l15 = parseFloat(row.cpc_l15) || 0;
+                            return cpc_l15.toFixed(2);
+                        },
+                        visible: false
+                    },
+                    {
+                        title: "CPC L7",
+                        field: "cpc_l7",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
+                            return `
+                                <span>
+                                    ${cpc_l7.toFixed(2)}
+                                </span>
+                            `;
+                        },
+                        visible: false
+                    },
+                    {
+                        title: "CVR L30",
+                        field: "cvr_l30",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var ad_sold_l30 = parseFloat(row.ad_sold_l30) || 0;
+                            var clicks_l30 = parseFloat(row.clicks_l30) || 0;
+                            
+                            var cvr_l30 = (clicks_l30 > 0) ? (ad_sold_l30 / clicks_l30) * 100 : 0;
                             let color = "";
-                            if (cvr_l7 < 5) {
+                            if (cvr_l30 < 5) {
                                 color = "red";
-                            } else if (cvr_l7 >= 5 && cvr_l7 <= 10) {
+                            } else if (cvr_l30 >= 5 && cvr_l30 <= 10) {
                                 color = "green";
-                            } else if (cvr_l7 > 10){
+                            } else if (cvr_l30 > 10){
                                 color = "#e83e8c";
                             }
                             return `
                                 <span style="color:${color}; font-weight:600;">
-                                    ${cvr_l7.toFixed(0)}%
+                                    ${cvr_l30.toFixed(0)}%
                                 </span>
-                                <i class="fa fa-info-circle text-primary cvr_l7_btn" 
-                                    data-cvr-l7="${cvr_l7}" 
+                                <i class="fa fa-info-circle text-primary cvr_l30_btn" 
+                                    data-cvr-l30="${cvr_l30}" 
                                     style="cursor:pointer; margin-left:8px;"></i>
                             `;
                         }
+                    },
+                    {
+                        title: "CVR L60",
+                        field: "cvr_l60",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            var row = cell.getRow().getData();
+                            var ad_sold_l60 = parseFloat(row.ad_sold_l60) || 0;
+                            var clicks_l60 = parseFloat(row.clicks_l60) || 0;
+                            
+                            var cvr_l60 = (clicks_l60 > 0) ? (ad_sold_l60 / clicks_l60) * 100 : 0;
+                            let color = "";
+                            if (cvr_l60 < 5) {
+                                color = "red";
+                            } else if (cvr_l60 >= 5 && cvr_l60 <= 10) {
+                                color = "green";
+                            } else if (cvr_l60 > 10){
+                                color = "#e83e8c";
+                            }
+                            return `
+                                <span style="color:${color}; font-weight:600;">
+                                    ${cvr_l60.toFixed(0)}%
+                                </span>
+                            `;
+
+                        },
+                        visible: false
                     },
                     {
                         title: "CVR L15",
@@ -892,55 +925,28 @@
                         visible: false
                     },
                     {
-                        title: "CVR L30",
-                        field: "cvr_l30",
+                        title: "CVR L7",
+                        field: "cvr_l7",
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var ad_sold_l30 = parseFloat(row.ad_sold_l30) || 0;
-                            var clicks_l30 = parseFloat(row.clicks_l30) || 0;
-                            
-                            var cvr_l30 = (clicks_l30 > 0) ? (ad_sold_l30 / clicks_l30) * 100 : 0;
-                            let color = "";
-                            if (cvr_l30 < 5) {
-                                color = "red";
-                            } else if (cvr_l30 >= 5 && cvr_l30 <= 10) {
-                                color = "green";
-                            } else if (cvr_l30 > 10){
-                                color = "#e83e8c";
-                            }
-                            return `
-                                <span style="color:${color}; font-weight:600;">
-                                    ${cvr_l30.toFixed(0)}%
-                                </span>
-                            `;
-                        },
-                        visible: false
-                    },
-                    {
-                        title: "CVR L60",
-                        field: "cvr_l60",
-                        hozAlign: "center",
-                        formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var ad_sold_l60 = parseFloat(row.ad_sold_l60) || 0;
-                            var clicks_l60 = parseFloat(row.clicks_l60) || 0;
-                            
-                            var cvr_l60 = (clicks_l60 > 0) ? (ad_sold_l60 / clicks_l60) * 100 : 0;
-                            let color = "";
-                            if (cvr_l60 < 5) {
-                                color = "red";
-                            } else if (cvr_l60 >= 5 && cvr_l60 <= 10) {
-                                color = "green";
-                            } else if (cvr_l60 > 10){
-                                color = "#e83e8c";
-                            }
-                            return `
-                                <span style="color:${color}; font-weight:600;">
-                                    ${cvr_l60.toFixed(0)}%
-                                </span>
-                            `;
+                            var ad_sold_l7 = parseFloat(row.ad_sold_l7) || 0;
+                            var clicks_l7 = parseFloat(row.clicks_l7) || 0;
 
+                            var cvr_l7 = (clicks_l7 > 0) ? (ad_sold_l7 / clicks_l7) * 100 : 0;
+                            let color = "";
+                            if (cvr_l7 < 5) {
+                                color = "red";
+                            } else if (cvr_l7 >= 5 && cvr_l7 <= 10) {
+                                color = "green";
+                            } else if (cvr_l7 > 10){
+                                color = "#e83e8c";
+                            }
+                            return `
+                                <span style="color:${color}; font-weight:600;">
+                                    ${cvr_l7.toFixed(0)}%
+                                </span>
+                            `;
                         },
                         visible: false
                     },
@@ -1100,8 +1106,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("impressions_l7_btn")) {
-                    let colsToToggle = ["impressions_l15", "impressions_l30", "impressions_l60"];
+                if (e.target.classList.contains("impressions_l30_btn")) {
+                    let colsToToggle = ["impressions_l60", "impressions_l15", "impressions_l7"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1111,8 +1117,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("clicks_l7_btn")) {
-                    let colsToToggle = ["clicks_l15", "clicks_l30", "clicks_l60"];
+                if (e.target.classList.contains("clicks_l30_btn")) {
+                    let colsToToggle = ["clicks_l15", "clicks_l7", "clicks_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1122,8 +1128,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("spend_l7_btn")) {
-                    let colsToToggle = ["spend_l15", "spend_l30", "spend_l60"];
+                if (e.target.classList.contains("spend_l30_btn")) {
+                    let colsToToggle = ["spend_l15", "spend_l7", "spend_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1133,8 +1139,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("ad_sales_l7_btn")) {
-                    let colsToToggle = ["ad_sales_l15", "ad_sales_l30", "ad_sales_l60"];
+                if (e.target.classList.contains("ad_sales_l30_btn")) {
+                    let colsToToggle = ["ad_sales_l15", "ad_sales_l7", "ad_sales_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1144,8 +1150,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("ad_sold_l7_btn")) {
-                    let colsToToggle = ["ad_sold_l15", "ad_sold_l30", "ad_sold_l60"];
+                if (e.target.classList.contains("ad_sold_l30_btn")) {
+                    let colsToToggle = ["ad_sold_l15", "ad_sold_l7", "ad_sold_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1155,8 +1161,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("acos_l7_btn")) {
-                    let colsToToggle = ["acos_l15", "acos_l30", "acos_l60"];
+                if (e.target.classList.contains("acos_l30_btn")) {
+                    let colsToToggle = ["acos_l15", "acos_l7", "acos_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1166,8 +1172,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("cpc_l7_btn")) {
-                    let colsToToggle = ["cpc_l15", "cpc_l30", "cpc_l60"];
+                if (e.target.classList.contains("cpc_l30_btn")) {
+                    let colsToToggle = ["cpc_l15", "cpc_l7", "cpc_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);
@@ -1177,8 +1183,8 @@
                     });
                 }
 
-                if (e.target.classList.contains("cvr_l7_btn")) {
-                    let colsToToggle = ["cvr_l15", "cvr_l30", "cvr_l60"];
+                if (e.target.classList.contains("cvr_l30_btn")) {
+                    let colsToToggle = ["cvr_l15", "cvr_l7", "cvr_l60"];
 
                     colsToToggle.forEach(colField => {
                         let col = table.getColumn(colField);

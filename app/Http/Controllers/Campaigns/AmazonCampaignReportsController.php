@@ -62,46 +62,38 @@ class AmazonCampaignReportsController extends Controller
 
         $amazonSpCampaignReportsL60 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L60')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
-                }
+            ->whereIn('campaignName', $skus)
+            ->where(function ($q) {
+                $q->where('campaignName', 'NOT LIKE', '%PT%')
+                ->where('campaignName', 'NOT LIKE', '%PT.%');
             })
-            ->where('campaignName', 'NOT LIKE', '%PT')
-            ->where('campaignName', 'NOT LIKE', '%PT.')
             ->get();
 
         $amazonSpCampaignReportsL30 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L30')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
-                }
+            ->whereIn('campaignName', $skus)
+            ->where(function ($q) {
+                $q->where('campaignName', 'NOT LIKE', '%PT%')
+                ->where('campaignName', 'NOT LIKE', '%PT.%');
             })
-            ->where('campaignName', 'NOT LIKE', '%PT')
-            ->where('campaignName', 'NOT LIKE', '%PT.')
             ->get();
 
         $amazonSpCampaignReportsL15 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L15')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
-                }
+            ->whereIn('campaignName', $skus)
+            ->where(function ($q) {
+                $q->where('campaignName', 'NOT LIKE', '%PT%')
+                ->where('campaignName', 'NOT LIKE', '%PT.%');
             })
-            ->where('campaignName', 'NOT LIKE', '%PT')
-            ->where('campaignName', 'NOT LIKE', '%PT.')
             ->get();
 
         $amazonSpCampaignReportsL7 = AmazonSpCampaignReport::where('ad_type', 'SPONSORED_PRODUCTS')
             ->where('report_date_range', 'L7')
-            ->where(function ($q) use ($skus) {
-                foreach ($skus as $sku) {
-                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
-                }
+            ->whereIn('campaignName', $skus)
+            ->where(function ($q) {
+                $q->where('campaignName', 'NOT LIKE', '%PT%')
+                ->where('campaignName', 'NOT LIKE', '%PT.%');
             })
-            ->where('campaignName', 'NOT LIKE', '%PT')
-            ->where('campaignName', 'NOT LIKE', '%PT.')
             ->get();
 
         $result = [];
@@ -113,25 +105,17 @@ class AmazonCampaignReportsController extends Controller
             $amazonSheet = $amazonDatasheetsBySku[$sku] ?? null;
             $shopify = $shopifyData[$pm->sku] ?? null;
 
-            $matchedCampaignL60 = $amazonSpCampaignReportsL60->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
-            });
+            $matchedCampaignL60 = $amazonSpCampaignReportsL60->firstWhere('campaignName', $sku);
 
-            $matchedCampaignL30 = $amazonSpCampaignReportsL30->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
-            });
+            $matchedCampaignL30 = $amazonSpCampaignReportsL30->firstWhere('campaignName', $sku);
 
-            $matchedCampaignL15 = $amazonSpCampaignReportsL15->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
-            });
+            $matchedCampaignL15 = $amazonSpCampaignReportsL15->firstWhere('campaignName', $sku);
 
-            $matchedCampaignL7 = $amazonSpCampaignReportsL7->first(function ($item) use ($sku) {
-                return stripos($item->campaignName, $sku) !== false;
-            });
+            $matchedCampaignL7 = $amazonSpCampaignReportsL7->firstWhere('campaignName', $sku);
 
-            if(!$matchedCampaignL60 && !$matchedCampaignL30 && !$matchedCampaignL15 && !$matchedCampaignL7){
-                continue;
-            }
+            // if(!$matchedCampaignL60 && !$matchedCampaignL30 && !$matchedCampaignL15 && !$matchedCampaignL7){
+            //     continue;
+            // }
 
             $row = [
                 'parent' => $parent,
@@ -139,7 +123,7 @@ class AmazonCampaignReportsController extends Controller
                 'INV' => $shopify->inv ?? 0,
                 'L30' => $shopify->quantity ?? 0,
                 'A_L30' => $amazonSheet->units_ordered_l30 ?? 0,
-                'campaignName' => $matchedCampaignL30->campaignName ?? '',
+                'campaignName' => $matchedCampaignL7->campaignName ?? '',
                 'campaignStatus' => $matchedCampaignL30->campaignStatus ?? '',
                 'campaignBudgetAmount' => $matchedCampaignL30->campaignBudgetAmount ?? 0,
                 // L60
@@ -195,7 +179,9 @@ class AmazonCampaignReportsController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if($row['campaignName'] != ''){
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([
