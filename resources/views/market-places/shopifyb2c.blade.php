@@ -894,7 +894,8 @@
         option[value="Q-Task"] {
             background-color: #ff00ff;
         }
-        .nr-hide{
+
+        .nr-hide {
             display: none !important;
         }
 
@@ -923,7 +924,8 @@
                         <div class="badge bg-danger text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
                             0 SOLD - <span id="zero-sold-count">0</span>
                         </div>
-                        <div class="badge bg-primary text-white px-3 py-2 me-2" style="font-size: 1rem; border-radius: 8px;">
+                        <div class="badge bg-primary text-white px-3 py-2 me-2"
+                            style="font-size: 1rem; border-radius: 8px;">
                             SOLD - <span id="sold-count">0</span>
                         </div>
                         <div class="badge bg-danger text-white px-3 py-2" style="font-size: 1rem; border-radius: 8px;">
@@ -941,295 +943,352 @@
                     <h4 class="header-title">Shopify B2C Product Analysis</h4>
 
                     <!-- Custom Dropdown Filters Row -->
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <!-- Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
-                                <span class="status-circle default"></span> OV DIL%
+                    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center justify-content-between">
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+
+                            <!-- Dil% Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
+                                    <span class="status-circle default"></span> OV DIL%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All OV DIL</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- A Dil% Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="aDilFilterDropdown">
+                                    <span class="status-circle default"></span> SH DIL%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="aDilFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All SH DIL</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- PFT % Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
+                                    <span class="status-circle default"></span> PFT%
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All PFT</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="blue">
+                                            <span class="status-circle blue"></span> Blue</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- ROI Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="roiFilterDropdown">
+                                    <span class="status-circle default"></span> ROI
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All ROI</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Tacos Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="tacosFilterDropdown">
+                                    <span class="status-circle default"></span> TACOS
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="tacosFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All TACOS</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="blue">
+                                            <span class="status-circle blue"></span> Blue</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="yellow">
+                                            <span class="status-circle yellow"></span> Yellow</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- CVR Filter -->
+                            <div class="dropdown manual-dropdown-container">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
+                                    <span class="status-circle default"></span> SCVR
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="all">
+                                            <span class="status-circle default"></span> All CVR</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="red">
+                                            <span class="status-circle red"></span> Red</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="green">
+                                            <span class="status-circle green"></span> Green</a></li>
+                                    <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
+                                            data-color="pink">
+                                            <span class="status-circle pink"></span> Pink</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Task Board Button -->
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#createTaskModal">
+                                <i class="bi bi-plus-circle me-2"></i>Create Task
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All OV DIL</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
 
-                        <!-- A Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="aDilFilterDropdown">
-                                <span class="status-circle default"></span> SH DIL%
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="aDilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All SH DIL</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SH DIL%"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
+                            <!-- for popup modal start Modal -->
+                            <div class="modal fade" id="createTaskModal" tabindex="-1"
+                                aria-labelledby="createTaskModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to
+                                                Task
+                                                Manager</h4>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
 
-                        <!-- PFT % Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="pftFilterDropdown">
-                                <span class="status-circle default"></span> PFT%
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="pftFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All PFT</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="PFT %"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
+                                        <div class="modal-body">
+                                            <form id="taskForm">
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-12">
+                                                            <label class="form-label">Group</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter Group">
+                                                        </div>
 
-                        <!-- ROI Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="roiFilterDropdown">
-                                <span class="status-circle default"></span> ROI
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="roiFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All ROI</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Roi"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Tacos Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="tacosFilterDropdown">
-                                <span class="status-circle default"></span> TACOS
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="tacosFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All TACOS</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="blue">
-                                        <span class="status-circle blue"></span> Blue</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Tacos30"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- CVR Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="scvrFilterDropdown">
-                                <span class="status-circle default"></span> SCVR
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="scvrFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All CVR</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="SCVR"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Task Board Button -->
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#createTaskModal">
-                            <i class="bi bi-plus-circle me-2"></i>Create Task
-                        </button>
-
-                        <!-- for popup modal start Modal -->
-                        <div class="modal fade" id="createTaskModal" tabindex="-1"
-                            aria-labelledby="createTaskModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to Task
-                                            Manager</h4>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="taskForm">
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-12">
-                                                        <label class="form-label">Group</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Group">
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Title<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Title">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Priority</label>
-                                                        <select class="form-select">
-                                                            <option>Low</option>
-                                                            <option>Medium</option>
-                                                            <option>High</option>
-                                                        </select>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Title<span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter Title">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Priority</label>
+                                                            <select class="form-select">
+                                                                <option>Low</option>
+                                                                <option>Medium</option>
+                                                                <option>High</option>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assignor<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option selected disabled>Select Assignor</option>
-                                                            <option>Srabani Ghosh</option>
-                                                            <option>Rahul Mehta</option>
-                                                            <option>Anjali Verma</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Status</label>
-                                                        <select class="form-select">
-                                                            <option disabled selected>Select Status</option>
-                                                            <option value="Todo">Todo</option>
-                                                            <option value="Not Started">Not Started</option>
-                                                            <option value="Working">Working</option>
-                                                            <option value="In Progress">In Progress</option>
-                                                            <option value="Monitor">Monitor</option>
-                                                            <option value="Done">Done</option>
-                                                            <option value="Need Help">Need Help</option>
-                                                            <option value="Review">Review</option>
-                                                            <option value="Need Approval">Need Approval</option>
-                                                            <option value="Dependent">Dependent</option>
-                                                            <option value="Approved">Approved</option>
-                                                            <option value="Hold">Hold</option>
-                                                            <option value="Rework">Rework</option>
-                                                            <option value="Urgent">Urgent</option>
-                                                            <option value="Q-Task">Q-Task</option>
-                                                        </select>
-                                                    </div>
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Assignor<span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-select">
+                                                                <option selected disabled>Select Assignor</option>
+                                                                <option>Srabani Ghosh</option>
+                                                                <option>Rahul Mehta</option>
+                                                                <option>Anjali Verma</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Status</label>
+                                                            <select class="form-select">
+                                                                <option disabled selected>Select Status</option>
+                                                                <option value="Todo">Todo</option>
+                                                                <option value="Not Started">Not Started</option>
+                                                                <option value="Working">Working</option>
+                                                                <option value="In Progress">In Progress</option>
+                                                                <option value="Monitor">Monitor</option>
+                                                                <option value="Done">Done</option>
+                                                                <option value="Need Help">Need Help</option>
+                                                                <option value="Review">Review</option>
+                                                                <option value="Need Approval">Need Approval</option>
+                                                                <option value="Dependent">Dependent</option>
+                                                                <option value="Approved">Approved</option>
+                                                                <option value="Hold">Hold</option>
+                                                                <option value="Rework">Rework</option>
+                                                                <option value="Urgent">Urgent</option>
+                                                                <option value="Q-Task">Q-Task</option>
+                                                            </select>
+                                                        </div>
 
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assign To<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option>Please Select</option>
-                                                            <option>Dev Team</option>
-                                                            <option>QA Team</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Duration<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" id="duration" class="form-control"
-                                                            placeholder="Select start and end date/time">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Assign To<span
+                                                                    class="text-danger">*</span></label>
+                                                            <select class="form-select">
+                                                                <option>Please Select</option>
+                                                                <option>Dev Team</option>
+                                                                <option>QA Team</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Duration<span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" id="duration" class="form-control"
+                                                                placeholder="Select start and end date/time">
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L1</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L1">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L2</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L2">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Description</label>
-                                                        <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Image</label>
-                                                        <label class="choose-file">
-                                                            Choose File
-                                                            <input type="file" class="form-control d-none">
-                                                        </label>
+                                                <div class="form-section">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">L1</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter L1">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">L2</label>
+                                                            <input type="text" class="form-control"
+                                                                placeholder="Enter L2">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Description</label>
+                                                            <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Image</label>
+                                                            <label class="choose-file">
+                                                                Choose File
+                                                                <input type="file" class="form-control d-none">
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                            </form>
+                                        </div>
 
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-warning text-white"
-                                            id="createBtn">Create</button>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-warning text-white"
+                                                id="createBtn">Create</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!--for popup modal -->
+
+                            <!-- Close All Modals Button -->
+                            <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
+                                <i class="fas fa-times"></i> Close All Modals
+                            </button>
                         </div>
 
-                        <!--for popup modal -->
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Export Button -->
+                            <a href="{{ route('shopifyb2c.analytics.export') }}" class="btn btn-success">
+                                <i class="fas fa-file-export me-1"></i> Export Live/Listings
+                            </a>
 
-                        <!-- Close All Modals Button -->
-                        <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
-                            <i class="fas fa-times"></i> Close All Modals
-                        </button>
+                            <!-- Import Button -->
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#shopifyb2cImportModal">
+                                <i class="fas fa-file-import me-1"></i> Import Live/Listings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="shopifyb2cImportModal" tabindex="-1"
+                        aria-labelledby="shopifyb2cImportModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <form action="{{ route('shopifyb2c.analytics.import') }}" method="POST"
+                                enctype="multipart/form-data" class="modal-content" id="shopifyb2cImportForm">
+                                @csrf
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="shopifyb2cImportModalLabel">Import Shopify B2C Data</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- File Input -->
+                                    <div class="mb-3">
+                                        <label for="shopifyb2cExcelFile" class="form-label">Select Excel File</label>
+                                        <input type="file" class="form-control" id="shopifyb2cExcelFile"
+                                            name="excel_file" accept=".xlsx,.xls,.csv" required>
+                                    </div>
+
+                                    <!-- Sample File Link -->
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Download the <a href="{{ route('shopifyb2c.analytics.sample') }}"
+                                                class="alert-link">sample file</a>
+                                            to see the required format. Columns should be: SKU, Listed, Live.
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-file-import me-1"></i> Import
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- play backward forwad  -->
@@ -1385,7 +1444,7 @@
                                     </th>
                                     <th>NRL</th>
 
-                                     <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
+                                    <th data-field="listed" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
                                                 LISTED <span class="sort-arrow">↓</span>
@@ -2116,13 +2175,16 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response && response.data) {
-                            
+
                             tableData = response.data.map((item, index) => {
 
                                 const valueJson = item.value ? JSON.parse(item.value) : {};
-                                const listedVal = valueJson.Listed !== undefined ? parseInt(valueJson.Listed) : 0;
-                                const liveVal   = valueJson.Live !== undefined ? parseInt(valueJson.Live) : 0;
-                                const dil = (item.INV && item.INV !== 0)  ? (item.L30 / item.INV) : 0;
+                                const listedVal = valueJson.Listed !== undefined ? parseInt(
+                                    valueJson.Listed) : 0;
+                                const liveVal = valueJson.Live !== undefined ? parseInt(
+                                    valueJson.Live) : 0;
+                                const dil = (item.INV && item.INV !== 0) ? (item.L30 / item
+                                    .INV) : 0;
 
                                 return {
                                     sl_no: index + 1,
@@ -2144,14 +2206,16 @@
                                     Tacos30: item.TacosL30 || 0,
                                     SCVR: item.SCVR || 0,
                                     'ad cost/ pc': item['ad cost/ pc'] || '',
-                                    is_parent: typeof item['(Child) sku'] === "string" ? item['(Child) sku'].toUpperCase().includes("PARENT") : false,
+                                    is_parent: typeof item['(Child) sku'] === "string" ? item[
+                                            '(Child) sku'].toUpperCase().includes("PARENT") :
+                                        false,
                                     raw_data: item || {},
                                     NR: item.NR !== undefined ? item.NR : '',
                                     listed: listedVal,
                                     live: liveVal,
                                 };
                             });
-                            
+
                             filteredData = [...tableData];
                         }
                     },
@@ -2193,24 +2257,26 @@
                 updateRedMarginDataToChannelMaster(lowProfitCount);
             }
 
-            function updateRedMarginDataToChannelMaster(lowProfitCount){
+            function updateRedMarginDataToChannelMaster(lowProfitCount) {
                 console.log(lowProfitCount);
-                
+
                 fetch('/shopifyb2c/saveLowProfit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ count: lowProfitCount })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Saved low profit count:', data);
-                })
-                .catch(error => {
-                    console.error('Error saving low profit count:', error);
-                });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            count: lowProfitCount
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Saved low profit count:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error saving low profit count:', error);
+                    });
             }
 
             // Render table with current data
@@ -2372,7 +2438,8 @@
                     if (item.is_parent) {
                         $row.append($('<td>')); // Empty cell for parent
                     } else {
-                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ? item.NR : 'RA';
+                        const currentNR = (item.NR === 'RA' || item.NR === 'NRA' || item.NR === 'LATER') ?
+                            item.NR : 'RA';
 
                         const $select = $(`
                             <select class="form-select form-select-sm nr-select" style="min-width: 100px;">
@@ -2396,8 +2463,9 @@
                         $row.append($('<td>').append($select));
                     }
 
-                     //Listed checkbox
-                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1';
+                    //Listed checkbox
+                    const listedVal = rawData.Listed === true || rawData.Listed === 'true' || rawData
+                        .Listed === 1 || rawData.Listed === '1';
                     const $listedCb = $('<input>', {
                         type: 'checkbox',
                         class: 'listed-checkbox',
@@ -2407,7 +2475,8 @@
                     $row.append($('<td>').append($listedCb));
 
                     // Live checkbox
-                    const liveVal   = rawData.Live === true   || rawData.Live === 'true'   || rawData.Live === 1   || rawData.Live === '1';
+                    const liveVal = rawData.Live === true || rawData.Live === 'true' || rawData.Live ===
+                        1 || rawData.Live === '1';
                     const $liveCb = $('<input>', {
                         type: 'checkbox',
                         class: 'live-checkbox',
@@ -4201,12 +4270,14 @@
                         }
 
                         // Count listed checkboxes
-                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 || rawData.Listed === '1') {
+                        if (rawData.Listed === true || rawData.Listed === 'true' || rawData.Listed === 1 ||
+                            rawData.Listed === '1') {
                             metrics.listedCount++;
                         }
 
                         // Count Live checkboxes
-                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 || rawData.Live === '1') {
+                        if (rawData.Live === true || rawData.Live === 'true' || rawData.Live === 1 ||
+                            rawData.Live === '1') {
                             metrics.liveCount++;
                         }
 
