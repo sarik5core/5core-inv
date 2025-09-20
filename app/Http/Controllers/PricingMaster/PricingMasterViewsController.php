@@ -198,6 +198,8 @@ class PricingMasterViewsController extends Controller
             $lp   = (float) ($values['lp'] ?? 0);
             $ship = (float) ($values['ship'] ?? 0);
             $temuship = (float) ($values['temu_ship'] ?? 0);
+            $ebay2ship = (float) ($values['ebay2_ship'] ?? 0);
+            $initialQuantity = (float) ($values['initial_quantity'] ?? 0); 
 
             $amazon  = $amazonData[$sku] ?? null;
             $ebay    = $ebayData[$sku] ?? null;
@@ -245,10 +247,15 @@ class PricingMasterViewsController extends Controller
                 'LP'      => $lp,
                 'SHIP'    => $ship,
                 'temu_ship' => $temuship,
+                'ebay2_ship' => $ebay2ship,
+                'initial_quantity' => $initialQuantity,
                 'is_parent' => $isParent,
                 'inv' => $shopifyData[trim(strtoupper($sku))]->inv ?? 0,
                 'avgCvr' => $avgCvr,
 
+                'initial_cogs' => $lp != 0 ? $initialQuantity * $lp : 0,
+                'current_cogs' => $lp != 0 ? $inv * $lp : 0,
+                // 'avg_inventory' will be set after $item is created
 
                 // Amazon
                 'amz_price' => $amazon ? ($amazon->price ?? 0) : 0,
@@ -469,6 +476,14 @@ class PricingMasterViewsController extends Controller
 
 
 
+            // Set avg_inventory after $item is created calcution 
+            $item->avg_inventory = $lp != 0 ? (($item->initial_cogs + $item->current_cogs) / 2) : 0;
+            $item->initial_calculated_cogs = $item->initial_cogs - $item->current_cogs;
+            $item->inventory_turnover_ratio = $item->initial_calculated_cogs != 0 ? ($item->initial_calculated_cogs / $item->avg_inventory) : 0;
+            $item->stock_rotation_days = $item->inventory_turnover_ratio != 0 ? 365 / $item->inventory_turnover_ratio : 0;
+
+
+
             // Add shopifyb2c fields after $item is created
             $shopify = $shopifyData[trim(strtoupper($sku))] ?? null;
             $item->shopifyb2c_price = $shopify ? $shopify->price : 0;
@@ -539,54 +554,6 @@ class PricingMasterViewsController extends Controller
 
 
 // Get Pricing ROI Dashboard Data 
-    public function getViewPricingAnalysisROIDashboardData(Request $request)
-    {
-        $page = $request->input('page', 1);
-        $perPage = $request->input('per_page', 'all');
-        $dilFilter = $request->input('dil_filter', 'all');
-        $dataType = $request->input('data_type', 'all');
-        $searchTerm = $request->input('search', '');
-        $parentFilter = $request->input('parent', '');
-        $skuFilter = $request->input('sku', '');
-        $distinctOnly = $request->input('distinct_only', false);
-
-        if ($perPage === 'all') {
-            $perPage = 1000000;
-        } else {
-            $perPage = (int) $perPage;
-        }
-
-        $processedData = $this->processPricingData($searchTerm);
-
-        $filteredData = $this->applyFilters($processedData, $dilFilter, $dataType, $parentFilter, $skuFilter);
-
-        if ($distinctOnly) {
-            return response()->json([
-                'distinct_values' => $this->getDistinctValues($processedData),
-                'status' => 200,
-            ]);
-        }
-
-        $total = count($filteredData);
-        $totalPages = ceil($total / $perPage);
-        $offset = ($page - 1) * $perPage;
-        $paginatedData = array_slice($filteredData, $offset, $perPage);
-
-
-        return response()->json([
-            'message' => 'Data fetched successfully',
-            'data' => $paginatedData,
-            'distinct_values' => $this->getDistinctValues($processedData),
-            'pagination' => [
-                'current_page' => (int) $page,
-                'per_page' => $perPage,
-                'total' => $total,
-                'total_pages' => $totalPages,
-            ],
-            'status' => 200,
-        ]);
-    }
-
 
 
     protected function applyFilters($data, $dilFilter, $dataType, $parentFilter, $skuFilter)
@@ -1271,7 +1238,6 @@ class PricingMasterViewsController extends Controller
     {
        
         return view('pricing-master.pricing_master_copy', [
-        // processed data table ke liye
         ]);
     }
 

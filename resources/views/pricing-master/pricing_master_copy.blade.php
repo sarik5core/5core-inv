@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Pricing Masters Analysis'])
+@extends('layouts.vertical', ['title' => 'ROI Dashboard'])
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -480,8 +480,8 @@
 
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Pricing Masters Analysis',
-        'sub_title' => 'Pricing Masters Analysis',
+        'page_title' => 'ROI Dashboard',
+        'sub_title' => 'ROI Dashboard',
     ])
 
     <!-- Image Preview -->
@@ -1563,7 +1563,73 @@
                         precision: 2
                     }
                 },
-             
+
+                {
+                    title: "Initial Qty",
+                    field: "initial_quantity",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+
+                {
+                    title: "Initial COGS",
+                    field: "initial_cogs",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+                {
+                    title: "Current COGS",
+                    field: "current_cogs",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+                {
+                    title: "Average Inventory",
+                    field: "avg_inventory",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                }
+                ,
+                {
+                    title: "COGS",
+                    field: "initial_calculated_cogs",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+                {
+                    title: "Inv Turnover Ratio",
+                    field: "inventory_turnover_ratio",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+                {
+                    title: "Stock Rotation Days",
+                    field: "stock_rotation_days",
+                    hozAlign: "center",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 0
+                    }
+                }
+
             ],
                 ajaxResponse: function(url, params, response) {
                     groupedSkuData = {}; // clear previous
