@@ -1352,7 +1352,7 @@
                             (temuPrice * temuL30) +
                             (ebay3Price * ebay3L30) +
                             (ebay2Price * ebay2L30) +
-                            (walmartPrice * walmartL30);
+                            (walmartPrice * walmartL30);  
 
                         // Calculate average profit percentage and round to nearest integer
                         let avgPftPercent = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
@@ -1416,7 +1416,7 @@
                         data.TotalAvgpftForTop = Math.round(TotalAvgpftForTop) ;
                         data.totalCogs = Math.round(totalCogs);
                         data.TotalAvgRoiPer = Math.round(TotalAvgRoiPer);
-                        // console.log("TotalAvgpftForTop",TotalAvgpftForTop);  
+                        console.log("TotalAvgpftForTop",TotalAvgpftForTop);  
 
 
                        console.log("TotalAvgSales",TotalAvgSales);
@@ -1484,6 +1484,9 @@
                             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
                                                 reverbProfit + dobaProfit + temuProfit  +
                                                 ebay3Profit + ebay2Profit + walmartProfit;
+
+
+                            
 
                             // ROI calculation
                             const roi = totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
