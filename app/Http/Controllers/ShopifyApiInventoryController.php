@@ -176,139 +176,61 @@ class ShopifyApiInventoryController extends Controller
 
 
 
-
-
-    // public function fetchAllInventoryUsingRest()
-    // {
-    //     $shopUrl = 'https://5-core.myshopify.com';
-    //     $token = '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';
-
-    //     $allVariants = [];
-    //     $pageInfo = null;
-
-    //     do {
-    //         $queryParams = [
-    //             'limit' => 250,
-    //             'fields' => 'id,title,variants',
-    //         ];
-    //         if ($pageInfo) {
-    //             $queryParams['page_info'] = $pageInfo;
-    //         }
-
-    //         $response = Http::withHeaders([
-    //             'X-Shopify-Access-Token' => $token,
-    //         ])->get("$shopUrl/admin/api/2023-10/products.json", $queryParams);
-
-    //         $products = $response->json('products') ?? [];
-
-    //         foreach ($products as $product) {
-    //             foreach ($product['variants'] as $variant) {
-    //                 $allVariants[] = [
-    //                     'sku' => trim($variant['sku']),
-    //                     'inventory_item_id' => $variant['inventory_item_id'],
-    //                     'inventory_quantity' => $variant['inventory_quantity'], //  on_hand
-    //                     'product_title' => $product['title'],
-    //                 ];
-    //             }
-    //         }
-
-    //         // Pagination via Link header
-    //         $linkHeader = $response->header('Link');
-    //         $pageInfo = null;
-    //         if ($linkHeader && preg_match('/<[^>]+page_info=([^&>]+)[^>]*>; rel="next"/', $linkHeader, $matches)) {
-    //             $pageInfo = $matches[1];
-    //         }
-    //     } while ($pageInfo);
-
-    //     // Collect inventory_item_ids
-    //     $inventoryLevels = [];
-    //     $chunks = array_chunk(array_column($allVariants, 'inventory_item_id'), 50);
-
-    //     foreach ($chunks as $chunk) {
-    //         $ids = implode(',', $chunk);
-
-    //         $response = Http::withHeaders([
-    //             'X-Shopify-Access-Token' => $token,
-    //         ])->get("$shopUrl/admin/api/2023-10/inventory_levels.json", [
-    //             'inventory_item_ids' => $ids,
-    //         ]);
-
-    //         $levels = $response->json('inventory_levels') ?? [];
-
-    //         foreach ($levels as $level) {
-    //             $inventoryLevels[$level['inventory_item_id']] = [
-    //                 'location_id' => $level['location_id'],
-    //                 'available' => $level['available'],
-    //             ];
-    //         }
-    //     }
-
-    //     // Merge inventory levels with variants
-    //     $finalData = [];
-    //     foreach ($allVariants as $variant) {
-    //         $id = $variant['inventory_item_id'];
-    //         $level = $inventoryLevels[$id] ?? ['available' => null, 'location_id' => null];
-
-    //         $onHand = $variant['inventory_quantity'];
-    //         $availableToSell = $level['available'];
-    //         $availableToSell = is_numeric($availableToSell) ? (int)$availableToSell : null;
-    //         $onHand = is_numeric($onHand) ? (int)$onHand : null;
-
-    //         $committed = (!is_null($onHand) && !is_null($availableToSell))
-    //             ? $onHand - $availableToSell
-    //             : null;
-    //         // $committed = (is_numeric($onHand) && is_numeric($availableToSell))
-    //         //     ? $onHand - $availableToSell
-    //         //     : null;
-
-    //         $finalData[] = [
-    //             'sku' => $variant['sku'],
-    //             'product_title' => $variant['product_title'],
-    //             'inventory_item_id' => $id,
-    //             'on_hand' => $onHand,
-    //             'available_to_sell' => $availableToSell,
-    //             'location_id' => $level['location_id'],
-    //             'committed' => $committed,
-    //         ];
-    //     }
-
-    //     $finalData = array_filter($finalData, fn($item) => !empty($item['sku']) && $item['sku'] !== '');
-
-    //     return response()->json([
-    //         'data' => array_values($finalData),
-    //     ]);
-    // }
-
-
-
-
-    // public function fetchInventoryWithCommitment(): array     // all location but for some values mismatched
+    // public function fetchInventoryWithCommitment(): array
     // {
     //     set_time_limit(60);
     //     $shopUrl = 'https://5-core.myshopify.com'; 
-    //     $token = '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'; 
+    //     // $token = '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'; 
+    //     $token = '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'; 
 
-    //     // Step 1: Get all products and build sku -> inventory_item_id map
+    //     // Step 1: Get Ohio Location ID
+    //     $locationId = null;
+    //     $locationResponse = Http::withHeaders([
+    //         'X-Shopify-Access-Token' => $token,
+    //     ])->get("$shopUrl/admin/api/2025-01/locations.json");
+
+    //     if ($locationResponse->successful()) {
+    //         foreach ($locationResponse->json('locations') as $loc) {
+    //             if (stripos($loc['name'], 'Ohio') !== false) {
+    //                 $locationId = $loc['id'];
+    //                 Log::info('Matched Ohio location ID', ['id' => $locationId]);
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    //     if (!$locationId) {
+    //         Log::error('Ohio location not found.');
+    //         return [];
+    //     }
+
+    //     // Step 2: Fetch ALL Products (with pagination)
     //     $skuMap = [];
-    //     $nextPageUrl = "$shopUrl/admin/api/2025-01/products.json?limit=250&fields=variants";
+    //     $imageMap = [];
+    //     $nextPageUrl = "$shopUrl/admin/api/2025-01/products.json?limit=250&fields=variants,image";
 
     //     do {
     //         $response = Http::withHeaders([
     //             'X-Shopify-Access-Token' => $token,
-    //         ])->get($nextPageUrl);  
+    //         ])->get($nextPageUrl);
 
     //         if (!$response->successful()) {
-    //             Log::error('Failed to fetch products');
-    //             return [];
+    //             Log::error('Failed to fetch products', ['url' => $nextPageUrl]);
+    //             break;
     //         }
 
     //         $products = $response->json('products');
     //         foreach ($products as $product) {
+
+    //             $mainImage = $product['image']['src'] ?? null;
+
     //             foreach ($product['variants'] as $variant) {
-    //                 $sku = strtoupper(trim($variant['sku']));
+    //                 $sku = trim($variant['sku']);
     //                 $iid = $variant['inventory_item_id'];
+
     //                 if (!empty($sku)) {
     //                     $skuMap[$sku] = $iid;
+    //                     $imageMap[$sku] = $mainImage;
     //                 }
     //             }
     //         }
@@ -320,134 +242,7 @@ class ShopifyApiInventoryController extends Controller
     //         }
     //     } while ($nextPageUrl);
 
-    //     // Step 2: Batch inventory_item_ids into chunks of 50 and call /inventory_levels.json
-    //     $availableByIid = [];
-    //     $inventoryItemIds = array_values($skuMap);
-    //     $chunks = array_chunk($inventoryItemIds, 50);
-
-    //     foreach ($chunks as $chunk) {
-    //         $response = Http::withHeaders([
-    //             'X-Shopify-Access-Token' => $token,
-    //         ])->get("$shopUrl/admin/api/2024-01/inventory_levels.json", [
-    //             'inventory_item_ids' => implode(',', $chunk),
-    //         ]);
-
-    //         if (!$response->successful()) {
-    //             Log::error('Failed to fetch inventory levels', [
-    //                 'status' => $response->status(),
-    //                 'body' => $response->body()
-    //             ]);
-    //             continue; // Continue to next chunk instead of breaking
-    //         }
-
-    //         $levels = $response->json('inventory_levels') ?? [];
-    //         foreach ($levels as $level) {
-    //             // $availableByIid[$level['inventory_item_id']] = $level['available'];
-    //             $iid = $level['inventory_item_id'];
-    //             $availableByIid[$iid] = ($availableByIid[$iid] ?? 0) + $level['available'];
-    //         }
-    //     }
-
-    //     // Step 3: Get committed from unfulfilled orders
-    //     $committedBySku = [];
-
-    //     $response = Http::withHeaders([
-    //         'X-Shopify-Access-Token' => $token,
-    //     ])->get("$shopUrl/admin/api/2024-01/orders.json", [
-    //         'status' => 'open',
-    //         'fulfillment_status' => 'unfulfilled',
-    //         'limit' => 250,
-    //     ]);
-
-    //     if (!$response->successful()) {
-    //         Log::error('Failed to fetch orders');
-    //         return [];
-    //     }
-
-    //     foreach ($response->json('orders') ?? [] as $order) {
-    //         foreach ($order['line_items'] as $item) {
-    //             $sku = strtoupper(trim($item['sku']));
-    //             $qty = (int) $item['quantity'];
-    //             $committedBySku[$sku] = ($committedBySku[$sku] ?? 0) + $qty;
-    //         }
-    //     }
-
-    //     // Step 4: Merge data by SKU
-    //     $final = [];
-
-    //     foreach ($skuMap as $sku => $iid) {
-    //         $available = $availableByIid[$iid] ?? 0;
-    //         $committed = $committedBySku[$sku] ?? 0;
-    //         $onHand = $available + $committed;
-
-    //         $final[$sku] = [
-    //             'available_to_sell' => $available,
-    //             'committed' => $committed,
-    //             'on_hand' => $onHand,
-    //         ];
-    //     }
-
-    //     Log::info('Final Shopify Inventory:', $final);
-
-    //     return $final;
-    // }
-
-    // public function fetchInventoryWithCommitment(): array      //250 correct data with ohio location
-    // {
-    //     set_time_limit(60);
-    //     $shopUrl = 'https://5-core.myshopify.com'; 
-    //     $token = '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'; 
-
-    //     $locationId = null;
-    //     $locationResponse = Http::withHeaders([
-    //         'X-Shopify-Access-Token' => $token,
-    //     ])->get("$shopUrl/admin/api/2025-01/locations.json");
-
-    //     if ($locationResponse->successful()) {
-    //         foreach ($locationResponse->json('locations') as $loc) {
-    //             if (stripos($loc['name'], 'Ohio') !== false) {
-    //                 $locationId = $loc['id'];
-
-    //                 Log::info('Matched Shopify location:', [
-    //                     'name' => $loc['name'],
-    //                     'id' => $locationId 
-    //                 ]);
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     if (!$locationId) {
-    //         Log::error('Ohio location not found.');
-    //         return [];
-    //     }
-
-    //     // ✅ STEP 1: Get ONLY first page (limit 250)
-    //     $skuMap = [];
-    //     $response = Http::withHeaders([
-    //         'X-Shopify-Access-Token' => $token,
-    //     ])->get("$shopUrl/admin/api/2025-01/products.json", [
-    //         'limit' => 250,
-    //         'fields' => 'variants',
-    //     ]);
-
-    //     if (!$response->successful()) {
-    //         Log::error('Failed to fetch first 250 products');
-    //         return [];
-    //     }
-
-    //     $products = $response->json('products');
-    //     foreach ($products as $product) {
-    //         foreach ($product['variants'] as $variant) {
-    //             $sku = trim($variant['sku']);
-    //             $iid = $variant['inventory_item_id'];
-    //             if (!empty($sku)) {
-    //                 $skuMap[$sku] = $iid;
-    //             }
-    //         }
-    //     }
-
-    //     // ✅ STEP 2: Fetch inventory levels
+    //     // Step 3: Fetch Inventory Levels (only from Ohio)
     //     $availableByIid = [];
     //     $chunks = array_chunk(array_values($skuMap), 50);
 
@@ -460,7 +255,7 @@ class ShopifyApiInventoryController extends Controller
     //         ]);
 
     //         if (!$invResponse->successful()) {
-    //             Log::error('Failed inventory_levels fetch', ['body' => $invResponse->body()]);
+    //             Log::error('Failed to fetch inventory levels', ['body' => $invResponse->body()]);
     //             continue;
     //         }
 
@@ -470,7 +265,7 @@ class ShopifyApiInventoryController extends Controller
     //         }
     //     }
 
-    //     // ✅ STEP 3: Get committed from orders
+    //     // Step 4: Fetch Committed Quantities from Orders
     //     $committedBySku = [];
     //     $orderResponse = Http::withHeaders([
     //         'X-Shopify-Access-Token' => $token,
@@ -491,13 +286,12 @@ class ShopifyApiInventoryController extends Controller
     //             }
     //         }
     //     } else {
-    //         Log::error('Order fetch failed');
+    //         Log::error('Failed to fetch orders');
     //     }
 
-    //     // ✅ STEP 4: Merge final inventory
+    //     // Step 5: Merge Final Inventory
     //     $final = [];
     //     foreach ($skuMap as $sku => $iid) {
-    //         // $normalizedSku = strtoupper(trim($sku));
     //         $available = $availableByIid[$iid] ?? 0;
     //         $committed = $committedBySku[$sku] ?? 0;
     //         $onHand = $available + $committed;
@@ -506,19 +300,18 @@ class ShopifyApiInventoryController extends Controller
     //             'available_to_sell' => $available,
     //             'committed' => $committed,
     //             'on_hand' => $onHand,
+    //             'image_url' => $imageMap[$sku] ?? null,
     //         ];
     //     }
 
-    //     Log::info('Final Inventory for 250 SKUs:', $final);
+    //     Log::info('Final inventory data (Ohio only):', $final);
     //     return $final;
     // }
-
 
     public function fetchInventoryWithCommitment(): array
     {
         set_time_limit(60);
         $shopUrl = 'https://5-core.myshopify.com'; 
-        // $token = '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'; 
         $token = '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'; 
 
         // Step 1: Get Ohio Location ID
@@ -545,7 +338,7 @@ class ShopifyApiInventoryController extends Controller
         // Step 2: Fetch ALL Products (with pagination)
         $skuMap = [];
         $imageMap = [];
-        $nextPageUrl = "$shopUrl/admin/api/2025-01/products.json?limit=250&fields=variants,image";
+        $nextPageUrl = "$shopUrl/admin/api/2025-01/products.json?limit=250&fields=variants,image,title,id";
 
         do {
             $response = Http::withHeaders([
@@ -559,16 +352,27 @@ class ShopifyApiInventoryController extends Controller
 
             $products = $response->json('products');
             foreach ($products as $product) {
-
                 $mainImage = $product['image']['src'] ?? null;
 
                 foreach ($product['variants'] as $variant) {
-                    $sku = trim($variant['sku']);
+                    $rawSku = $variant['sku'] ?? '';
+                    // Normalize SKU: trim + replace any whitespace (including non-breaking) with normal space + uppercase
+                    $sku = strtoupper(preg_replace('/\s+/u', ' ', trim($rawSku)));
                     $iid = $variant['inventory_item_id'];
 
                     if (!empty($sku)) {
                         $skuMap[$sku] = $iid;
                         $imageMap[$sku] = $mainImage;
+
+                        // Log every SKU for debugging
+                        Log::info('Fetched Shopify SKU', [
+                            'raw_sku' => $rawSku,
+                            'normalized_sku' => $sku,
+                            'inventory_item_id' => $iid,
+                            'product_id' => $product['id'],
+                            'product_title' => $product['title'] ?? null,
+                            'image_url' => $mainImage,
+                        ]);
                     }
                 }
             }
@@ -616,7 +420,8 @@ class ShopifyApiInventoryController extends Controller
         if ($orderResponse->successful()) {
             foreach ($orderResponse->json('orders') ?? [] as $order) {
                 foreach ($order['line_items'] as $item) {
-                    $sku = trim($item['sku']);
+                    $rawSku = $item['sku'] ?? '';
+                    $sku = strtoupper(preg_replace('/\s+/u', ' ', trim($rawSku)));
                     $qty = (int) $item['quantity'];
                     if (!empty($sku)) {
                         $committedBySku[$sku] = ($committedBySku[$sku] ?? 0) + $qty;
@@ -643,8 +448,10 @@ class ShopifyApiInventoryController extends Controller
         }
 
         Log::info('Final inventory data (Ohio only):', $final);
+
         return $final;
     }
+
 
 
 

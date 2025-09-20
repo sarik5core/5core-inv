@@ -40,7 +40,26 @@ class AmazonCampaignReportsController extends Controller
     }
 
     public function amazonKwAdsView(){
-        return view('campaign.amazon-kw-ads');
+        $data = DB::table('amazon_sp_campaign_reports')
+            ->selectRaw('
+                report_date_range,
+                SUM(clicks) as clicks, 
+                SUM(spend) as spend, 
+                SUM(purchases1d) as orders, 
+                SUM(sales1d) as sales
+            ')
+            ->whereIn('report_date_range', ['L60','L30','L15','L7','L1'])
+            ->groupBy('report_date_range')
+            ->orderByRaw("FIELD(report_date_range, 'L60','L30','L15','L7','L1')")
+            ->get();
+
+        $dates  = $data->pluck('report_date_range');
+        $clicks = $data->pluck('clicks')->map(fn($v) => (int) $v);
+        $spend  = $data->pluck('spend')->map(fn($v) => (float) $v);
+        $orders = $data->pluck('orders')->map(fn($v) => (int) $v);
+        $sales  = $data->pluck('sales')->map(fn($v) => (float) $v);
+        
+        return view('campaign.amazon-kw-ads',compact('dates', 'clicks', 'spend', 'orders', 'sales'));
     }
 
     public function getAmazonKwAdsData(){
