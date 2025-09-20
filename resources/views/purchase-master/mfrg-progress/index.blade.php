@@ -521,7 +521,7 @@
                 function resize(e) {
                     const newWidth = startWidth + e.clientX - startX;
                     if (newWidth > 80) {
-                        th.style.width = newWidth + 'px';
+                        th.style.width = th.style.minWidth = th.style.maxWidth = newWidth + 'px';
 
                         if (th.dataset.column === "3") { 
                             const cells = document.querySelectorAll('td[data-column="3"]');
