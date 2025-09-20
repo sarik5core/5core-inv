@@ -436,7 +436,14 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var sbid = (l1_cpc * 0.90).toFixed(2);
+                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
+
+                            var sbid = 0;
+                            if(l7_cpc > l1_cpc){
+                                sbid = (l7_cpc * 1.05).toFixed(2);
+                            }else{
+                                sbid = (l1_cpc * 1.05).toFixed(2);
+                            }
                             return sbid;
                         },
                     },
@@ -456,7 +463,14 @@
                             if (e.target.classList.contains("update-row-btn")) {
                                 var rowData = cell.getRow().getData();
                                 var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                                var sbid = (l1_cpc * 0.90).toFixed(2);
+                                var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+
+                                var sbid = 0;
+                                if(l7_cpc > l1_cpc){
+                                    sbid = (l7_cpc * 1.05).toFixed(2);
+                                }else{
+                                    sbid = (l1_cpc * 1.05).toFixed(2);
+                                }
                                 updateBid(sbid, rowData.campaign_id);
                             }
                         }
@@ -618,7 +632,14 @@
                         
                         var rowData = row.getData();
                         var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                        var sbid = (l1_cpc * 0.90).toFixed(2);
+                        var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+
+                        var sbid = 0;
+                        if(l7_cpc > l1_cpc){
+                            sbid = (l7_cpc * 1.05).toFixed(2);
+                        }else{
+                            sbid = (l1_cpc * 1.05).toFixed(2);
+                        }
 
                         campaignIds.push(rowData.campaign_id);
                         bids.push(sbid);
@@ -689,10 +710,22 @@
             document.getElementById("export-btn").addEventListener("click", function () {
                 let filteredData = table.getData("active");
 
-                let exportData = filteredData.map(row => ({
-                    campaignName: row.campaignName,
-                    sbid: (parseFloat(row.l1_cpc || 0) * 0.90).toFixed(2)
-                }));
+                let exportData = filteredData.map(row => {
+                    let l1_cpc = parseFloat(row.l1_cpc || 0);
+                    let l7_cpc = parseFloat(row.l7_cpc || 0);
+                    let sbid = 0;
+
+                    if(l7_cpc > l1_cpc){
+                        sbid = (l7_cpc * 1.05).toFixed(2);
+                    }else{
+                        sbid = (l1_cpc * 1.05).toFixed(2);
+                    }
+
+                    return {
+                        campaignName: row.campaignName || "",
+                        sbid: sbid
+                    };
+                });
 
                 if (exportData.length === 0) {
                     alert("No data available to export!");

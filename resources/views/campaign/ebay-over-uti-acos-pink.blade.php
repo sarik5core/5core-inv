@@ -718,7 +718,7 @@
                     if (l1_cpc > l7_cpc) {
                         sbid = (l1_cpc * 0.95).toFixed(2);
                     } else {
-                        sbid = (l7_cpc * 0.95).toFixed(2);
+                        sbid = (l1_cpc * 0.95).toFixed(2);
                     }
 
                     return {
