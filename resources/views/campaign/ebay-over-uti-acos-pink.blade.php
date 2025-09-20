@@ -631,8 +631,8 @@
                     if(rowEl && rowEl.offsetParent !== null){
                         
                         var rowData = row.getData();
-                        var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                        var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                        var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
 
                         var sbid = 0;
                         if(l1_cpc > l7_cpc){

@@ -2,16 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\Campaigns\AmazonSpBudgetController;
 use App\Http\Controllers\MarketPlace\ACOSControl\AmazonACOSController;
-use App\Models\AmazonDatasheet;
-use App\Models\AmazonDataView;
 use Illuminate\Console\Command;
 use App\Models\AmazonSpCampaignReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 
 class AutoUpdateAmazonBgtKw extends Command
 {
