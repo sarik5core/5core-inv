@@ -979,50 +979,45 @@
 
                     let acosFilterVal = $("#acos-filter").val();
                     if (acosFilterVal) {
-                        let acosFields = ["acos_l7", "acos_l15", "acos_l30", "acos_l60"];
-                        let matched = false;
+                        let acosFields = ["acos_l30"];
 
-                        for (let field of acosFields) {
+                        let matched = acosFields.every(field => {
                             let val = parseFloat(data[field]) || 0;
 
-                            if (acosFilterVal === "PINK" && val < 7) {
-                                matched = true;
-                                break;
+                            if (acosFilterVal === "PINK") {
+                                return val < 7;
                             }
-                            if (acosFilterVal === "GREEN" && val >= 7 && val <= 14) {
-                                matched = true;
-                                break;
+                            if (acosFilterVal === "GREEN") {
+                                return val >= 7 && val <= 14;
                             }
-                            if (acosFilterVal === "RED" && val > 14) {
-                                matched = true;
-                                break;
+                            if (acosFilterVal === "RED") {
+                                return val > 14;
                             }
-                        }
+                            return false;
+                        });
 
                         if (!matched) return false;
                     }
 
+
                     let cvrFilterVal = $("#cvr-filter").val();
                     if (cvrFilterVal) {
-                        let cvrFields = ["cvr_l7", "cvr_l15", "cvr_l30", "cvr_l60"];
-                        let matched = false;
+                        let cvrFields = ["cvr_l30"];
 
-                        for (let field of cvrFields) {
+                        let matched = cvrFields.every(field => {
                             let val = parseFloat(data[field]) || 0;
 
-                            if (cvrFilterVal === "PINK" && val > 10 ) {
-                                matched = true;
-                                break;
+                            if (cvrFilterVal === "PINK") {
+                                return val > 10;
                             }
-                            if (cvrFilterVal === "GREEN" && val >= 5 && val <= 10) {
-                                matched = true;
-                                break;
+                            if (cvrFilterVal === "GREEN") {
+                                return val >= 5 && val <= 10;
                             }
-                            if (cvrFilterVal === "RED" && val < 5) {
-                                matched = true;
-                                break;
+                            if (cvrFilterVal === "RED") {
+                                return val < 5;
                             }
-                        }
+                            return false;
+                        });
 
                         if (!matched) return false;
                     }
