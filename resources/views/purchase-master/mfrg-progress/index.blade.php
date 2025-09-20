@@ -521,7 +521,23 @@
                 function resize(e) {
                     const newWidth = startWidth + e.clientX - startX;
                     if (newWidth > 80) {
-                        th.style.width = th.style.minWidth = th.style.maxWidth = newWidth + 'px';
+                        th.style.width = newWidth + 'px';
+
+                        if (th.dataset.column === "3") { 
+                            const cells = document.querySelectorAll('td[data-column="3"]');
+                            cells.forEach(cell => {
+                                const shortSpan = cell.querySelector('.sku-short');
+                                const fullSpan = cell.querySelector('.sku-full');
+
+                                if (newWidth > 200) { 
+                                    shortSpan.classList.add("d-none");
+                                    fullSpan.classList.remove("d-none");
+                                } else { 
+                                    fullSpan.classList.add("d-none");
+                                    shortSpan.classList.remove("d-none");
+                                }
+                            });
+                        }
                     }
                 }
 
@@ -1094,43 +1110,6 @@
             });
         }
 
-        function calculateTotalCBM() {
-            let totalCBM = 0;
-            document.querySelectorAll('input[data-column="total_cbm"]').forEach(input => {
-                const value = parseFloat(input.value);
-                if (!isNaN(value)) totalCBM += value;
-            });
-            document.getElementById('total-cbm').textContent = totalCBM.toFixed(0);
-        }
-
-        function calculateTotalAmount() {
-            let totalAmount = 0;
-
-            document.querySelectorAll('.total-value').forEach(td => {
-                const value = parseFloat(td.textContent.trim());
-                if (!isNaN(value)) {
-                    totalAmount += value;
-                }
-            });
-
-            document.getElementById('total-amount').textContent = totalAmount.toFixed(0);
-        }
-
-
-
-        function calculateTotalOrderQty() {
-            let totalOrderQty = 0;
-
-            document.querySelectorAll('[data-column="4"]').forEach(cell => {
-                const value = parseFloat(cell.textContent.trim());
-                if (!isNaN(value)) {
-                    totalOrderQty += value;
-                }
-            });
-
-            document.getElementById('total-order-qty').textContent = totalOrderQty;
-        }
-
         document.querySelectorAll('.sku-short').forEach(el => {
             el.addEventListener('click', function () {
                 const shortSpan = this;
@@ -1208,6 +1187,10 @@
             // Optionally show current supplier name
             const title = document.getElementById("current-supplier");
             if (title) title.textContent = "Supplier: " + supplier;
+
+            calculateTotalCBM();
+            calculateTotalAmount();
+            calculateTotalOrderQty();
         }
 
         function playNextSupplier() {
@@ -1227,6 +1210,9 @@
             rows.forEach(row => row.style.display = "");
                 const title = document.getElementById("current-supplier");
             if (title) title.textContent = "";
+            calculateTotalCBM();
+            calculateTotalAmount();
+            calculateTotalOrderQty();
         });
 
 
@@ -1241,6 +1227,58 @@
             showSupplierRows(suppliers[supplierIndex]);
         });
     });
+
+    function calculateTotalCBM() {
+        let totalCBM = 0;
+
+        document.querySelectorAll('table.wide-table tbody tr').forEach(row => {
+            if (row.style.display !== "none") {
+                const input = row.querySelector('input[data-column="total_cbm"]');
+                if (input) {
+                    const value = parseFloat(input.value);
+                    if (!isNaN(value)) totalCBM += value;
+                }
+            }
+        });
+
+        document.getElementById('total-cbm').textContent = totalCBM.toFixed(0);
+    } 
+
+    function calculateTotalAmount() {
+        let totalAmount = 0;
+
+        document.querySelectorAll('table.wide-table tbody tr').forEach(row => {
+            if (row.style.display !== "none") { 
+                const td = row.querySelector('.total-value');
+                if (td) {
+                    const value = parseFloat(td.textContent.trim());
+                    if (!isNaN(value)) {
+                        totalAmount += value;
+                    }
+                }
+            }
+        });
+
+        document.getElementById('total-amount').textContent = totalAmount.toFixed(0);
+    }
+
+    function calculateTotalOrderQty() {
+        let totalOrderQty = 0;
+        document.querySelectorAll('table.wide-table tbody tr').forEach(row => {
+            if (row.style.display !== "none") { 
+                const cell = row.querySelector('[data-column="4"]');
+                if (cell) {
+                    const value = parseFloat(cell.textContent.trim());
+                    if (!isNaN(value)) {
+                        totalOrderQty += value;
+                    }
+                }
+            }
+        });
+
+        document.getElementById('total-order-qty').textContent = totalOrderQty;
+    }
+
 </script>
 
 @endsection
