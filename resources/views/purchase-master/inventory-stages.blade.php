@@ -1,10 +1,38 @@
-@extends('layouts.vertical', ['title' => 'Forecast Analysis'])
+@extends('layouts.vertical', ['title' => 'Inventory Stages'])
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
     <style>
+        .tabulator .tabulator-footer {
+            background: #f4f7fa;
+            border-top: 1px solid #262626;
+            font-size: 1rem;
+            color: #4b5563;
+            padding: 5px;
+            height: 70px;
+        }
+
+        /* Pagination styling */
+        .tabulator .tabulator-footer .tabulator-paginator .tabulator-page {
+            padding: 8px 16px;
+            margin: 0 4px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tabulator .tabulator-footer .tabulator-paginator .tabulator-page:hover {
+            background: #e0eaff;
+            color: #2563eb;
+        }
+
+        .tabulator .tabulator-footer .tabulator-paginator .tabulator-page.active {
+            background: #2563eb;
+            color: white;
+        }
         #image-hover-preview {
             transition: opacity 0.2s ease;
         }
@@ -13,8 +41,8 @@
 
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Forecast Analysis',
-        'sub_title' => 'Forecast Analysis',
+        'page_title' => 'Inventory Stages',
+        'sub_title' => 'Inventory Stages',
     ])
 
     <div class="row">
@@ -599,9 +627,9 @@
 
                     const toOrder = Math.round(msl - inv - transit - orderGiven);
 
-                    if(toOrder == 0){
-                        return false;
-                    }
+                    // if(toOrder == 0){
+                    //     return false;
+                    // }
 
                     if (!groupedMSL[parentKey]) groupedMSL[parentKey] = 0;
                     groupedMSL[parentKey] += msl;
@@ -841,36 +869,6 @@
             });
 
             const modal = new bootstrap.Modal(document.getElementById("monthModal"));
-            modal.show();
-        }
-
-        function openMetricModal(row) {
-            const metricData = {
-                SH: row['SH'],
-                CP: row['CP'],
-                LP: row['LP'],
-                Freight: row['Freight'],
-                "GW (KG)": row['GW (KG)'],
-                "GW (LB)": row['GW (LB)'],
-                "CBM MSL": row['CBM MSL'],
-            };
-
-            const wrapper = document.getElementById("metricCardWrapper");
-            wrapper.innerHTML = "";
-
-            for (const [key, value] of Object.entries(metricData)) {
-                const displayValue = (!isNaN(value) && value !== null) ? parseFloat(value).toFixed(2) : '-';
-
-                const card = document.createElement("div");
-                card.className = "month-card";
-                card.innerHTML = `
-                <div class="month-title">${key}</div>
-                <div class="month-value">${displayValue}</div>
-            `;
-                wrapper.appendChild(card);
-            }
-
-            const modal = new bootstrap.Modal(document.getElementById('metricModal'));
             modal.show();
         }
 
@@ -1254,7 +1252,7 @@
             countContainer.classList.add('d-none');
 
             // Set yellow filter as default
-            currentColorFilter = 'yellow';
+            currentColorFilter = '';
             document.getElementById('yellow-count-container').classList.remove('d-none');
             document.getElementById('order-color-filter-dropdown').innerHTML =
                 '<i class="bi bi-funnel-fill"></i> Yellow Filter';
@@ -1304,105 +1302,6 @@
 
 
         });
-
-        // Scout products view handler
-        document.addEventListener('click', function(e) {
-            const trigger = e.target.closest('.scouth-products-view-trigger');
-            if (trigger) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const encoded = trigger.getAttribute('data-item');
-                if (encoded) {
-                    try {
-                        const rawData = JSON.parse(decodeURIComponent(encoded));
-                        openModal(rawData, 'scouth products view');
-                    } catch (err) {
-                        console.error("Failed to parse rawData", err);
-                    }
-                }
-            }
-        });
-
-        window.openModal = function(selectedItem, type) {
-            try {
-                if (type.toLowerCase() === 'scouth products view') {
-                    const modalId = 'scouthProductsModal';
-                    return openScouthProductsView(selectedItem, modalId);
-                }
-            } catch (error) {
-                console.error("Error in openModal:", error);
-                showNotification('danger', 'Failed to open details view. Please try again.');
-            }
-        };
-
-        function openScouthProductsView(data, modalId) {
-            const modal = document.getElementById(modalId);
-            if (!modal) return;
-
-            const title = modal.querySelector('.modal-title');
-            const body = modal.querySelector('.modal-body');
-
-            if (!data.scout_data || !data.scout_data.all_data) {
-                title.textContent = 'Scout Products View Details';
-                body.innerHTML = '<div class="alert alert-warning">No scout data available</div>';
-                const instance = new bootstrap.Modal(modal);
-                instance.show();
-                return;
-            }
-
-            // Sort by price
-            const sortedProducts = [...data.scout_data.all_data].sort((a, b) => {
-                const priceA = parseFloat(a.price) || Infinity;
-                const priceB = parseFloat(b.price) || Infinity;
-                return priceA - priceB;
-            });
-
-            title.textContent = 'Scouth Products View (Sorted by Lowest Price)';
-
-            let html = `
-            <div><strong>Parent:</strong> ${data.Parent || 'N/A'} | <strong>SKU:</strong> ${data['(Child) sku'] || 'N/A'}</div>
-            <div class="table-responsive mt-3">
-                <table class="table table-bordered table-sm align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th><th>Price</th><th>Category</th><th>Dimensions</th><th>Image</th>
-                            <th>Quality Score</th><th>Parent ASIN</th><th>Product Rank</th>
-                            <th>Rating</th><th>Reviews</th><th>Weight</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-            sortedProducts.forEach(product => {
-                html += `
-                <tr>
-                    <td>${product.id || 'N/A'}</td>
-                    <td>${product.price ? '$' + parseFloat(product.price).toFixed(2) : 'N/A'}</td>
-                    <td>${product.category || 'N/A'}</td>
-                    <td>${product.dimensions || 'N/A'}</td>
-                    <td>
-                        ${product.image_url ? `
-                                <a href="${product.image_url}" target="_blank">
-                                    <img src="${product.image_url}" width="60" height="60" style="border-radius:50%;">
-                                </a>` : 'N/A'}
-                    </td>
-                    <td>${product.listing_quality_score || 'N/A'}</td>
-                    <td>${product.parent_asin || 'N/A'}</td>
-                    <td>${product.product_rank || 'N/A'}</td>
-                    <td>${product.rating || 'N/A'}</td>
-                    <td>${product.reviews || 'N/A'}</td>
-                    <td>${product.weight || 'N/A'}</td>
-                </tr>
-            `;
-            });
-
-            html += '</tbody></table></div>';
-            body.innerHTML = html;
-
-            const instance = new bootstrap.Modal(modal);
-            instance.show();
-        }
 
         document.getElementById("total-transit").addEventListener("click", function(e) {
             currentColorFilter = null;

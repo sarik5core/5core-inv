@@ -340,5 +340,7 @@ class ForecastAnalysisController extends Controller
         }
     }
 
-
+    public function invetoryStagesView(){
+        return view('purchase-master.inventory-stages');
+    }
 }
