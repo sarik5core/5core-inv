@@ -233,8 +233,6 @@
                 index: "Sku",
                 ajaxURL: "/ebay/keywords/ads/data",
                 layout: "fitData",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
