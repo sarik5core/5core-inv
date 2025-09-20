@@ -602,6 +602,24 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
+                                                    <label for="ebay2_ship" class="form-label fw-bold"
+                                                        style="color: #4A5568;">EBAY2 SHIP</label>
+                                                    <input type="text" class="form-control" id="ebay2_ship"
+                                                        placeholder="Enter EBAY2 SHIP"
+                                                        style="border: 2px solid #E2E8F0; border-radius: 6px; padding: 0.75rem; background-color: white;">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="initial_quantity" class="form-label fw-bold"
+                                                        style="color: #4A5568;">INITIAL QUANTITY</label>
+                                                    <input type="text" class="form-control" id="initial_quantity"
+                                                        placeholder="Enter INITIAL QUANTITY"
+                                                        style="border: 2px solid #E2E8F0; border-radius: 6px; padding: 0.75rem; background-color: white;">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
                                                     <label for="w" class="form-label fw-bold"
                                                         style="color: #4A5568;">W*</label>
                                                     <input type="text" class="form-control" id="w"
@@ -817,6 +835,9 @@
                                                         <option value="cp">CP</option>
                                                         <option value="frght">FRGHT</option>
                                                         <option value="ship">SHIP</option>
+                                                        <option value="temu_ship">TEMU SHIP</option>
+                                                        <option value="ebay2_ship">EBAY2 SHIP</option>
+                                                        <option value="initial_quantity">INITIAL QUANTITY</option>
                                                         <option value="label_qty">Label QTY</option>
                                                         <option value="wt_act">WT ACT</option>
                                                         <option value="wt_decl">WT DECL</option>
@@ -908,6 +929,8 @@
                                     <th>FRGHT</th>
                                     <th>SHIP</th>
                                     <th>TEMU SHIP</th>
+                                    <th>EBAY2 SHIP</th>
+                                    <th>INITIAL QUANTITY</th>
                                     <th>Label QTY</th>
                                     <th>WT ACT</th>
                                     <th>WT DECL</th>
@@ -941,7 +964,7 @@
 @section('script')
     <script>
         window.userPermissions = @json($permissions ?? []);
-        const productPermissions = window.userPermissions['product_lists'] || [];
+        const productPermissions = window.userPermissions['cp_masters'] || [];
         const emailColumnMap = @json($emailColumnMap ?? []);
         // Add this to the top of your DOMContentLoaded event handler
         const currentUserEmail = @json(auth()->user()->email ?? '');
@@ -951,7 +974,7 @@
             // Emails and columns setup
             const emails = @json($emails ?? []);
             const columns = ["INV", "OV L30", "STATUS", "Unit", "LP", "CP$", "FRGHT", "SHIP",
-                "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H", "CBM", "L(2)", "Action"
+                "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H", "CBM", "L(2)", "Action"
             ];
             let selectedColumns = [];
             let selectedEmail = '';
@@ -1238,7 +1261,7 @@
                 // All available columns
                 const allColumns = [
                     "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
-                    "FRGHT", "SHIP", "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
+                    "FRGHT", "SHIP", "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                     "CBM", "L(2)", "Action"
                 ];
 
@@ -1340,6 +1363,12 @@
                                     break;
                                     case "TEMU SHIP":
                                     cell.textContent = escapeHtml(item.temu_ship) || '-';
+                                    break;
+                                    case "EBAY2 SHIP":
+                                    cell.textContent = escapeHtml(item.ebay2_ship) || '-';
+                                    break;
+                                    case "INITIAL QUANTITY":
+                                    cell.textContent = escapeHtml(item.initial_quantity) || '-';
                                     break;
                                 case "Label QTY":
                                     cell.textContent = escapeHtml(item.label_qty) || '0';
@@ -1477,6 +1506,12 @@
                             case "TEMU SHIP":
                                 cell.textContent = escapeHtml(item.temu_ship) || '-';
                                 break;
+                            case "EBAY2 SHIP":
+                                cell.textContent = escapeHtml(item.ebay2_ship) || '-';
+                                break;
+                            case "INITIAL QUANTITY":
+                                cell.textContent = escapeHtml(item.initial_quantity) || '-';
+                                break;
                             case "Label QTY":
                                 cell.textContent = escapeHtml(item.label_qty) || '0';
                                 break;
@@ -1572,7 +1607,7 @@
                 // All available columns
                 const allColumns = [
                     "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
-                    "FRGHT", "SHIP", "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
+                    "FRGHT", "SHIP", "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                     "CBM", "L(2)", "Action"
                 ];
 
@@ -1892,7 +1927,7 @@
                     const hiddenColumns = getUserHiddenColumns();
                     const allColumns = [
                         "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
-                        "FRGHT", "SHIP", "TEMU SHIP", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
+                        "FRGHT", "SHIP", "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                         "CBM", "L(2)", "DC", "Pcs/Box", "L1", "B", "H1", "Weight", "MSRP", "MAP", "UPC"
                     ];
 
@@ -1934,7 +1969,12 @@
                         "TEMU SHIP": {
                             key: "temu_ship"
                         },
-              
+                        "EBAY2 SHIP": {
+                            key: "ebay2_ship"
+                        },
+                        "INITIAL QUANTITY": {
+                            key: "initial_quantity"
+                        },
                         "Label QTY": {
                             key: "label_qty"
                         },
@@ -2241,6 +2281,8 @@
                     lps: document.getElementById('lps').value || null,
                     ship: document.getElementById('ship').value || null,
                     temu_ship: document.getElementById('temu_ship').value || null,
+                    ebay2_ship: document.getElementById('ebay2_ship').value || null,
+                    initial_quantity: document.getElementById('initial_quantity').value || null,
                     label_qty: document.getElementById('labelQty').value || null,
                     wt_act: document.getElementById('wtAct').value || null,
                     wt_decl: document.getElementById('wtDecl').value || null,
@@ -2377,7 +2419,9 @@
                     labelQty: product.label_qty || '1',
                     cp: product.cp || '',
                     ship: product.ship || '',
-                    temuShip: product.temu_ship || '',
+                    temu_ship: product.temu_ship || '',
+                    ebay2_ship: product.ebay2_ship || '',
+                    initial_quantity: product.initial_quantity || '',
                     wtAct: product.wt_act || '',
                     wtDecl: product.wt_decl || '',
                     w: product.w || '',
@@ -2787,6 +2831,14 @@
                     {
                         value: 'temu_ship',
                         text: 'TEMU SHIP'
+                    },
+                    {
+                        value: 'ebay2_ship',
+                        text: 'EBAY2 SHIP'
+                    },
+                    {
+                        value: 'initial_quantity',
+                        text: 'INITIAL QUANTITY'
                     },
                     {
                         value: 'label_qty',
