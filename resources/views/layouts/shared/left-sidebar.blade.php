@@ -1412,7 +1412,7 @@
                                     <li>
                                         <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
                                     </li>
-                                    <li>
+                                    {{-- <li>
                                         <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
                                     </li>
                                     <li>
@@ -1426,7 +1426,7 @@
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < UTI ACOS RED</a>
-                                    </li>
+                                    </li> --}}
 
                                 </ul>
                             </div>

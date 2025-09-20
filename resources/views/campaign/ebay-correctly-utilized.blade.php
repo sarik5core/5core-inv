@@ -261,13 +261,7 @@
                         row.getElement().classList.add("parent-row");
                     }
                 },
-                columns: [{
-                        formatter: "rowSelection",
-                        titleFormatter: "rowSelection",
-                        hozAlign: "center",
-                        headerSort: false,
-                        width: 50
-                    },
+                columns: [
                     {
                         title: "Parent",
                         field: "parent"
@@ -436,8 +430,8 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var sbid = (l1_cpc * 0.90).toFixed(2);
-                            return sbid;
+                            // var sbid = (l1_cpc * 0.90).toFixed(2);
+                            return l1_cpc;
                         },
                     },
                     {
@@ -459,19 +453,22 @@
                                 var sbid = (l1_cpc * 0.90).toFixed(2);
                                 updateBid(sbid, rowData.campaign_id);
                             }
-                        }
+                        },
+                        visible: false
                     },
                     {
                         title: "SBGT",
                         field: "sbgt",
                         hozAlign: "center",
-                        editor: "input"
+                        editor: "input",
+                        visible: false
                     },
                     {
                         title: "APR BGT",
                         field: "apr_bgt",
                         hozAlign: "center",
-                        editor: "input"
+                        editor: "input",
+                        visible: false
                     },
                 ],
                 ajaxResponse: function(url, params, response) {
@@ -706,9 +703,7 @@
                 XLSX.writeFile(wb, "ebay_over_acos_pink.xlsx");
             });
 
-
-
-            document.body.style.zoom = "78%";
+            document.body.style.zoom = "90%";
         });
     </script>
 @endsection
