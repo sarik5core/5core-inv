@@ -134,6 +134,100 @@ class EbayOverUtilizedBgtController extends Controller
         return array_filter($keywords);
     }
 
+    public function updateAutoKeywordsBidDynamic(array $campaignIds, array $newBids)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        if (empty($campaignIds) || empty($newBids)) {
+            return [
+                'message' => 'Campaign IDs and new bids are required',
+                'status' => 400
+            ];
+        }
+
+        $accessToken = $this->getEbayAccessToken();
+        $results = [];
+        $hasError = false;
+
+        foreach ($campaignIds as $index => $campaignId) {
+            $newBid = floatval($newBids[$index] ?? 0);
+
+            $adGroups = $this->getAdGroups($campaignId);
+            if (!isset($adGroups['adGroups'])) {
+                continue;
+            }
+
+            foreach ($adGroups['adGroups'] as $adGroup) {
+                $adGroupId = $adGroup['adGroupId'];
+                $keywords = $this->getKeywords($campaignId, $adGroupId);
+
+                foreach (array_chunk($keywords, 100) as $keywordChunk) {
+                    $payload = [
+                        "requests" => []
+                    ];
+
+                    foreach ($keywordChunk as $keywordId) {
+                        $payload["requests"][] = [
+                            "bid" => [
+                                "currency" => "USD",
+                                "value"    => $newBid,
+                            ],
+                            "keywordId" => $keywordId,
+                            "keywordStatus" => "ACTIVE"
+                        ];
+                    }
+
+                    $endpoint = "https://api.ebay.com/sell/marketing/v1/ad_campaign/{$campaignId}/bulk_update_keyword";
+
+                    try {
+                        $response = Http::withHeaders([
+                            'Authorization' => "Bearer {$accessToken}",
+                            'Content-Type'  => 'application/json',
+                        ])->post($endpoint, $payload);
+
+                        if ($response->successful()) {
+                            $respData = $response->json();
+                            foreach ($respData['responses'] ?? [] as $r) {
+                                $results[] = [
+                                    "campaign_id" => $campaignId,
+                                    "ad_group_id" => $adGroupId,
+                                    "keyword_id"  => $r['keywordId'] ?? null,
+                                    "status"      => $r['status'] ?? "unknown",
+                                    "message"     => $r['message'] ?? "Updated",
+                                ];
+                            }
+                        } else {
+                            $hasError = true;
+                            $results[] = [
+                                "campaign_id" => $campaignId,
+                                "ad_group_id" => $adGroupId,
+                                "status"      => "error",
+                                "message"     => $response->json()['errors'][0]['message'] ?? "Unknown error",
+                                "http_code"   => $response->status(),
+                            ];
+                        }
+
+                    } catch (\Exception $e) {
+                        $hasError = true;
+                        $results[] = [
+                            "campaign_id" => $campaignId,
+                            "ad_group_id" => $adGroupId,
+                            "status"      => "error",
+                            "message"     => $e->getMessage(),
+                        ];
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            "status" => $hasError ? 207 : 200,
+            "message" => $hasError ? "Some keywords failed to update" : "All keyword bids updated successfully",
+            "data" => $results
+        ]);
+    }
+
     public function updateKeywordsBidDynamic(Request $request)
     {
         ini_set('max_execution_time', 300);
