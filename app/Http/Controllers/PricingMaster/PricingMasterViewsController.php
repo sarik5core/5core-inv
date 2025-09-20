@@ -538,6 +538,57 @@ class PricingMasterViewsController extends Controller
     }
 
 
+// Get Pricing ROI Dashboard Data 
+    public function getViewPricingAnalysisROIDashboardData(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 'all');
+        $dilFilter = $request->input('dil_filter', 'all');
+        $dataType = $request->input('data_type', 'all');
+        $searchTerm = $request->input('search', '');
+        $parentFilter = $request->input('parent', '');
+        $skuFilter = $request->input('sku', '');
+        $distinctOnly = $request->input('distinct_only', false);
+
+        if ($perPage === 'all') {
+            $perPage = 1000000;
+        } else {
+            $perPage = (int) $perPage;
+        }
+
+        $processedData = $this->processPricingData($searchTerm);
+
+        $filteredData = $this->applyFilters($processedData, $dilFilter, $dataType, $parentFilter, $skuFilter);
+
+        if ($distinctOnly) {
+            return response()->json([
+                'distinct_values' => $this->getDistinctValues($processedData),
+                'status' => 200,
+            ]);
+        }
+
+        $total = count($filteredData);
+        $totalPages = ceil($total / $perPage);
+        $offset = ($page - 1) * $perPage;
+        $paginatedData = array_slice($filteredData, $offset, $perPage);
+
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data' => $paginatedData,
+            'distinct_values' => $this->getDistinctValues($processedData),
+            'pagination' => [
+                'current_page' => (int) $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => $totalPages,
+            ],
+            'status' => 200,
+        ]);
+    }
+
+
+
     protected function applyFilters($data, $dilFilter, $dataType, $parentFilter, $skuFilter)
     {
         return array_filter($data, function ($item) use ($dilFilter, $dataType, $parentFilter, $skuFilter) {
@@ -906,7 +957,7 @@ class PricingMasterViewsController extends Controller
         }
 
         $itemId = EbayMetric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "eBay Item ID not found for SKU: {$sku}"
@@ -916,7 +967,7 @@ class PricingMasterViewsController extends Controller
         try {
             // Use direct eBay API call for instant update
             $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -950,7 +1001,7 @@ class PricingMasterViewsController extends Controller
         }
 
         $itemId = Ebay2Metric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "eBay2 Item ID not found for SKU: {$sku}"
@@ -960,7 +1011,7 @@ class PricingMasterViewsController extends Controller
         try {
             // Use direct eBay API call for instant update
             $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -994,7 +1045,7 @@ class PricingMasterViewsController extends Controller
         }
 
         $itemId = Ebay3Metric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "eBay3 Item ID not found for SKU: {$sku}"
@@ -1004,7 +1055,7 @@ class PricingMasterViewsController extends Controller
         try {
             // Use direct eBay API call for instant update
             $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -1103,19 +1154,19 @@ class PricingMasterViewsController extends Controller
     {
         $sku = $request->input('sku', 'SP 12120 4OHMS');
         $price = $request->input('price', 30.00);
-        
+
         // Get item ID
         $itemId = DobaMetric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "Item not found for SKU: {$sku}"
             ], 404);
         }
-        
+
         // Test different validation approaches
         $results = $this->doba->testItemValidation($itemId, $price);
-        
+
         return response()->json([
             'sku' => $sku,
             'item_id' => $itemId,
@@ -1201,7 +1252,6 @@ class PricingMasterViewsController extends Controller
                 'price' => $price,
                 'debug_results' => $result
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -1210,4 +1260,21 @@ class PricingMasterViewsController extends Controller
             ], 500);
         }
     }
+
+
+
+
+
+
+
+    public function pricingMasterCopy(Request $request)
+    {
+       
+        return view('pricing-master.pricing_master_copy', [
+        // processed data table ke liye
+        ]);
+    }
+
+
+ 
 }

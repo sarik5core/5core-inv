@@ -170,7 +170,7 @@
                                 Masters</a>
                         </li>
                         <li>
-                            <a href="{{ url('pricing-master.pricing_master') }}">Pricing masters</a>
+                            <a href="{{ url('/parent.pricing-masters') }}">ROI dashboard</a>
                         </li>
                         <li>
                             <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters clone</a>
