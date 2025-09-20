@@ -288,7 +288,6 @@ class EbayCampaignReports extends Command
         @unlink($gzPath); 
         @unlink($tsvPath);
 
-        Log::info("Response ", $allData);
         return $allData;
     }
 

@@ -636,7 +636,7 @@
 
                             let color = "green";
                             if(value == 100){
-                                color = "#000000";
+                                color = "red";
                             }else if (value < 7) {
                                 color = "#e83e8c";
                             } else if (value >= 7 && value <= 14) {
@@ -670,7 +670,7 @@
 
                             let color = "green";
                             if(value == 100){
-                                color = "#000000";
+                                color = "red";
                             }else if (value < 7) {
                                 color = "#e83e8c";
                             }else if (value >= 7 && value <= 14) {
@@ -702,7 +702,7 @@
 
                             let color = "green";
                             if(value == 100){
-                                color = "#000000";
+                                color = "red";
                             }else if (value < 7) {
                                 color = "#e83e8c";
                             }else if (value >= 7 && value <= 14) {
@@ -734,7 +734,7 @@
 
                             let color = "green";
                             if(value == 100){
-                                color = "#000000";
+                                color = "red";
                             }else if (value < 7) {
                                 color = "#e83e8c";
                             }else if (value >= 7 && value <= 14) {

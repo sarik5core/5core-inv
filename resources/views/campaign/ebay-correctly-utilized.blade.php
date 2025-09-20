@@ -344,17 +344,25 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var acos = parseFloat(row.acos) || 0;
+                            var acosRaw = row.acos; 
+                            var acos = parseFloat(acosRaw);
+
+                            if (isNaN(acos)) {
+                                acos = 0;
+                            }
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
-                                td.classList.add('pink-bg'); 
+                            if (acos === 0) {
+                                td.classList.add('red-bg');
+                                return "100%"; 
+                            } else if (acos < 7) {
+                                td.classList.add('pink-bg');
                             } else if (acos >= 7 && acos <= 14) {
-                                td.classList.add('green-bg'); 
+                                td.classList.add('green-bg');
                             } else if (acos > 14) {
-                                td.classList.add('red-bg'); 
+                                td.classList.add('red-bg');
                             }
 
                             return acos.toFixed(0) + "%";
