@@ -74,6 +74,8 @@ class IncomingController extends Controller
             //  Fetch inventory item ID and location ID from Shopify
             $shopifyApi = new ShopifyApiInventoryController();
 
+            $normalizedSku = strtoupper(preg_replace('/\s+/u', ' ', $sku));
+
             // Use same logic as updateVerifiedStock to get inventory_item_id
             $inventoryItemId = null;
             $pageInfo = null;
@@ -89,7 +91,9 @@ class IncomingController extends Controller
 
                 foreach ($products as $product) {
                     foreach ($product['variants'] as $variant) {
-                        if (trim($variant['sku']) === $sku) {
+                        $variantSku = strtoupper(preg_replace('/\s+/u', ' ', trim($variant['sku'] ?? '')));
+
+                        if ($variantSku === $normalizedSku) {
                             $inventoryItemId = $variant['inventory_item_id'];
                             break 2;
                         }
@@ -127,7 +131,7 @@ class IncomingController extends Controller
             $adjustResponse = Http::withBasicAuth($this->shopifyApiKey, $this->shopifyPassword)
                 ->post("https://{$this->shopifyDomain}/admin/api/2025-01/inventory_levels/adjust.json", [
                     'inventory_item_id' => $inventoryItemId,
-                    'location_id' => $locationId,
+                    'location_id' => $locationId,   
                     'available_adjustment' => $incomingQty,
                 ]);
 
