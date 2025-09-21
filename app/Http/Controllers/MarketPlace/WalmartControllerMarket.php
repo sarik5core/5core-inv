@@ -33,7 +33,7 @@ class WalmartControllerMarket extends Controller
         // Get percentage from cache or database
         $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
             $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+            return $marketplaceData ? $marketplaceData->percentage : 100;
         });
 
         return view('market-places.walmartAnalysis', [

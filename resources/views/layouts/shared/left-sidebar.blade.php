@@ -170,10 +170,10 @@
                                 Masters</a>
                         </li>
                         <li>
-                            <a href="{{ url('pricing-master.pricing_master') }}">Pricing masters</a>
+                            <a href="{{ url('/parent.pricing-masters') }}">ROI dashboard</a>
                         </li>
                         <li>
-                            <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters clone</a>
+                            <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters </a>
                         </li>
                         <li>
                             <a href="https://listing-analysis.5coremanagement.com/public/login" target="_blank"
@@ -1412,7 +1412,7 @@
                                     <li>
                                         <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
                                     </li>
-                                    <li>
+                                    {{-- <li>
                                         <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
                                     </li>
                                     <li>
@@ -1426,7 +1426,7 @@
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < UTI ACOS RED</a>
-                                    </li>
+                                    </li> --}}
 
                                 </ul>
                             </div>

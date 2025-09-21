@@ -28,6 +28,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\AutoUpdateAmazonPinkDilKwAds::class,
         \App\Console\Commands\AutoUpdateAmazonPinkDilPtAds::class,
         \App\Console\Commands\AutoUpdateAmazonPinkDilHlAds::class,
+        \App\Console\Commands\EbayOverUtilzBidsAutoUpdate::class,
     ];
 
     /**
@@ -153,6 +154,9 @@ class Kernel extends ConsoleKernel
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-pink-dil-hl-ads')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('ebay:auto-update-over-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();

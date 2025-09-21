@@ -261,13 +261,7 @@
                         row.getElement().classList.add("parent-row");
                     }
                 },
-                columns: [{
-                        formatter: "rowSelection",
-                        titleFormatter: "rowSelection",
-                        hozAlign: "center",
-                        headerSort: false,
-                        width: 50
-                    },
+                columns: [
                     {
                         title: "Parent",
                         field: "parent"
@@ -350,17 +344,25 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var acos = parseFloat(row.acos) || 0;
+                            var acosRaw = row.acos; 
+                            var acos = parseFloat(acosRaw);
+
+                            if (isNaN(acos)) {
+                                acos = 0;
+                            }
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
-                                td.classList.add('pink-bg'); 
+                            if (acos === 0) {
+                                td.classList.add('red-bg');
+                                return "100%"; 
+                            } else if (acos < 7) {
+                                td.classList.add('pink-bg');
                             } else if (acos >= 7 && acos <= 14) {
-                                td.classList.add('green-bg'); 
+                                td.classList.add('green-bg');
                             } else if (acos > 14) {
-                                td.classList.add('red-bg'); 
+                                td.classList.add('red-bg');
                             }
 
                             return acos.toFixed(0) + "%";
@@ -436,8 +438,8 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var sbid = (l1_cpc * 0.90).toFixed(2);
-                            return sbid;
+                            // var sbid = (l1_cpc * 0.90).toFixed(2);
+                            return l1_cpc;
                         },
                     },
                     {
@@ -459,19 +461,22 @@
                                 var sbid = (l1_cpc * 0.90).toFixed(2);
                                 updateBid(sbid, rowData.campaign_id);
                             }
-                        }
+                        },
+                        visible: false
                     },
                     {
                         title: "SBGT",
                         field: "sbgt",
                         hozAlign: "center",
-                        editor: "input"
+                        editor: "input",
+                        visible: false
                     },
                     {
                         title: "APR BGT",
                         field: "apr_bgt",
                         hozAlign: "center",
-                        editor: "input"
+                        editor: "input",
+                        visible: false
                     },
                 ],
                 ajaxResponse: function(url, params, response) {
@@ -706,9 +711,7 @@
                 XLSX.writeFile(wb, "ebay_over_acos_pink.xlsx");
             });
 
-
-
-            document.body.style.zoom = "78%";
+            document.body.style.zoom = "90%";
         });
     </script>
 @endsection

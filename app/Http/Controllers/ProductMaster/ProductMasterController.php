@@ -424,6 +424,7 @@ class ProductMasterController extends Controller
             'SHIP' => 'ship',
             'SHIP FBA' => 'ship_fba',
             'SHIP Temu' => 'ship_temu',
+            'SHIP eBay2' => 'ship_ebay2',
             'Label QTY' => 'label_qty',
             'WT ACT' => 'wt_act',
             'WT DECL' => 'wt_decl',
@@ -442,6 +443,7 @@ class ProductMasterController extends Controller
             'MAP' => 'map',
             'STATUS' => 'status',
             'UPC' => 'upc',
+            'Initial Quantity' => 'initial_quantity'
         ];
 
         foreach ($sheetData as $row) {

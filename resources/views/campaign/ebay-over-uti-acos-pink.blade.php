@@ -350,17 +350,25 @@
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var acos = parseFloat(row.acos) || 0;
+                            var acosRaw = row.acos; 
+                            var acos = parseFloat(acosRaw);
+
+                            if (isNaN(acos.toFixed(0))) {
+                                acos = 0;
+                            }
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
-                                td.classList.add('pink-bg'); 
+                            if (acos === 0) {
+                                td.classList.add('red-bg');
+                                return "100%"; 
+                            } else if (acos < 7) {
+                                td.classList.add('pink-bg');
                             } else if (acos >= 7 && acos <= 14) {
-                                td.classList.add('green-bg'); 
+                                td.classList.add('green-bg');
                             } else if (acos > 14) {
-                                td.classList.add('red-bg'); 
+                                td.classList.add('red-bg');
                             }
 
                             return acos.toFixed(0) + "%";
@@ -631,8 +639,8 @@
                     if(rowEl && rowEl.offsetParent !== null){
                         
                         var rowData = row.getData();
-                        var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                        var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+                        var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
 
                         var sbid = 0;
                         if(l1_cpc > l7_cpc){
@@ -718,7 +726,7 @@
                     if (l1_cpc > l7_cpc) {
                         sbid = (l1_cpc * 0.95).toFixed(2);
                     } else {
-                        sbid = (l7_cpc * 0.95).toFixed(2);
+                        sbid = (l1_cpc * 0.95).toFixed(2);
                     }
 
                     return {

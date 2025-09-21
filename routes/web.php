@@ -1108,20 +1108,22 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     // Route::post('/push-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']);
     Route::post('/update-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']); // Added for compatibility
     Route::get('/test-doba-connection', [PricingMasterViewsController::class, 'testDobaConnection']); // Debug route
-
-
     Route::post('/update-reverb-price', [PricingMasterViewsController::class, 'updateReverbPrice'])->name('reverb.priceChange');
-
     Route::post('/update-macy-price', [PricingMasterViewsController::class, 'updateMacyPrice'])->name('macy.priceChange');
     // Route::post('/update-reverb-price', [PricingMasterViewsController::class, 'updateReverbPrice'])->name('reverb.priceChange');
 
 
 
 
+    // Pricing Master Views Roi Dashboard
 
     Route::get('/pricing-masters.pricing_masters', [PricingMasterViewsController::class, 'pricingMaster']);
     Route::get('/pricing-master-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
+    Route::get('/pricing-master/roi-dashboard', [PricingMasterViewsController::class, 'getViewPricingAnalysisROIDashboardData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
+    Route::get('/parent.pricing-masters', [PricingMasterViewsController::class, 'pricingMasterCopy']);
+
+
 
 
 

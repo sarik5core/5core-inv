@@ -198,6 +198,8 @@ class PricingMasterViewsController extends Controller
             $lp   = (float) ($values['lp'] ?? 0);
             $ship = (float) ($values['ship'] ?? 0);
             $temuship = (float) ($values['temu_ship'] ?? 0);
+            $ebay2ship = (float) ($values['ebay2_ship'] ?? 0);
+            $initialQuantity = (float) ($values['initial_quantity'] ?? 0); 
 
             $amazon  = $amazonData[$sku] ?? null;
             $ebay    = $ebayData[$sku] ?? null;
@@ -245,10 +247,15 @@ class PricingMasterViewsController extends Controller
                 'LP'      => $lp,
                 'SHIP'    => $ship,
                 'temu_ship' => $temuship,
+                'ebay2_ship' => $ebay2ship,
+                'initial_quantity' => $initialQuantity,
                 'is_parent' => $isParent,
                 'inv' => $shopifyData[trim(strtoupper($sku))]->inv ?? 0,
                 'avgCvr' => $avgCvr,
 
+                'initial_cogs' => $lp != 0 ? $initialQuantity * $lp : 0,
+                'current_cogs' => $lp != 0 ? $inv * $lp : 0,
+                // 'avg_inventory' will be set after $item is created
 
                 // Amazon
                 'amz_price' => $amazon ? ($amazon->price ?? 0) : 0,
@@ -469,6 +476,14 @@ class PricingMasterViewsController extends Controller
 
 
 
+            // Set avg_inventory after $item is created calcution 
+            $item->avg_inventory = $lp != 0 ? (($item->initial_cogs + $item->current_cogs) / 2) : 0;
+            $item->initial_calculated_cogs = $item->initial_cogs - $item->current_cogs;
+            $item->inventory_turnover_ratio = $item->initial_calculated_cogs != 0 ? ($item->initial_calculated_cogs / $item->avg_inventory) : 0;
+            $item->stock_rotation_days = $item->inventory_turnover_ratio != 0 ? 365 / $item->inventory_turnover_ratio : 0;
+
+
+
             // Add shopifyb2c fields after $item is created
             $shopify = $shopifyData[trim(strtoupper($sku))] ?? null;
             $item->shopifyb2c_price = $shopify ? $shopify->price : 0;
@@ -536,6 +551,9 @@ class PricingMasterViewsController extends Controller
             'status' => 200,
         ]);
     }
+
+
+// Get Pricing ROI Dashboard Data 
 
 
     protected function applyFilters($data, $dilFilter, $dataType, $parentFilter, $skuFilter)
@@ -906,7 +924,7 @@ class PricingMasterViewsController extends Controller
         }
 
         $itemId = EbayMetric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "eBay Item ID not found for SKU: {$sku}"
@@ -916,7 +934,7 @@ class PricingMasterViewsController extends Controller
         try {
             // Use direct eBay API call for instant update
             $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -950,7 +968,7 @@ class PricingMasterViewsController extends Controller
         }
 
         $itemId = Ebay2Metric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "eBay2 Item ID not found for SKU: {$sku}"
@@ -960,7 +978,7 @@ class PricingMasterViewsController extends Controller
         try {
             // Use direct eBay API call for instant update
             $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -994,7 +1012,7 @@ class PricingMasterViewsController extends Controller
         }
 
         $itemId = Ebay3Metric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "eBay3 Item ID not found for SKU: {$sku}"
@@ -1004,7 +1022,7 @@ class PricingMasterViewsController extends Controller
         try {
             // Use direct eBay API call for instant update
             $result = $this->ebay->reviseFixedPriceItem($itemId, $price);
-            
+
             if ($result['success']) {
                 return response()->json([
                     'success' => true,
@@ -1103,19 +1121,19 @@ class PricingMasterViewsController extends Controller
     {
         $sku = $request->input('sku', 'SP 12120 4OHMS');
         $price = $request->input('price', 30.00);
-        
+
         // Get item ID
         $itemId = DobaMetric::where('sku', $sku)->value('item_id');
-        
+
         if (!$itemId) {
             return response()->json([
                 'error' => "Item not found for SKU: {$sku}"
             ], 404);
         }
-        
+
         // Test different validation approaches
         $results = $this->doba->testItemValidation($itemId, $price);
-        
+
         return response()->json([
             'sku' => $sku,
             'item_id' => $itemId,
@@ -1201,7 +1219,6 @@ class PricingMasterViewsController extends Controller
                 'price' => $price,
                 'debug_results' => $result
             ]);
-
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -1210,4 +1227,20 @@ class PricingMasterViewsController extends Controller
             ], 500);
         }
     }
+
+
+
+
+
+
+
+    public function pricingMasterCopy(Request $request)
+    {
+       
+        return view('pricing-master.pricing_master_copy', [
+        ]);
+    }
+
+
+ 
 }

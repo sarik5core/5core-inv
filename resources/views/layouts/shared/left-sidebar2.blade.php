@@ -157,7 +157,7 @@
                                 <a href="{{ url('pricing-master.pricing_master') }}">Pricing masters</a>
                             </li>
                             <li>
-                                <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters clone</a>
+                                <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters </a>
                             </li>
                             <li>
                                 <a href="https://listing-analysis.5coremanagement.com/public/login" target="_blank"

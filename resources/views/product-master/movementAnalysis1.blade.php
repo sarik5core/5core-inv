@@ -102,12 +102,12 @@
             paginationSize: 50,
             data: data,
             columns: [
-                {title: "#", formatter: "rownum", width: 60},
+                // {title: "#", formatter: "rownum", width: 60},
                 {title: "Parent", field: "parent"},
                 {title: "SKU", field: "sku"},
                 {title: "INV", field: "INV", hozAlign: "right"},
-                {title: "Total Month", field: "total_months"},
-                {title: "Monthly", field: "monthly_average"},
+                // {title: "Total Month", field: "total_months"},
+                {title: "Avg M", field: "monthly_average"},
                 {title: "MOQ", field: "moq"},
                 {title: "MSL", field: "msl"},
                 {
@@ -135,7 +135,8 @@
                     formatter: function(cell) {
                         let monthly = cell.getValue() || 0;
                         let lp = cell.getRow().getData().lp || 0;
-                        return (monthly * lp).toFixed(2);
+                        return (monthly )
+                        return (monthly * lp).toFixed(0);
                     }
                 },
                 {
