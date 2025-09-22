@@ -52,14 +52,15 @@
                             <a href="{{ route('roles') }}">Roles</a>
                         </li>
                         <li>
-                            <a href="{{ route('permissions') }}" class="text-danger bg-light"><i class="ri-error-warning-line text-danger"></i> Reset Permission</a>
+                            <a href="{{ route('permissions') }}" class="text-danger bg-light"><i
+                                    class="ri-error-warning-line text-danger"></i> Reset Permission</a>
                         </li>
                         <li>
                             <a href="{{ route('permissions.view') }}">View Permissions</a>
                         </li>
                     </ul>
                 </div>
-                
+
             </li>
 
 
@@ -585,6 +586,10 @@
                             <div class="collapse" id="account-health-master">
                                 <ul class="side-nav-second-level">
                                     <li>
+                                         <a href="{{ route('account.health.master.channel.dashboard') }}"
+                                            target="_blank">Dashboard</a>
+                                    </li>
+                                    <li>
                                         <a href="{{ route('odr.rate') }}">ODR Rate</a>
                                     </li>
                                     <li>
@@ -777,10 +782,7 @@
                                             </ul>
                                         </div>
                                     </li>
-
-
-
-
+                                    
                                     <li class="side-nav-item">
                                         <a data-bs-toggle="collapse" href="#videoSalesSubmenu4" aria-expanded="false"
                                             aria-controls="videoSalesSubmenu4">
