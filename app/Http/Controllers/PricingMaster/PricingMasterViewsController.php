@@ -463,6 +463,9 @@ class PricingMasterViewsController extends Controller
                 'doba_sprice' => isset($dobaDataView[$sku]) ?
                     (is_array($dobaDataView[$sku]->value) ?
                         ($dobaDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'doba_final_price' => isset($dobaDataView[$sku]) ?
+                    (is_array($dobaDataView[$sku]->value) ?
+                        ($dobaDataView[$sku]->value['FINAL_PRICE'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['FINAL_PRICE'] ?? null)) : null,
                 'doba_spft' => isset($dobaDataView[$sku]) ? (is_array($dobaDataView[$sku]->value) ?
                     ($dobaDataView[$sku]->value['SPFT'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
                 'doba_sroi' => isset($dobaDataView[$sku]) ?
@@ -833,11 +836,24 @@ class PricingMasterViewsController extends Controller
                 $sroi = $lp > 0 ? ((($sprice * 0.95) - $lp - $ship) / $lp) * 100 : 0;
 
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['FINAL_PRICE'] = number_format($sprice * 0.75, 2, '.', '');
                 $existing['SPFT'] = number_format($spft, 2, '.', '');
                 $existing['SROI'] = number_format($sroi, 2, '.', '');
 
                 $dobaDataView->value = $existing;
                 $dobaDataView->save();
+
+                // Update ProductMaster Values field with doba_final_price
+                $product = ProductMaster::where('sku', $sku)->first();
+                if ($product) {
+                    $values = is_string($product->Values) ? json_decode($product->Values, true) : $product->Values;
+                    if (!is_array($values)) {
+                        $values = [];
+                    }
+                    $values['doba_final_price'] = number_format($sprice * 0.75, 2, '.', '');
+                    $product->Values = json_encode($values);
+                    $product->save();
+                }
                 break;
 
             case 'temu':
@@ -1118,15 +1134,32 @@ class PricingMasterViewsController extends Controller
     {
 
         $sku   = $request->input('sku');
-        $price = $request->input('price');
 
         // Validate inputs
-        if (!$sku || !$price) {
+        if (!$sku) {
 
             return response()->json([
-                'error' => 'SKU and price are required'
+                'error' => 'SKU is required'
             ], 400);
         }
+
+        // Get FINAL_PRICE from DobaDataView instead of request
+        $dobaDataView = DobaDataView::where('sku', $sku)->first();
+        if (!$dobaDataView) {
+            return response()->json([
+                'error' => "No Doba data found for SKU: {$sku}"
+            ], 404);
+        }
+
+        $existing = is_array($dobaDataView->value) ? $dobaDataView->value : (json_decode($dobaDataView->value, true) ?: []);
+        $price = $existing['FINAL_PRICE'] ?? null;
+
+        if (!$price) {
+            return response()->json([
+                'error' => "FINAL_PRICE not found for SKU: {$sku}"
+            ], 404);
+        }
+
         // Find Doba Item ID from your DB
         $itemId = DobaMetric::where('sku', $sku)->value('item_id');
         if (!$itemId) {
@@ -1164,87 +1197,6 @@ class PricingMasterViewsController extends Controller
         ]);
     }
 
-    /**
-     * Test different approaches to fix Doba item validation
-     */
-    public function testDobaItemValidation(Request $request)
-    {
-        $sku = $request->input('sku', 'SP 12120 4OHMS');
-        $price = $request->input('price', 30.00);
-
-        // Get item ID
-        $itemId = DobaMetric::where('sku', $sku)->value('item_id');
-
-        if (!$itemId) {
-            return response()->json([
-                'error' => "Item not found for SKU: {$sku}"
-            ], 404);
-        }
-
-        // Test different validation approaches
-        $results = $this->doba->testItemValidation($itemId, $price);
-
-        return response()->json([
-            'sku' => $sku,
-            'item_id' => $itemId,
-            'price' => $price,
-            'validation_tests' => $results
-        ]);
-    }
-
-    /**
-     * Debug method to test Doba API
-     */
-    public function testDobaConnection(Request $request)
-    {
-        $sku = $request->input('sku');
-        $testPrice = $request->input('price', 25.99);
-
-        // Get item ID if SKU provided
-        $itemId = null;
-        if ($sku) {
-            $itemId = DobaMetric::where('sku', $sku)->value('item_id');
-        }
-
-        // Test connection with real endpoint
-        $connectionTest = $this->doba->testConnection($itemId);
-
-        // Test actual price update if item ID found
-        $priceUpdateTest = null;
-        if ($itemId) {
-            $priceUpdateTest = $this->doba->updateItemPrice($itemId, $testPrice);
-        }
-
-        // Test getting item details if item ID found
-        $itemTest = null;
-        if ($itemId) {
-            $itemTest = $this->doba->getItemDetail($itemId);
-        }
-
-        // Get a sample item ID from database for testing
-        $sampleItem = DobaMetric::first();
-
-        return response()->json([
-            'connection_test' => $connectionTest,
-            'price_update_test' => $priceUpdateTest,
-            'item_test' => $itemTest,
-            'debug_info' => [
-                'requested_sku' => $sku,
-                'test_price' => $testPrice,
-                'found_item_id' => $itemId,
-                'sample_item' => $sampleItem ? ['sku' => $sampleItem->sku, 'item_id' => $sampleItem->item_id] : null,
-            ],
-            'environment' => [
-                'doba_app_key' => env('DOBA_APP_KEY') ? 'SET (' . substr(env('DOBA_APP_KEY'), 0, 4) . '...)' : 'NOT SET',
-                'doba_private_key' => env('DOBA_PRIVATE_KEY') ? 'SET (length: ' . strlen(env('DOBA_PRIVATE_KEY')) . ')' : 'NOT SET',
-                'base_url' => 'https://openapi.doba.com/api',
-            ]
-        ]);
-    }
-
-    /**
-     * Debug signature generation
-     */
     public function debugDobaSignature(Request $request)
     {
         $timestamp = $request->input('timestamp');
