@@ -94,6 +94,8 @@ class Kernel extends ConsoleKernel
         // Sync Wayfair sheet command
         $schedule->command('sync:wayfair-sheet')->everyTenMinutes();
 
+        $schedule->command('sync:shein-sheet')->everyTenMinutes();
+
         // Sync Walmart sheet command
         $schedule->command('sync:walmart-sheet')->everyTenMinutes();
 
