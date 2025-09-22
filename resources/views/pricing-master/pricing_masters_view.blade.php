@@ -1999,7 +1999,7 @@
                                 : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
                                 : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
                                 : r.prefix === 'ebay3' ? (data.ebay3_sprice || '')
-                                : r.prefix === 'doba' ? (data.doba_sprice || '')
+                                : r.prefix === 'doba' ? (data.doba_final_price || '')
                                 : r.prefix === 'temu' ? (data.temu_sprice || '')
                                 : r.prefix === 'macy' ? (data.macy_sprice || '')
                                 : r.prefix === 'reverb' ? (data.reverb_sprice || '')
@@ -2602,7 +2602,72 @@
                         console.error('Amazon update failed:', error);
                     }
                 });
+
+                $.ajax({
+                    url: '/update-doba-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Doba price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Doba update failed:', error);
+                    }
+                });
+
+                $.ajax({
+                    url: '/push-ebay2-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('eBay2 price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('eBay2 update failed:', error);
+                    }
+                });
+                   $.ajax({
+                    url: '/push-ebay3-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('eBay2 price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('eBay2 update failed:', error);
+                    }
+                });
+
+                $.ajax({
+                    url: '/push-walmart-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Walmart price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Walmart update failed:', error);
+                    }
+                });
                 
+                
+
                 alert('Price is being updated across all marketplaces');
                 return;
             }
