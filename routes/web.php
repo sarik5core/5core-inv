@@ -1036,7 +1036,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/upload-image', [TransitContainerDetailsController::class, 'uploadImage'])->name('transit.upload-image');
     Route::get('/transit-container-changes', [TransitContainerDetailsController::class, 'transitContainerChanges'])->name('transit.container.changes');
     Route::get('/transit-container-new', [TransitContainerDetailsController::class, 'transitContainerNew'])->name('transit.container.new');
-
+    Route::post('/transit-container/save', [TransitContainerDetailsController::class, 'transitContainerStoreItems']);
+    Route::post('/transit-container/delete', [TransitContainerDetailsController::class, 'deleteTransitItem']);
 
     Route::post('/inventory-warehouse/push', [InventoryWarehouseController::class, 'pushInventory'])->name('inventory.push');
     Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');

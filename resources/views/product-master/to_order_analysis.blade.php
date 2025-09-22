@@ -170,6 +170,16 @@
                                 </select>
                             </div>
 
+                            <div class="col-auto">
+                                <label class="form-label fw-semibold mb-1 d-block">Pending Status</label>
+                                <select id="row-data-pending-status" class="form-select border border-primary" style="width: 150px;">
+                                    <option value="">select color</option>
+                                    <option value="green">Green <span id="greenCount"></span></option>
+                                    <option value="yellow">yellow <span id="yellowCount"></span></option>
+                                    <option value="red">red <span id="redCount"></span></option>
+                                </select>
+                            </div>
+
                             {{-- 🕒 Pending Items --}}
                             <div class="col-auto">
                                 <label class="form-label fw-semibold mb-1 d-block">🕒 Pending Items</label>
@@ -374,7 +384,6 @@
                 // --- Play Mode ---
                 function renderGroup(supplierKey) {
                     const rows = Object.values(groupedSupplierData[supplierKey] || {});
-                    console.log("Currently Showing:", supplierKeys[currentSupplierIndex]);
 
                     if (!rows.length) return;
 
@@ -385,46 +394,69 @@
                     let html = '';
                     rows.forEach(item => {
                         const approvedQty = parseInt(item['Approved QTY'] ?? 0);
+                        let daysDiff = null;
+                        let bgColor = '';
+                        if (item['Date of Appr']) {
+                            const apprDate = new Date(item['Date of Appr']);
+                            const today = new Date();
+                            daysDiff = Math.floor((today - apprDate) / (1000 * 60 * 60 * 24));
+
+                            if (daysDiff > 14) {
+                                bgColor = 'background-color: red; color: white;';
+                            } else if (daysDiff > 7) {
+                                bgColor = 'background-color: yellow; color: black;';
+                            } else {
+                                bgColor = 'background-color: green; color: white;';
+                            }
+                        }
                         html += `
-                <tr style="${item.is_parent ? 'background-color:#e0f7ff;' : ''}" data-is-parent=" ${item.is_parent ? '1' : '0'}">
-                    <td>${item['Image'] ? `<img src="${item['Image']}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #eee;">` : `<span class="text-muted">No Image</span>`}</td>
-                    <td class="fw-semibold">${item.Parent ?? '-'}</td>
-                    <td><span class="fw-semibold text-dark">${item.SKU ?? '-'}</span></td>
-                    <td><input type="number" class="form-control form-control-sm order-qty" data-sku="${item.SKU}" data-column="approved_qty" value="${approvedQty}" style="width:100px;"></td>
-                    <td><span class="text-secondary">${item['Date of Appr'] ?? '-'}</span></td>
-                    <td>
-                        <select class="form-select stage-select" data-sku="${item.SKU}" data-column="Supplier">
-                            ${supplierOptionsHtml.replace(`value="${item.Supplier}"`, `value="${item.Supplier}" selected`)}
-                        </select>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm ${item.review ? 'btn-outline-success' : 'btn-outline-dark'} open-review-modal"
-                            data-parent="${item.Parent}" data-sku="${item.SKU}" data-supplier="${item.Supplier}"
-                            data-positive="${item.positive_review}" data-negative="${item.negative_review}"
-                            data-improvement="${item.improvement}" data-clink="${item.Clink}" data-date_updated="${item.date_updated}">
-                            <i class="fas ${item.review ? 'fa-eye' : 'fa-pen'} me-1"></i> ${item.review ? 'View Review' : 'Review'}
-                        </button>
-                    </td>
-                    ${item['RFQ Form Link'] ? `<td><a href="${item['RFQ Form Link']}" class="btn btn-sm btn-outline-primary"><i class="mdi mdi-content-copy"></i> Open</a></td>` : `<td contenteditable="true" class="editable-cell" data-sku="${item.SKU}" data-column="RFQ Form Link" style="background:#f8fafd;min-width:180px;"></td>`}
-                    ${item['Rfq Report Link'] ? `<td><a href="${item['Rfq Report Link']}" class="btn btn-sm btn-outline-success"><i class="mdi mdi-content-copy"></i> Open</a></td>` : `<td contenteditable="true" class="editable-cell report-cell" data-sku="${item.SKU}" data-column="Rfq Report Link" style="background:#f8fafd;"></td>`}
-                    ${item.sheet_link ? `<td><a href="${item.sheet_link}" class="btn btn-sm btn-outline-success"><i class="mdi mdi-content-copy"></i> Open</a></td>` : `<td contenteditable="true" class="editable-cell report-cell" data-sku="${item.SKU}" data-column="sheet_link" style="background:#f8fafd;"></td>`}
-                    <td>
-                        <select class="form-select form-select-sm stage-select" data-sku="${item.SKU}" data-column="nrl">
-                            ${['REQ','NR'].map(nrLOption =>
-                                `<option value="${nrLOption}" ${nrLOption === item.nrl ? 'selected' : ''}>${nrLOption}</option>`
-                            ).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="form-select form-select-sm stage-select" data-sku="${item.SKU}" data-column="Stage">
-                            ${['RFQ Sent','Analytics','To Approve','Approved','Advance','Mfrg Progress'].map(stageOption =>
-                                `<option value="${stageOption}" ${stageOption === item.Stage ? 'selected' : ''}>${stageOption}</option>`
-                            ).join('')}
-                        </select>
-                    </td>
-                    <td><input type="date" class="form-control form-control-sm stage-select" data-sku="${item.SKU}" data-column="Adv date" value="${item['Adv date'] ?? ''}" style="width: 80px;"></td>
-                    <td><input type="number" class="form-control form-control-sm order-qty" data-sku="${item.SKU}" data-column="order_qty" value="${item.order_qty ?? ''}" style="width:110px;"></td>
-                </tr>`;
+                        <tr style="${item.is_parent ? 'background-color:#e0f7ff;' : ''}" data-is-parent=" ${item.is_parent ? '1' : '0'}">
+                            <td>${item['Image'] ? `<img src="${item['Image']}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #eee;">` : `<span class="text-muted">No Image</span>`}</td>
+                            <td class="fw-semibold">${item.Parent ?? '-'}</td>
+                            <td><span class="fw-semibold text-dark">${item.SKU ?? '-'}</span></td>
+                            <td><input type="number" class="form-control form-control-sm order-qty" data-sku="${item.SKU}" data-column="approved_qty" value="${approvedQty}" style="width:100px;"></td>
+                            <td class="date-cell" data-dateOfAppr="${daysDiff}">
+                                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                    <input type="date" class="form-control form-control-sm stage-select"
+                                        data-sku="${item.SKU}" data-column="Date of Appr"
+                                        value="${item['Date of Appr'] ?? ''}" style="width: 82px; ${bgColor}">
+
+                                    ${daysDiff !== null ? `<small style="font-size:12px;color:rgb(72,69,69);">${daysDiff} days ago</small>` : ''}
+                                </div>
+                            </td>
+                            <td>
+                                <select class="form-select stage-select" data-sku="${item.SKU}" data-column="Supplier">
+                                    ${supplierOptionsHtml.replace(`value="${item.Supplier}"`, `value="${item.Supplier}" selected`)}
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm ${item.review ? 'btn-outline-success' : 'btn-outline-dark'} open-review-modal"
+                                    data-parent="${item.Parent}" data-sku="${item.SKU}" data-supplier="${item.Supplier}"
+                                    data-positive="${item.positive_review}" data-negative="${item.negative_review}"
+                                    data-improvement="${item.improvement}" data-clink="${item.Clink}" data-date_updated="${item.date_updated}">
+                                    <i class="fas ${item.review ? 'fa-eye' : 'fa-pen'} me-1"></i> ${item.review ? 'View Review' : 'Review'}
+                                </button>
+                            </td>
+                            ${item['RFQ Form Link'] ? `<td><a href="${item['RFQ Form Link']}" class="btn btn-sm btn-outline-primary"><i class="mdi mdi-content-copy"></i> Open</a></td>` : `<td contenteditable="true" class="editable-cell" data-sku="${item.SKU}" data-column="RFQ Form Link" style="background:#f8fafd;min-width:180px;"></td>`}
+                            ${item['Rfq Report Link'] ? `<td><a href="${item['Rfq Report Link']}" class="btn btn-sm btn-outline-success"><i class="mdi mdi-content-copy"></i> Open</a></td>` : `<td contenteditable="true" class="editable-cell report-cell" data-sku="${item.SKU}" data-column="Rfq Report Link" style="background:#f8fafd;"></td>`}
+                            ${item.sheet_link ? `<td><a href="${item.sheet_link}" class="btn btn-sm btn-outline-success"><i class="mdi mdi-content-copy"></i> Open</a></td>` : `<td contenteditable="true" class="editable-cell report-cell" data-sku="${item.SKU}" data-column="sheet_link" style="background:#f8fafd;"></td>`}
+                            <td>
+                                <select class="form-select form-select-sm stage-select" data-sku="${item.SKU}" data-column="nrl">
+                                    ${['REQ','NR'].map(nrLOption =>
+                                        `<option value="${nrLOption}" ${nrLOption === item.nrl ? 'selected' : ''}>${nrLOption}</option>`
+                                    ).join('')}
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm stage-select" data-sku="${item.SKU}" data-column="Stage">
+                                    ${['RFQ Sent','Analytics','To Approve','Approved','Advance','Mfrg Progress'].map(stageOption =>
+                                        `<option value="${stageOption}" ${stageOption === item.Stage ? 'selected' : ''}>${stageOption}</option>`
+                                    ).join('')}
+                                </select>
+                            </td>
+                            <td><input type="date" class="form-control form-control-sm stage-select" data-sku="${item.SKU}" data-column="Adv date" value="${item['Adv date'] ?? ''}" style="width: 80px;"></td>
+                            <td><input type="number" class="form-control form-control-sm order-qty" data-sku="${item.SKU}" data-column="order_qty" value="${item.order_qty ?? ''}" style="width:110px;"></td>
+                        </tr>`;
                     });
                     console.log("Table Body Element Found?", tableBody);
 
@@ -729,6 +761,46 @@
                     }
                 });
             }
+
+            const greenSpan = document.getElementById("greenCount");
+            const yellowSpan = document.getElementById("yellowCount");
+            const redSpan = document.getElementById("redCount");
+
+            const filterSelect = document.getElementById("row-data-pending-status");
+            const rows = document.querySelectorAll("#suppliers-table tr");
+
+            function updateCounts() {
+                let green = 0, yellow = 0, red = 0;
+
+                rows.forEach(row => {
+                    const input = row.querySelector('input[data-column="Date of Appr"]');
+                    if (input) {
+                        const bg = input.style.backgroundColor;
+                        if (bg === 'green') green++;
+                        else if (bg === 'yellow') yellow++;
+                        else if (bg === 'red') red++;
+                    }
+                });
+
+                greenSpan.innerText = `(${green})`;
+                yellowSpan.innerText = `(${yellow})`;
+                redSpan.innerText = `(${red})`;
+            }
+
+            function filterDateRows(type) {
+                rows.forEach(row => {
+                    const input = row.querySelector('input[data-column="Date of Appr"]');
+                    if (!input) return;
+                    const bg = input.style.backgroundColor;
+                    row.style.display = (!type || bg === type) ? '' : 'none';
+                });
+            }
+
+            updateCounts();
+
+            filterSelect.addEventListener("change", function() {
+                filterDateRows(this.value);
+            });
         </script>
     @endsection
 @endif

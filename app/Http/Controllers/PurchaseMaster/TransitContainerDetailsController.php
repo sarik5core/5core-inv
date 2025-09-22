@@ -8,6 +8,7 @@ use App\Models\Supplier;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TransitContainerDetailsController extends Controller
 {
@@ -20,7 +21,6 @@ class TransitContainerDetailsController extends Controller
             $tabs = ['Container 1'];
         }
 
-        // 🔥 Normalize ProductMaster SKUs
         $skuParentMap = ProductMaster::pluck('parent', 'sku')
             ->mapWithKeys(function ($parent, $sku) {
                 $normSku = strtoupper(trim(preg_replace('/\s+/', ' ', $sku)));
@@ -73,9 +73,12 @@ class TransitContainerDetailsController extends Controller
             }
         }
 
+        $suppliers = Supplier::select('id', 'name')->get();
+
         return view('purchase-master.transit_container.index', [
             'tabs' => $tabs,
-            'groupedData' => $groupedData
+            'groupedData' => $groupedData,
+            'suppliers' => $suppliers
         ]);
     }
 
@@ -142,8 +145,59 @@ class TransitContainerDetailsController extends Controller
         ]);
     }
 
+    //save transit conatiner items
+    public function transitContainerStoreItems(Request $request){
+        $request->validate([
+            'tab_name'       => 'required|string|max:255',
+            'our_sku.*'       => 'required|string|max:255',
+            'supplier_name.*' => 'required|string|max:255',
+            'no_of_units.*'   => 'nullable|numeric',
+            'total_ctn.*'     => 'nullable|numeric',
+            'pcs_qty.*'       => 'nullable|numeric',
+            'rate.*'          => 'nullable|numeric',
+            'unit.*'          => 'nullable|string',
+            'cbm.*'          => 'nullable|numeric',
+            'changes.*'       => 'nullable|string',
+            'specification.*' => 'nullable|string',
+        ]);
+
+        foreach ($request->our_sku as $index => $sku) {
+            $data = [
+                'tab_name'      => $request->tab_name,
+                'our_sku'       => $sku,
+                'supplier_name' => $request->supplier_name[$index] ?? null,
+                'no_of_units'   => $request->no_of_units[$index] ?? null,
+                'total_ctn'     => $request->total_ctn[$index] ?? null,
+                'pcs_qty'       => $request->pcs_qty[$index] ?? null,
+                'rate'          => $request->rate[$index] ?? null,
+                'unit'          => $request->unit[$index] ?? null,
+                'cbm'          => $request->cbm[$index] ?? null,
+                'changes'       => $request->changes[$index] ?? null,
+                'specification' => $request->specification[$index] ?? null,
+            ];
+
+            TransitContainerDetail::updateOrCreate(
+                [
+                    'tab_name' => $request->tab_name,
+                    'our_sku'  => null,
+                ],
+                $data
+            );
+        }
+        return back()->with('success', 'Items saved successfully!');
+    }
+
+    public function deleteTransitItem(Request $request)
+    {
+        $ids = $request->ids;
+        TransitContainerDetail::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true, 'message' => 'Deleted successfully.']);
+    }
+
     //transit container changes
     public function transitContainerChanges(){
+
         $allRecords = TransitContainerDetail::all();
 
         $tabs = TransitContainerDetail::select('tab_name')->distinct()->pluck('tab_name')->toArray();
