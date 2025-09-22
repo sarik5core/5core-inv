@@ -493,7 +493,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             { title: "CBM", field: "cbm", editor: "input",formatter: function(cell) {
                   const data = cell.getRow().getData();
                   const cbm = parseFloat(data.cbm) || 0;
-                  return cbm.toFixed(2);
+                  return cbm.toFixed(0);
               } },
             {
               title: "Unit",
