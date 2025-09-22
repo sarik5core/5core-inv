@@ -1009,6 +1009,56 @@ class ApiController extends Controller
         }
     }
 
+
+
+
+
+     public function fetchDataFromSheinMasterGoogleSheet()
+    {
+        // URL of the Google Apps Script web app
+        $url = 'https://script.google.com/macros/s/AKfycbwNwG2rdvGOK49cRJQan7-3MSR2DQ2S-H0bP8iYx-olcfwWn_pswO-q7RS7hcZ152y5/exec';
+
+        try {
+            // Make a GET request to the Google Apps Script URL
+            $response = Http::timeout(seconds: 120)->get($url);
+
+            // Check if the request was successful
+            if ($response->successful()) {
+                // Decode the JSON response
+                $data = $response->json();
+
+                // Log the data for debugging (optional)
+                // Log::info('Data fetched from Google Sheet:', $data);
+
+                // Return the data as a JSON response
+                return response()->json([
+                    'message' => 'Data fetched successfully',
+                    'data' => $data,
+                    'status' => 200
+                ]);
+            } else {
+                // Log the error if the request failed
+                Log::error('Failed to fetch data from Google Sheet. Response:', $response->body());
+
+                // Return an error response
+                return response()->json([
+                    'message' => 'Failed to fetch data from Google Sheet',
+                    'status' => $response->status()
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            // Log the exception if something goes wrong
+            Log::error('Exception while fetching data from Google Sheet:', ['error' => $e->getMessage()]);
+
+            // Return an error response
+            return response()->json([
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
+    }
+
     // Fetch data from Newegg B2C master Apps Script
     public function fetchDataFromWayfairMasterGoogleSheet()
     {
@@ -1319,6 +1369,41 @@ class ApiController extends Controller
         } catch (\Exception $e) {
             Log::error('Request error:', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Request error', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+     public function fetchDataSheetListingDataSheet()
+    {
+        $url = 'https://script.google.com/macros/s/AKfycbwVPMyz2x4Np4kyd3ejFHtPdkeaPRg2sJdOk9TMGbDqdn6puRVVtQ9tQrIsYb0hYZIV/exec';
+
+        try {
+            $response = Http::timeout(seconds: 120)->get($url);
+            if ($response->successful()) {
+                $data = $response->json();
+
+                return response()->json([
+                    'message' => 'Walmart fetched successfully',
+                    'data' => $data,
+                    'status' => 200
+                ]);
+            } else {
+                Log::error('Failed to fetch data from Google Sheet. Response:', $response->body());
+
+                return response()->json([
+                    'message' => 'Failed to fetch data from Google Sheet',
+                    'status' => $response->status()
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching data from Google Sheet:', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
         }
     }
 }

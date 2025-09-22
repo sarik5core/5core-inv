@@ -1042,9 +1042,9 @@
                         <li>
                             <a href="{{ route('incoming.orders.view') }}">Incoming Orders</a>
                         </li>
-                        {{-- <li>
-                            <a href="{{ route('incoming.view') }}">Auto Stock Balance</a>
-                        </li> --}}
+                        <li>
+                            <a href="{{ route('autostock.balance.view') }}">Auto Stock Balance</a>
+                        </li>
                         {{-- <li>
                             <a href="#">Trash Entries</a>
                         </li> --}}

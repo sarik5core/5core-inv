@@ -69,6 +69,8 @@ class OutgoingController extends Controller
         $outgoingQty = (int) $request->qty;
 
         try {
+
+            $normalizedSku = strtoupper(preg_replace('/\s+/u', ' ', $sku));
             // 1. Fetch inventory item ID from Shopify
             $inventoryItemId = null;
             $pageInfo = null;
@@ -84,7 +86,8 @@ class OutgoingController extends Controller
 
                 foreach ($products as $product) {
                     foreach ($product['variants'] as $variant) {
-                        if (trim($variant['sku']) === $sku) {
+                        $variantSku = strtoupper(preg_replace('/\s+/u', ' ', trim($variant['sku'] ?? '')));
+                        if ($variantSku === $normalizedSku) {
                             $inventoryItemId = $variant['inventory_item_id'];
                             break 2;
                         }
