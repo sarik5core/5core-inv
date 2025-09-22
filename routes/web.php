@@ -115,6 +115,7 @@ use App\Http\Controllers\ProductMaster\PrAnalysisController;
 use App\Http\Controllers\ProductMaster\ProductMasterController;
 use App\Http\Controllers\Catalouge\CatalougeManagerController;
 use App\Http\Controllers\Channels\AccountHealthMasterController;
+use App\Http\Controllers\Channels\AccountHealthMasterDashboardController;
 use App\Http\Controllers\ProductMaster\ReturnAnalysisController;
 use App\Http\Controllers\ProductMaster\ReviewAnalysisController;
 use App\Http\Controllers\ProductMaster\PricingAnalysisController;
@@ -371,6 +372,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/refund-health-link/update', 'updateRefundHealthLink')->name('refund-health.link.update');
     });
 
+    // Account Health Master Channel Dashboard
+    Route::get('/channel/dashboard', [AccountHealthMasterDashboardController::class, 'dashboard'])->name('account.health.master.channel.dashboard');
+
+
     //oppertunity channel master
     Route::controller(OpportunityController::class)->group(function () {
         Route::get('/channerl-master-active/opportunity', 'index')->name('opportunity.index');
@@ -486,8 +491,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     // Route::post('/new-marketplaces/update/{id}', [NewMarketplaceController::class, 'update']);
-
-
 
     //Warehouse
     Route::get('/list_all_warehouses', [WarehouseController::class, 'index'])->name('list_all_warehouses');
