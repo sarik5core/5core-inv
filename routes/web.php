@@ -186,6 +186,7 @@ use App\Http\Controllers\Channels\ReviewMaster\ReviewDashboardController;
 use App\Http\Controllers\Channels\SetupAccountChannelController;
 use App\Http\Controllers\Channels\ShippingMasterController;
 use App\Http\Controllers\Channels\TrafficMasterController;
+use App\Http\Controllers\InventoryManagement\AutoStockBalanceController;
 use App\Http\Controllers\InventoryManagement\StockBalanceController;
 use App\Http\Controllers\InventoryWarehouseController;
 use App\Http\Controllers\MarketPlace\DobaController;
@@ -433,18 +434,15 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/incoming-orders-store', [IncomingController::class, 'incomingOrderStore'])->name('incoming.orders.store');
     Route::get('/incoming-orders-list', [IncomingController::class, 'incomingOrderList']);
 
-    //auto stock balance
-    // Route::get('/auto-stock-balance', [IncomingController::class, 'autoStockBalanceView'])->name('autostock.balance.view');
-    // Route::post('/incoming-data-store', [IncomingController::class, 'store'])->name('incoming.store');
-    // Route::get('/incoming-data-list', [IncomingController::class, 'list']);
-
-
-
-
     //outgoing
     Route::get('/outgoing-view', [OutgoingController::class, 'index'])->name('outgoing.view');
     Route::post('/outgoing-data-store', [OutgoingController::class, 'store'])->name('outgoing.store');
     Route::get('/outgoing-data-list', [OutgoingController::class, 'list']);
+
+     //Auto Stock Balance
+    Route::get('/auto-stock-balance-view', [AutoStockBalanceController::class, 'index'])->name('autostock.balance.view');
+    Route::post('/auto-stock-balance-store', [AutoStockBalanceController::class, 'store'])->name('autostock.balance.store');
+    Route::get('/auto-stock-balance-data-list', [AutoStockBalanceController::class, 'list']);
 
 
     //Stock Adjustment

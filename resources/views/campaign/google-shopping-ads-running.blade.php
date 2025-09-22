@@ -291,6 +291,7 @@
                                         data-sku="${sku}" 
                                         data-field="NRA"
                                         style="width: 100px; ${bgColor}">
+                                    <option value=""></option>
                                     <option value="RA" ${value === 'RA' ? 'selected' : ''}>RA</option>
                                     <option value="NRA" ${value === 'NRA' ? 'selected' : ''}>NRA</option>
                                     <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
