@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - UNDER UTILIZED ACOS RED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay < ACOS RED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - UNDER UTILIZED ACOS RED',
-        'sub_title' => 'Ebay - UNDER UTILIZED ACOS RED',
+        'page_title' => 'Ebay < ACOS RED',
+        'sub_title' => 'Ebay < ACOS RED',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                           Ebay - UNDER UTILIZED ACOS RED
+                           Ebay < ACOS RED
                         </h4>
 
                         <!-- Filters Row -->
@@ -247,7 +247,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-over-uti-acos-pink/data",
+                ajaxURL: "/ebay-uti-acos/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -364,7 +364,7 @@
                                 td.classList.add('red-bg'); 
                             }
 
-                            return acos.toFixed(2) + "%";
+                            return acos.toFixed(0) + "%";
                         }
                     },
                     {
@@ -441,10 +441,10 @@
                             var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
                             var sbid;
 
-                            if (l1_cpc > l7_cpc) {
-                                sbid = (l1_cpc * 1.05).toFixed(2);
+                            if (l7_cpc > l1_cpc) {
+                                sbid = (l7_cpc * 1.05).toFixed(2);
                             } else {
-                                sbid = (l7_cpc * 0.05).toFixed(2);
+                                sbid = (l1_cpc * 1.05).toFixed(2);
                             }
                             return sbid;
                         },
@@ -468,10 +468,10 @@
                                 var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
                                 var sbid;
 
-                                if (l1_cpc > l7_cpc) {
-                                    sbid = (l1_cpc * 1.05).toFixed(2);
+                                if (l7_cpc > l1_cpc) {
+                                    sbid = (l7_cpc * 1.05).toFixed(2);
                                 } else {
-                                    sbid = (l7_cpc * 0.05).toFixed(2);
+                                    sbid = (l1_cpc * 1.05).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
@@ -638,10 +638,10 @@
                         var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
                         var sbid;
 
-                        if (l1_cpc > l7_cpc) {
-                            sbid = (l1_cpc * 1.05).toFixed(2);
+                        if (l7_cpc > l1_cpc) {
+                            sbid = (l7_cpc * 1.05).toFixed(2);
                         } else {
-                            sbid = (l7_cpc * 0.05).toFixed(2);
+                            sbid = (l1_cpc * 1.05).toFixed(2);
                         }
 
                         campaignIds.push(rowData.campaign_id);
@@ -717,10 +717,10 @@
                     let l7_cpc = parseFloat(row.l7_cpc || 0);
                     let sbid = 0;
 
-                    if (l1_cpc > l7_cpc) {
-                        sbid = (l1_cpc * 1.05).toFixed(2);
+                    if (l7_cpc > l1_cpc) {
+                        sbid = (l7_cpc * 1.05).toFixed(2);
                     } else {
-                        sbid = (l7_cpc * 0.05).toFixed(2);
+                        sbid = (l1_cpc * 1.05).toFixed(2);
                     }
 
                     return {

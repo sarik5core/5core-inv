@@ -1389,7 +1389,33 @@
                                             Increase </a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay.acos.index') }}">Ebay ACOS Control</a>
+                                        <a data-bs-toggle="collapse" href="#ebayAcosSubmenu" aria-expanded="false"
+                                            aria-controls="ebayAcosSubmenu">
+                                            <span>Ebay ACOS Control</span>
+                                            <span class="menu-arrow"></span>
+                                        </a>
+                                        <div class="collapse" id="ebayAcosSubmenu">
+                                            <ul class="side-nav-fourth-level">
+                                                <li>
+                                                    <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > ACOS PINK</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > ACOS GREEN</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > ACOS RED</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < ACOS PINK</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < ACOS GREEN</a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < ACOS RED</a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay.pink.dil.ads') }}">Ebay Pink Dil Ads</a>
@@ -1401,7 +1427,7 @@
                                         <a href="{{ route('ebay.keywords.ads') }}">Ebay Keywords Ads</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY OVER UTIL.</a>
+                                        <a href="{{ route('ebay-over-uti') }}">EBAY OVER UTIL.</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay-under-utilize') }}">EBAY UNDER UTIL.</a>
@@ -1412,22 +1438,6 @@
                                     <li>
                                         <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
                                     </li>
-                                    {{-- <li>
-                                        <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > UTI ACOS GREEN</a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > UTI ACOS RED</a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < UTI ACOS PINK</a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < UTI ACOS GREEN</a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < UTI ACOS RED</a>
-                                    </li> --}}
-
                                 </ul>
                             </div>
                         </li>
