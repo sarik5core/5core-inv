@@ -498,6 +498,10 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                   const data = cell.getRow().getData();
                   let values = data.Values;
 
+                  if (!values) {
+                      return "0.00";
+                  }
+
                   if (typeof values === "string") {
                       try {
                           values = JSON.parse(values);
@@ -507,7 +511,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                       }
                   }
 
-                  const cbm = parseFloat(values.cbm) || 0;
+                  const cbm = parseFloat(values?.cbm) || 0;
                   return cbm ? cbm.toFixed(2) : "0.00";
               }
             },
