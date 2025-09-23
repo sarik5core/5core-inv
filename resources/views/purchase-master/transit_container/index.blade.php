@@ -508,7 +508,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                   }
 
                   const cbm = parseFloat(values.cbm) || 0;
-                  return cbm ? cbm : "0.00";
+                  return cbm ? cbm.toFixed(2) : "0.00";
               }
             },
             {
