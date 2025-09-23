@@ -37,5 +37,5 @@ class MfrgProgress extends Model
         'del_date' => 'date',
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 }

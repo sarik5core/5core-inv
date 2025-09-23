@@ -120,7 +120,7 @@
                             <!-- Search Table -->
                             <input type="text" class="form-control" id="wholeSearchInput"
                                 placeholder="🔍 Search entire table..."
-                                style="width: 220px; font-size: 0.97rem; height: 36px; border-radius: 6px;">
+                                style="width: 200px; font-size: 0.97rem; height: 36px; border-radius: 6px;">
 
                             <!-- Toggle Columns Dropdown -->
                             <div class="column-dropdown position-relative">
@@ -139,7 +139,7 @@
                             </button>
 
                             <!-- Supplier Dropdown -->
-                            <div class="custom-select-wrapper" style="min-width: 220px; position: relative;">
+                            <div class="custom-select-wrapper" style="min-width: 150px; position: relative;">
                                 <div class="custom-select-box d-flex align-items-center justify-content-between" id="customSelectBox"
                                     style="border: 1.5px solid #e0e6ed; border-radius: 7px; background: #fff; height: 38px; padding: 0 14px; cursor: pointer; box-shadow: 0 1px 4px rgba(60,192,195,0.07); transition: border-color 0.2s;">
                                     <span id="customSelectSelectedText" class="flex-grow-1 text-truncate" style="font-size: 1rem; color: #222;">Select supplier</span>
@@ -188,6 +188,16 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3" style="min-width: 120px; position: relative;">
+                                <label class="form-label fw-semibold mb-1 d-block">Pending Status</label>
+                                <select id="row-data-pending-status" class="form-select border border-primary">
+                                    <option value="">select color</option>
+                                    <option value="green">Green <span id="greenCount"></span></option>
+                                    <option value="yellow">yellow <span id="yellowCount"></span></option>
+                                    <option value="red">red <span id="redCount"></span></option>
+                                </select>
+                            </div>
+
                             <!-- Other Stats -->
                             <div class="py-1 px-3 bg-dark rounded shadow-sm d-inline-flex align-items-center gap-2 text-white fw-bold fs-6 border border-light">
                                 <span>Total Amount: <span id="total-amount">0</span></span>
@@ -227,18 +237,19 @@
                                 <th data-column="8" hidden>Adv<br/>Date<div class="resizer"></div></th>
                                 <th data-column="9" hidden>pay conf.<br/>date<div class="resizer"></div></th>
                                 {{-- <th data-column="9">pay term<div class="resizer"></div></th> --}}
-                                <th data-column="10">Del<br/>Date<div class="resizer"></div></th>
-                                <th data-column="11">O Links<div class="resizer"></div></th>
-                                <th data-column="12" hidden>value<div class="resizer"></div></th>
-                                <th data-column="13">Payment<br/>Pending<div class="resizer"></div></th>
-                                <th data-column="14">photo<br/>packing<div class="resizer"></div></th>
-                                <th data-column="15">photo int.<br/>sale<div class="resizer"></div></th>
-                                <th data-column="16">CBM<div class="resizer"></div></th>
-                                <th data-column="17" hidden>total<br/>cbm<div class="resizer"></div></th>
-                                <th data-column="18" class="text-center">BARCODE<br/>&<br/>SKU<div class="resizer"></div></th>
-                                <th data-column="19">artwork<br/>&<br/>maual<br/>book<div class="resizer"></div></th>
-                                <th data-column="20">notes<div class="resizer"></div></th>
-                                <th data-column="21">Ready to<br/>ship<div class="resizer"></div></th>
+                                <th data-column="10" class="text-center">Order<br/>Date<div class="resizer"></div></th>
+                                <th data-column="11">Del<br/>Date<div class="resizer"></div></th>
+                                <th data-column="12">O Links<div class="resizer"></div></th>
+                                <th data-column="13" hidden>value<div class="resizer"></div></th>
+                                <th data-column="14">Payment<br/>Pending<div class="resizer"></div></th>
+                                <th data-column="15">photo<br/>packing<div class="resizer"></div></th>
+                                <th data-column="16">photo int.<br/>sale<div class="resizer"></div></th>
+                                <th data-column="17">CBM<div class="resizer"></div></th>
+                                <th data-column="18" hidden>total<br/>cbm<div class="resizer"></div></th>
+                                <th data-column="19" class="text-center">BARCODE<br/>&<br/>SKU<div class="resizer"></div></th>
+                                <th data-column="20">artwork<br/>&<br/>maual<br/>book<div class="resizer"></div></th>
+                                <th data-column="21">notes<div class="resizer"></div></th>
+                                <th data-column="22">Ready to<br/>ship<div class="resizer"></div></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -324,11 +335,37 @@
                                         <input type="date" value="{{ !empty($item->pay_conf_date) ? \Carbon\Carbon::parse($item->pay_conf_date)->format('Y-m-d') : '' }}" data-sku="{{ $item->sku }}"
                                          data-column="pay_conf_date" class="form-control form-control-sm auto-save" style="width: 80px; font-size: 13px;">
                                     </td>
+                                    @php
+                                        $bgColor = '';
+                                        $daysDiff = null;
+
+                                        if (!empty($item->created_at)) {
+                                            $daysDiff = \Carbon\Carbon::parse($item->created_at)->diffInDays(\Carbon\Carbon::today());
+
+                                            if ($daysDiff > 45) {
+                                                $bgColor = 'background-color: red; color: white;';
+                                            } elseif ($daysDiff > 30) {
+                                                $bgColor = 'background-color: yellow; color: black;';
+                                            }else{
+                                                $bgColor = 'background-color: green; color: white;';
+                                            }
+                                        }
+                                    @endphp
                                     <td data-column="10">
-                                        <input type="date" data-sku="{{ $item->sku }}" data-column="del_date" value="{{ !empty($item->del_date) ? \Carbon\Carbon::parse($item->del_date)->format('Y-m-d') : '' }}" 
-                                        class="form-control form-control-sm auto-save" style="width: 80px; font-size: 13px;">
+                                        <input type="date" data-sku="{{ $item->sku }}" data-column="del_date" value="{{ !empty($item->created_at) ? \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') : '' }}" 
+                                        class="form-control form-control-sm auto-save" style="width: 80px; font-size: 13px; {{ $bgColor }}">
+                                        @if ($daysDiff !== null)
+                                            <small style="font-size: 12px; color: rgb(72, 69, 69);">
+                                                {{ $daysDiff }} days ago
+                                            </small>
+                                        @endif
                                     </td>
                                     <td data-column="11">
+                                        <input type="date" data-sku="{{ $item->sku }}" data-column="del_date" 
+                                            value="{{ !empty($item->del_date) ? \Carbon\Carbon::parse($item->del_date)->format('Y-m-d') : '' }}" 
+                                        class="form-control form-control-sm auto-save" style="width: 80px; font-size: 13px;">
+                                    </td>
+                                    <td data-column="12">
                                         <div class="input-group input-group-sm align-items-center" style="gap: 4px;">
                                             <span class="input-group-text open-link-icon border-0 p-0 bg-transparent" style="{{ empty($item->o_links) ? 'display:none;' : '' }}; background: none !important;">
                                                 <a href="{{ $item->o_links ?? '#' }}" target="_blank" title="Open Link" style="color: #3bc0c3; font-size: 20px; display: flex; align-items: center; background: none;">
@@ -346,10 +383,10 @@
                                         </div>
                                     </td>
 
-                                    <td class="total-value d-none" data-column="12">
+                                    <td class="total-value d-none" data-column="13">
                                         {{ is_numeric($item->qty ?? null) && is_numeric($item->rate ?? null) ? ($item->qty * $item->rate) : '' }}
                                     </td>
-                                    <td data-column="13">
+                                    <td data-column="14">
                                         @php
                                             $supplier = $item->supplier ?? '';
                                             $grouped = collect($data)->where('supplier', $supplier);
@@ -368,7 +405,7 @@
                                         {{ number_format($pending, 0) }}
                                     </td>
 
-                                    <td data-column="14">
+                                    <td data-column="15">
                                         <div class="image-upload-field d-flex align-items-center gap-2">
                                             @if(!empty($item->photo_packing))
                                                 <a href="{{ $item->photo_packing }}" target="_blank" class="me-1" title="View Photo" style="width:50px;">
@@ -384,7 +421,7 @@
                                         </div>
                                     </td>
 
-                                    <td data-column="15">
+                                    <td data-column="16">
                                         <div class="image-upload-field d-flex align-items-center gap-2">
                                             @if(!empty($item->photo_int_sale))
                                                 <a href="{{ $item->photo_int_sale }}" target="_blank" class="me-1" title="View Photo" style="width:50px;">
@@ -400,11 +437,11 @@
                                         </div>
                                     </td>
 
-                                    <td data-column="16">
+                                    <td data-column="17">
                                         {{ isset($item->CBM) ? number_format($item->CBM, 4) : 'N/A' }}
                                     </td>
 
-                                    <td data-column="17" hidden>
+                                    <td data-column="18" hidden>
                                         <input type="number"
                                             data-sku="{{ $item->sku }}"
                                             data-column="total_cbm"
@@ -416,7 +453,7 @@
                                             readonly>
                                     </td>
 
-                                    <td data-column="18">
+                                    <td data-column="19">
                                         <div class="image-upload-field d-flex align-items-center gap-2">
                                             @if(!empty($item->barcode_sku))
                                                 <a href="{{ $item->barcode_sku }}" target="_blank" class="me-1" title="View Photo" style="width:50px;">
@@ -432,15 +469,15 @@
                                         </div>
                                     </td>
 
-                                    <td data-column="19">
+                                    <td data-column="20">
                                         <input type="text" class="form-control form-control-sm auto-save" data-sku="{{ $item->sku }}" data-column="artwork_manual_book" value="{{ $item->artwork_manual_book ?? '' }}" placeholder="Artwork Manual Book">
                                     </td>
 
-                                    <td data-column="20">
+                                    <td data-column="21">
                                         <input type="text" class="form-control form-control-sm auto-save" data-sku="{{ $item->sku }}" data-column="notes" value="{{ $item->notes ?? '' }}" style="font-size: 13px;" placeholder="Notes">
                                     </td>
 
-                                    <td data-column="21">
+                                    <td data-column="22">
                                         <select class="form-select form-select-sm auto-save" data-sku="{{ $item->sku }}" data-column="ready_to_ship" style="width: 75px;">
                                             <option value="No" {{ $item->ready_to_ship == 'No' ? 'selected' : '' }}>No</option>
                                             <option value="Yes" {{ $item->ready_to_ship == 'Yes' ? 'selected' : '' }}>Yes</option>
@@ -1008,8 +1045,6 @@
                     totalGroupValue += qty * rate;
                 });
 
-                console.log("Total Group Value:", totalGroupValue.toFixed(2));
-
                 // Calculate total advance
                 let totalAdvance = 0;
                 matchingRows.forEach(row => {
@@ -1159,6 +1194,11 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const rows = document.querySelectorAll("table.wide-table tbody tr");
+        const filterSelect = document.getElementById("row-data-pending-status");
+        const greenSpan = document.getElementById("greenCount");
+        const yellowSpan = document.getElementById("yellowCount");
+        const redSpan = document.getElementById("redCount");
+
         const suppliers = [];
         let supplierIndex = 0;
         let intervalId = null;
@@ -1225,6 +1265,45 @@
             
             supplierIndex = (supplierIndex - 1 + suppliers.length) % suppliers.length;
             showSupplierRows(suppliers[supplierIndex]);
+        });
+
+        function updateCounts() {
+            let green = 0, yellow = 0, red = 0;
+
+            rows.forEach(row => {
+                const dateInput = row.querySelector('input[data-column="del_date"]');
+                if (!dateInput) return;
+
+                const bg = dateInput.style.backgroundColor.trim().toLowerCase();
+                if (bg === "green") green++;
+                else if (bg === "yellow") yellow++;
+                else if (bg === "red") red++;
+            });
+
+            greenSpan.textContent = `(${green})`;
+            yellowSpan.textContent = `(${yellow})`;
+            redSpan.textContent = `(${red})`;
+        }
+
+        function filterDateRows(type) {
+            rows.forEach(row => {
+                const dateInput = row.querySelector('input[data-column="del_date"]');
+                if (!dateInput) return;
+
+                const bg = dateInput.style.backgroundColor.trim().toLowerCase();
+
+                row.style.display = (!type || bg === type) ? "" : "none";
+            });
+
+            calculateTotalCBM();
+            calculateTotalAmount();
+            calculateTotalOrderQty();
+        }
+
+        updateCounts();
+
+        filterSelect.addEventListener("change", function () {
+            filterDateRows(this.value);
         });
     });
 

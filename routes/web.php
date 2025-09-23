@@ -115,6 +115,7 @@ use App\Http\Controllers\ProductMaster\PrAnalysisController;
 use App\Http\Controllers\ProductMaster\ProductMasterController;
 use App\Http\Controllers\Catalouge\CatalougeManagerController;
 use App\Http\Controllers\Channels\AccountHealthMasterController;
+use App\Http\Controllers\Channels\AccountHealthMasterDashboardController;
 use App\Http\Controllers\ProductMaster\ReturnAnalysisController;
 use App\Http\Controllers\ProductMaster\ReviewAnalysisController;
 use App\Http\Controllers\ProductMaster\PricingAnalysisController;
@@ -371,7 +372,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::post('/refund-health-link/update', 'updateRefundHealthLink')->name('refund-health.link.update');
     });
 
-    //oppertunity channel master
+    // Account Health Master Channel Dashboard
+    Route::get('/channel/dashboard', [AccountHealthMasterDashboardController::class, 'dashboard'])->name('account.health.master.channel.dashboard');
+    Route::get('/account-health-master/dashboard-data', [AccountHealthMasterDashboardController::class, 'getMasterChannelDataHealthDashboard'])->name('account.health.master.dashboard.data');
+    Route::get('/account-health-master/export', [AccountHealthMasterDashboardController::class, 'export'])->name('account-health-master.export');
+    Route::post('/account-health-master/import', [AccountHealthMasterDashboardController::class, 'import'])->name('account-health-master.import');
+    Route::get('/account-health-master/sample/{type?}', [AccountHealthMasterDashboardController::class, 'downloadSample'])->name('account-health-master.sample');
+
     Route::controller(OpportunityController::class)->group(function () {
         Route::get('/channerl-master-active/opportunity', 'index')->name('opportunity.index');
         Route::get('/opportunities/data', 'getOpportunitiesData');
@@ -491,8 +498,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
 
     // Route::post('/new-marketplaces/update/{id}', [NewMarketplaceController::class, 'update']);
-
-
 
     //Warehouse
     Route::get('/list_all_warehouses', [WarehouseController::class, 'index'])->name('list_all_warehouses');
@@ -1041,7 +1046,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/upload-image', [TransitContainerDetailsController::class, 'uploadImage'])->name('transit.upload-image');
     Route::get('/transit-container-changes', [TransitContainerDetailsController::class, 'transitContainerChanges'])->name('transit.container.changes');
     Route::get('/transit-container-new', [TransitContainerDetailsController::class, 'transitContainerNew'])->name('transit.container.new');
-
+    Route::post('/transit-container/save', [TransitContainerDetailsController::class, 'transitContainerStoreItems']);
+    Route::post('/transit-container/delete', [TransitContainerDetailsController::class, 'deleteTransitItem']);
 
     Route::post('/inventory-warehouse/push', [InventoryWarehouseController::class, 'pushInventory'])->name('inventory.push');
     Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');
@@ -1737,19 +1743,13 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayOverUtilizedBgtController::class)->group(function () {
-        Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
-        Route::get('/ebay-over-uti-acos-green', 'ebayOverUtiAcosGreen')->name('ebay-over-uti-acos-green');
-        Route::get('/ebay-over-uti-acos-red', 'ebayOverUtiAcosRed')->name('ebay-over-uti-acos-red');
-
-        Route::get('/ebay-under-uti-acos-pink', 'ebayUnderUtiAcosPink')->name('ebay-under-uti-acos-pink');
-        Route::get('/ebay-under-uti-acos-green', 'ebayUnderUtiAcosGreen')->name('ebay-under-uti-acos-green');
-        Route::get('/ebay-under-uti-acos-red', 'ebayUnderUtiAcosRed')->name('ebay-under-uti-acos-red');
+        Route::get('/ebay-over-uti', 'ebayOverUtilisation')->name('ebay-over-uti');
         Route::get('/ebay/under/utilized', 'ebayOverUtilized')->name('ebay-under-utilize');
         Route::get('/ebay/correctly/utlized', 'ebayCorrectlyUtilized')->name('ebay-correctly-utilize');
         Route::get('/ebay/make-new/campaign/kw', 'ebayMakeCampaignKw')->name('ebay-make-new-campaign-kw');
         Route::get('/ebay/make-new/campaign/kw/data', 'getEbayMakeNewCampaignKw');
 
-        Route::get('/ebay-over-uti-acos-pink/data', 'getEbayOverUtiAcosPinkData')->name('ebay-over-uti-acos-pink-data');
+        Route::get('/ebay-over-uti/data', 'getEbayOverUtiData')->name('ebay-over-uti-data');
         Route::post('/update-ebay-nr-data', 'updateNrData');
         Route::put('/update-ebay-keywords-bid-price', 'updateKeywordsBidDynamic');
     });
@@ -1788,8 +1788,15 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
 
     Route::controller(EbayACOSController::class)->group(function () {
-        Route::get('/ebay-acos-control/list', 'index')->name('ebay.acos.index');
-        Route::get('/ebay/acos-control/data', 'getEbayAcosControlData');
+        Route::get('/ebay-over-uti-acos-pink', 'ebayOverUtiAcosPink')->name('ebay-over-uti-acos-pink');
+        Route::get('/ebay-over-uti-acos-green', 'ebayOverUtiAcosGreen')->name('ebay-over-uti-acos-green');
+        Route::get('/ebay-over-uti-acos-red', 'ebayOverUtiAcosRed')->name('ebay-over-uti-acos-red');
+
+        Route::get('/ebay-under-uti-acos-pink', 'ebayUnderUtiAcosPink')->name('ebay-under-uti-acos-pink');
+        Route::get('/ebay-under-uti-acos-green', 'ebayUnderUtiAcosGreen')->name('ebay-under-uti-acos-green');
+        Route::get('/ebay-under-uti-acos-red', 'ebayUnderUtiAcosRed')->name('ebay-under-uti-acos-red');
+
+        Route::get('/ebay-uti-acos/data', 'getEbayUtilisationAcosData');
     });
 
     Route::controller(EbayPinkDilAdController::class)->group(function () {

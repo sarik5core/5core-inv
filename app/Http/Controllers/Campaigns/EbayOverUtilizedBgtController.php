@@ -318,31 +318,11 @@ class EbayOverUtilizedBgtController extends Controller
         ]);
     }
 
-    public function ebayOverUtiAcosPink(){
-        return view('campaign.ebay-over-uti-acos-pink');
+    public function ebayOverUtilisation(){
+        return view('campaign.ebay-over-utilization');
     }
 
-    public function ebayOverUtiAcosGreen(){
-        return view('campaign.ebay-over-uti-acos-green');
-    }
-
-    public function ebayOverUtiAcosRed(){
-        return view('campaign.ebay-over-uti-acos-red');
-    }
-
-    public function ebayUnderUtiAcosPink(){
-        return view('campaign.ebay-under-uti-acos-pink');
-    }
-
-    public function ebayUnderUtiAcosGreen(){
-        return view('campaign.ebay-under-uti-acos-green');
-    }
-
-    public function ebayUnderUtiAcosRed(){
-        return view('campaign.ebay-under-uti-acos-red');
-    }
-
-    public function getEbayOverUtiAcosPinkData()
+    public function getEbayOverUtiData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")

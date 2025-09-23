@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - UNDER UTILIZED ACOS GREEN', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay < ACOS GREEN', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - UNDER UTILIZED ACOS GREEN',
-        'sub_title' => 'Ebay - UNDER UTILIZED ACOS GREEN',
+        'page_title' => 'Ebay < ACOS GREEN',
+        'sub_title' => 'Ebay < ACOS GREEN',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                           Ebay - UNDER UTILIZED ACOS GREEN
+                           Ebay < ACOS GREEN
                         </h4>
 
                         <!-- Filters Row -->
@@ -247,7 +247,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-over-uti-acos-pink/data",
+                ajaxURL: "/ebay-uti-acos/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -364,7 +364,7 @@
                                 td.classList.add('red-bg'); 
                             }
 
-                            return acos.toFixed(2) + "%";
+                            return acos.toFixed(0) + "%";
                         }
                     },
                     {
@@ -388,7 +388,8 @@
                             }
                             return ub7.toFixed(0) + "%";
                         }
-                    }, {
+                    }, 
+                    {
                         title: "1 UB%",
                         field: "l1_spend",
                         hozAlign: "right",
@@ -435,15 +436,15 @@
                         field: "sbid",
                         hozAlign: "center",
                         formatter: function(cell) {
-                            var rowData = cell.getRow().getData();
-                            var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                            var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
-                            var sbid;
+                            var row = cell.getRow().getData();
+                            var l1_cpc = parseFloat(row.l1_cpc) || 0;
+                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
 
-                            if (l1_cpc > l7_cpc) {
-                                sbid = (l1_cpc * 1.05).toFixed(2);
+                            var sbid = 0;
+                            if (l7_cpc > l1_cpc) {
+                                sbid = (l7_cpc * 1.05).toFixed(2);
                             } else {
-                                sbid = (l7_cpc * 0.05).toFixed(2);
+                                sbid = (l1_cpc * 1.05).toFixed(2);
                             }
                             return sbid;
                         },
@@ -465,12 +466,12 @@
                                 var rowData = cell.getRow().getData();
                                 var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
                                 var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
-                                var sbid;
 
-                                if (l1_cpc > l7_cpc) {
-                                    sbid = (l1_cpc * 1.05).toFixed(2);
+                                var sbid = 0;
+                                if (l7_cpc > l1_cpc) {
+                                    sbid = (l7_cpc * 1.05).toFixed(2);
                                 } else {
-                                    sbid = (l7_cpc * 0.05).toFixed(2);
+                                    sbid = (l1_cpc * 1.05).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
@@ -539,9 +540,9 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    let isGreen = ( (acos >= 7 && acos <= 14) && ub7 < 30);
-
-                    if (!isGreen) return false;
+                    if (!(acos >= 7 && acos <= 14 && ub7 < 30)) {
+                        return false;
+                    }
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
@@ -619,12 +620,12 @@
                 }
             });
 
-            document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
+            document.getElementById("apr-all-sbid-btn").addEventListener("click", function() {
                 const overlay = document.getElementById("progress-overlay");
                 overlay.style.display = "flex";
 
                 var filteredData = table.getSelectedRows();
-                
+
                 var campaignIds = [];
                 var bids = [];
 
@@ -633,28 +634,28 @@
                     if(rowEl && rowEl.offsetParent !== null){
                         
                         var rowData = row.getData();
-                        var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-                        var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
-                        var sbid;
+                        var l1_cpc = parseFloat(row.l1_cpc) || 0;
+                        var l7_cpc = parseFloat(row.l7_cpc) || 0;
 
-                        if (l1_cpc > l7_cpc) {
-                            sbid = (l1_cpc * 1.05).toFixed(2);
+                        var sbid = 0;
+                        if (l7_cpc > l1_cpc) {
+                            sbid = (l7_cpc * 1.05).toFixed(2);
                         } else {
-                            sbid = (l7_cpc * 0.05).toFixed(2);
+                            sbid = (l1_cpc * 1.05).toFixed(2);
                         }
 
                         campaignIds.push(rowData.campaign_id);
                         bids.push(sbid);
                     }
                 });
-
                 console.log("Campaign IDs:", campaignIds);
                 console.log("Bids:", bids);
-                fetch('/update-keywords-bid-price', {
+                fetch('/update-ebay-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
                     },
                     body: JSON.stringify({
                         campaign_ids: campaignIds,
@@ -664,7 +665,7 @@
                 .then(res => res.json())
                 .then(data => {
                     console.log("Backend response:", data);
-                    if(data.status === 200){
+                    if (data.status === 200) {
                         alert("Keywords updated successfully!");
                     } else {
                         alert("Something went wrong: " + data.message);
@@ -681,12 +682,13 @@
                 overlay.style.display = "flex";
 
                 console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
-                
-                fetch('/update-keywords-bid-price', {
+
+                fetch('/update-ebay-keywords-bid-price', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
                     },
                     body: JSON.stringify({
                         campaign_ids: [campaignId],
@@ -696,7 +698,7 @@
                 .then(res => res.json())
                 .then(data => {
                     console.log("Backend response:", data);
-                    if(data.status === 200){
+                    if (data.status === 200) {
                         alert("Keywords updated successfully!");
                     } else {
                         alert("Something went wrong: " + data.message);
@@ -716,10 +718,10 @@
                     let l7_cpc = parseFloat(row.l7_cpc || 0);
                     let sbid = 0;
 
-                    if (l1_cpc > l7_cpc) {
-                        sbid = (l1_cpc * 1.05).toFixed(2);
+                    if (l7_cpc > l1_cpc) {
+                        sbid = (l7_cpc * 1.05).toFixed(2);
                     } else {
-                        sbid = (l7_cpc * 0.05).toFixed(2);
+                        sbid = (l1_cpc * 1.05).toFixed(2);
                     }
 
                     return {
@@ -737,7 +739,7 @@
                 let wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "Campaigns");
 
-                XLSX.writeFile(wb, "ebay_under_acos_green.xlsx");
+                XLSX.writeFile(wb, "ebay_over_acos_green.xlsx");
             });
 
             document.body.style.zoom = "78%";

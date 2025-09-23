@@ -38,11 +38,14 @@ use App\Models\MacyDataView;
 use App\Models\MacysListingStatus;
 use App\Models\ReverbListingStatus;
 use App\Models\ReverbViewData;
+use App\Models\SheinDataView;
 use App\Models\Shopifyb2cDataView;
 use App\Models\TemuDataView;
 use App\Models\TemuListingStatus;
 use App\Models\WalmartListingStatus;
 use App\Models\WalmartMetrics;
+use App\Models\SheinSheetData;
+use App\Models\SheinListingStatus;
 use App\Services\AmazonSpApiService;
 use App\Services\DobaApiService;
 use App\Services\EbayApiService;
@@ -112,6 +115,7 @@ class PricingMasterViewsController extends Controller
         $macysListingStatus = MacysListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbListingData = ReverbListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $walmartListingData = WalmartListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $sheinListingData = SheinListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $dobaListingData = DobaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
 
 
@@ -143,6 +147,8 @@ class PricingMasterViewsController extends Controller
         $temuDataView = TemuDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbDataView = ReverbViewData::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyDataView = MacyDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $sheinDataView = SheinDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $sheinData = SheinSheetData::whereIn('sku', $skus)->get()->keyBy('sku');
 
         // Fetch LMPA data from 5core_repricer database - get lowest price per SKU (excluding 0 prices)
         $lmpaLookup = collect();
@@ -213,6 +219,7 @@ class PricingMasterViewsController extends Controller
             $ebay3   = $ebay3Lookup[$sku] ?? null;
             $lmpa    = $lmpaLookup[$sku] ?? null;
             $lmp     = $lmpLookup[$sku] ?? null;
+            $shein   = $sheinData[$sku] ?? null;
 
             // Get Shopify data for L30 and INV
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
@@ -223,7 +230,8 @@ class PricingMasterViewsController extends Controller
             $total_views = ($amazon ? ($amazon->sessions_l30 ?? 0) : 0) +
                 ($ebay ? ($ebay->views ?? 0) : 0) +
                 ($ebay2 ? ($ebay2->views ?? 0) : 0) +
-                ($ebay3 ? ($ebay3->views ?? 0) : 0);
+                ($ebay3 ? ($ebay3->views ?? 0) : 0) +
+                ($shein ? ($shein->views_clicks ?? 0) : 0);
 
 
             $avgCvr = $total_views > 0
@@ -373,6 +381,24 @@ class PricingMasterViewsController extends Controller
                 'shopifyb2c_buyer_link' => isset($shopifyb2cListingData[$sku]) ? ($shopifyb2cListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'shopifyb2c_seller_link' => isset($shopifyb2cListingData[$sku]) ? ($shopifyb2cListingData[$sku]->value['seller_link'] ?? null) : null,
 
+                // Shein
+                'shein_price' => $shein ? ($shein->price ?? 0) : 0,
+                'shein_l30'   => $shein ? ($shein->shopify_sheinl30 ?? $shein->l30 ?? 0) : 0,
+                'shein_l60'   => $shein ? ($shein->shopify_sheinl60 ?? $shein->l60 ?? 0) : 0,
+                'shein_dil'   => $shein ? ($shein->dil ?? 0) : 0,
+                'shein_pft'   => $shein && ($shein->price ?? 0) > 0 ? (($shein->price * 0.89 - $lp - $ship) / $shein->price) : 0,
+                'shein_roi'   => $shein && $lp > 0 && ($shein->price ?? 0) > 0 ? (($shein->price * 0.89 - $lp - $ship) / $lp) : 0,
+                'shein_req_view' => $shein && $shein->views && $shein->l30 ? (($inv / 90) * 30) / (($shein->l30 / $shein->views)) : 0,
+                'shein_buyer_link' => isset($sheinListingData[$sku]) ? ($sheinListingData[$sku]->value['buyer_link'] ?? null) : null,
+                'shein_seller_link' => isset($sheinListingData[$sku]) ? ($sheinListingData[$sku]->value['seller_link'] ?? null) : null,
+                'shein_link1' => $shein ? ($shein->link1 ?? null) : null,
+                'shein_cvr' => $shein ? $this->calculateCVR($shein->shopify_sheinl30 ?? 0, ($shein->views_clicks ?? 0) * 3.7) : null,
+
+                // Direct assignments for blade template
+                'views_clicks' => $shein ? ($shein->views_clicks ?? 0) : 0,
+                'lmp' => $shein ? ($shein->lmp ?? 0) : 0,
+                'shopify_sheinl30' => $shein ? ($shein->shopify_sheinl30 ?? 0) : 0,
+               
                 // Total required views from all channels
                 'total_req_view' => (
                     ($ebay && $ebay->views  && $ebay->ebay_l30 ? (($inv / 90) * 30) / (($ebay->ebay_l30 / $ebay->views)) : 0) +
@@ -437,6 +463,9 @@ class PricingMasterViewsController extends Controller
                 'doba_sprice' => isset($dobaDataView[$sku]) ?
                     (is_array($dobaDataView[$sku]->value) ?
                         ($dobaDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'doba_final_price' => isset($dobaDataView[$sku]) ?
+                    (is_array($dobaDataView[$sku]->value) ?
+                        ($dobaDataView[$sku]->value['FINAL_PRICE'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['FINAL_PRICE'] ?? null)) : null,
                 'doba_spft' => isset($dobaDataView[$sku]) ? (is_array($dobaDataView[$sku]->value) ?
                     ($dobaDataView[$sku]->value['SPFT'] ?? null) : (json_decode($dobaDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
                 'doba_sroi' => isset($dobaDataView[$sku]) ?
@@ -469,6 +498,15 @@ class PricingMasterViewsController extends Controller
                 'macy_sroi' => isset($macyDataView[$sku]) ?
                     (is_array($macyDataView[$sku]->value) ?
                         ($macyDataView[$sku]->value['SROI'] ?? null) : (json_decode($macyDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+                'shein_sprice' => isset($sheinDataView[$sku]) ?
+                    (is_array($sheinDataView[$sku]->value) ?
+                        ($sheinDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($sheinDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'shein_spft' => isset($sheinDataView[$sku]) ? (is_array($sheinDataView[$sku]->value) ?
+                    ($sheinDataView[$sku]->value['SPFT'] ?? null) : (json_decode($sheinDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'shein_sroi' => isset($sheinDataView[$sku]) ?
+                    (is_array($sheinDataView[$sku]->value) ?
+                        ($sheinDataView[$sku]->value['SROI'] ?? null) : (json_decode($sheinDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
 
 
@@ -666,7 +704,22 @@ class PricingMasterViewsController extends Controller
         $ship = $data['SHIP'];
         $temuship = $data['temu_ship'];
 
-        switch ($type) {
+    switch ($type) {
+            case 'shein':
+                // Shein logic
+                $sheinDataView = SheinDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($sheinDataView->value ?? null) ? $sheinDataView->value : (isset($sheinDataView->value) ? (json_decode($sheinDataView->value, true) ?: []) : []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.89) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.89) - $lp - $ship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $sheinDataView->value = json_encode($existing);
+                $sheinDataView->save();
+                break;
             case 'amz':
                 // Amazon logic
                 $amazonDataView = AmazonDataView::firstOrNew(['sku' => $sku]);
@@ -783,11 +836,24 @@ class PricingMasterViewsController extends Controller
                 $sroi = $lp > 0 ? ((($sprice * 0.95) - $lp - $ship) / $lp) * 100 : 0;
 
                 $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['FINAL_PRICE'] = number_format($sprice * 0.75, 2, '.', '');
                 $existing['SPFT'] = number_format($spft, 2, '.', '');
                 $existing['SROI'] = number_format($sroi, 2, '.', '');
 
                 $dobaDataView->value = $existing;
                 $dobaDataView->save();
+
+                // Update ProductMaster Values field with doba_final_price
+                $product = ProductMaster::where('sku', $sku)->first();
+                if ($product) {
+                    $values = is_string($product->Values) ? json_decode($product->Values, true) : $product->Values;
+                    if (!is_array($values)) {
+                        $values = [];
+                    }
+                    $values['doba_final_price'] = number_format($sprice * 0.75, 2, '.', '');
+                    $product->Values = json_encode($values);
+                    $product->save();
+                }
                 break;
 
             case 'temu':
@@ -1068,15 +1134,32 @@ class PricingMasterViewsController extends Controller
     {
 
         $sku   = $request->input('sku');
-        $price = $request->input('price');
 
         // Validate inputs
-        if (!$sku || !$price) {
+        if (!$sku) {
 
             return response()->json([
-                'error' => 'SKU and price are required'
+                'error' => 'SKU is required'
             ], 400);
         }
+
+        // Get FINAL_PRICE from DobaDataView instead of request
+        $dobaDataView = DobaDataView::where('sku', $sku)->first();
+        if (!$dobaDataView) {
+            return response()->json([
+                'error' => "No Doba data found for SKU: {$sku}"
+            ], 404);
+        }
+
+        $existing = is_array($dobaDataView->value) ? $dobaDataView->value : (json_decode($dobaDataView->value, true) ?: []);
+        $price = $existing['FINAL_PRICE'] ?? null;
+
+        if (!$price) {
+            return response()->json([
+                'error' => "FINAL_PRICE not found for SKU: {$sku}"
+            ], 404);
+        }
+
         // Find Doba Item ID from your DB
         $itemId = DobaMetric::where('sku', $sku)->value('item_id');
         if (!$itemId) {
@@ -1114,87 +1197,6 @@ class PricingMasterViewsController extends Controller
         ]);
     }
 
-    /**
-     * Test different approaches to fix Doba item validation
-     */
-    public function testDobaItemValidation(Request $request)
-    {
-        $sku = $request->input('sku', 'SP 12120 4OHMS');
-        $price = $request->input('price', 30.00);
-
-        // Get item ID
-        $itemId = DobaMetric::where('sku', $sku)->value('item_id');
-
-        if (!$itemId) {
-            return response()->json([
-                'error' => "Item not found for SKU: {$sku}"
-            ], 404);
-        }
-
-        // Test different validation approaches
-        $results = $this->doba->testItemValidation($itemId, $price);
-
-        return response()->json([
-            'sku' => $sku,
-            'item_id' => $itemId,
-            'price' => $price,
-            'validation_tests' => $results
-        ]);
-    }
-
-    /**
-     * Debug method to test Doba API
-     */
-    public function testDobaConnection(Request $request)
-    {
-        $sku = $request->input('sku');
-        $testPrice = $request->input('price', 25.99);
-
-        // Get item ID if SKU provided
-        $itemId = null;
-        if ($sku) {
-            $itemId = DobaMetric::where('sku', $sku)->value('item_id');
-        }
-
-        // Test connection with real endpoint
-        $connectionTest = $this->doba->testConnection($itemId);
-
-        // Test actual price update if item ID found
-        $priceUpdateTest = null;
-        if ($itemId) {
-            $priceUpdateTest = $this->doba->updateItemPrice($itemId, $testPrice);
-        }
-
-        // Test getting item details if item ID found
-        $itemTest = null;
-        if ($itemId) {
-            $itemTest = $this->doba->getItemDetail($itemId);
-        }
-
-        // Get a sample item ID from database for testing
-        $sampleItem = DobaMetric::first();
-
-        return response()->json([
-            'connection_test' => $connectionTest,
-            'price_update_test' => $priceUpdateTest,
-            'item_test' => $itemTest,
-            'debug_info' => [
-                'requested_sku' => $sku,
-                'test_price' => $testPrice,
-                'found_item_id' => $itemId,
-                'sample_item' => $sampleItem ? ['sku' => $sampleItem->sku, 'item_id' => $sampleItem->item_id] : null,
-            ],
-            'environment' => [
-                'doba_app_key' => env('DOBA_APP_KEY') ? 'SET (' . substr(env('DOBA_APP_KEY'), 0, 4) . '...)' : 'NOT SET',
-                'doba_private_key' => env('DOBA_PRIVATE_KEY') ? 'SET (length: ' . strlen(env('DOBA_PRIVATE_KEY')) . ')' : 'NOT SET',
-                'base_url' => 'https://openapi.doba.com/api',
-            ]
-        ]);
-    }
-
-    /**
-     * Debug signature generation
-     */
     public function debugDobaSignature(Request $request)
     {
         $timestamp = $request->input('timestamp');

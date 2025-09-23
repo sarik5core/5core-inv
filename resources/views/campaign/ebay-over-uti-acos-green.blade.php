@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay - UTILIZED ACOS GREEN', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay > ACOS GREEN', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay - UTILIZED ACOS GREEN',
-        'sub_title' => 'Ebay - UTILIZED ACOS GREEN',
+        'page_title' => 'Ebay > ACOS GREEN',
+        'sub_title' => 'Ebay > ACOS GREEN',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                           Ebay - UTILIZED ACOS GREEN
+                           Ebay > ACOS GREEN
                         </h4>
 
                         <!-- Filters Row -->
@@ -247,7 +247,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-over-uti-acos-pink/data",
+                ajaxURL: "/ebay-uti-acos/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -379,11 +379,11 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 70 && ub7 <= 90) {
+                            if (ub7 >= 30 && ub7 <= 60) {
                                 td.classList.add('green-bg');
-                            } else if (ub7 > 90) {
+                            } else if (ub7 > 60) {
                                 td.classList.add('pink-bg');
-                            } else if (ub7 < 70) {
+                            } else if (ub7 < 30) {
                                 td.classList.add('red-bg');
                             }
                             return ub7.toFixed(0) + "%";
@@ -401,11 +401,11 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub1 >= 70 && ub1 <= 90) {
+                            if (ub1 >= 30 && ub1 <= 60) {
                                 td.classList.add('green-bg');
-                            } else if (ub1 > 90) {
+                            } else if (ub1 > 60) {
                                 td.classList.add('pink-bg');
-                            } else if (ub1 < 70) {
+                            } else if (ub1 < 30) {
                                 td.classList.add('red-bg');
                             }
                             return ub1.toFixed(0) + "%";
@@ -441,10 +441,10 @@
                             var l7_cpc = parseFloat(row.l7_cpc) || 0;
 
                             var sbid = 0;
-                            if(l1_cpc > l7_cpc){
+                            if (l1_cpc > 0) {
                                 sbid = (l1_cpc * 0.95).toFixed(2);
-                            }else{
-                                sbid = (l1_cpc * 0.95).toFixed(2);
+                            } else {
+                                sbid = (l7_cpc * 0.95).toFixed(2);
                             }
                             return sbid;
                         },
@@ -468,10 +468,10 @@
                                 var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
 
                                 var sbid = 0;
-                                if(l1_cpc > l7_cpc){
+                                if (l1_cpc > 0) {
                                     sbid = (l1_cpc * 0.95).toFixed(2);
-                                }else{
-                                    sbid = (l1_cpc * 0.95).toFixed(2);
+                                } else {
+                                    sbid = (l7_cpc * 0.95).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
@@ -540,9 +540,9 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    let isGreen = (ub7 > 90);
-
-                    if (!isGreen) return false;
+                    if (!(acos >= 7 && acos <= 14 && ub7 > 60)) {
+                        return false;
+                    }
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
@@ -638,10 +638,10 @@
                         var l7_cpc = parseFloat(row.l7_cpc) || 0;
 
                         var sbid = 0;
-                        if(l1_cpc > l7_cpc){
+                        if (l1_cpc > 0) {
                             sbid = (l1_cpc * 0.95).toFixed(2);
-                        }else{
-                            sbid = (l1_cpc * 0.95).toFixed(2);
+                        } else {
+                            sbid = (l7_cpc * 0.95).toFixed(2);
                         }
 
                         campaignIds.push(rowData.campaign_id);
@@ -718,7 +718,7 @@
                     let l7_cpc = parseFloat(row.l7_cpc || 0);
                     let sbid = 0;
 
-                    if (l1_cpc > l7_cpc) {
+                    if (l1_cpc > 0) {
                         sbid = (l1_cpc * 0.95).toFixed(2);
                     } else {
                         sbid = (l7_cpc * 0.95).toFixed(2);

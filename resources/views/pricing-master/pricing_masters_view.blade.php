@@ -663,7 +663,8 @@
                 { label: "Walmart", prefix: "walmart" },
                 { label: "eBay2", prefix: "ebay2" },
                 { label: "eBay3", prefix: "ebay3" },
-                { label: "Shopify B2C", prefix: "shopifyb2c" }
+                { label: "Shopify B2C", prefix: "shopifyb2c" },
+                { label: "Shein", prefix: "shein" },
             ];
 
             const labels = [];
@@ -813,7 +814,8 @@
                 (parseFloat(data.temu_l30) || 0) +
                 (parseFloat(data.ebay3_l30) || 0) +
                 (parseFloat(data.ebay2_l30) || 0) +
-                (parseFloat(data.walmart_l30) || 0);
+                (parseFloat(data.walmart_l30) || 0) +
+                (parseFloat(data.shein_l30) || 0);
 
             const SHIP = parseFloat(data.SHIP) || 0;
             const temuship = parseFloat(data.temu_ship) || 0;
@@ -840,11 +842,13 @@
                 .ebay2_l30) || 0) : 0;
             const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) * (parseFloat(
                 data.walmart_l30) || 0) : 0;
+            const sheinProfit = data.shein_price ? ((parseFloat(data.shein_price) * 0.80) - LP - SHIP) * (parseFloat(
+                data.shein_l30) || 0) : 0;
 
 
 
             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit;
+                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit + sheinProfit;
 
             return totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
         }
@@ -866,7 +870,8 @@
                 { name: "temu", price: data.temu_price, l30: data.temu_l30, percent: 0.87 }, // 👈 Temu special case
                 { name: "ebay3", price: data.ebay3_price, l30: data.ebay3_l30, percent: 0.72 },
                 { name: "ebay2", price: data.ebay2_price, l30: data.ebay2_l30, percent: 0.80 },
-                { name: "walmart", price: data.walmart_price, l30: data.walmart_l30, percent: 0.80 }
+                { name: "walmart", price: data.walmart_price, l30: data.walmart_l30, percent: 0.89 },
+                { name: "shein", price: data.shein_price, l30: data.shein_l30, percent: 0.89 }
             ];
 
             let totalProfit = 0;
@@ -925,7 +930,7 @@
         }
 
 
-                //global variables for play btn
+        //global variables for play btn
         function renderGroup(parentKey) {
         if (!groupedSkuData[parentKey]) return;
 
@@ -1195,7 +1200,11 @@
                                 {
                                     price: data.shopify_price,
                                     l30: data.shopify_l30
-                                }
+                                },
+                                {
+                                    price: data.shein_price,
+                                    l30: data.shein_l30
+                                },
                             ];
 
                             let totalWeightedPrice = 0;
@@ -1305,10 +1314,10 @@
                         const reverbPrice = parseFloat(data.reverb_price) || 0;
                         const dobaPrice = parseFloat(data.doba_price) || 0;
                         const temuPrice = parseFloat(data.temu_price) || 0;
-            
                         const ebay3Price = parseFloat(data.ebay3_price) || 0;
                         const ebay2Price = parseFloat(data.ebay2_price) || 0;
                         const walmartPrice = parseFloat(data.walmart_price) || 0;
+                        const sheinPrice = parseFloat(data.shein_price) || 0;
 
                         const amzL30 = parseFloat(data.amz_l30) || 0;
                         const ebayL30 = parseFloat(data.ebay_l30) || 0;
@@ -1320,6 +1329,7 @@
                         const ebay3L30 = parseFloat(data.ebay3_l30) || 0;
                         const ebay2L30 = parseFloat(data.ebay2_l30) || 0;
                         const walmartL30 = parseFloat(data.walmart_l30) || 0;
+                        const sheinL30 = parseFloat(data.shein_l30) || 0;
 
                         // Calculate profit for each marketplace
                         const amzProfit = ((amzPrice * 0.70) - LP - SHIP)  ;
@@ -1332,6 +1342,7 @@
                         const ebay3Profit = ((ebay3Price * 0.71) - LP - SHIP);
                         const ebay2Profit = ((ebay2Price * 0.80) - LP - SHIP) ;
                         const walmartProfit = ((walmartPrice * 0.80) - LP - SHIP) ;
+                        const sheinProfit = ((sheinPrice * 0.89) - LP - SHIP) ;
 
 
  
@@ -1339,7 +1350,8 @@
                         // Calculate total profit
                         const totalProfit = amzProfit * amzL30 + ebayProfit * ebayL30 + shopifyProfit * shopifyL30 + macyProfit * macyL30 +
                             reverbProfit * reverbL30 + dobaProfit * dobaL30 + temuProfit * temuL30 +
-                            ebay3Profit * ebay3L30 + ebay2Profit * ebay2L30 + walmartProfit * walmartL30;
+                            ebay3Profit * ebay3L30 + ebay2Profit * ebay2L30 + walmartProfit * walmartL30 +
+                            sheinProfit * sheinL30;
 
                         // Calculate total revenue
                         const totalRevenue =
@@ -1352,7 +1364,8 @@
                             (temuPrice * temuL30) +
                             (ebay3Price * ebay3L30) +
                             (ebay2Price * ebay2L30) +
-                            (walmartPrice * walmartL30);  
+                            (walmartPrice * walmartL30) +
+                            (sheinPrice * sheinL30);
 
                         // Calculate average profit percentage and round to nearest integer
                         let avgPftPercent = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
@@ -1462,11 +1475,10 @@
                             const ebay3L30   = parseFloat(data.ebay3_l30) || 0;
                             const ebay2L30   = parseFloat(data.ebay2_l30) || 0;
                             const walmartL30 = parseFloat(data.walmart_l30) || 0;
+                            const sheinL30   = parseFloat(data.shein_l30) || 0;
 
                             // Total L30 across marketplaces
-                            const totalL30 = amzL30 + ebayL30 + shopifyL30 + macyL30 +
-                                            reverbL30 + dobaL30 + temuL30  +
-                                            ebay3L30 + ebay2L30 + walmartL30;
+                            const totalL30 = amzL30 + ebayL30 + shopifyL30 + macyL30 + reverbL30 + dobaL30 + temuL30  + ebay3L30 + ebay2L30 + walmartL30 + sheinL30;
 
                             // Profit calculations (use parsed *_L30 variables)
                             const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.70) - LP - SHIP) * amzL30 : 0;
@@ -1479,11 +1491,12 @@
                             const ebay3Profit   = data.ebay3_price      ? ((parseFloat(data.ebay3_price) * 0.71) - LP - SHIP) * ebay3L30 : 0;
                             const ebay2Profit   = data.ebay2_price      ? ((parseFloat(data.ebay2_price) * 0.80) - LP - SHIP) * ebay2L30 : 0;
                             const walmartProfit = data.walmart_price    ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) * walmartL30 : 0;
+                            const sheinProfit   = data.shein_price      ? ((parseFloat(data.shein_price) * 0.89) - LP - SHIP) * sheinL30 : 0;
 
                             // Total profit
                             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
                                                 reverbProfit + dobaProfit + temuProfit  +
-                                                ebay3Profit + ebay2Profit + walmartProfit;
+                                                ebay3Profit + ebay2Profit + walmartProfit + sheinProfit;
 
 
                             
@@ -1761,17 +1774,19 @@
         // Marketplace table generator
         function buildOVL30Table(data) {
           const rows = [
-                { label: "Amazon", prefix: "amz", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsCfh_CXD_i6zOEuHUqDxYNICIzzgZSctyVuDVmKkdf9AaiXuhUcD3ygkjY9va2kEN328&usqp=CAU" },
+                { label: "Amazon", prefix: "amz", logo: "{{ asset('uploads/amazon.png') }}" },
                 { label: "eBay", prefix: "ebay", logo:  "{{ asset('uploads/1.png') }}" },
-                { label: "Doba", prefix: "doba", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfMH_EwwUY107czdyPEr5rqiMskbxexw6Jf9x6NZtFtVYafeyXNtm6HT5bROw2OqsH9gw&usqp=CAU" },
-                { label: "Macy", prefix: "macy", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOudE9Uxpaqbm0oiBvtX4Y-M-L6eUM63ol2GsWHSgGpNdyFxnBE0MAl6saYDUXMUCq63o&usqp=CAU" },
-                { label: "Reverb", prefix: "reverb", logo: "https://play-lh.googleusercontent.com/s1ymEdHe4Pabsf9ZKFhT-tIjYPxRMl_Go09ZhN21tdX3AdA0mHVy7jrCBasnpLwTYw" },
-                { label: "Temu", prefix: "temu", logo: "https://aimg.kwcdn.com/upload_aimg/m-img/785681a9-3a72-4e62-90e8-c9b8245739df.jpeg" },
-                { label: "Walmart", prefix: "walmart", logo: "https://trama-static.s3.eu-central-1.amazonaws.com/images/hall-of-fame/logos/98-logo.png" },
+                { label: "Doba", prefix: "doba", logo: "{{ asset('uploads/doba.png') }}" },
+                { label: "Macy", prefix: "macy", logo: "{{ asset('uploads/macy.png') }}" },
+                { label: "Reverb", prefix: "reverb", logo: "{{ asset('uploads/reverb.png') }}" },
+                { label: "Temu", prefix: "temu", logo: "{{ asset('uploads/temu.jpeg') }}" },
+                { label: "Walmart", prefix: "walmart", logo: "{{ asset('uploads/walmart.png') }}" },
                 { label: "eBay2", prefix: "ebay2", logo: "{{ asset('uploads/2.png') }}" },
                 { label: "eBay3", prefix: "ebay3", logo: "{{ asset('uploads/3.png') }}" },
-                { label: "Shopify B2C", prefix: "shopifyb2c", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6zpvhC0euHbpxlVe45p1ZaKZgX2GEyOe-WyrmsdyMe9MNvgDJdqsFnZ3LDeQ_9W8aD48&usqp=CAU" }
+                { label: "Shopify B2C", prefix: "shopifyb2c", logo: "{{ asset('uploads/shopify.png') }}" },
+                { label: "Shein", prefix: "shein", logo: "{{ asset('uploads/Shein.jpg') }}" }
             ];
+
 
 
             let html = `
@@ -1804,7 +1819,7 @@
 
             rows.forEach(r => {
                 const price = data[`${r.prefix}_price`];
-                const l30 = r.prefix === 'shopifyb2c' ? data['shopify_l30'] : data[`${r.prefix}_l30`];
+                const l30 = r.prefix === 'shopifyb2c' ? data['shopify_l30'] : (r.prefix === 'shein' ? data['shopify_sheinl30'] : data[`${r.prefix}_l30`]);
                 const l60 = data[`${r.prefix}_l60`];
                 const pft = data[`${r.prefix}_pft`];
                 const roi = data[`${r.prefix}_roi`];
@@ -1884,7 +1899,11 @@
                                 ` : r.prefix === 'shopifyb2c' ? `
                                     ${data.shopifyb2c_seller_link ? `<div><strong>SL:</strong> <a href="${data.shopifyb2c_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
                                     ${data.shopifyb2c_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shopifyb2c_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                 ` : r.prefix === 'shein' ? `
+                                    ${data.shein_seller_link ? `<div><strong>SL:</strong> <a href="${data.shein_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.shein_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shein_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
                                 ` : ''}
+
                             </div>
                         </div>
                         <span class="small fw-bold">${r.label}</span>
@@ -1921,7 +1940,12 @@
                 
                     <td>
                         <div class="value-indicator">
-                            ${r.prefix === 'amz' ? (data.sessions_l30 ?? "-") : r.prefix === 'ebay' ? (data.ebay_views ?? "-") : r.prefix === 'ebay2' ? (data.ebay2_views ?? "-") : r.prefix === 'ebay3' ? (data.ebay3_views ?? "-") : "-"}
+                            ${r.prefix === 'amz' ? (data.sessions_l30 ?? "-") 
+                                : r.prefix === 'ebay' ? (data.ebay_views ?? "-") 
+                                : r.prefix === 'ebay2' ? (data.ebay2_views ?? "-") 
+                                : r.prefix === 'ebay3' ? (data.ebay3_views ?? "-") 
+                                : r.prefix === 'shein' ? (data.views_clicks ?? "-")
+                                : "-" }
                         </div>
                     </td>
                     <td>
@@ -1934,6 +1958,9 @@
                                 } else if (r.prefix === 'ebay3' && cvr) {
                                     return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
                                 }
+                                else if (r.prefix === 'shein' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                }
 
                                 return "N/A";
                             })()} 
@@ -1944,14 +1971,18 @@
                         ${r.prefix === 'amz' ? Math.round(data.amz_req_view) ?? "-" : 
                             r.prefix === 'ebay' ? Math.round(data.ebay_req_view) ?? "-" :
                             r.prefix === 'ebay2' ? Math.round(data.ebay2_req_view) ?? "-" :
-                            r.prefix === 'ebay3' ? Math.round(data.ebay3_req_view) ?? "-" : "-"}
+                            r.prefix === 'ebay3' ? Math.round(data.ebay3_req_view) ?? "-" :
+                            r.prefix === 'shein' ? Math.round(data.shein_req_view) ?? "-" : "-"}
                         </div>
                     </td>
 
 
                     <td>
                         <div class="value-indicator">
-                            ${r.prefix === 'amz' ? fmtMoney(data.price_lmpa) : r.prefix === 'ebay' ? fmtMoney(data.ebay_price_lmpa) : '-'}
+                            ${r.prefix === 'amz' ? fmtMoney(data.price_lmpa) 
+                                : r.prefix === 'ebay' ? fmtMoney(data.ebay_price_lmpa) 
+                                : r.prefix === 'shein' ? fmtMoney(data.lmp) 
+                                : '-'}
                         </div>
                     </td>
 
@@ -1968,11 +1999,12 @@
                                 : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
                                 : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
                                 : r.prefix === 'ebay3' ? (data.ebay3_sprice || '')
-                                : r.prefix === 'doba' ? (data.doba_sprice || '')
+                                : r.prefix === 'doba' ? (data.doba_final_price || '')
                                 : r.prefix === 'temu' ? (data.temu_sprice || '')
                                 : r.prefix === 'macy' ? (data.macy_sprice || '')
                                 : r.prefix === 'reverb' ? (data.reverb_sprice || '')
                                 : r.prefix === 'walmart' ? (data.walmart_sprice || '')
+                                : r.prefix === 'shein' ? (data.shein_sprice || '')
                             
                                 : ''
                             }"
@@ -2021,8 +2053,9 @@
                             } else if (r.prefix === 'walmart' && data.walmart_spft) {
                                 value = Math.round(data.walmart_spft);
                             }
-
-                            
+                            else if (r.prefix === 'shein' && data.shein_spft) {
+                                value = Math.round(data.shein_spft);
+                            }
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -2069,6 +2102,8 @@
                                 value = Math.round(data.reverb_sroi);
                             } else if (r.prefix === 'walmart' && data.walmart_sroi) {
                                 value = Math.round(data.walmart_sroi);
+                            } else if (r.prefix === 'shein' && data.shein_sroi) {
+                                value = Math.round(data.shein_sroi);
                             }
 
                             if (value !== undefined) {
@@ -2567,7 +2602,72 @@
                         console.error('Amazon update failed:', error);
                     }
                 });
+
+                $.ajax({
+                    url: '/update-doba-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Doba price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Doba update failed:', error);
+                    }
+                });
+
+                $.ajax({
+                    url: '/push-ebay2-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('eBay2 price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('eBay2 update failed:', error);
+                    }
+                });
+                   $.ajax({
+                    url: '/push-ebay3-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('eBay2 price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('eBay2 update failed:', error);
+                    }
+                });
+
+                $.ajax({
+                    url: '/push-walmart-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Walmart price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Walmart update failed:', error);
+                    }
+                });
                 
+                
+
                 alert('Price is being updated across all marketplaces');
                 return;
             }
