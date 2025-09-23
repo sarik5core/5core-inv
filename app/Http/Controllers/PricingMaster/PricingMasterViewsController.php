@@ -932,6 +932,102 @@ class PricingMasterViewsController extends Controller
                 $walmartDataView->save();
                 break;
 
+            case 'top':
+                // Save to all marketplaces
+                Log::info('Saving top for SKU: ' . $sku . ' Price: ' . $sprice);
+                $marketplaces = [
+                    'shein' => 0.89,
+                    'amz' => 0.70,
+                    'ebay' => 0.72,
+                    'shopifyb2c' => 0.75,
+                    'ebay2' => 0.80,
+                    'ebay3' => 0.71,
+                    'doba' => 0.95,
+                    'temu' => 0.87,
+                    'reverb' => 0.84,
+                    'macy' => 0.76,
+                    'walmart' => 0.80
+                ];
+
+                foreach ($marketplaces as $mp => $percent) {
+                    $shipping = ($mp === 'temu') ? $temuship : $ship;
+                    $spft = $sprice > 0 ? round(((($sprice * $percent) - $lp - $shipping) / $sprice) * 100, 2) : 0;
+                    $sroi = $lp > 0 ? ((($sprice * $percent) - $lp - $shipping) / $lp) * 100 : 0;
+
+                    switch ($mp) {
+                        case 'shein':
+                            $dataView = SheinDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value ?? null) ? $dataView->value : (isset($dataView->value) ? (json_decode($dataView->value, true) ?: []) : []);
+                            break;
+                        case 'amz':
+                            $dataView = AmazonDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'ebay':
+                            $dataView = EbayDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'shopifyb2c':
+                            $dataView = Shopifyb2cDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'ebay2':
+                            $dataView = EbayTwoDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'ebay3':
+                            $dataView = EbayThreeDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'doba':
+                            $dataView = DobaDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            $existing['FINAL_PRICE'] = number_format($sprice * 0.75, 2, '.', '');
+                            break;
+                        case 'temu':
+                            $dataView = TemuDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'reverb':
+                            $dataView = ReverbViewData::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->values) ? $dataView->values : (json_decode($dataView->values, true) ?: []);
+                            break;
+                        case 'macy':
+                            $dataView = MacyDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                        case 'walmart':
+                            $dataView = WalmartDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
+                    }
+
+                    $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                    $existing['SPFT'] = number_format($spft, 2, '.', '');
+                    $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                    if ($mp === 'reverb') {
+                        $dataView->values = $existing;
+                    } elseif (in_array($mp, ['shein', 'shopifyb2c'])) {
+                        $dataView->value = json_encode($existing);
+                    } else {
+                        $dataView->value = $existing;
+                    }
+                    $dataView->save();
+                }
+
+                // Update ProductMaster for doba final price
+                $product = ProductMaster::where('sku', $sku)->first();
+                if ($product) {
+                    $values = is_string($product->Values) ? json_decode($product->Values, true) : $product->Values;
+                    if (!is_array($values)) {
+                        $values = [];
+                    }
+                    $values['doba_final_price'] = number_format($sprice * 0.75, 2, '.', '');
+                    $product->Values = json_encode($values);
+                    $product->save();
+                }
+                break;
 
             default:
                 return response()->json([
