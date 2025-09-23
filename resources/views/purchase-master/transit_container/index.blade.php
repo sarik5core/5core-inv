@@ -490,11 +490,27 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
               }
             },
             { title: "Rate ($)", field: "rate", editor: "input" },
-            { title: "CBM", field: "cbm", editor: "input",formatter: function(cell) {
+            { 
+              title: "CBM", 
+              field: "cbm", 
+              editor: "input",
+              formatter: function(cell) {
                   const data = cell.getRow().getData();
-                  const cbm = parseFloat(data.cbm) || 0;
-                  return cbm.toFixed(0);
-              } },
+                  let values = data.Values;
+
+                  if (typeof values === "string") {
+                      try {
+                          values = JSON.parse(values);
+                      } catch (e) {
+                          console.error("JSON parse error:", e, values);
+                          values = {};
+                      }
+                  }
+
+                  const cbm = parseFloat(values.cbm) || 0;
+                  return cbm ? cbm : "0.00";
+              }
+            },
             {
               title: "Unit",
               field: "unit",
@@ -746,7 +762,6 @@ document.getElementById("push-inventory-btn").addEventListener("click", function
     .then(response => {
         if (response.success) {
             alert("Inventory pushed successfully!");
-            // redirect to warehouse page
             window.location.href = "/inventory-warehouse";
         } else {
             alert(response.message || "Push failed!");
@@ -759,7 +774,6 @@ document.getElementById("push-inventory-btn").addEventListener("click", function
 });
 
 
-// Tab Add Button
 document.getElementById('add-tab-btn').addEventListener('click', async function () {
     const tabName = prompt("Enter new container name:");
     if (!tabName || tabName.trim() === "") {
@@ -793,10 +807,23 @@ function updateActiveTabSummary(index, table) {
   let totalCBM = 0;
 
   data.forEach(row => {
+    const values = (() => {
+      if (!row.Values) return {};
+      if (typeof row.Values === "string") {
+        try {
+          return JSON.parse(row.Values);
+        } catch (e) {
+          console.error("Invalid JSON in Values:", row.Values);
+          return {};
+        }
+      }
+      return row.Values;
+    })();
     const ctn = parseFloat(row.total_ctn) || 0;
     const units = parseFloat(row.no_of_units) || 0;
     const rate = parseFloat(row.rate) || 0;
-    const cbm = parseFloat(row.cbm) || 0;
+    const cbm = parseFloat(values.cbm) || 0;
+
     totalCtn += ctn;
     totalQty += ctn * units;
     totalAmount += ctn * units * rate;
@@ -821,7 +848,6 @@ document.querySelectorAll('[data-bs-toggle="tab"]').forEach((btn, index) => {
 document.getElementById('search-input').addEventListener('input', function () {
     const value = this.value.toLowerCase();
 
-    // Get currently active tab index
     const activeTab = document.querySelector('.nav-link.active[data-bs-toggle="tab"]');
     if (!activeTab) return;
 
@@ -878,8 +904,8 @@ document.getElementById('search-input').addEventListener('input', function () {
         const img = previewBox.querySelector("img");
         img.src = e.target.dataset.preview;
 
-        const rect = e.target.getBoundingClientRect(); // cell position
-        previewBox.style.left = (rect.right + 10) + "px"; // cell ke bagal me
+        const rect = e.target.getBoundingClientRect(); 
+        previewBox.style.left = (rect.right + 10) + "px"; 
         previewBox.style.top = rect.top + "px";
 
         previewBox.style.display = "block";
