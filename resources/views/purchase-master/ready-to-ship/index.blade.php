@@ -49,6 +49,18 @@
         background: #e0e6ed;
         border-radius: 6px;
     }
+    .preview-popup {
+        position: fixed;
+        display: none;
+        z-index: 9999;
+        pointer-events: none;
+        width: 350px;
+        height: 350px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+    }
 </style>
 @endsection
 @section('content')
@@ -89,6 +101,14 @@
                                 <i class="mdi mdi-eye-check-outline"></i>
                                 Show All
                             </button>
+                            <div style="min-width: 120px; position: relative;">
+                                <select id="zoneFilter" class="form-select border-2 rounded-2 fw-bold">
+                                    <option value="">select zone</option>
+                                    <option value="GHZ">GHZ</option>
+                                    <option value="Ningbo">Ningbo</option>
+                                    <option value="Tianjin">Tianjin</option>
+                                </select>
+                            </div>
                             <div class="custom-select-wrapper" style="min-width: 220px; position: relative;">
                                 <div class="custom-select-box d-flex align-items-center justify-content-between" id="customSelectBox"
                                     style="border: 1.5px solid #e0e6ed; border-radius: 7px; background: #fff; height: 38px; padding: 0 14px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 4px rgba(60,192,195,0.07); transition: border-color 0.2s;">
@@ -140,6 +160,8 @@
                         <thead>
                             <tr>
                                 <th data-column="0">#</th>
+                                <th data-column="7" data-column-name="area">ZONE<div class="resizer"></div>
+                                </th>
                                 <th data-column="1">Image<div class="resizer"></div></th>
                                 <th data-column="2">
                                     Parent
@@ -166,8 +188,6 @@
                                 <th data-column="6" data-column-name="cbm">CBM<div class="resizer"></div>
                                 </th>
                                 <th data-column="19" data-column-name="total_cbm">Total CBM<div class="resizer"></div>
-                                </th>
-                                <th data-column="7" data-column-name="area">ZONE<div class="resizer"></div>
                                 </th>
                                 <th data-column="8" data-column-name="shipped_cbm_in_container">Balance<div
                                         class="resizer"></div>
@@ -205,13 +225,22 @@
                                 <td data-column="0">
                                     <input type="checkbox" class="row-checkbox" data-sku="{{ $item->sku }}">
                                 </td>
+                                <td data-column="7">
+                                    <select data-sku="{{ $item->sku }}" data-column="area" class="form-select form-select-sm auto-save" style="width: 90px; font-size: 13px;">
+                                        <option value="">select zone</option>
+                                        <option value="GHZ" {{ ($item->area ?? '') == 'GHZ' ? 'selected' : '' }}>GHZ</option>
+                                        <option value="Ningbo" {{ ($item->area ?? '') == 'Ningbo' ? 'selected' : '' }}>Ningbo</option>
+                                        <option value="Tianjin" {{ ($item->area ?? '') == 'Tianjin' ? 'selected' : '' }}>Tianjin</option>
+                                    </select>
+                                </td>
                                 <td data-column="1">
                                     @if(!empty($item->Image))
-                                        <img src="{{ $item->Image }}" alt="Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;">
+                                        <img src="{{ $item->Image }}" class="hover-img" data-src="{{ $item->Image }}" alt="Image" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
                                     @else
-                                        <span class="text-muted">No image</span>
+                                        <span class="text-muted">No</span>
                                     @endif
                                 </td>
+                                
                                 <td data-column="2" class="text-center">{{ $item->parent }}</td>
                                 <td data-column="3" class="text-center">{{ $item->sku }}</td>
                                 <td data-column="4">
@@ -243,11 +272,7 @@
                                 </td>
                                 <td data-column="6">{{ isset($item->CBM) && $item->CBM !== null ? number_format((float)$item->CBM, 4) : 'N/A' }}</td>
                                 <td data-column="19">{{ is_numeric($item->qty ?? null) && is_numeric($item->CBM ?? null) ? number_format($item->qty * $item->CBM, 2, '.', '') : '' }}</td>
-                                <td data-column="7">
-                                    <input type="text" class="form-control auto-save" data-sku="{{ $item->sku }}"
-                                        data-column="area" value="{{ $item->area }}"
-                                        style="font-size: 0.95rem; height: 36px;">
-                                </td>
+                                
                                 <td data-column="8">{{ $item->shipped_cbm_in_container }}</td>
                                 <td data-column="9">{{ $item->payment }}</td>
                                 <td data-column="10">
@@ -722,5 +747,42 @@
 
     });
 </script>
+<script>
+    const popup = document.createElement('img');
+    popup.className = 'preview-popup';
+    document.body.appendChild(popup);
 
+    document.querySelectorAll('.hover-img').forEach(img => {
+        img.addEventListener('mouseenter', e => {
+            popup.src = img.dataset.src;
+            popup.style.display = 'block';
+        });
+        img.addEventListener('mousemove', e => {
+            popup.style.top = (e.clientY + 20) + 'px';
+            popup.style.left = (e.clientX + 20) + 'px';
+        });
+        img.addEventListener('mouseleave', e => {
+            popup.style.display = 'none';
+        });
+    });
+
+    document.getElementById('zoneFilter').addEventListener('change', function() {
+        const selectedZone = this.value.trim().toLowerCase();
+        const allRows = document.querySelectorAll('tbody tr');
+
+        allRows.forEach(row => {
+            const selectInRow = row.querySelector('select[data-column="area"]');
+            if (!selectInRow) return;
+
+            const rowZone = selectInRow.value.trim().toLowerCase();
+            if (selectedZone === "" || rowZone === selectedZone) {
+                row.style.display = ''; 
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+
+</script>
 @endsection

@@ -25,7 +25,6 @@ class SourcingController extends Controller
         $request->validate([
             'target_item' => 'required|string|max:255',
             'target_link1' => 'nullable|url',
-            'target_link2' => 'nullable|url',
             'product_description' => 'nullable|string',
             'rfq_form' => 'nullable|url',
             'rfq_report' => 'nullable|url',

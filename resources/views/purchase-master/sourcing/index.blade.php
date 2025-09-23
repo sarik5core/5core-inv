@@ -39,19 +39,39 @@
         <div class="col-12">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="d-flex flex-wrap justify-content-end align-items-center mb-3 gap-2">
-                        <button class="btn btn-sm btn-danger d-none" id="delete-selected-btn">
-                            <i class="fas fa-trash-alt me-1"></i> Delete Selected
-                        </button>
-                        <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                        <!-- Left: Total Pending -->
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="text-black mb-0">Total Pending:</h5>
+                            <span id="total-pending" class="text-black fw-bold fs-4 px-3 py-1 bg-warning rounded shadow-sm">0</span>
+                        </div>
+
+                        <!-- Center: Issue Date Filter -->
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="fw-semibold mb-0">Filter by Issue Date:</label>
+                            <select id="issue-date-filter" class="form-select form-select-sm w-auto">
+                                <option value="all">All</option>
+                                <option value="red">Red</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="green">Green</option>
+                            </select>
+                        </div>
+
+                        <!-- Right: Actions -->
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-danger d-none" id="delete-selected-btn">
+                                <i class="fas fa-trash-alt me-1"></i> Delete Selected
+                            </button>
                             <button id="add-new-row" class="btn btn-sm btn-success" data-bs-toggle="modal"
                                 data-bs-target="#createSourcingModal">
                                 <i class="fas fa-plus-circle me-1"></i> Create Sourcing
                             </button>
                         </div>
                     </div>
+
                     <div id="sourcing-table"></div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -89,9 +109,8 @@
 
                             <!-- Target Link 2 -->
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Target Link 2 <span
-                                        class="text-danger">*</span></label>
-                                <input type="url" name="target_link2" class="form-control" required
+                                <label class="form-label small fw-semibold">Target Link 2 </label>
+                                <input type="url" name="target_link2" class="form-control"
                                     placeholder="Enter Target Link 2">
                             </div>
 
@@ -166,49 +185,88 @@
                         formatter: "rownum",
                         hozAlign: "center",
                         width: 90,
+                        visible: false
+                    },
+                    {
+                        title: "Issue Date",
+                        field: "created_at",
+                        hozAlign: "center",
+                        width: "120",
+                        formatter: function(cell) {
+                            let date = cell.getValue();
+                            if (!date) return "";
+
+                            let d = new Date(date);
+                            let today = new Date();
+                            let diffTime = today - d; 
+                            let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                            let day = d.getDate();
+                            let month = d.toLocaleString('default', { month: 'short' });
+                            let formattedDate = `${day} ${month}`;
+
+                            let color = '';
+                            if (diffDays >= 30) {
+                                color = 'red';
+                            } else if (diffDays >= 15) {
+                                color = '#F6B703';
+                            }else{
+                                color = 'green';
+
+                            }
+                            return `<div style="line-height:1.5;">
+                                <span style="color: ${color}; font-weight:600;">${formattedDate}</span><br>
+                                <small style="color:#555;">${diffDays} day${diffDays > 1 ? 's' : ''} ago</small>
+                            </div>`;
+                        }
                     },
                     {
                         title: "Target Item",
                         field: "target_item",
                         editor: "input",
-                        hozAlign: "center",
                         hozAlign: "center"
                     },
                     {
-                        title: "Target Link 1",
+                        title: 'Target1 <i class="fas fa-link"></i>',
                         field: "target_link1",
                         formatter: function(cell) {
                             let url = cell.getValue();
                             if (url) {
-                                return `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> View
+                                return `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary p-1">
+                                    <i class="fas fa-link"></i>
                                 </a>`;
                             }
                             return "";
                         },
                         editor: "input",
-                        hozAlign: "center"
+                        hozAlign: "center",
+                        width: "115"
                     },
                     {
-                        title: "Target Link 2",
+                        title: 'Target2 <i class="fas fa-link"></i>',
                         field: "target_link2",
                         formatter: function(cell) {
                             let url = cell.getValue();
                             if (url) {
-                                return `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> View
+                                return `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary p-1">
+                                    <i class="fas fa-link"></i>
                                 </a>`;
                             }
                             return "";
                         },
                         editor: "input",
-                        hozAlign: "center"
+                        hozAlign: "center",
+                        width: "115"
                     },
                     {
                         title: "Product Description",
                         field: "product_description",
                         editor: "textarea",
-                        hozAlign: "center"
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            let value = cell.getValue() || "";
+                            return `<span title="${value.replace(/"/g, '&quot;')}">${value}</span>`;
+                        }
                     },
                     {
                         title: "RFQ Form",
@@ -263,6 +321,9 @@
                     }
 
                 ],
+            });
+            table.on("dataLoaded", function(){
+                setTimeout(updatePendingCount, 50);
             });
 
             table.on("rowSelectionChanged", function(data, rows) {
@@ -360,5 +421,31 @@
                         .catch(() => alert('Error deleting rows'));
                 });
             }
+            
+            function updatePendingCount() {
+                const allData = table.getData(); // poori data, not just current page
+                let pending = allData.filter(row => row.status !== 'done' && row.status !== '').length;
+                document.getElementById('total-pending').textContent = pending;
+            }
+
+            // Filter by Issue Date color
+            const issueDateFilter = document.getElementById('issue-date-filter');
+            issueDateFilter.addEventListener('change', function() {
+                const value = this.value;
+
+                table.setFilter(function(data, filterParams){
+                    const date = new Date(data.created_at);
+                    const today = new Date();
+                    const diffDays = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+
+                    if(value === 'red') return diffDays >= 30;
+                    if(value === 'yellow') return diffDays >= 15 && diffDays < 30;
+                    if(value === 'green') return diffDays < 15;
+                    return true;
+                });
+
+                setTimeout(updatePendingCount, 50);
+            });
+
         });
     </script>
