@@ -444,6 +444,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/auto-stock-balance-store', [AutoStockBalanceController::class, 'store'])->name('autostock.balance.store');
     Route::get('/auto-stock-balance-data-list', [AutoStockBalanceController::class, 'list']);
 
+     //Linked products
+    Route::get('/linked-products-view', [ProductMasterController::class, 'linkedProductsView'])->name('linked.products.view');
+    Route::post('/linked-products-store', [ProductMasterController::class, 'linkedProductStore'])->name('linked.products.store');
+    Route::get('/linked-products-data-list', [ProductMasterController::class, 'linkedProductsList']);
+
 
     //Stock Adjustment
     Route::get('/stock-adjustment-view', [StockAdjustmentController::class, 'index'])->name('stock.adjustment.view');

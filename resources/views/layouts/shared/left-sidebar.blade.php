@@ -1045,6 +1045,9 @@
                         <li>
                             <a href="{{ route('autostock.balance.view') }}">Auto Stock Balance</a>
                         </li>
+                        <li>
+                            <a href="{{ route('linked.products.view') }}">Linked products </a>
+                        </li>
                         {{-- <li>
                             <a href="#">Trash Entries</a>
                         </li> --}}

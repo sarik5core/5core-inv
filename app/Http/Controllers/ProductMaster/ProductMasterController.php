@@ -8,6 +8,7 @@ use App\Models\Permission;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -557,5 +558,59 @@ class ProductMasterController extends Controller
                 'message' => 'Failed to update products. Please try again.'
             ], 500);
         }
+    }
+
+    public function linkedProductsView(){
+
+        $warehouses = Warehouse::select('id', 'name')->get();
+
+        $skus = ProductMaster::select('product_master.id', 'product_master.parent', 'product_master.sku', 'shopify_skus.inv as available_quantity', 'shopify_skus.quantity as l30')
+            ->leftJoin('shopify_skus', 'product_master.sku', '=', 'shopify_skus.sku')
+            ->get()
+            ->map(function ($item) {
+            $inv = $item->available_quantity ?? 0;
+            $l30 = $item->l30 ?? 0;
+            $item->dil = $inv != 0 ? round(($l30 / $inv) * 100) : 0;
+            return $item;
+        });
+
+        return view('inventory-management.linked-products-view', compact('warehouses', 'skus'));
+    }
+
+    public function linkedProductStore(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required|numeric',
+            'from_sku' => 'required|string|different:to_sku',
+            'to_sku' => 'required|string|different:from_sku',
+        ]);
+
+        // Update both SKUs with given group_id
+        ProductMaster::whereIn('sku', [$request->from_sku, $request->to_sku])
+            ->update(['group_id' => $request->group_id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Products linked successfully',
+            'group_id' => $request->group_id,
+        ]);
+    }
+
+    public function linkedProductsList()
+    {
+         $data = ProductMaster::whereNotNull('group_id')
+        ->orderBy('group_id')
+        ->get()
+        ->groupBy('group_id') // group all SKUs under the same group_id
+        ->map(function ($group, $groupId) {
+            return [
+                'group_id' => $groupId,
+                'skus'     => $group->pluck('sku')->toArray(),
+                'parents'  => $group->pluck('parent')->unique()->toArray(),
+            ];
+        })
+        ->values(); // reset keys for JSON
+
+        return response()->json(['data' => $data]);
     }
 }

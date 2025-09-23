@@ -15,6 +15,7 @@ class ProductMaster extends Model
     protected $fillable = [
         'parent',
         'sku',
+        'group_id',
         'Values',
     ];
 
