@@ -374,9 +374,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     // Account Health Master Channel Dashboard
     Route::get('/channel/dashboard', [AccountHealthMasterDashboardController::class, 'dashboard'])->name('account.health.master.channel.dashboard');
+    Route::get('/account-health-master/dashboard-data', [AccountHealthMasterDashboardController::class, 'getMasterChannelDataHealthDashboard'])->name('account.health.master.dashboard.data');
+    Route::get('/account-health-master/export', [AccountHealthMasterDashboardController::class, 'export'])->name('account-health-master.export');
+    Route::post('/account-health-master/import', [AccountHealthMasterDashboardController::class, 'import'])->name('account-health-master.import');
+    Route::get('/account-health-master/sample/{type?}', [AccountHealthMasterDashboardController::class, 'downloadSample'])->name('account-health-master.sample');
 
-
-    //oppertunity channel master
     Route::controller(OpportunityController::class)->group(function () {
         Route::get('/channerl-master-active/opportunity', 'index')->name('opportunity.index');
         Route::get('/opportunities/data', 'getOpportunitiesData');
@@ -1039,7 +1041,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/upload-image', [TransitContainerDetailsController::class, 'uploadImage'])->name('transit.upload-image');
     Route::get('/transit-container-changes', [TransitContainerDetailsController::class, 'transitContainerChanges'])->name('transit.container.changes');
     Route::get('/transit-container-new', [TransitContainerDetailsController::class, 'transitContainerNew'])->name('transit.container.new');
-
+    Route::post('/transit-container/save', [TransitContainerDetailsController::class, 'transitContainerStoreItems']);
+    Route::post('/transit-container/delete', [TransitContainerDetailsController::class, 'deleteTransitItem']);
 
     Route::post('/inventory-warehouse/push', [InventoryWarehouseController::class, 'pushInventory'])->name('inventory.push');
     Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');

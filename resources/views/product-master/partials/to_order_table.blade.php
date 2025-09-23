@@ -46,22 +46,24 @@
                 @endif
             </td>
 
-            <td class="date-cell">
-                @php
-                    $bgColor = '';
-                    $daysDiff = null;
+            @php
+                $bgColor = '';
+                $daysDiff = null;
 
-                    if (!empty($row->{'Date of Appr'})) {
-                        $daysDiff = \Carbon\Carbon::parse($row->{'Date of Appr'})->diffInDays(\Carbon\Carbon::today());
+                if (!empty($row->{'Date of Appr'})) {
+                    $daysDiff = \Carbon\Carbon::parse($row->{'Date of Appr'})->diffInDays(\Carbon\Carbon::today());
 
-                        if ($daysDiff >= 14) {
-                            $bgColor = 'background-color: red; color: white;';
-                        } elseif ($daysDiff >= 7) {
-                            $bgColor = 'background-color: yellow; color: black;';
-                        }
+                    if ($daysDiff > 14) {
+                        $bgColor = 'background-color: red; color: white;';
+                    } elseif ($daysDiff > 7) {
+                        $bgColor = 'background-color: yellow; color: black;';
+                    }else{
+                        $bgColor = 'background-color: green; color: white;';
                     }
-                @endphp
-
+                }
+            @endphp
+            
+            <td class="date-cell" data-dateOfAppr="{{ $daysDiff }}">
                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
                     <input type="date" class="form-control form-control-sm stage-select"
                         data-sku="{{ $row->SKU }}" data-column="Date of Appr"

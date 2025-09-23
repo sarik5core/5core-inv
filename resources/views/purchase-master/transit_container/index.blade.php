@@ -149,16 +149,19 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-2">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
                     <div class="d-flex gap-4 align-items-center">
                         <div class="fw-semibold text-dark" style="font-size: 1rem;">
-                            📦 Total Ctns: <span class="text-success" id="total-cartons-display">0</span>
+                            📦 To. Ctns: <span class="text-success" id="total-cartons-display">0</span>
                         </div>
                         <div class="fw-semibold text-dark" style="font-size: 1rem;">
-                            🧮 Total Qty: <span class="text-primary" id="total-qty-display">0</span>
+                            🧮 To. Qty: <span class="text-primary" id="total-qty-display">0</span>
                         </div>
                         <div class="fw-semibold text-dark" style="font-size: 1rem;">
-                            💲 Total Amt: <span class="text-primary" id="total-amount-display">0</span>
+                            💲 To. Amt: <span class="text-primary" id="total-amount-display">0</span>
+                        </div>
+                        <div class="fw-semibold text-dark" style="font-size: 1rem;">
+                            To. CBM: <span class="text-primary" id="total-cbm-display">0</span>
                         </div>
                     </div>
 
@@ -174,7 +177,7 @@
 
                     <!-- 🔍 Search Input -->
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Search by SKU, Supplier, Parent..." 
-                        style="max-width: 200px; border: 2px solid #2185ff; font-size: 0.95rem;">
+                        style="max-width: 150px; border: 2px solid #2185ff; font-size: 0.95rem;">
 
                     {{-- push Inventory --}}
                     <button id="push-inventory-btn" class="btn btn-primary btn-sm">
@@ -184,6 +187,13 @@
                     <!-- ➕ Add Container Button -->
                     <button id="add-tab-btn" class="btn btn-success btn-sm">
                         <i class="fas fa-plus"></i> Add Container
+                    </button>
+
+                    <button id="add-items-btn" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                        <i class="fas fa-plus"></i> Add Items
+                    </button>
+                    <button class="btn btn-danger btn-sm d-none" id="delete-selected-btn">
+                        <i class="fas fa-trash me-1"></i> Delete
                     </button>
                 </div>
 
@@ -218,18 +228,122 @@
     </div>
 </div>
 
-<div id="cell-image-preview" 
-     style="position:absolute; display:none; z-index:9999; 
-            border:1px solid #ccc; background:#fff; padding:5px; 
-            border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+<div id="cell-image-preview" style="position:absolute; display:none; z-index:9999; border:1px solid #ccc; background:#fff; padding:5px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
   <img src="" style="max-height:250px; max-width:350px;">
 </div>
 
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered shadow-none">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="addItemModalLabel">
+                    <i class="fas fa-file-invoice me-2"></i> Add Items
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="purchaseOrderForm" method="POST" action="{{ url('transit-container/save') }}" enctype="multipart/form-data" autocomplete="off">
+                @csrf
+                <div class="modal-body">
+                    {{-- Product Section --}}
+                    <div>
+                        <h5 class="fw-semibold mb-2 text-primary">
+                            <i class="fas fa-boxes-stacked me-1"></i> Items
+                        </h5>
+                        <div class="row g-2">
+                          <div class="col-md-3">
+                              <label class="form-label fw-semibold">Container <span class="text-danger">*</span></label>
+                              <select class="form-select" name="tab_name" required>
+                                  <option value="" disabled selected>select container</option>
+                                  @foreach($tabs as $tab)
+                                      <option value="{{ $tab }}">{{ $tab }}</option>
+                                  @endforeach
+                              </select>
+                          </div>
+                        </div>
+                        <div id="productRowsWrapper">
+                            <div class="row g-2 product-row border rounded p-2 mt-2 position-relative">
+                                <div class="d-flex justify-content-end position-absolute top-0 end-0 p-2 ">
+                                    <i class="fas fa-trash-alt text-danger delete-product-row-btn" style="cursor: pointer; font-size: 1.2rem; margin-top:-10px;"></i>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">SKU <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="our_sku[]" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Supplier</label>
+                                    <select class="form-select" name="supplier_name[]">
+                                        <option value="" disabled>Select Supplier</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{ $supplier->name }}">{{ $supplier->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Qty/Ctns</label>
+                                    <input type="number" class="form-control" name="no_of_units[]" step="any">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Qty Ctns</label>
+                                    <input type="number" class="form-control" name="total_ctn[]" step="any">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Qty</label>
+                                    <input type="number" class="form-control" name="pcs_qty[]" step="any">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Rate ($)</label>
+                                    <input type="number" class="form-control" name="rate[]" step="any">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">CBM</label>
+                                    <input type="number" class="form-control" name="cbm[]" step="any">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Unit</label>
+                                    <select class="form-select" name="unit[]">
+                                        <option value="" disabled>select unit</option>
+                                        <option value="pieces">pieces</option>
+                                        <option value="pair">pair</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Changes</label>
+                                    <input type="text" class="form-control" name="changes[]">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold">Specifications</label>
+                                    <textarea type="text" class="form-control" name="specification[]" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addItemRowBtn">
+                                <i class="fas fa-plus-circle me-1"></i> Add Item Row
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection
 
 @section('script')
-<script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
 <script>
 let tabCounter = {{ count($tabs) }};
 const groupedData = @json($groupedData);
@@ -242,7 +356,15 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
         paginationSize: 50,
         height: "700px",
         rowHeight: 55,
-        columns: [
+        index: "id",
+        selectable: true,
+        columns: [{
+                formatter: "rowSelection",
+                titleFormatter: "rowSelection",
+                hozAlign: "center",
+                headerSort: false,
+                width: 50
+            },
             {
             title: "Sl No.",
             formatter: function(cell) {
@@ -252,8 +374,8 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             headerSort: false
             },
             { title: "Parent", field: "parent"},
-            { title: "Sku", field: "our_sku", editor: "input" },
-            { title: "Supplier", field: "supplier_name", editor: "input"},
+            { title: "Sku", field: "our_sku" },
+            { title: "Supplier", field: "supplier_name"},
             {
               title: "Images",
               field: "photos",
@@ -368,6 +490,11 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
               }
             },
             { title: "Rate ($)", field: "rate", editor: "input" },
+            { title: "CBM", field: "cbm", editor: "input",formatter: function(cell) {
+                  const data = cell.getRow().getData();
+                  const cbm = parseFloat(data.cbm) || 0;
+                  return cbm.toFixed(0);
+              } },
             {
               title: "Unit",
               field: "unit",
@@ -445,7 +572,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             },
             { title: "Changes", field: "changes", editor: "input" },
             { 
-              title: "Specifications",
+              title: "Spec.",
               field: "specification", 
               editor: "input",
               formatter: function(cell) {
@@ -457,6 +584,49 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             },
         ],
     });
+
+    table.on("rowSelectionChanged", function(data, rows){
+        if(data.length > 0){
+            $('#delete-selected-btn').removeClass('d-none');
+        } else {
+            $('#delete-selected-btn').addClass('d-none');
+        }
+    });
+
+    $('#delete-selected-btn').on('click', function() {
+        const selectedData = table.getSelectedData();
+
+        if (selectedData.length === 0) {
+            alert('Please select at least one record to delete.');
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to delete ${selectedData.length} selected records?`)) {
+            return;
+        }
+
+        const ids = selectedData.map(row => row.id);
+
+        $.ajax({
+            url: '/transit-container/delete',
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                ids: ids
+            },
+            success: function(response) {
+                if(response.success){
+                    ids.forEach(id => table.deleteRow(id));
+                } else {
+                    alert("Failed to delete rows.");
+                }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
 
     window.addEventListener("DOMContentLoaded", () => {
       document.documentElement.setAttribute("data-sidenav-size", "condensed");
@@ -512,38 +682,6 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                 if (response.id) {
                     row.update({ id: response.id }); 
                 }
-
-                const allRows = table.getRows();
-                if (row === allRows[allRows.length - 1]) {
-                    const field = cell.getField();
-                    const value = cell.getValue();
-                    const isNotEmpty = value !== null && value !== "" && value !== 0;
-
-                    if (isNotEmpty) {
-                        const newRowData = { tab_name: tabName };
-                        table.addRow(newRowData).then((newRow) => {
-                            fetch('/transit-container/save-row', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                                },
-                                body: JSON.stringify(newRowData)
-                            })
-                            .then(res => res.json())
-                            .then(newRes => {
-                                if (newRes.id) {
-                                    newRow.update({ id: newRes.id });
-                                    console.log("New row added with ID:", newRes.id);
-                                }
-                            })
-                            .catch(err => {
-                                console.error("Error saving new row:", err);
-                            });
-                        });
-                    }
-                }
-
             } else {
                 alert(response.message || "Update failed");
             }
@@ -652,19 +790,23 @@ function updateActiveTabSummary(index, table) {
   let totalCtn = 0;
   let totalQty = 0;
   let totalAmount = 0;
+  let totalCBM = 0;
 
   data.forEach(row => {
     const ctn = parseFloat(row.total_ctn) || 0;
     const units = parseFloat(row.no_of_units) || 0;
     const rate = parseFloat(row.rate) || 0;
+    const cbm = parseFloat(row.cbm) || 0;
     totalCtn += ctn;
     totalQty += ctn * units;
     totalAmount += ctn * units * rate;
+    totalCBM += cbm;
   });
 
   document.getElementById("total-cartons-display").textContent = totalCtn;
   document.getElementById("total-qty-display").textContent = totalQty;
   document.getElementById("total-amount-display").textContent = Math.round(totalAmount);
+  document.getElementById("total-cbm-display").textContent = totalCBM.toFixed(0);
 
 }
 
@@ -754,7 +896,41 @@ document.getElementById('search-input').addEventListener('input', function () {
   });
 
 
-document.body.style.zoom = "98%"; 
+document.body.style.zoom = "90%"; 
 
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const wrapper = document.getElementById("productRowsWrapper");
+      const addBtn = document.getElementById("addItemRowBtn");
+
+      addBtn.addEventListener("click", function () {
+          const newRow = wrapper.querySelector(".product-row").cloneNode(true);
+
+          newRow.querySelectorAll("input, select, textarea").forEach(el => {
+              el.value = "";
+          });
+
+          wrapper.appendChild(newRow);
+
+          bindDeleteBtns();
+      });
+
+      function bindDeleteBtns() {
+          wrapper.querySelectorAll(".delete-product-row-btn").forEach(btn => {
+              btn.onclick = function () {
+                  if (wrapper.querySelectorAll(".product-row").length > 1) {
+                      btn.closest(".product-row").remove();
+                  } else {
+                      alert("At least one row is required.");
+                  }
+              };
+          });
+      }
+
+      bindDeleteBtns();
+  });
+</script>
+
 @endsection
