@@ -409,10 +409,10 @@ class PricingMasterViewsController extends Controller
 
 
                      'total_req_view' => (
-                    ($ebay && $ebay->views  && $ebay->ebay_l30 ? ($inv * 20) : 0) +
-                    ($ebay2 && $ebay2->views  && $ebay2->ebay_l30 ? (($inv * 20) / (($ebay2->ebay_l30 / $ebay2->views))) : 0) +
-                    ($ebay3 && $ebay3->views  && $ebay3->ebay_l30 ? (($inv * 20) / (($ebay3->ebay_l30 / $ebay3->views))) : 0) +
-                    ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv * 20) / (($amazon->units_ordered_l30 / $amazon->sessions_l30))) : 0)
+                    ($ebay && $ebay->views  && $ebay->ebay_l30 ? ($inv * 30) : 0) +
+                    ($ebay2 && $ebay2->views  && $ebay2->ebay_l30 ? (($inv * 30) / (($ebay2->ebay_l30 / $ebay2->views))) : 0) +
+                    ($ebay3 && $ebay3->views  && $ebay3->ebay_l30 ? (($inv * 30) / (($ebay3->ebay_l30 / $ebay3->views))) : 0) +
+                    ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30))) : 0)
                 ),
 
                 // Amazon DataView values
