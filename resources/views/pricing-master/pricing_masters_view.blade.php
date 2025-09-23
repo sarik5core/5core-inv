@@ -586,6 +586,9 @@
                                             <div class="input-group" style="width: 200px;">
                                                 @csrf
                                                 <input type="number" id="topPushPrice" class="form-control form-control-lg" step="any" placeholder="Enter Price" style="height: 40px;">
+                                                <button class="btn btn-success d-flex align-items-center" id="topSaveBtn" type="button" style="height: 40px;">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
                                                 <button class="btn btn-primary d-flex align-items-center" id="topPushBtn" type="button" style="height: 40px;">
                                                     <i class="fas fa-upload"></i>
                                                 </button>
@@ -1819,7 +1822,7 @@
 
             rows.forEach(r => {
                 const price = data[`${r.prefix}_price`];
-                const l30 = r.prefix === 'shopifyb2c' ? data['shopify_l30'] : (r.prefix === 'shein' ? data['shopify_sheinl30'] : data[`${r.prefix}_l30`]);
+                const l30 = r.prefix === 'shopifyb2c' ? data['shopify_l30'] : data[`${r.prefix}_l30`];
                 const l60 = data[`${r.prefix}_l60`];
                 const pft = data[`${r.prefix}_pft`];
                 const roi = data[`${r.prefix}_roi`];
@@ -1999,7 +2002,7 @@
                                 : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
                                 : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
                                 : r.prefix === 'ebay3' ? (data.ebay3_sprice || '')
-                                : r.prefix === 'doba' ? (data.doba_final_price || '')
+                                : r.prefix === 'doba' ? (data.doba_sprice || '')
                                 : r.prefix === 'temu' ? (data.temu_sprice || '')
                                 : r.prefix === 'macy' ? (data.macy_sprice || '')
                                 : r.prefix === 'reverb' ? (data.reverb_sprice || '')
@@ -2145,8 +2148,13 @@
             // Initialize top push button
             const topPushPrice = document.getElementById('topPushPrice');
             const topPushBtn = document.getElementById('topPushBtn');
+            const topSaveBtn = document.getElementById('topSaveBtn');
             
             topPushBtn.dataset.sku = data.SKU;
+            topSaveBtn.dataset.sku = data.SKU;
+            topSaveBtn.dataset.lp = data.LP || 0;
+            topSaveBtn.dataset.ship = data.SHIP || 0;
+            topSaveBtn.dataset.temuShip = data.temu_ship || 0;
             topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
             document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
             document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
@@ -2543,6 +2551,47 @@
         });
 
 
+        // Save top price button handler
+        $(document).on('click', '#topSaveBtn', function() {
+            const sku = $(this).data('sku');
+            const price = parseFloat($('#topPushPrice').val()) || 0;
+            const LP = parseFloat($(this).data('lp')) || 0;
+            const SHIP = parseFloat($(this).data('ship')) || 0;
+            const temu_ship = parseFloat($(this).data('temuShip')) || 0;
+
+            console.log('Saving for SKU:', sku, 'Price:', price);
+
+            if (!sku || price <= 0) {
+                alert('Please enter a valid price');
+                return;
+            }
+
+            $.ajax({
+                url: '/pricing-master/save-sprice',
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    sku: sku,
+                    type: 'top',
+                    sprice: price,
+                    LP: LP,
+                    SHIP: SHIP,
+                    temu_ship: temu_ship
+                },
+                success: function(res) {
+                    if (res.status === 200) {
+                        alert('Price saved to all marketplaces successfully');
+                    } else {
+                        alert('Failed to save price');
+                    }
+                },
+                error: function(err) {
+                    console.error('Error saving price:', err);
+                    alert('Error saving price');
+                }
+            });
+        });
+
             $(document).on('click', '.pushPriceBtn, #topPushBtn', function() {
             const $btn = $(this);
             const sku = $btn.data('sku') || $('#topPushBtn').data('sku');
@@ -2603,71 +2652,33 @@
                     }
                 });
 
-                $.ajax({
-                    url: '/update-doba-price',
-                    type: 'POST',
-                    data: { 
-                        sku: sku, 
-                        price: price,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        console.log('Doba price updated');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Doba update failed:', error);
-                    }
-                });
 
-                $.ajax({
-                    url: '/push-ebay2-price',
-                    type: 'POST',
-                    data: { 
-                        sku: sku, 
-                        price: price,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        console.log('eBay2 price updated');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('eBay2 update failed:', error);
-                    }
-                });
-                   $.ajax({
-                    url: '/push-ebay3-price',
-                    type: 'POST',
-                    data: { 
-                        sku: sku, 
-                        price: price,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        console.log('eBay2 price updated');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('eBay2 update failed:', error);
-                    }
-                });
-
+                 // ✅ Walmart
                 $.ajax({
                     url: '/push-walmart-price',
                     type: 'POST',
-                    data: { 
-                        sku: sku, 
-                        price: price,
-                        _token: '{{ csrf_token() }}'
-                    },
+                    data: { sku: sku, price: price, _token: '{{ csrf_token() }}' },
                     success: function(response) {
-                        console.log('Walmart price updated');
+                        console.log('Walmart price update requested');
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Walmart update failed:', error);
+                    error: function(err) {
+                        console.error('Walmart update failed:', err);
+                    }
+                });
+
+                // ✅ Doba
+                $.ajax({
+                    url: '/update-doba-price',
+                    type: 'POST',
+                    data: { sku: sku, price: price, _token: '{{ csrf_token() }}' },
+                    success: function(response) {
+                        console.log('Doba price update requested');
+                    },
+                    error: function(err) {
+                        console.error('Doba update failed:', err);
                     }
                 });
                 
-                
-
                 alert('Price is being updated across all marketplaces');
                 return;
             }
