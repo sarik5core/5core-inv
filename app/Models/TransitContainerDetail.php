@@ -25,6 +25,7 @@ class TransitContainerDetail extends Model
         'total_ctn',
         'rate',
         'unit',
+        'cbm',
         'order_link',
         'comparison_link',
     ];
