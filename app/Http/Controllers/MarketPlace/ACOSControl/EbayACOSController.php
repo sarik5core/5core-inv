@@ -12,11 +12,31 @@ use Illuminate\Http\Request;
 
 class EbayACOSController extends Controller
 {
-    public function index(){
-        return view('market-places.acos-control.ebay-acos-control');
+    public function ebayOverUtiAcosPink(){
+        return view('campaign.ebay-over-uti-acos-pink');
     }
 
-    public function getEbayAcosControlData()
+    public function ebayOverUtiAcosGreen(){
+        return view('campaign.ebay-over-uti-acos-green');
+    }
+
+    public function ebayOverUtiAcosRed(){
+        return view('campaign.ebay-over-uti-acos-red');
+    }
+
+    public function ebayUnderUtiAcosPink(){
+        return view('campaign.ebay-under-uti-acos-pink');
+    }
+
+    public function ebayUnderUtiAcosGreen(){
+        return view('campaign.ebay-under-uti-acos-green');
+    }
+
+    public function ebayUnderUtiAcosRed(){
+        return view('campaign.ebay-under-uti-acos-red');
+    }
+
+    public function getEbayUtilisationAcosData()
     {
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -26,8 +46,6 @@ class EbayACOSController extends Controller
         $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
-
-        $ebayMetricData = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
 
         $nrValues = EbayDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
@@ -63,8 +81,6 @@ class EbayACOSController extends Controller
 
             $shopify = $shopifyData[$pm->sku] ?? null;
 
-            $ebay = $ebayMetricData[$pm->sku] ?? null;
-
             $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
                 return stripos($item->campaign_name, $sku) !== false;
             });
@@ -86,24 +102,25 @@ class EbayACOSController extends Controller
             $row['sku']    = $pm->sku;
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
-            $row['e_l30']  = $ebay->ebay_l30 ?? 0;
-            $dil = $shopify->inv > 0 ? ($shopify->quantity / $shopify->inv ) * 100 : 0;
-            $row['dil_per'] = $dil;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
 
-            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
-            $sales    = (float) $matchedCampaignL30->cpc_attributed_sales;
+            $adFees   = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_ad_fees_payout_currency ?? 0);
+            $sales    = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_sale_amount_payout_currency ?? 0 );
 
             $acos = $sales > 0 ? ($adFees / $sales) * 100 : 0;
             
-            
-            $row['acos'] = $acos;
+            if($adFees > 0 && $sales === 0){
+                $row['acos'] = 100;
+            }else{
+                $row['acos'] = $acos;
+            }
 
-            $row['l30_spend'] = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_ad_fees_payout_currency ?? 0);
-            $row['ad_cvr'] = $matchedCampaignL30->cpc_conversion_rate ?? 0;
-            $row['l30_cpc_clicks'] = (float) str_replace('USD ', '', $matchedCampaignL30->cpc_clicks ?? 0);
+            $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
+            $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
+            $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
+            $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
 
             $row['NR'] = '';
             if (isset($nrValues[$pm->sku])) {
@@ -116,7 +133,9 @@ class EbayACOSController extends Controller
                 }
             }
 
-            $result[] = (object) $row;
+            if ($row['NR'] !== 'NRA') {
+                $result[] = (object) $row;
+            }
         }
 
         return response()->json([

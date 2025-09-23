@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Ebay > ACOS PINK', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Ebay - OVER UTILIZED', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -126,16 +126,12 @@
         .red-bg {
             color: #ff2727 !important;
         }
-
-        .black-bg {
-            color: #000000 !important;
-        }
     </style>
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Ebay > ACOS PINK',
-        'sub_title' => 'Ebay > ACOS PINK',
+        'page_title' => 'Ebay - OVER UTILIZED',
+        'sub_title' => 'Ebay - OVER UTILIZED',
     ])
     <div class="row">
         <div class="col-12">
@@ -145,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Ebay > ACOS PINK
+                            Ebay - OVER UTILIZED
                         </h4>
 
                         <!-- Filters Row -->
@@ -251,7 +247,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-uti-acos/data",
+                ajaxURL: "/ebay-over-uti/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -364,7 +360,10 @@
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
 
-                            if (acos < 7) {
+                            if (acos === 0) {
+                                td.classList.add('red-bg');
+                                return "100%"; 
+                            } else if (acos < 7) {
                                 td.classList.add('pink-bg');
                             } else if (acos >= 7 && acos <= 14) {
                                 td.classList.add('green-bg');
@@ -387,11 +386,11 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub7 >= 60 && ub7 <= 90) {
+                            if (ub7 >= 70 && ub7 <= 90) {
                                 td.classList.add('green-bg');
                             } else if (ub7 > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub7 < 60) {
+                            } else if (ub7 < 70) {
                                 td.classList.add('red-bg');
                             }
                             return ub7.toFixed(0) + "%";
@@ -408,11 +407,11 @@
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
-                            if (ub1 >= 60 && ub1 <= 90) {
+                            if (ub1 >= 70 && ub1 <= 90) {
                                 td.classList.add('green-bg');
                             } else if (ub1 > 90) {
                                 td.classList.add('pink-bg');
-                            } else if (ub1 < 60) {
+                            } else if (ub1 < 70) {
                                 td.classList.add('red-bg');
                             }
                             return ub1.toFixed(0) + "%";
@@ -448,10 +447,10 @@
                             var l7_cpc = parseFloat(row.l7_cpc) || 0;
 
                             var sbid = 0;
-                            if (l1_cpc > 0) {
+                            if(l1_cpc > l7_cpc){
                                 sbid = (l1_cpc * 0.95).toFixed(2);
-                            } else {
-                                sbid = (l7_cpc * 0.95).toFixed(2);
+                            }else{
+                                sbid = (l1_cpc * 0.95).toFixed(2);
                             }
                             return sbid;
                         },
@@ -475,10 +474,10 @@
                                 var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
 
                                 var sbid = 0;
-                                if (l1_cpc > 0) {
+                                if(l1_cpc > l7_cpc){
                                     sbid = (l1_cpc * 0.95).toFixed(2);
-                                } else {
-                                    sbid = (l7_cpc * 0.95).toFixed(2);
+                                }else{
+                                    sbid = (l1_cpc * 0.95).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
@@ -548,7 +547,7 @@
                     let ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
                     let ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
 
-                    if (!(acos < 7 && ub7 > 90)) return false;
+                    if (!(ub7 > 90)) return false;
 
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
@@ -644,10 +643,10 @@
                         var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
 
                         var sbid = 0;
-                        if (l1_cpc > 0) {
+                        if(l1_cpc > l7_cpc){
                             sbid = (l1_cpc * 0.95).toFixed(2);
-                        } else {
-                            sbid = (l7_cpc * 0.95).toFixed(2);
+                        }else{
+                            sbid = (l1_cpc * 0.95).toFixed(2);
                         }
 
                         campaignIds.push(rowData.campaign_id);
@@ -724,10 +723,10 @@
                     let l7_cpc = parseFloat(row.l7_cpc || 0);
                     let sbid = 0;
 
-                    if (l1_cpc > 0) {
+                    if (l1_cpc > l7_cpc) {
                         sbid = (l1_cpc * 0.95).toFixed(2);
                     } else {
-                        sbid = (l7_cpc * 0.95).toFixed(2);
+                        sbid = (l1_cpc * 0.95).toFixed(2);
                     }
 
                     return {

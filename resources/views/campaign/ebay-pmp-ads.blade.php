@@ -1502,11 +1502,15 @@
                                             <div class="d-flex align-items-center">
                                                 T VIEWS <span class="sort-arrow">↓</span>
                                             </div>
-                                            {{-- <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                            <div class="metric-total" id="views-total">0</div> --}}
                                         </div>
                                     </th>
-
+                                    <th data-field="req_views" style="vertical-align: middle; white-space: nowrap;">
+                                        <div class="d-flex flex-column align-items-center" style="gap: 4px">
+                                            <div class="d-flex align-items-center">
+                                                REQ VIEWS <span class="sort-arrow">↓</span>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th data-field="cvr" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
@@ -2644,17 +2648,27 @@
                     const percent = Math.round(item.ov_dil * 100);
 
                     if (percent < 16.66) {
-                        sbid = 10;      // red
+                        sbid = 8;      
                         sbidColor = "red";
                     } else if (percent >= 16.66 && percent < 25) {
-                        sbid = 7.5;     // yellow
+                        sbid = 6;     
                         sbidColor = "yellow";
                     } else if (percent >= 25 && percent < 50) {
-                        sbid = 5;       // green
+                        sbid = 4;       
                         sbidColor = "green";
                     } else {
-                        sbid = 2.1;     // pink (50 and above)
+                        sbid = 2;     
                         sbidColor = "pink";
+                    }
+
+                    let reqViews = item.INV * 10;
+                    let reqViewsColor = "";
+
+                    if (reqViews < item.VIEWS) {
+                        reqViewsColor = "red";
+                        sbid = sbid + 2;       
+                    } else {
+                        reqViewsColor = "green";
                     }
 
                     $row.append($('<td>').html(
@@ -2662,7 +2676,15 @@
                            ${sbid}
                         </span>`
                     ));
+
                     $row.append($('<td>').text(item.VIEWS));
+
+                    $row.append($('<td>').html(
+                        `<span class="dil-percent-value ${reqViewsColor}">
+                           ${reqViews}
+                        </span>`
+                    ));
+
 
                     // CVR with color coding and tooltip
                     
