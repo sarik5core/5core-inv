@@ -286,7 +286,7 @@
             pointer-events: all;
             position: fixed;
             /* left: 50%;
-                                    top: 50%; */
+                                                top: 50%; */
             transform: translate(-50%, -50%);
         }
 
@@ -1097,9 +1097,14 @@
             paginationSize: 50,
 
             initialSort: [{
-                column: "inv_value",
-                dir: "asc" // Changed to ascending
-            }],
+                    column: "inv_value",
+                    dir: "asc"
+                },
+                {
+                    column: "SKU",
+                    dir: "asc"
+                }
+            ],
 
             rowFormatter: function(row) {
                 const data = row.getData();
@@ -1240,18 +1245,23 @@
                     title: "Inv Value",
                     field: "inv_value",
                     hozAlign: "center",
-                    headerSort: "asc",
+                    headerSort: true, 
                     formatter: function(cell) {
-                        const data = cell.getRow().getData();
-                        const value = parseFloat(data.inv_value) || 0;
+                        const value = parseFloat(cell.getValue()) || 0;
                         return `<span class="text-success">${value.toFixed(2)}</span>`;
                     },
-                    sorter: function(a, b) {
-                        return (parseFloat(a.inv_value) || 0) - (parseFloat(b.inv_value) || 0);
+                    sorter: function(a, b, aRow, bRow) {
+                        const valA = parseFloat(a) || 0;
+                        const valB = parseFloat(b) || 0;
+                        if (valA === valB) {
+                            // If inv_value is the same, sort by SKU
+                            const skuA = aRow.getData().SKU || "";
+                            const skuB = bRow.getData().SKU || "";
+                            return skuA.localeCompare(skuB);
+                        }
+                        return valA - valB; // Sort by inv_value ascending
                     }
                 },
-
-
                 {
                     title: "Total Views",
                     field: "total_views",
@@ -1732,22 +1742,18 @@
             ],
 
             ajaxResponse: function(url, params, response) {
-                groupedSkuData = {}; // clear previous
+                groupedSkuData = {};
 
-                // Add calculated fields + mark parent rows
                 response.data = response.data.map((item, index) => {
                     const sku = item.SKU || "";
                     const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
 
-                    // Calculate inv_value if it doesn't exist from backend
+                    // Ensure inv_value is numeric
                     if (!item.inv_value) {
                         const inv = item.INV || 0;
                         const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
                         item.inv_value = (inv * shopifyPrice).toFixed(2);
                     }
-
-                    // Store as numeric value for sorting
-                    item.invValue = parseFloat(item.inv_value) || 0;
 
                     return {
                         ...item,
@@ -1766,54 +1772,34 @@
                     const parentKey = item.Parent || "";
                     if (!grouped[parentKey]) grouped[parentKey] = [];
                     grouped[parentKey].push(item);
-
-                    // Group for play button use
                     if (!groupedSkuData[parentKey]) {
                         groupedSkuData[parentKey] = [];
                     }
                     groupedSkuData[parentKey].push(item);
                 });
 
-                // Sort inside each group: by invValue DESCENDING (highest first)
+                // Sort by inv_value (ascending) and SKU
                 let finalData = [];
                 Object.values(grouped).forEach(rows => {
                     rows.sort((a, b) => {
-                        // Sort by invValue DESCENDING (highest first)
-                        if (a.invValue !== b.invValue) {
-                            return b.invValue - a.invValue; // DESCENDING order
+                        const valA = parseFloat(a.inv_value) || 0;
+                        const valB = parseFloat(b.inv_value) || 0;
+                        if (valA === valB) {
+                            return (a.SKU || "").localeCompare(b.SKU || "");
                         }
-
-                        // If same invValue, sort by parent/child status
-                        if (a.is_parent !== b.is_parent) {
-                            return a.is_parent - b.is_parent; // parent last
-                        }
-
-                        // Finally sort by SKU
-                        return (a.SKU || "").localeCompare(b.SKU || "");
+                        return valA - valB; // Ascending order
                     });
                     finalData = finalData.concat(rows);
-                });
-
-                // DEBUG: Log the sorting results
-                console.log("Sorted data by invValue (DESCENDING - highest first):");
-                finalData.forEach((item, index) => {
-                    console.log(
-                        `${index + 1}. SKU: ${item.SKU}, invValue: $${item.invValue}, isParent: ${item.is_parent}`
-                        );
                 });
 
                 setTimeout(() => {
                     setCombinedFilters();
                 }, 0);
 
-                console.log("Processed Response:", finalData);
                 return finalData;
             },
 
         });
-
-
-
 
         // On Top Start 
         //   On to Percentaeg color
@@ -1898,11 +1884,6 @@
             roiHeader.style.borderRadius = "4px";
             roiHeader.style.fontWeight = "600";
         });
-
-
-
-
-
 
         let currentParentFilter = null;
 
@@ -2100,39 +2081,39 @@
                                 onmouseenter="showTooltip(this.previousElementSibling)"
                                 onmouseleave="hideTooltip(this.previousElementSibling)">
                                 ${r.prefix === 'amz' ? `
-                                                            ${data.amz_seller_link ? `<div><strong>SL:</strong> <a href="${data.amz_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.amz_buyer_link ? `<div><strong>BL:</strong> <a href="${data.amz_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'ebay' ? `
-                                                            ${data.ebay_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.ebay_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'ebay2' ? `
-                                                            ${data.ebay2_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay2_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.ebay2_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay2_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'ebay3' ? `
-                                                            ${data.ebay3_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay3_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.ebay3_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay3_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'macy' ? `
-                                                            ${data.macy_seller_link ? `<div><strong>SL:</strong> <a href="${data.macy_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.macy_buyer_link ? `<div><strong>BL:</strong> <a href="${data.macy_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'reverb' ? `
-                                                            ${data.reverb_seller_link ? `<div><strong>SL:</strong> <a href="${data.reverb_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.reverb_buyer_link ? `<div><strong>BL:</strong> <a href="${data.reverb_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'walmart' ? `
-                                                            ${data.walmart_seller_link ? `<div><strong>SL:</strong> <a href="${data.walmart_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.walmart_buyer_link ? `<div><strong>BL:</strong> <a href="${data.walmart_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'doba' ? `
-                                                            ${data.doba_seller_link ? `<div><strong>SL:</strong> <a href="${data.doba_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.doba_buyer_link ? `<div><strong>BL:</strong> <a href="${data.doba_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'temu' ? `
-                                                            ${data.temu_seller_link ? `<div><strong>SL:</strong> <a href="${data.temu_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.temu_buyer_link ? `<div><strong>BL:</strong> <a href="${data.temu_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : r.prefix === 'shopifyb2c' ? `
-                                                            ${data.shopifyb2c_seller_link ? `<div><strong>SL:</strong> <a href="${data.shopifyb2c_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.shopifyb2c_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shopifyb2c_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                         ` : r.prefix === 'shein' ? `
-                                                            ${data.shein_seller_link ? `<div><strong>SL:</strong> <a href="${data.shein_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
-                                                            ${data.shein_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shein_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
-                                                        ` : ''}
+                                                                        ${data.amz_seller_link ? `<div><strong>SL:</strong> <a href="${data.amz_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.amz_buyer_link ? `<div><strong>BL:</strong> <a href="${data.amz_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'ebay' ? `
+                                                                        ${data.ebay_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.ebay_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'ebay2' ? `
+                                                                        ${data.ebay2_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay2_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.ebay2_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay2_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'ebay3' ? `
+                                                                        ${data.ebay3_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay3_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.ebay3_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay3_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'macy' ? `
+                                                                        ${data.macy_seller_link ? `<div><strong>SL:</strong> <a href="${data.macy_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.macy_buyer_link ? `<div><strong>BL:</strong> <a href="${data.macy_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'reverb' ? `
+                                                                        ${data.reverb_seller_link ? `<div><strong>SL:</strong> <a href="${data.reverb_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.reverb_buyer_link ? `<div><strong>BL:</strong> <a href="${data.reverb_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'walmart' ? `
+                                                                        ${data.walmart_seller_link ? `<div><strong>SL:</strong> <a href="${data.walmart_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.walmart_buyer_link ? `<div><strong>BL:</strong> <a href="${data.walmart_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'doba' ? `
+                                                                        ${data.doba_seller_link ? `<div><strong>SL:</strong> <a href="${data.doba_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.doba_buyer_link ? `<div><strong>BL:</strong> <a href="${data.doba_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'temu' ? `
+                                                                        ${data.temu_seller_link ? `<div><strong>SL:</strong> <a href="${data.temu_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.temu_buyer_link ? `<div><strong>BL:</strong> <a href="${data.temu_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : r.prefix === 'shopifyb2c' ? `
+                                                                        ${data.shopifyb2c_seller_link ? `<div><strong>SL:</strong> <a href="${data.shopifyb2c_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.shopifyb2c_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shopifyb2c_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                     ` : r.prefix === 'shein' ? `
+                                                                        ${data.shein_seller_link ? `<div><strong>SL:</strong> <a href="${data.shein_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                                                        ${data.shein_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shein_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                                                    ` : ''}
 
                             </div>
                         </div>
@@ -2384,222 +2365,222 @@
         <
         /tr>
     `;
-                                    });
+                                                });
 
-                                    html += "</tbody></table></div>";
-                                  
+                                                html += "</tbody></table></div>";
+                                              
 
-                                    return html;
-                                }
+                                                return html;
+                                            }
 
-                                // Modal open function
-                                function showOVL30Modal(row) {
-                                    const data = row.getData();
-                                    
-                                    // Initialize top push button
-                                    const topPushPrice = document.getElementById('topPushPrice');
-                                    const topPushBtn = document.getElementById('topPushBtn');
-                                    const topSaveBtn = document.getElementById('topSaveBtn');
-                                    
-                                    topPushBtn.dataset.sku = data.SKU;
-                                    topSaveBtn.dataset.sku = data.SKU;
-                                    topSaveBtn.dataset.lp = data.LP || 0;
-                                    topSaveBtn.dataset.ship = data.SHIP || 0;
-                                    topSaveBtn.dataset.temuShip = data.temu_ship || 0;
-                                    topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
-                                    document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `
+                                            // Modal open function
+                                            function showOVL30Modal(row) {
+                                                const data = row.getData();
+                                                
+                                                // Initialize top push button
+                                                const topPushPrice = document.getElementById('topPushPrice');
+                                                const topPushBtn = document.getElementById('topPushBtn');
+                                                const topSaveBtn = document.getElementById('topSaveBtn');
+                                                
+                                                topPushBtn.dataset.sku = data.SKU;
+                                                topSaveBtn.dataset.sku = data.SKU;
+                                                topSaveBtn.dataset.lp = data.LP || 0;
+                                                topSaveBtn.dataset.ship = data.SHIP || 0;
+                                                topSaveBtn.dataset.temuShip = data.temu_ship || 0;
+                                                topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
+                                                document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `
     $ {
         data.SKU
     }
     ` : "0";     
-                                    document.getElementById('ovl30InvLabel').textContent = data.INV ? `
+                                                document.getElementById('ovl30InvLabel').textContent = data.INV ? `
     $ {
         data.INV
     }
     ` : "0"; 
-                                    document.getElementById('ovl30').textContent = data.L30 ? `
+                                                document.getElementById('ovl30').textContent = data.L30 ? `
     $ {
         data.L30
     }
     ` : "0";    
-                                    document.getElementById('total_views').textContent = data.total_views ? `
+                                                document.getElementById('total_views').textContent = data.total_views ? `
     $ {
         data.total_views
     }
     ` : "0";  
-                                    document.getElementById('avgCvr').textContent = data.avgCvr ? `
+                                                document.getElementById('avgCvr').textContent = data.avgCvr ? `
     $ {
         data.avgCvr
     }
     ` : "0";        
-                                    const imgEl = document.getElementById('ovl30Img');
+                                                const imgEl = document.getElementById('ovl30Img');
 
-                                    if (imgEl) {
-                                        if (data.shopifyb2c_image) {
-                                            imgEl.src = data.shopifyb2c_image;
-                                            imgEl.style.display = "block";   // show image
-                                        } else {
-                                            imgEl.style.display = "none";    // hide if missing
-                                        }
-                                    }
+                                                if (imgEl) {
+                                                    if (data.shopifyb2c_image) {
+                                                        imgEl.src = data.shopifyb2c_image;
+                                                        imgEl.style.display = "block";   // show image
+                                                    } else {
+                                                        imgEl.style.display = "none";    // hide if missing
+                                                    }
+                                                }
 
 
-                                    document.getElementById('dilPercentage').textContent = data.dilPercentage ? `
+                                                document.getElementById('dilPercentage').textContent = data.dilPercentage ? `
     $ {
         data.dilPercentage
     }
     ` : "0";
-                                    if (data.dilPercentage) {
-                                        const dilElement = document.getElementById('dilPercentage');
-                                        const rounded = data.dilPercentage;
-                                        
-                                        if (rounded >= 0 && rounded <= 10) {
-                                            dilElement.style.color = "red";
-                                        } else if (rounded >= 11 && rounded <= 15) {
-                                            dilElement.style.backgroundColor = "yellow";
-                                            dilElement.style.color = "black"; 
-                                            dilElement.style.padding = "2px 4px";
-                                            dilElement.style.borderRadius = "4px";
-                                        } else if (rounded >= 16 && rounded <= 20) {
-                                            dilElement.style.color = "blue";
-                                        } else if (rounded >= 21 && rounded <= 40) {
-                                            dilElement.style.color = "green";
-                                        } else if (rounded >= 41) {
-                                            dilElement.style.color = "purple";
-                                        }
-                                    }
-                                    document.getElementById('formattedAvgPrice').textContent = data.formattedAvgPrice ? `
+                                                if (data.dilPercentage) {
+                                                    const dilElement = document.getElementById('dilPercentage');
+                                                    const rounded = data.dilPercentage;
+                                                    
+                                                    if (rounded >= 0 && rounded <= 10) {
+                                                        dilElement.style.color = "red";
+                                                    } else if (rounded >= 11 && rounded <= 15) {
+                                                        dilElement.style.backgroundColor = "yellow";
+                                                        dilElement.style.color = "black"; 
+                                                        dilElement.style.padding = "2px 4px";
+                                                        dilElement.style.borderRadius = "4px";
+                                                    } else if (rounded >= 16 && rounded <= 20) {
+                                                        dilElement.style.color = "blue";
+                                                    } else if (rounded >= 21 && rounded <= 40) {
+                                                        dilElement.style.color = "green";
+                                                    } else if (rounded >= 41) {
+                                                        dilElement.style.color = "purple";
+                                                    }
+                                                }
+                                                document.getElementById('formattedAvgPrice').textContent = data.formattedAvgPrice ? `
     $ {
         data.formattedAvgPrice
     }
     ` : " 0";
-                                    if (data.formattedAvgPrice) {
-                                        const avgPriceValue = parseFloat(data.formattedAvgPrice.replace(/[^0-9.-]+/g, ''));
-                                        let textColor;
-                                        if (!isNaN(avgPriceValue)) {
-                                            if (avgPriceValue < 10) {
-                                                textColor = '#dc3545'; // red
-                                            } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
-                                                textColor = '#fd7e14'; // orange
-                                            } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
-                                                textColor = '#0d6efd'; // blue
-                                            } else if (avgPriceValue >= 20) {
-                                                textColor = '#198754'; // green
-                                            }
-                                        } else {
-                                            textColor = '#6c757d'; // gray
-                                        }
-                                        document.getElementById('formattedAvgPrice').style.color = textColor;
-                                    }
-                                    document.getElementById('formattedProfitPercentage').textContent = data.avgPftPercent ? `
+                                                if (data.formattedAvgPrice) {
+                                                    const avgPriceValue = parseFloat(data.formattedAvgPrice.replace(/[^0-9.-]+/g, ''));
+                                                    let textColor;
+                                                    if (!isNaN(avgPriceValue)) {
+                                                        if (avgPriceValue < 10) {
+                                                            textColor = '#dc3545'; // red
+                                                        } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
+                                                            textColor = '#fd7e14'; // orange
+                                                        } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
+                                                            textColor = '#0d6efd'; // blue
+                                                        } else if (avgPriceValue >= 20) {
+                                                            textColor = '#198754'; // green
+                                                        }
+                                                    } else {
+                                                        textColor = '#6c757d'; // gray
+                                                    }
+                                                    document.getElementById('formattedAvgPrice').style.color = textColor;
+                                                }
+                                                document.getElementById('formattedProfitPercentage').textContent = data.avgPftPercent ? `
     $ {
         data.avgPftPercent
     }
     ` : "0";
-                                    if (data.avgPftPercent) {
-                                        let bgColor, textColor;
-                                        const avgPftPercent = data.avgPftPercent;
-                                        
-                                        if (avgPftPercent < 11) {
-                                            textColor = '#ff0000';
-                                        } else if (avgPftPercent >= 10 && avgPftPercent < 15) {
-                                            bgColor = 'yellow';
-                                            textColor = '#000000';
-                                        } else if (avgPftPercent >= 15 && avgPftPercent < 20) {
-                                            textColor = '#0d6efd';
-                                        } else if (avgPftPercent >= 21 && avgPftPercent < 50) {
-                                            textColor = '#198754';
-                                        } else {
-                                            textColor = '#800080';
-                                        }
-                                        
-                                        const element = document.getElementById('formattedProfitPercentage');
-                                        element.style.color = textColor;
-                                        if (bgColor) {
-                                            element.style.backgroundColor = bgColor;
-                                        }
-                                    }
-                                    document.getElementById('formattedRoiPercentage').textContent = data.avgRoi ? `
+                                                if (data.avgPftPercent) {
+                                                    let bgColor, textColor;
+                                                    const avgPftPercent = data.avgPftPercent;
+                                                    
+                                                    if (avgPftPercent < 11) {
+                                                        textColor = '#ff0000';
+                                                    } else if (avgPftPercent >= 10 && avgPftPercent < 15) {
+                                                        bgColor = 'yellow';
+                                                        textColor = '#000000';
+                                                    } else if (avgPftPercent >= 15 && avgPftPercent < 20) {
+                                                        textColor = '#0d6efd';
+                                                    } else if (avgPftPercent >= 21 && avgPftPercent < 50) {
+                                                        textColor = '#198754';
+                                                    } else {
+                                                        textColor = '#800080';
+                                                    }
+                                                    
+                                                    const element = document.getElementById('formattedProfitPercentage');
+                                                    element.style.color = textColor;
+                                                    if (bgColor) {
+                                                        element.style.backgroundColor = bgColor;
+                                                    }
+                                                }
+                                                document.getElementById('formattedRoiPercentage').textContent = data.avgRoi ? `
     $ {
         data.avgRoi
     }
     ` : "0";
-                                    if (data.avgRoi) {
-                                        let bgColor, textColor;
-                                        const avgRoi = data.avgRoi;
-                                        
-                                        if (avgRoi < 11) {
-                                            textColor = '#ff0000';
-                                        } else if (avgRoi >= 10 && avgRoi < 15) {
-                                            bgColor = 'yellow';
-                                            textColor = '#000000'; 
-                                        } else if (avgRoi >= 15 && avgRoi < 20) {
-                                            textColor = '#0d6efd';
-                                        } else if (avgRoi >= 21 && avgRoi < 50) {
-                                            textColor = '#198754';
-                                        } else {
-                                            textColor = '#800080';
-                                        }
-                                        
-                                        const element = document.getElementById('formattedRoiPercentage');
-                                        element.style.color = textColor;
-                                        if (bgColor) {
-                                            element.style.backgroundColor = bgColor;
-                                        }
-                                    }
-
-
-
-                                    document.getElementById('ovl30Content').innerHTML = buildOVL30Table(data);
-
-                                    const modalEl = document.getElementById('ovl30Modal');
-                                    const modal = new bootstrap.Modal(modalEl);
-
-                                    // Automatically sort by L30 (highest to lowest) when modal opens
-                                    setTimeout(() => {
-                                        const table = modalEl.querySelector('.sortable-table');
-                                        const l30Header = Array.from(table.querySelectorAll('th')).find(th => th.textContent.includes('L30'));
-                                        if (l30Header) {
-                                            // Trigger two clicks if needed to get descending order (highest to lowest)
-                                            if (!l30Header.classList.contains('sort-desc')) {
-                                                l30Header.click();
-                                                if (!l30Header.classList.contains('sort-desc')) {
-                                                    l30Header.click();
+                                                if (data.avgRoi) {
+                                                    let bgColor, textColor;
+                                                    const avgRoi = data.avgRoi;
+                                                    
+                                                    if (avgRoi < 11) {
+                                                        textColor = '#ff0000';
+                                                    } else if (avgRoi >= 10 && avgRoi < 15) {
+                                                        bgColor = 'yellow';
+                                                        textColor = '#000000'; 
+                                                    } else if (avgRoi >= 15 && avgRoi < 20) {
+                                                        textColor = '#0d6efd';
+                                                    } else if (avgRoi >= 21 && avgRoi < 50) {
+                                                        textColor = '#198754';
+                                                    } else {
+                                                        textColor = '#800080';
+                                                    }
+                                                    
+                                                    const element = document.getElementById('formattedRoiPercentage');
+                                                    element.style.color = textColor;
+                                                    if (bgColor) {
+                                                        element.style.backgroundColor = bgColor;
+                                                    }
                                                 }
-                                            }
-                                        }
-                                    }, 100);
 
-                                    // Make modal draggable
-                                    const dialogEl = modalEl.querySelector('.modal-dialog');
-                                    let isDragging = false;
-                                    let currentX;
-                                    let currentY;
-                                    let initialX;
-                                    let initialY;
-                                    let xOffset = 0;
-                                    let yOffset = 0;
 
-                                    dialogEl.addEventListener('mousedown', dragStart);
-                                    document.addEventListener('mousemove', drag);
-                                    document.addEventListener('mouseup', dragEnd);
 
-                                    function dragStart(e) {
-                                        if (e.target.closest('.modal-header')) {
-                                            isDragging = true;
-                                            initialX = e.clientX - xOffset;
-                                            initialY = e.clientY - yOffset;
-                                        }
-                                    }
+                                                document.getElementById('ovl30Content').innerHTML = buildOVL30Table(data);
 
-                                    function drag(e) {
-                                        if (isDragging) {
-                                            e.preventDefault();
-                                            currentX = e.clientX - initialX;
-                                            currentY = e.clientY - initialY;
-                                            xOffset = currentX;
-                                            yOffset = currentY;
-                                            dialogEl.style.transform = `
+                                                const modalEl = document.getElementById('ovl30Modal');
+                                                const modal = new bootstrap.Modal(modalEl);
+
+                                                // Automatically sort by L30 (highest to lowest) when modal opens
+                                                setTimeout(() => {
+                                                    const table = modalEl.querySelector('.sortable-table');
+                                                    const l30Header = Array.from(table.querySelectorAll('th')).find(th => th.textContent.includes('L30'));
+                                                    if (l30Header) {
+                                                        // Trigger two clicks if needed to get descending order (highest to lowest)
+                                                        if (!l30Header.classList.contains('sort-desc')) {
+                                                            l30Header.click();
+                                                            if (!l30Header.classList.contains('sort-desc')) {
+                                                                l30Header.click();
+                                                            }
+                                                        }
+                                                    }
+                                                }, 100);
+
+                                                // Make modal draggable
+                                                const dialogEl = modalEl.querySelector('.modal-dialog');
+                                                let isDragging = false;
+                                                let currentX;
+                                                let currentY;
+                                                let initialX;
+                                                let initialY;
+                                                let xOffset = 0;
+                                                let yOffset = 0;
+
+                                                dialogEl.addEventListener('mousedown', dragStart);
+                                                document.addEventListener('mousemove', drag);
+                                                document.addEventListener('mouseup', dragEnd);
+
+                                                function dragStart(e) {
+                                                    if (e.target.closest('.modal-header')) {
+                                                        isDragging = true;
+                                                        initialX = e.clientX - xOffset;
+                                                        initialY = e.clientY - yOffset;
+                                                    }
+                                                }
+
+                                                function drag(e) {
+                                                    if (isDragging) {
+                                                        e.preventDefault();
+                                                        currentX = e.clientX - initialX;
+                                                        currentY = e.clientY - initialY;
+                                                        xOffset = currentX;
+                                                        yOffset = currentY;
+                                                        dialogEl.style.transform = `
     translate($ {
             currentX
         }
@@ -2607,232 +2588,232 @@
             currentY
         }
         px)`;
-                                        }
-                                    }
-
-                                    function dragEnd() {
-                                        isDragging = false;
-                                    }
-
-                                    // Reset position when modal is hidden
-                                    modalEl.addEventListener('hidden.bs.modal', function() {
-                                        dialogEl.style.transform = 'none';
-                                        xOffset = 0;
-                                        yOffset = 0;
-                                    });
-
-                                    // Initialize table sorting
-                                    initTableSorting(modalEl.querySelector('.sortable-table'));
-                                    modal.show();
-                                }
-
-                                
-
-                                // Table sorting functionality
-                                function initTableSorting(table) {
-                                    const headers = table.querySelectorAll('th[data-sort]');
-                                    headers.forEach(header => {
-                                        header.style.cursor = 'pointer';
-                                        header.addEventListener('click', () => {
-                                            const sortType = header.getAttribute('data-sort');
-                                            const columnIndex = Array.from(header.parentElement.children).indexOf(header);
-                                            const rows = Array.from(table.querySelector('tbody').rows);
-                                            const isAscending = header.classList.contains('sort-asc');
-
-                                            // Remove sorting classes from all headers
-                                            headers.forEach(h => {
-                                                h.classList.remove('sort-asc', 'sort-desc');
-                                                h.querySelector('.bi').className = 'bi bi-arrow-down-up';
-                                            });
-
-                                            // Sort the rows
-                                            rows.sort((a, b) => {
-                                                let aVal = a.cells[columnIndex].textContent.trim();
-                                                let bVal = b.cells[columnIndex].textContent.trim();
-
-                                                if (sortType === 'number') {
-                                                    // Extract numbers from strings and convert to float
-                                                    aVal = parseFloat(aVal.replace(/[^0-9.-]+/g, '')) || 0;
-                                                    bVal = parseFloat(bVal.replace(/[^0-9.-]+/g, '')) || 0;
+                                                    }
                                                 }
 
-                                                if (aVal === bVal) return 0;
-                                                if (isAscending) {
-                                                    return sortType === 'string' ? 
-                                                        bVal.localeCompare(aVal) : 
-                                                        bVal - aVal;
-                                                } else {
-                                                    return sortType === 'string' ? 
-                                                        aVal.localeCompare(bVal) : 
-                                                        aVal - bVal;
+                                                function dragEnd() {
+                                                    isDragging = false;
                                                 }
-                                            });
 
-                                            // Update sorting indicators
-                                            header.classList.add(isAscending ? 'sort-desc' : 'sort-asc');
-                                            header.querySelector('.bi').className = `
+                                                // Reset position when modal is hidden
+                                                modalEl.addEventListener('hidden.bs.modal', function() {
+                                                    dialogEl.style.transform = 'none';
+                                                    xOffset = 0;
+                                                    yOffset = 0;
+                                                });
+
+                                                // Initialize table sorting
+                                                initTableSorting(modalEl.querySelector('.sortable-table'));
+                                                modal.show();
+                                            }
+
+                                            
+
+                                            // Table sorting functionality
+                                            function initTableSorting(table) {
+                                                const headers = table.querySelectorAll('th[data-sort]');
+                                                headers.forEach(header => {
+                                                    header.style.cursor = 'pointer';
+                                                    header.addEventListener('click', () => {
+                                                        const sortType = header.getAttribute('data-sort');
+                                                        const columnIndex = Array.from(header.parentElement.children).indexOf(header);
+                                                        const rows = Array.from(table.querySelector('tbody').rows);
+                                                        const isAscending = header.classList.contains('sort-asc');
+
+                                                        // Remove sorting classes from all headers
+                                                        headers.forEach(h => {
+                                                            h.classList.remove('sort-asc', 'sort-desc');
+                                                            h.querySelector('.bi').className = 'bi bi-arrow-down-up';
+                                                        });
+
+                                                        // Sort the rows
+                                                        rows.sort((a, b) => {
+                                                            let aVal = a.cells[columnIndex].textContent.trim();
+                                                            let bVal = b.cells[columnIndex].textContent.trim();
+
+                                                            if (sortType === 'number') {
+                                                                // Extract numbers from strings and convert to float
+                                                                aVal = parseFloat(aVal.replace(/[^0-9.-]+/g, '')) || 0;
+                                                                bVal = parseFloat(bVal.replace(/[^0-9.-]+/g, '')) || 0;
+                                                            }
+
+                                                            if (aVal === bVal) return 0;
+                                                            if (isAscending) {
+                                                                return sortType === 'string' ? 
+                                                                    bVal.localeCompare(aVal) : 
+                                                                    bVal - aVal;
+                                                            } else {
+                                                                return sortType === 'string' ? 
+                                                                    aVal.localeCompare(bVal) : 
+                                                                    aVal - bVal;
+                                                            }
+                                                        });
+
+                                                        // Update sorting indicators
+                                                        header.classList.add(isAscending ? 'sort-desc' : 'sort-asc');
+                                                        header.querySelector('.bi').className = `
     bi bi - arrow - $ {
         isAscending ? 'down' : 'up'
     }
     `;
 
-                                            // Reorder the rows in the table
-                                            const tbody = table.querySelector('tbody');
-                                            rows.forEach(row => tbody.appendChild(row));
-                                        });
-                                    });
-                                }
+                                                        // Reorder the rows in the table
+                                                        const tbody = table.querySelector('tbody');
+                                                        rows.forEach(row => tbody.appendChild(row));
+                                                    });
+                                                });
+                                            }
 
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    document.documentElement.setAttribute("data-sidenav-size", "condensed");
-                                    const table = Tabulator.findTable("#forecast-table")[0];
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                document.documentElement.setAttribute("data-sidenav-size", "condensed");
+                                                const table = Tabulator.findTable("#forecast-table")[0];
 
-                                    const parentKeys = () => Object.keys(groupedSkuData);
-                                    let currentIndex = 0;
-                                    let isPlaying = false;
+                                                const parentKeys = () => Object.keys(groupedSkuData);
+                                                let currentIndex = 0;
+                                                let isPlaying = false;
 
-                                    function renderGroup(parentKey) {
-                                        if (!groupedSkuData[parentKey]) return;
+                                                function renderGroup(parentKey) {
+                                                    if (!groupedSkuData[parentKey]) return;
 
-                                        currentParentFilter = parentKey;
-                                        setCombinedFilters();
+                                                    currentParentFilter = parentKey;
+                                                    setCombinedFilters();
 
-                                        // Filter table by Parent
-                                        // table.setFilter("Parent", "=", parentKey);
-                                        table.setFilter("INV", ">", 0); // Always show INV > 0
-                                        console.log("Showing group:", parentKey);
-                                    }
+                                                    // Filter table by Parent
+                                                    // table.setFilter("Parent", "=", parentKey);
+                                                    table.setFilter("INV", ">", 0); // Always show INV > 0
+                                                    console.log("Showing group:", parentKey);
+                                                }
 
-                                    // ▶️ Play (activate filter mode, start at first group)
-                                    document.getElementById('play-auto').addEventListener('click', () => {
-                                        isPlaying = true;
-                                        currentIndex = 0;
-                                        renderGroup(parentKeys()[currentIndex]);
+                                                // ▶️ Play (activate filter mode, start at first group)
+                                                document.getElementById('play-auto').addEventListener('click', () => {
+                                                    isPlaying = true;
+                                                    currentIndex = 0;
+                                                    renderGroup(parentKeys()[currentIndex]);
 
-                                        document.getElementById('play-pause').style.display = 'inline-block';
-                                        document.getElementById('play-auto').style.display = 'none';
-                                    });
+                                                    document.getElementById('play-pause').style.display = 'inline-block';
+                                                    document.getElementById('play-auto').style.display = 'none';
+                                                });
 
-                                    // ⏸ Pause (show all data again)
-                                    document.getElementById('play-pause').addEventListener('click', () => {
-                                        isPlaying = false;
-                                        currentParentFilter = null; 
-                                        setCombinedFilters();
-                                        table.clearFilter();
+                                                // ⏸ Pause (show all data again)
+                                                document.getElementById('play-pause').addEventListener('click', () => {
+                                                    isPlaying = false;
+                                                    currentParentFilter = null; 
+                                                    setCombinedFilters();
+                                                    table.clearFilter();
 
-                                        document.getElementById('play-pause').style.display = 'none';
-                                        document.getElementById('play-auto').style.display = 'inline-block';
-                                    });
+                                                    document.getElementById('play-pause').style.display = 'none';
+                                                    document.getElementById('play-auto').style.display = 'inline-block';
+                                                });
 
-                                    // ⏩ Forward (manual step)
-                                    document.getElementById('play-forward').addEventListener('click', () => {
-                                        if (!isPlaying) return;
-                                        currentIndex = (currentIndex + 1) % parentKeys().length;
-                                        renderGroup(parentKeys()[currentIndex]);
-                                    });
+                                                // ⏩ Forward (manual step)
+                                                document.getElementById('play-forward').addEventListener('click', () => {
+                                                    if (!isPlaying) return;
+                                                    currentIndex = (currentIndex + 1) % parentKeys().length;
+                                                    renderGroup(parentKeys()[currentIndex]);
+                                                });
 
-                                    // ⏪ Backward (manual step)
-                                    document.getElementById('play-backward').addEventListener('click', () => {
-                                        if (!isPlaying) return;
-                                        currentIndex = (currentIndex - 1 + parentKeys().length) % parentKeys().length;
-                                        renderGroup(parentKeys()[currentIndex]);
-                                    });
-                                });
+                                                // ⏪ Backward (manual step)
+                                                document.getElementById('play-backward').addEventListener('click', () => {
+                                                    if (!isPlaying) return;
+                                                    currentIndex = (currentIndex - 1 + parentKeys().length) % parentKeys().length;
+                                                    renderGroup(parentKeys()[currentIndex]);
+                                                });
+                                            });
 
-                                // Draggable Modal for Chart 
-                                document.addEventListener("DOMContentLoaded", function () {
-                                    const modal = document.querySelector("#priceComparisonModal .modal-dialog");
-                                    const header = document.querySelector("#priceComparisonModal .modal-header");
+                                            // Draggable Modal for Chart 
+                                            document.addEventListener("DOMContentLoaded", function () {
+                                                const modal = document.querySelector("#priceComparisonModal .modal-dialog");
+                                                const header = document.querySelector("#priceComparisonModal .modal-header");
 
-                                    let isDragging = false;
-                                    let offsetX, offsetY;
+                                                let isDragging = false;
+                                                let offsetX, offsetY;
 
-                                    header.style.cursor = "move";
+                                                header.style.cursor = "move";
 
-                                    header.addEventListener("mousedown", (e) => {
-                                        isDragging = true;
-                                        const rect = modal.getBoundingClientRect();
-                                        offsetX = e.clientX - rect.left;
-                                        offsetY = e.clientY - rect.top;
-                                        modal.style.position = "absolute";
-                                        modal.style.margin = "0";
-                                    });
+                                                header.addEventListener("mousedown", (e) => {
+                                                    isDragging = true;
+                                                    const rect = modal.getBoundingClientRect();
+                                                    offsetX = e.clientX - rect.left;
+                                                    offsetY = e.clientY - rect.top;
+                                                    modal.style.position = "absolute";
+                                                    modal.style.margin = "0";
+                                                });
 
-                                    document.addEventListener("mousemove", (e) => {
-                                        if (isDragging) {
-                                            modal.style.left = e.clientX - offsetX + "px";
-                                            modal.style.top = e.clientY - offsetY + "px";
-                                        }
-                                    });
-
-
-                                    document.addEventListener("mouseup", () => {
-                                        isDragging = false;
-                                    });
-
-                                    // Reset position when modal is closed
-                                    document.getElementById("priceComparisonModal").addEventListener("hidden.bs.modal", function () {
-                                        modal.style.position = "";
-                                        modal.style.left = "";
-                                        modal.style.top = "";
-                                        modal.style.margin = "";
-                                    });
-                                });
-
-
-                                // Push Price
-                                $(document).on('blur', '.s-price', function() {
-                                    const $input = $(this);
-                                    const sprice = parseFloat($input.val()) || 0;
-                                    const sku = $input.data('sku');
-                                    const type = $input.data('type');
-                                    const LP = parseFloat($input.data('lp')) || 0;
-                                    const SHIP = parseFloat($input.data('ship')) || 0;
-                                    const temu_ship = parseFloat($input.data('temu_ship')) || 0;
-
-                                    if (!sku || !type) return;
-
-                                    console.log(sku, sprice);
-                                    
-                                    $.ajax({
-                                        url: '/pricing-master/save-sprice',
-                                        type: 'POST',
-                                        data: {
-                                            _token: $('meta[name="csrf-token"]').attr('content'),
-                                            sku: sku,
-                                            type: type,
-                                            sprice: sprice,
-                                            LP: LP,
-                                            SHIP: SHIP,
-                                            temu_ship: temu_ship
-                                        },
-                                         beforeSend: function() {
-                                                $('#savePricingBtn').html(
-                                                    '<i class="fa fa-spinner fa-spin"></i> Saving...');
-                                            },
-                                        success: function(res) {
-                                            if(res.status === 200) {
-                                                const $row = $input.closest('tr');
-                                                const spft = Math.round(res.data.SPFT);
-                                                const sroi = Math.round(res.data.SROI);
-
-                                                function getColoredSpan(value) {
-                                                    let textColor, bgColor;
-
-                                                    if (value < 11) {
-                                                        textColor = '#ff0000';
-                                                    } else if (value >= 10 && value < 15) {
-                                                        bgColor = 'yellow';
-                                                        textColor = '#000000';
-                                                    } else if (value >= 15 && value < 20) {
-                                                        textColor = '#0d6efd';
-                                                    } else if (value >= 21 && value < 50) {
-                                                        textColor = '#198754';
-                                                    } else {
-                                                        textColor = '#800080';
+                                                document.addEventListener("mousemove", (e) => {
+                                                    if (isDragging) {
+                                                        modal.style.left = e.clientX - offsetX + "px";
+                                                        modal.style.top = e.clientY - offsetY + "px";
                                                     }
+                                                });
 
-                                                    return ` < span style =
+
+                                                document.addEventListener("mouseup", () => {
+                                                    isDragging = false;
+                                                });
+
+                                                // Reset position when modal is closed
+                                                document.getElementById("priceComparisonModal").addEventListener("hidden.bs.modal", function () {
+                                                    modal.style.position = "";
+                                                    modal.style.left = "";
+                                                    modal.style.top = "";
+                                                    modal.style.margin = "";
+                                                });
+                                            });
+
+
+                                            // Push Price
+                                            $(document).on('blur', '.s-price', function() {
+                                                const $input = $(this);
+                                                const sprice = parseFloat($input.val()) || 0;
+                                                const sku = $input.data('sku');
+                                                const type = $input.data('type');
+                                                const LP = parseFloat($input.data('lp')) || 0;
+                                                const SHIP = parseFloat($input.data('ship')) || 0;
+                                                const temu_ship = parseFloat($input.data('temu_ship')) || 0;
+
+                                                if (!sku || !type) return;
+
+                                                console.log(sku, sprice);
+                                                
+                                                $.ajax({
+                                                    url: '/pricing-master/save-sprice',
+                                                    type: 'POST',
+                                                    data: {
+                                                        _token: $('meta[name="csrf-token"]').attr('content'),
+                                                        sku: sku,
+                                                        type: type,
+                                                        sprice: sprice,
+                                                        LP: LP,
+                                                        SHIP: SHIP,
+                                                        temu_ship: temu_ship
+                                                    },
+                                                     beforeSend: function() {
+                                                            $('#savePricingBtn').html(
+                                                                '<i class="fa fa-spinner fa-spin"></i> Saving...');
+                                                        },
+                                                    success: function(res) {
+                                                        if(res.status === 200) {
+                                                            const $row = $input.closest('tr');
+                                                            const spft = Math.round(res.data.SPFT);
+                                                            const sroi = Math.round(res.data.SROI);
+
+                                                            function getColoredSpan(value) {
+                                                                let textColor, bgColor;
+
+                                                                if (value < 11) {
+                                                                    textColor = '#ff0000';
+                                                                } else if (value >= 10 && value < 15) {
+                                                                    bgColor = 'yellow';
+                                                                    textColor = '#000000';
+                                                                } else if (value >= 15 && value < 20) {
+                                                                    textColor = '#0d6efd';
+                                                                } else if (value >= 21 && value < 50) {
+                                                                    textColor = '#198754';
+                                                                } else {
+                                                                    textColor = '#800080';
+                                                                }
+
+                                                                return ` < span style =
         "color:${textColor};${bgColor ? `background-color:${bgColor};` : ''}" > $ {
             value
         } % < /span>`;
