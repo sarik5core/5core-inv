@@ -610,7 +610,7 @@ class ChannelMasterController extends Controller
         // Fetch both channel and sheet_link from ChannelMaster
         $channels = ChannelMaster::where('status', 'Active')
             ->orderBy('id', 'asc')
-            ->get(['channel', 'sheet_link']);
+            ->get(['channel', 'sheet_link', 'channel_percentage']);
 
         if ($channels->isEmpty()) {
             return response()->json(['status' => 404, 'message' => 'No active channel found']);
@@ -660,6 +660,7 @@ class ChannelMasterController extends Controller
                 'type'           => '',
                 'listed_count'   => 0,
                 'W/Ads'          => 0,
+                'channel_percentage' => $channelRow->channel_percentage ?? '',
                 // '0 Sold SKU Count' => 0,
                 // 'Sold SKU Count'   => 0,
                 // 'Brand Registry'   => '',
@@ -2163,6 +2164,7 @@ class ChannelMasterController extends Controller
             'channel' => 'required|string',
             'sheet_link' => 'nullable|url',
             'type' => 'nullable|string',
+            'channel_percentage' => 'nullable|numeric',
             // 'status' => 'required|in:Active,In Active,To Onboard,In Progress',
             // 'executive' => 'nullable|string',
             // 'b_link' => 'nullable|string',
@@ -2197,6 +2199,7 @@ class ChannelMasterController extends Controller
         $updatedChannel = $request->input('channel');
         $sheetUrl = $request->input('sheet_url');
         $type = $request->input('type');
+        $channelPercentage = $request->input('channel_percentage');
 
         $channel = ChannelMaster::where('channel', $originalChannel)->first();
 
@@ -2207,6 +2210,7 @@ class ChannelMasterController extends Controller
         $channel->channel = $updatedChannel;
         $channel->sheet_link = $sheetUrl;
         $channel->type = $type;
+        $channel->channel_percentage = $channelPercentage;
         $channel->save();
 
         return response()->json(['success' => true]);
@@ -2356,6 +2360,33 @@ class ChannelMasterController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Type updated successfully.'
+        ]);
+    }
+
+    public function updatePercentage(Request $request)
+    {
+        $request->validate([
+            'channel' => 'required|string',
+            'channel_percentage' => 'nullable|numeric'
+        ]);
+
+        $channelName = trim($request->input('channel'));
+        $channelPercentage = $request->input('channel_percentage');
+
+        $channel = ChannelMaster::where('channel', $channelName)->first();
+
+        if (!$channel) {
+            // If not found, create new
+            $channel = new ChannelMaster();
+            $channel->channel = $channelName;
+        }
+
+        $channel->channel_percentage = $channelPercentage;
+        $channel->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Channel percentage updated successfully.'
         ]);
     }
 

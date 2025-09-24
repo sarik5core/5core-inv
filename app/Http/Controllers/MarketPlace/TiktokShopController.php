@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MarketPlace;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
+use App\Models\ChannelMaster;
 use App\Models\MarketplacePercentage;
 use App\Models\TiktokShopDataView;
 use Illuminate\Support\Facades\Cache;
@@ -29,10 +30,15 @@ class TiktokShopController extends Controller
         $demo = $request->query('demo');
 
         // Get percentage from cache or database
-        $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
-        });
+        // $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
+        //     $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
+        //     return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+        // });
+
+        $marketplaceData = ChannelMaster::where('channel', 'Tiktok Shop')->first();
+
+        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
         return view('market-places.tiktok_analysis', [
             'mode' => $mode,

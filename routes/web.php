@@ -1080,6 +1080,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/channel-master/update-sheet-link', [ChannelMasterController::class, 'updateSheetLink']);
     Route::post('/channels-master/toggle-flag', [ChannelMasterController::class, 'toggleCheckboxFlag']);
     Route::post('/update-channel-type', [ChannelMasterController::class, 'updateType']);
+    Route::post('/update-channel-percentage', [ChannelMasterController::class, 'updatePercentage']);
 
 
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Marketplace;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
+use App\Models\ChannelMaster;
 use App\Models\MarketplacePercentage;
 use App\Models\WalmartDataView;
 use Illuminate\Support\Facades\Cache;
@@ -31,10 +32,15 @@ class WalmartControllerMarket extends Controller
         $demo = $request->query('demo');
 
         // Get percentage from cache or database
-        $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100;
-        });
+        // $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
+        //     $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
+        //     return $marketplaceData ? $marketplaceData->percentage : 100;
+        // });
+
+        $marketplaceData = ChannelMaster::where('channel', 'Walmart')->first();
+
+        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
         return view('market-places.walmartAnalysis', [
             'mode' => $mode,

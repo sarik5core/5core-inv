@@ -21,6 +21,7 @@ class ChannelMaster extends Model
         's_link',
         'user_id',
         'action_req',
+        'channel_percentage'
     ];
 
     /**
