@@ -44,6 +44,7 @@ class SyncTemuSheetData extends Command
                     'l30'       => $this->toIntOrNull($row->{'TL30'} ?? null),
                     'l60'       => $this->toIntOrNull($row->{'T L60'} ?? null),
                     'dil'       => $this->toDecimalOrNull($row->{'Dil%'} ?? null),
+                    'clicks'    => $this->toIntOrNull($row->{'Clicks'} ?? null)
                    
                 ]
             );
@@ -59,6 +60,8 @@ class SyncTemuSheetData extends Command
 
     private function toIntOrNull($value)
     {
+        if ($value === null || $value === '') return null;
+        $value = str_replace(',', '', $value);
         return is_numeric($value) ? (int)$value : null;
     }
 }
