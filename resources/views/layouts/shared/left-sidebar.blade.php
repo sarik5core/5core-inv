@@ -1914,7 +1914,10 @@
                                         <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('google.shopping') }}">Google Shopping</a>
+                                        <a href="{{ route('google.shopping.over.utilize') }}">G-Shopping Over Util.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('google.shopping.under.utilize') }}">G-Shopping Under Util.</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('google.shopping.serp') }}">Google SERP</a>

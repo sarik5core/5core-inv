@@ -10,6 +10,7 @@ class TransitContainerDetail extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'tab_name',
         'supplier_name',
         'company_name',

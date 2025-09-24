@@ -99,511 +99,6 @@ class ChannelMasterController extends Controller
         ]);
     }
 
-    // public function getViewChannelData(Request $request)
-    // {
-    //     // Fetch data from the Google Sheet using the ApiController method
-    //     $response = $this->apiController->fetchDataFromChannelMasterGoogleSheet();
-
-    //     // Check if the response is successful
-    //     if ($response->getStatusCode() === 200) {
-    //         $data = $response->getData(); // Get the JSON data from the response
-    //         $searchTerm = strtolower(trim($request->input('searchTerm')));
-
-    //         $dbChannelLinks = ChannelMaster::pluck('sheet_link', 'channel')->mapWithKeys(function ($link, $name) {
-    //             return [strtolower(trim($name)) => $link];
-    //         });
-            
-    //         // Filter out rows where both Parent and (Child) sku are empty
-    //         $filteredData = array_filter($data->data, function($item) {
-    //             $channel = $item->{'Channel '} ?? '';
-                
-    //             // Keep the row if either channel is not empty
-    //             return !(empty(trim($channel)));
-    //         });
-
-    //         if (!empty($searchTerm)) {
-    //             $filteredData = array_filter($filteredData, function ($item) use ($searchTerm) {
-    //                 $channelName = strtolower(trim($item->{'Channel '} ?? ''));
-    //                 return stripos($channelName, $searchTerm) !== false;
-    //             });
-    //         }
-    
-    //         // Re-index the array after filtering
-    //         $filteredData = array_values($filteredData);
-
-    //         foreach ($filteredData as &$item) {
-    //             $channelName = strtolower(trim($item->{'Channel '} ?? ''));
-    //             $item->sheet_link = $dbChannelLinks[$channelName] ?? null;
-    //         }
-
-    //         $sortBy = $request->get('sort_by');       // e.g., "Channel ", "Exec"
-    //         $sortOrder = $request->get('sort_order'); // "asc" or "desc"
-
-    //         if ($sortBy && in_array($sortOrder, ['asc', 'desc'])) {
-    //             usort($filteredData, function ($a, $b) use ($sortBy, $sortOrder) {
-    //                 $valA = strtolower(trim($a->{$sortBy} ?? ''));
-    //                 $valB = strtolower(trim($b->{$sortBy} ?? ''));
-
-    //                 if (is_numeric($valA) && is_numeric($valB)) {
-    //                     $valA = (float) $valA;
-    //                     $valB = (float) $valB;
-    //                 }
-
-    //                 return $sortOrder === 'asc' ? $valA <=> $valB : $valB <=> $valA;
-    //             });
-    //         }
-    
-    //         // Return the filtered data
-    //         return response()->json([
-    //             'message' => 'Data fetched successfully',
-    //             'data' => $filteredData,
-    //             'status' => 200
-    //         ]);
-    //     } else {
-    //         // Handle the error if the request failed
-    //         return response()->json([
-    //             'message' => 'Failed to fetch data from Google Sheet',
-    //             'status' => $response->getStatusCode()
-    //         ], $response->getStatusCode());
-    //     }
-    // }
-
-    // public function getViewChannelData(Request $request)        //merged with db+sheet
-    // {
-    //     // Fetch data from the Google Sheet using the ApiController method
-    //     $response = $this->apiController->fetchDataFromChannelMasterGoogleSheet();
-
-    //     // Fetch all entries from the database
-    //     $dbData = ChannelMaster::select('channel as Channel', 'sheet_link')->get();
-
-    //     // Format DB data to match the sheet structure
-    //     $formattedDbData = $dbData->map(function ($item) {
-    //         return (object)[
-    //             'Channel ' => $item->Channel,
-    //             'sheet_link' => $item->sheet_link,
-    //             'source' => 'database'
-    //         ];
-    //     })->toArray();
-
-    //     $mergedData = [];
-
-    //     if ($response->getStatusCode() === 200) {
-    //         $sheetData = $response->getData(); // Get the JSON data from the response
-    //         $searchTerm = strtolower(trim($request->input('searchTerm')));
-
-    //         $sheetRows = array_filter($sheetData->data, function ($item) {
-    //             $channel = $item->{'Channel '} ?? '';
-    //             return !empty(trim($channel));
-    //         });
-
-    //         // Normalize DB sheet links to override sheet values
-    //         $dbChannelLinks = ChannelMaster::pluck('sheet_link', 'channel')->mapWithKeys(function ($link, $name) {
-    //             return [strtolower(trim($name)) => $link];
-    //         });
-
-    //         // Update sheet rows with DB sheet_link if available
-    //         foreach ($sheetRows as &$item) {
-    //             $channelName = strtolower(trim($item->{'Channel '} ?? ''));
-    //             $item->sheet_link = $dbChannelLinks[$channelName] ?? null;
-    //             $item->source = 'sheet';
-    //         }
-
-    //         // Convert sheet data to array
-    //         $sheetRows = array_values($sheetRows);
-
-    //         // Now merge DB rows not present in sheet
-    //         $sheetChannelNames = collect($sheetRows)->pluck('Channel ')->map(function ($c) {
-    //             return strtolower(trim($c));
-    //         })->toArray();
-
-    //         $dbOnlyRows = array_filter($formattedDbData, function ($row) use ($sheetChannelNames) {
-    //             return !in_array(strtolower(trim($row->{'Channel '})), $sheetChannelNames);
-    //         });
-
-    //         // Merge sheet + db-only rows
-    //         $mergedData = array_merge($sheetRows, $dbOnlyRows);
-
-    //         // Search filter
-    //         if (!empty($searchTerm)) {
-    //             $mergedData = array_filter($mergedData, function ($item) use ($searchTerm) {
-    //                 $channelName = strtolower(trim($item->{'Channel '} ?? ''));
-    //                 return stripos($channelName, $searchTerm) !== false;
-    //             });
-    //         }
-
-    //         // Sorting
-    //         $sortBy = $request->get('sort_by');       // e.g., "Channel ", "Exec"
-    //         $sortOrder = $request->get('sort_order'); // "asc" or "desc"
-
-    //         if ($sortBy && in_array($sortOrder, ['asc', 'desc'])) {
-    //             usort($mergedData, function ($a, $b) use ($sortBy, $sortOrder) {
-    //                 $valA = strtolower(trim($a->{$sortBy} ?? ''));
-    //                 $valB = strtolower(trim($b->{$sortBy} ?? ''));
-
-    //                 if (is_numeric($valA) && is_numeric($valB)) {
-    //                     $valA = (float) $valA;
-    //                     $valB = (float) $valB;
-    //                 }
-
-    //                 return $sortOrder === 'asc' ? $valA <=> $valB : $valB <=> $valA;
-    //             });
-    //         }
-
-    //         return response()->json([
-    //             'message' => 'Data fetched from both Sheet and DB',
-    //             'data' => array_values($mergedData),
-    //             'status' => 200
-    //         ]);
-    //     }
-
-    //     // If Google Sheet failed, return only DB data
-    //     return response()->json([
-    //         'message' => 'Google Sheet failed, showing DB data only',
-    //         'data' => $formattedDbData,
-    //         'status' => 200
-    //     ]);
-    // }
-
-    // public function getViewChannelData(Request $request)
-    // {
-
-    //     // Fetch data from the Google Sheet using the ApiController method
-    //     $response = $this->apiController->fetchDataFromChannelMasterGoogleSheet();
-
-    //     // Fetch all entries from the database
-    //     $dbData = ChannelMaster::select('channel as Channel', 'sheet_link', 'nr', 'w_ads', 'update', 'type')->get();
-
-    //     // Format DB data to match the sheet structure
-    //     $formattedDbData = $dbData->map(function ($item) {
-    //         return (object)[
-    //             'Channel ' => $item->Channel,
-    //             'sheet_link' => $item->sheet_link,
-    //             'type' => $item->type,
-    //             'source' => 'database',
-    //             'nr' => $item->nr,              // [NEW]
-    //             'w_ads' => $item->w_ads,        // [NEW]
-    //             'update' => $item->update, // [NEW]
-    //             // 'red_margin' => $item->red_margin // [NEW]
-    //         ];
-    //     })->toArray();
-
-    //     $mergedData = [];
-
-    //     if ($response->getStatusCode() === 200) {
-    //         $sheetData = $response->getData(); // Get the JSON data from the response
-    //         $searchTerm = strtolower(trim($request->input('searchTerm')));
-
-    //         $sheetRows = array_filter($sheetData->data, function ($item) {
-    //             $channel = $item->{'Channel '} ?? '';
-    //             return !empty(trim($channel));
-    //         });
-
-    //         // Normalize DB sheet links + checkboxes to override sheet values
-    //         $dbChannelMap = $dbData->keyBy(function ($item) {
-    //             return strtolower(trim($item->Channel));
-    //         });
-
-    //         // Update sheet rows with DB fields if available
-    //         foreach ($sheetRows as &$item) {
-    //             $channelName = strtolower(trim($item->{'Channel '} ?? ''));
-    //             $dbRow = $dbChannelMap[$channelName] ?? null;
-
-    //             $item->sheet_link = $dbRow->sheet_link ?? null;
-    //             $item->source = 'sheet';
-                
-    //             // [NEW] Inject DB checkbox states if available
-    //             $item->nr = $dbRow->nr ?? 0;
-    //             $item->w_ads = $dbRow->w_ads ?? 0;
-    //             $item->update = $dbRow->update ?? 0;
-    //             $item->type = $dbRow->type ?? null;
-    //             // $item->red_margin = $dbRow->red_margin ?? 0;
-
-    //             $item->listed_count = $this->getListedCount($channelName);
-    //         }
-
-    //         // Convert sheet data to array
-    //         $sheetRows = array_values($sheetRows);
-
-    //         // Merge DB rows not present in sheet
-    //         $sheetChannelNames = collect($sheetRows)->pluck('Channel ')->map(function ($c) {
-    //             return strtolower(trim($c));
-    //         })->toArray();
-
-    //         $dbOnlyRows = array_filter($formattedDbData, function ($row) use ($sheetChannelNames) {
-    //             return !in_array(strtolower(trim($row->{'Channel '})), $sheetChannelNames);
-    //         });
-
-    //         // Merge sheet + db-only rows
-    //         $mergedData = array_merge($sheetRows, $dbOnlyRows);
-
-    //         // Search filter
-    //         if (!empty($searchTerm)) {
-    //             $mergedData = array_filter($mergedData, function ($item) use ($searchTerm) {
-    //                 $channelName = strtolower(trim($item->{'Channel '} ?? ''));
-    //                 return stripos($channelName, $searchTerm) !== false;
-    //             });
-    //         }
-
-    //         // Sorting
-    //         $sortBy = $request->get('sort_by');       // e.g., "Channel ", "Exec"
-    //         $sortOrder = $request->get('sort_order'); // "asc" or "desc"
-
-    //         if ($sortBy && in_array($sortOrder, ['asc', 'desc'])) {
-    //             usort($mergedData, function ($a, $b) use ($sortBy, $sortOrder) {
-    //                 $valA = strtolower(trim($a->{$sortBy} ?? ''));
-    //                 $valB = strtolower(trim($b->{$sortBy} ?? ''));
-
-    //                 if (is_numeric($valA) && is_numeric($valB)) {
-    //                     $valA = (float) $valA;
-    //                     $valB = (float) $valB;
-    //                 }
-
-    //                 return $sortOrder === 'asc' ? $valA <=> $valB : $valB <=> $valA;
-    //             });
-    //         }
-
-    //         return response()->json([
-    //             'message' => 'Data fetched from both Sheet and DB',
-    //             'data' => array_values($mergedData),
-    //             'status' => 200
-    //         ]);
-    //     }
-
-    //     // If Google Sheet failed, return only DB data
-    //     return response()->json([
-    //         'message' => 'Google Sheet failed, showing DB data only',
-    //         'data' => $formattedDbData,
-    //         'status' => 200
-    //     ]);
-    // }
-
-    // public function getViewChannelData(Request $request)
-    // {
-    //     $channel = ChannelMaster::where('status', 'Active')
-    //             ->orderBy('id', 'asc')
-    //             ->value('channel');
-
-    //     if (!$channel) {
-    //         return response()->json(['status' => 404, 'message' => 'No active channel found']);
-    //     }
-
-    //     $key = strtolower(str_replace([' ', '-', '&', '/'], '', trim($channel)));
-
-    //     // Map key -> controller class
-    //     $controllerMap = [
-    //         'amazon'    => OverallAmazonController::class,
-          
-    //         // add more as needed
-    //     ];
-
-    //     if (!isset($controllerMap[$key])) {
-    //         return response()->json(['status' => 404, 'message' => 'Channel not supported']);
-    //     }
-
-    //     $controllerClass = $controllerMap[$key];
-
-    //     if (!class_exists($controllerClass)) {
-    //         return response()->json(['status' => 404, 'message' => 'Controller not found']);
-    //     }
-
-    //     $controller = app($controllerClass);
-
-    //     // Convention: `get{Channel}ChannelData`
-    //     $method = 'get' . ucfirst($key) . 'ChannelData';
-    //     if (!method_exists($controller, $method)) {
-    //         return response()->json(['status' => 404, 'message' => "Method $method not found"]);
-    //     }
-
-    //     return $controller->{$method}($request);
-    // }
-
-
-    // public function getViewChannelData(Request $request)
-    // {
-    //     $channels = ChannelMaster::where('status', 'Active')
-    //         ->orderBy('id', 'asc')
-    //         ->pluck('channel')
-    //         ->toArray();
-
-    //     if (empty($channels)) {
-    //         return response()->json(['status' => 404, 'message' => 'No active channel found']);
-    //     }
-
-    //     // Map channel key -> controller class
-    //     $controllerMap = [
-    //         'amazon' => $this->getAmazonChannelData($request),
-    //         // 'ebay' => ListingEbayController::class,
-            
-    //         // add more here...
-    //     ];
-
-    //     $finalData = [];
-
-    //     foreach ($channels as $channel) {
-    //         $key = strtolower(str_replace([' ', '-', '&', '/'], '', trim($channel)));
-
-    //         if (!isset($controllerMap[$key])) {
-    //             continue; // skip unsupported channels
-    //         }
-
-    //         $controllerClass = $controllerMap[$key];
-    //         if (!class_exists($controllerClass)) {
-    //             continue;
-    //         }
-
-    //         $controller = app($controllerClass);
-
-    //         // convention: getAmazonChannelData, getEbayChannelData, etc.
-    //         $method = 'get' . ucfirst($key) . 'ChannelData';
-    //         if (!method_exists($controller, $method)) {
-    //             continue;
-    //         }
-
-    //         $response = $controller->{$method}($request);
-
-    //         $payload = $response->getData(true);
-
-    //         // if (!empty($payload['data'])) {
-    //         //     // 🔹 Add channel name inside each row
-    //         //     foreach ($payload['data'] as &$row) {
-    //         //         $row['channel'] = ucfirst($channel);
-    //         //     }
-    //         //     $finalData = array_merge($finalData, $payload['data']);
-    //         // }
-
-    //         if (!empty($payload['data'])) {
-    //             foreach ($payload['data'] as &$row) {
-    //                 // Only add channel if it's missing
-    //                 if (empty($row['channel'])) {
-    //                     $row['channel'] = ucfirst($channel);
-    //                 }
-    //             }
-    //             $finalData = array_merge($finalData, $payload['data']);
-    //         }
-
-    //     }
-
-    //     return response()->json([
-    //         'status' => 200,
-    //         'message' => 'Channel data fetched successfully',
-    //         'data' => $finalData,
-    //     ]);
-    // }
-
-
-    // public function getViewChannelData(Request $request)
-    // {
-    //     $channels = ChannelMaster::where('status', 'Active')
-    //         ->orderBy('id', 'asc')
-    //         ->pluck('channel')
-    //         ->toArray();
-
-    //     if (empty($channels)) {
-    //         return response()->json(['status' => 404, 'message' => 'No active channel found']);
-    //     }
-
-    //     $finalData = [];
-
-    //     foreach ($channels as $channel) {
-    //         $row = [
-    //             'Channel '     => ucfirst($channel),  // keep key name same as DataTable
-    //             'Link'         => null,
-    //             'sheet_link'   => null,
-    //             'L-60 Sales'   => 0,
-    //             'L30 Sales'    => 0,
-    //             'Growth'       => 0,
-    //             'L60 Orders'   => 0,
-    //             'L30 Orders'   => 0,
-    //             'Gprofit%'     => 'N/A',
-    //             'G Roi%'       => 'N/A',
-    //             'red_margin'   => 0,
-    //             'NR'           => 0,
-    //             'type'         => '',
-    //             'listed_count' => 0,
-    //             'W/Ads'        => 0,
-    //             '0 Sold SKU Count' => 0,
-    //             'Sold SKU Count'   => 0,
-    //             'Brand Registry'   => '',
-    //             'Update'       => 0,
-    //             'Account health' => null,
-    //         ];
-
-    //         // 🔹 Merge channel specific data (Amazon example)
-    //         $key = strtolower(str_replace([' ', '-', '&', '/'], '', trim($channel)));
-    //         if ($key === 'amazon') {
-    //             $amazonData = $this->getAmazonChannelData($request)->getData(true);
-    //             if (!empty($amazonData['data'])) {
-    //                 $row = array_merge($row, $amazonData['data'][0]); // merge amazon metrics
-    //             }
-    //         }
-
-    //         $finalData[] = $row;
-    //     }
-
-    //     return response()->json([
-    //         'status'  => 200,
-    //         'message' => 'Channel data fetched successfully',
-    //         'data'    => $finalData,
-    //     ]);
-    // }
-
-    // public function getViewChannelData(Request $request)
-    // {
-    //     // Fetch both channel and sheet_link from ChannelMaster
-    //     $channels = ChannelMaster::where('status', 'Active')
-    //         ->orderBy('id', 'asc')
-    //         ->get(['channel', 'sheet_link']);  // ⬅️ NEW CODE: include sheet_link
-
-    //     if ($channels->isEmpty()) {
-    //         return response()->json(['status' => 404, 'message' => 'No active channel found']);
-    //     }
-
-    //     $finalData = [];
-
-    //     foreach ($channels as $channelRow) {
-    //         $channel = $channelRow->channel;
-
-    //         $row = [
-    //             'Channel '     => ucfirst($channel),
-    //             'Link'         => null,
-    //             'sheet_link'   => $channelRow->sheet_link, // NEW CODE: pull from DB
-    //             'L-60 Sales'   => 0,
-    //             'L30 Sales'    => 0,
-    //             'Growth'       => 0,
-    //             'L60 Orders'   => 0,
-    //             'L30 Orders'   => 0,
-    //             'Gprofit%'     => 'N/A',
-    //             'G Roi%'       => 'N/A',
-    //             'red_margin'   => 0,
-    //             'NR'           => 0,
-    //             'type'         => '',
-    //             'listed_count' => 0,
-    //             'W/Ads'        => 0,
-    //             '0 Sold SKU Count' => 0,
-    //             'Sold SKU Count'   => 0,
-    //             'Brand Registry'   => '',
-    //             'Update'       => 0,
-    //             'Account health' => null,
-    //         ];
-
-    //         // Merge channel specific data (Amazon example)
-    //         $key = strtolower(str_replace([' ', '-', '&', '/'], '', trim($channel)));
-    //         if ($key === 'amazon') {
-    //             $amazonData = $this->getAmazonChannelData($request)->getData(true);
-    //             if (!empty($amazonData['data'])) {
-    //                 $row = array_merge($row, $amazonData['data'][0]);
-    //             }
-    //         }
-
-    //         $finalData[] = $row;
-    //     }
-
-    //     return response()->json([
-    //         'status'  => 200,
-    //         'message' => 'Channel data fetched successfully',
-    //         'data'    => $finalData,
-    //     ]);
-    // }
 
     public function getViewChannelData(Request $request)
     {
@@ -633,7 +128,6 @@ class ChannelMasterController extends Controller
             'walmart'   => 'getWalmartChannelData',
             'pls'       => 'getPlsChannelData',
             'wayfair'   => 'getWayfairChannelData',
-            // add all other 40 channels here like:
             // 'walmart' => 'getWalmartChannelData',
             // 'shopify' => 'getShopifyChannelData',
         ];
@@ -705,7 +199,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get Amazon marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Amazon')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Amazon')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -813,7 +307,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Ebay')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'eBay')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -922,7 +416,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'EbayTwo')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'EbayTwo')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1031,7 +525,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'EbayThree')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'EbayThree')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1139,7 +633,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Macys')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Macys')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1248,7 +742,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Reverb')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Reverb')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1356,7 +850,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Doba')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Doba')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1465,7 +959,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Temu')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Temu')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1574,7 +1068,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get Walmart marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Walmart')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Walmart')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1682,7 +1176,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Tiendamia')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Tiendamia')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1791,7 +1285,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'BestbuyUSA')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'BestBuy USA')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -1899,7 +1393,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Pls')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'PLS')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -2008,7 +1502,7 @@ class ChannelMasterController extends Controller
         $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
 
         // Get eBay marketing percentage
-        $percentage = MarketplacePercentage::where('marketplace', 'Wayfair')->value('percentage') ?? 100;
+        $percentage = ChannelMaster::where('channel', 'Wayfair')->value('channel_percentage') ?? 100;
         $percentage = $percentage / 100; // convert % to fraction
 
         // Load product masters (lp, ship) keyed by SKU
@@ -2100,58 +1594,6 @@ class ChannelMasterController extends Controller
             'data' => $result,
         ]);
     }
-
-
-
-
-
-
-    // public function getEbayChannelData(Request $request)
-    // {
-    //     $result = [];
-
-    //     // $l30Sales = AmazonDatasheet::where('sku', 'not like', '%Parent%')->sum('units_ordered_l30');
-    //     // $l60Sales = AmazonDatasheet::where('sku', 'not like', '%Parent%')->sum('units_ordered_l60');
-
-    //     $query = EbayMetric::where('sku', 'not like', '%Parent%');
-
-    //     $l30Orders = $query->sum('ebay_l30');
-    //     $l60Orders = $query->sum('ebay_l60');
-
-    //     $l30Sales  = (clone $query)->selectRaw('SUM(ebay_l30 * ebay_price) as total')->value('total') ?? 0;
-    //     $l60Sales  = (clone $query)->selectRaw('SUM(ebay_l60 * ebay_price) as total')->value('total') ?? 0;
-
-
-    //     // $growth = $l30Orders > 0 ? (($l30Orders - $l60Orders) / $l30Orders) * 100 : 0;
-    //     $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
-
-    //     $channelData = ChannelMaster::where('channel', 'eBay')->first();
-
-    //     $result[] = [
-    //         'Channel '   => 'eBay',
-    //         'L-60 Sales' => intval($l60Sales),
-    //         'L30 Sales'  => intval($l30Sales),
-    //         'Growth'     => round($growth, 2) . '%',
-    //         'L60 Orders' => $l60Orders,
-    //         'L30 Orders' => $l30Orders,
-    //         'Gprofit%'   => 'N/A',
-    //         'G Roi%'     => 'N/A',
-    //         'type'       => $channelData->type ?? '',
-    //         'W/Ads'      => $channelData->w_ads ?? 0,
-    //         'NR'         => $channelData->nr ?? 0,
-    //         'Update'     => $channelData->update ?? 0,
-    //     ];
-
-    //     return response()->json([
-    //         'status' => 200,
-    //         'message' => 'eBay channel data fetched successfully',
-    //         'data' => $result,
-    //     ]);
-    // }
-
-
-
-    
 
 
     /**
