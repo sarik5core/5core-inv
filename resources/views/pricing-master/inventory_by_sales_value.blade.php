@@ -546,6 +546,12 @@
                             <input type="radio" class="btn-check" name="invFilter" id="filterOther" value="other">
                             <label class="btn btn-outline-success" for="filterOther">Other</label>
                         </div>
+                        <div class="btn-group" id="dil-filter" role="group" aria-label="Dilution Filter">
+                            <input type="radio" class="btn-check" name="dilFilter" id="dilFilter10" value="10">
+                            <label class="btn btn-outline-danger" for="dilFilter10">Dil ≤ 10%</label>
+                            <input type="radio" class="btn-check" name="dilFilter" id="dilFilterClear" value="clear" checked>
+                            <label class="btn btn-outline-secondary" for="dilFilterClear">Clear</label>
+                        </div>
                     </div>
 
                     </div>
@@ -963,11 +969,18 @@
             });
         });
    
+       document.querySelectorAll("input[name='dilFilter']").forEach(input => {
+    input.addEventListener("change", function() {
+        const value = this.value;
+
+        if (value === "10") {
+            table.setFilter("Dil%", "<=", 10);
+        } else if (value === "clear") {
+            table.removeFilter("Dil%", "<=", 10);
+        }
+    });
+});
         
-        
-
-
-
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-master-data-views",
             fixedHeader: true,
@@ -980,11 +993,7 @@
 
               initialSort: [{
                     column: "inv_value",
-                    dir: "asc"
-                },
-                {
-                    column: "SKU",
-                    dir: "asc"
+                    dir: "desc"
                 }
             ],
         
