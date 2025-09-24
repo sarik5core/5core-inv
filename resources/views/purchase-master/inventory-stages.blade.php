@@ -289,7 +289,7 @@
         let groupedSkuData = {};
 
         const table = new Tabulator("#forecast-table", {
-            ajaxURL: "/forecast-analysis-data-view",
+            ajaxURL: "/inventory-stages/data",
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
@@ -446,7 +446,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="S-MSL"
                         data-original="${value ?? ''}" 
                         data-sku='${sku}' 
@@ -457,7 +456,7 @@
                     }
                 },
                 {
-                    title: "Order Given",
+                    title: "MIP",
                     field: "order_given",
                     accessor: row => (row ? row["order_given"] : null),
                     sorter: "number",
@@ -471,7 +470,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="ORDER given" 
                         data-original='${value ?? ''}' 
                         data-sku='${sku}' 
@@ -482,7 +480,7 @@
                     }
                 },
                 {
-                    title: "Transit",
+                    title: "R2S",
                     field: "transit",
                     accessor: row => (row ? row["transit"] : null),
                     sorter: "number",
@@ -496,7 +494,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="Transit" 
                         data-original="${value ?? ''}" 
                         data-sku='${sku}' 
@@ -541,7 +538,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="Approved QTY" 
                         data-original="${value ?? ''}" 
                         data-sku='${sku}' 
@@ -627,9 +623,9 @@
 
                     const toOrder = Math.round(msl - inv - transit - orderGiven);
 
-                    // if(toOrder == 0){
-                    //     return false;
-                    // }
+                    if(toOrder == 0){
+                        return false;
+                    }
 
                     if (!groupedMSL[parentKey]) groupedMSL[parentKey] = 0;
                     groupedMSL[parentKey] += msl;

@@ -524,6 +524,14 @@
             table.on("tableBuilt", function () {
 
                 function combinedFilter(data) {
+                    let budget = parseFloat(data.campaignBudgetAmount) || 0;
+                    let spend_L7 = parseFloat(data.spend_L7) || 0;
+                    let spend_l1 = parseFloat(data.spend_l1) || 0;
+
+                    let ub7 = budget > 0 ? (spend_L7 / (budget * 7)) * 100 : 0;
+
+                    if (!(ub7 < 70)) return false;
+
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal) {
                         let campaignMatch = data.campaignName?.toLowerCase().includes(searchVal);
