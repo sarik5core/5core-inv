@@ -161,9 +161,9 @@ class FetchEbay3Metrics extends Command
         $downloadUrl = null;
 
         do {
-            sleep(10);
+            sleep(15);
         
-            $statusResponse = Http::withHeaders([
+            $statusResponse = Http::timeout(60)->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
             ])->get("https://api.ebay.com/sell/feed/v1/inventory_task/{$taskId}");
         

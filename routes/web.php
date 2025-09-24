@@ -1080,6 +1080,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/channel-master/update-sheet-link', [ChannelMasterController::class, 'updateSheetLink']);
     Route::post('/channels-master/toggle-flag', [ChannelMasterController::class, 'toggleCheckboxFlag']);
     Route::post('/update-channel-type', [ChannelMasterController::class, 'updateType']);
+    Route::post('/update-channel-percentage', [ChannelMasterController::class, 'updatePercentage']);
 
 
 
@@ -1129,6 +1130,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     // Pricing Master Views Roi Dashboard
 
     Route::get('/pricing-masters.pricing_masters', [PricingMasterViewsController::class, 'pricingMaster']);
+    Route::get('/inventory-by-sales-value', [PricingMasterViewsController::class, 'inventoryBySalesValue'])->name('inventory.by.sales.value');
     Route::get('/pricing-master-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
     Route::get('/pricing-master/roi-dashboard', [PricingMasterViewsController::class, 'getViewPricingAnalysisROIDashboardData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);

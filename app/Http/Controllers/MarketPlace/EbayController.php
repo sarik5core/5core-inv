@@ -38,17 +38,23 @@ class EbayController extends Controller
         $demo = $request->query("demo");
 
         // Get percentage from cache or database
-        $percentage = Cache::remember(
-            "ebay_marketplace_percentage",
-            now()->addDays(30),
-            function () {
-                $marketplaceData = MarketplacePercentage::where(
-                    "marketplace",
-                    "Ebay"
-                )->first();
-                return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
-            }
-        );
+        // $percentage = Cache::remember(
+        //     "ebay_marketplace_percentage",
+        //     now()->addDays(30),
+        //     function () {
+        //         $marketplaceData = MarketplacePercentage::where(
+        //             "marketplace",
+        //             "Ebay"
+        //         )->first();
+        //         return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+        //     }
+        // );
+
+        $marketplaceData = ChannelMaster::where('channel', 'eBay')->first();
+
+        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
+
 
         return view("market-places.ebay", [
             "mode" => $mode,

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
 use App\Models\MarketplacePercentage;
 use App\Models\AliexpressDataView;
+use App\Models\ChannelMaster;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
@@ -28,10 +29,15 @@ class AliexpressController extends Controller
         $demo = $request->query('demo');
 
         // Get percentage from cache or database
-        $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
-        });
+        // $percentage = Cache::remember('amazon_marketplace_percentage', now()->addDays(30), function () {
+        //     $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
+        //     return $marketplaceData ? $marketplaceData->percentage : 100; // Default to 100 if not set
+        // });
+
+        $marketplaceData = ChannelMaster::where('channel', 'Aliexpress')->first();
+
+        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
         return view('market-places.aliexpress_analytics', [
             'mode' => $mode,

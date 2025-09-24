@@ -86,6 +86,22 @@ class PricingMasterViewsController extends Controller
             'records' => $processedData, // processed data table ke liye
         ]);
     }
+
+     public function inventoryBySalesValue(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+
+        $processedData = $this->processPricingData();
+
+        return view('pricing-master.inventory_by_sales_value', [
+            'mode' => $mode,
+            'demo' => $demo,
+            'records' => $processedData, // processed data table ke liye
+        ]);
+    }
+
+
     protected function processPricingData($searchTerm = '')
     {
         $productData = ProductMaster::whereNull('deleted_at')
@@ -120,7 +136,7 @@ class PricingMasterViewsController extends Controller
 
 
 
-        $dobaData    = DobaMetric::whereIn('sku', $skus)->get()->keyBy('sku');
+        // $dobaData    = DobaMetric::whereIn('sku', $skus)->get()->keyBy('sku');
         $pricingData = PricingMaster::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyData    = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbData  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
@@ -137,6 +153,23 @@ class PricingMasterViewsController extends Controller
             ->whereIn('api.sku', $skus)
             ->get()
             ->keyBy('sku');
+
+
+
+
+        $dobaData = DB::connection('apicentral')
+            ->table('doba_api_data as api_doba')
+            ->select(
+                'api_doba.spu as sku',
+                'api_doba.sellPrice as doba_price',
+                DB::raw('COALESCE(doba_m.l30, 0) as l30'),
+                DB::raw('COALESCE(doba_m.l60, 0) as l60')
+            )
+            ->leftJoin('doba_metrics as doba_m', 'api_doba.spu', '=', 'doba_m.sku')
+            ->whereIn('api_doba.spu', $skus)
+            ->get()
+            ->keyBy('sku');
+
 
         $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebay3Lookup = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
@@ -301,10 +334,12 @@ class PricingMasterViewsController extends Controller
 
 
                 // Doba
-                'doba_price' => $doba ? ($doba->anticipated_income ?? 0) : 0,
-                'doba_l30'   => $doba ? ($doba->quantity_l30 ?? 0) : 0,
-                'doba_pft'   => $doba && ($doba->anticipated_income ?? 0) > 0 ? (($doba->anticipated_income * 0.95 - $lp - $ship) / $doba->anticipated_income) : 0,
-                'doba_roi'   => $doba && $lp > 0 && ($doba->anticipated_income ?? 0) > 0 ? (($doba->anticipated_income * 0.95 - $lp - $ship) / $lp) : 0,
+                'doba_price' => $doba ? ($doba->doba_price ?? 0) : 0,
+                'doba_l30'   => $doba ? ($doba->l30 ?? 0) : 0,
+                'doba_l60'   => $doba ? ($doba->l60 ?? 0) : 0,
+
+                'doba_pft'   => $doba && ($doba->doba_price ?? 0) > 0 ? (($doba->doba_price * 0.95 - $lp - $ship) / $doba->doba_price) : 0,
+                'doba_roi'   => $doba && $lp > 0 && ($doba->doba_price ?? 0) > 0 ? (($doba->doba_price * 0.95 - $lp - $ship) / $lp) : 0,
                 'doba_buyer_link' => isset($dobaListingData[$sku]) ? ($dobaListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'doba_seller_link' => isset($dobaListingData[$sku]) ? ($dobaListingData[$sku]->value['seller_link'] ?? null) : null,
 
@@ -588,12 +623,10 @@ class PricingMasterViewsController extends Controller
             'message' => 'Data fetched successfully',
             'data' => $paginatedData,
             'distinct_values' => $this->getDistinctValues($processedData),
-            'pagination' => [
-                'current_page' => (int) $page,
-                'per_page' => $perPage,
-                'total' => $total,
-                'total_pages' => $totalPages,
-            ],
+            'current_page' => (int) $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'last_page' => $totalPages,
             'status' => 200,
         ]);
     }

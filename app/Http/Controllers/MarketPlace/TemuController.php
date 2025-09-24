@@ -8,6 +8,7 @@ use App\Models\ShopifySku;
 use App\Models\TemuDataView;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
+use App\Models\ChannelMaster;
 use App\Models\MarketplacePercentage;
 use App\Models\TemuMetric;
 use App\Models\TemuProductSheet;
@@ -31,10 +32,15 @@ class TemuController extends Controller
         $demo = $request->query('demo');
 
         // Get percentage from cache or database
-        $percentage = Cache::remember('temu_marketplace_percentage', now()->addDays(30), function () {
-            $marketplaceData = MarketplacePercentage::where('marketplace', 'Temu')->first();
-            return $marketplaceData ? $marketplaceData->percentage : 100;
-        });
+        // $percentage = Cache::remember('temu_marketplace_percentage', now()->addDays(30), function () {
+        //     $marketplaceData = MarketplacePercentage::where('marketplace', 'Temu')->first();
+        //     return $marketplaceData ? $marketplaceData->percentage : 100;
+        // });
+
+        $marketplaceData = ChannelMaster::where('channel', 'Temu')->first();
+
+        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
         return view('market-places.temu', [
             'mode' => $mode,

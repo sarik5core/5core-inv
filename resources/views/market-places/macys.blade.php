@@ -1256,8 +1256,8 @@
                         </div>
                     </div>
 
-                    <div class="modal fade" id="macysImportModal" tabindex="-1"
-                        aria-labelledby="macysImportModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="macysImportModal" tabindex="-1" aria-labelledby="macysImportModalLabel"
+                        aria-hidden="true">
                         <div class="modal-dialog">
                             <form action="{{ route('macys.analytics.import') }}" method="POST"
                                 enctype="multipart/form-data" class="modal-content" id="macysImportForm">
@@ -1271,8 +1271,8 @@
                                     <!-- File Input -->
                                     <div class="mb-3">
                                         <label for="macysExcelFile" class="form-label">Select Excel File</label>
-                                        <input type="file" class="form-control" id="macysExcelFile"
-                                            name="excel_file" accept=".xlsx,.xls,.csv" required>
+                                        <input type="file" class="form-control" id="macysExcelFile" name="excel_file"
+                                            accept=".xlsx,.xls,.csv" required>
                                     </div>
 
                                     <!-- Sample File Link -->
@@ -2683,7 +2683,6 @@
             $(document).on('change', '.listed-checkbox, .live-checkbox', function() {
                 const $cb = $(this);
                 const sku = $cb.data('sku');
-
                 const field = $cb.hasClass('listed-checkbox') ? 'Listed' : 'Live';
                 const value = $cb.is(':checked') ? 1 : 0;
 
@@ -2697,12 +2696,38 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(res) {
-                        console.log(`${field} updated for SKU ${sku}`);
+                        console.log('AJAX Success:', res);
+                        let updated = false;
+                        for (let i = 0; i < filteredData.length; i++) {
+                            if (filteredData[i]['raw_data']['SKU'] === sku) {
+                                let rawData = filteredData[i]['raw_data'];
+                                if (typeof rawData === 'string') {
+                                    try {
+                                        rawData = JSON.parse(rawData || '{}');
+                                    } catch (e) {
+                                        console.error('Error parsing raw_data:', e);
+                                        rawData = {};
+                                    }
+                                } else if (typeof rawData !== 'object' || rawData === null) {
+                                    rawData = {};
+                                }
+                                rawData[field] = value; // Update Listed or Live in raw_data
+                                filteredData[i]['raw_data'] = rawData;
+                                updated = true;
+                                break;
+                            }
+                        }
+
+                        if (updated) {
+                            calculateTotals(); // Recalculate totals with updated data
+                        } else {
+                            console.warn('No matching SKU found in filteredData for:', sku);
+                        }
                     },
                     error: function(err) {
-                        console.error('Update failed', err);
+                        console.error('Update failed:', err);
                         alert('Failed to update. Try again.');
-                        $cb.prop('checked', !value); // revert on error
+                        $cb.prop('checked', !value); // Revert checkbox on error
                     }
                 });
             });

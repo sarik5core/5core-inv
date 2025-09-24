@@ -176,6 +176,10 @@
                         <li>
                             <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters </a>
                         </li>
+
+                           <li>
+                            <a href="{{ url('inventory-by-sales-value') }}">Inv by Sales Value </a>
+                        </li>
                         <li>
                             <a href="https://listing-analysis.5coremanagement.com/public/login" target="_blank"
                                 rel="noopener noreferrer">Listing Analysis</a>

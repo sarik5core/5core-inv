@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Pricing Masters Analysis'])
+@extends('layouts.vertical', ['title' => 'Inventory by Sales Value'])
 
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -480,8 +480,8 @@
 
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Pricing Masters Analysis',
-        'sub_title' => 'Pricing Masters Analysis',
+        'page_title' => 'Inventory by Sales Value',
+        'sub_title' => 'Inventory by Sales Value',
     ])
 
     <!-- Image Preview -->
@@ -545,6 +545,12 @@
 
                             <input type="radio" class="btn-check" name="invFilter" id="filterOther" value="other">
                             <label class="btn btn-outline-success" for="filterOther">Other</label>
+                        </div>
+                        <div class="btn-group" id="dil-filter" role="group" aria-label="Dilution Filter">
+                            <input type="radio" class="btn-check" name="dilFilter" id="dilFilter10" value="10">
+                            <label class="btn btn-outline-danger" for="dilFilter10">Dil ≤ 10%</label>
+                            <input type="radio" class="btn-check" name="dilFilter" id="dilFilterClear" value="clear" checked>
+                            <label class="btn btn-outline-secondary" for="dilFilterClear">Clear</label>
                         </div>
                     </div>
 
@@ -963,11 +969,18 @@
             });
         });
    
+       document.querySelectorAll("input[name='dilFilter']").forEach(input => {
+    input.addEventListener("change", function() {
+        const value = this.value;
+
+        if (value === "10") {
+            table.setFilter("Dil%", "<=", 10);
+        } else if (value === "clear") {
+            table.removeFilter("Dil%", "<=", 10);
+        }
+    });
+});
         
-        
-
-
-
        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-master-data-views",
             fixedHeader: true,
@@ -977,6 +990,12 @@
           
             pagination: true, 
             paginationSize: 50,
+
+              initialSort: [{
+                    column: "inv_value",
+                    dir: "desc"
+                }
+            ],
         
              rowFormatter: function(row) {
                 const data = row.getData();
@@ -1110,9 +1129,28 @@
                            
                             return element;
                         },
-                    }
+                    },
 
-                    ,
+                    {
+                        title: "Inv Value",
+                        field: "inv_value",
+                        hozAlign: "center",
+                        headerSort: true,
+                        formatter: function(cell) {
+                            const value = parseFloat(cell.getValue()) || 0;
+                            return `<span class="text-success">${value.toFixed(2)}</span>`;
+                        },
+                        sorter: function(a, b, aRow, bRow) {
+                            const valA = parseFloat(a) || 0;
+                            const valB = parseFloat(b) || 0;
+                            if (valA === valB) {
+                                const skuA = aRow.getData().SKU || "";
+                                const skuB = bRow.getData().SKU || "";
+                                return skuA.localeCompare(skuB);
+                            }
+                            return valA - valB;
+                        }
+                    },
                
 
                 {
@@ -1585,6 +1623,13 @@
                     response.data = response.data.map((item, index) => {
                         const sku = item.SKU || "";
                         const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
+
+                         // Ensure inv_value is numeric
+                    if (!item.inv_value) {
+                        const inv = item.INV || 0;
+                        const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
+                        item.inv_value = (inv * shopifyPrice).toFixed(2);
+                    }
 
                         return {
                             ...item,
