@@ -351,7 +351,16 @@
                             }
 
                             return ub7.toFixed(0) + "%";
-                        }
+                        },
+                        sorter: function(a, b, aRow, bRow, column, dir) {
+                            var dataA = aRow.getData();
+                            var dataB = bRow.getData();
+
+                            var ubA = dataA.campaignBudgetAmount > 0 ? (parseFloat(dataA.spend_L7) / (parseFloat(dataA.campaignBudgetAmount) * 7)) * 100 : 0;
+                            var ubB = dataB.campaignBudgetAmount > 0 ? (parseFloat(dataB.spend_L7) / (parseFloat(dataB.campaignBudgetAmount) * 7)) * 100 : 0;
+
+                            return ubA - ubB; 
+                        },
                     },
                     {
                         title: "1 UB%",
@@ -440,6 +449,9 @@
                             }
                         }
                     },
+                ],
+                initialSort: [
+                    { column: "spend_L7", dir: "desc" }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
