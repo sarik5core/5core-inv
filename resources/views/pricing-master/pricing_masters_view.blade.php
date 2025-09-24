@@ -1464,9 +1464,6 @@
                             
                             if (LP === 0) return "N/A";
 
-                        
-                           
-
                             // Parse all L30 values
                             const amzL30     = parseFloat(data.amz_l30) || 0;
                             const ebayL30    = parseFloat(data.ebay_l30) || 0;
