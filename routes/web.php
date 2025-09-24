@@ -1130,6 +1130,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     // Pricing Master Views Roi Dashboard
 
     Route::get('/pricing-masters.pricing_masters', [PricingMasterViewsController::class, 'pricingMaster']);
+    Route::get('/inventory-by-sales-value', [PricingMasterViewsController::class, 'inventoryBySalesValue'])->name('inventory.by.sales.value');
     Route::get('/pricing-master-data-views', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
     Route::get('/pricing-master/roi-dashboard', [PricingMasterViewsController::class, 'getViewPricingAnalysisROIDashboardData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);

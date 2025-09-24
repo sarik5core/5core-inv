@@ -349,8 +349,8 @@ class FetchEbay2Metrics extends Command
 
     private function generateEbayToken(): ?string
     {
-        $clientId = env('EBAY_2_APP_ID');
-        $clientSecret = env('EBAY_2_CERT_ID');
+        $clientId = env('EBAY2_APP_ID');
+        $clientSecret = env('EBAY2_CERT_ID');
 
         $scope = implode(' ', [
             'https://api.ebay.com/oauth/api_scope',
@@ -369,7 +369,7 @@ class FetchEbay2Metrics extends Command
                 ->withBasicAuth($clientId, $clientSecret)
                 ->post('https://api.ebay.com/identity/v1/oauth2/token', [
                     'grant_type' => 'refresh_token',
-                    'refresh_token' => env('EBAY_2_REFRESH_TOKEN'),
+                    'refresh_token' => env('EBAY2_REFRESH_TOKEN'),
                     'scope' => $scope,
                 ]);
 
