@@ -346,29 +346,29 @@ class ForecastAnalysisController extends Controller
 
     public function invetoryStagesData(){
         try {
-                $jungleScoutData = JungleScoutProductData::query()
-                ->get()
-                ->groupBy(fn($item) => strtoupper(trim($item->parent)))
-                ->map(function ($group) {
-                    $validPrices = $group->filter(function ($item) {
-                        $data = is_array($item->data) ? $item->data : [];
-                        $price = $data['price'] ?? null;
-                        return is_numeric($price) && $price > 0;
-                    })->pluck('data.price');
+            $jungleScoutData = JungleScoutProductData::query()
+            ->get()
+            ->groupBy(fn($item) => strtoupper(trim($item->parent)))
+            ->map(function ($group) {
+                $validPrices = $group->filter(function ($item) {
+                    $data = is_array($item->data) ? $item->data : [];
+                    $price = $data['price'] ?? null;
+                    return is_numeric($price) && $price > 0;
+                })->pluck('data.price');
 
-                    return [
-                        'scout_parent' => $group->first()->parent,
-                        'min_price' => $validPrices->isNotEmpty() ? $validPrices->min() : null,
-                        'product_count' => $group->count(),
-                        'all_data' => $group->map(function ($item) {
-                            $data = is_array($item->data) ? $item->data : [];
-                            if (isset($data['price'])) {
-                                $data['price'] = is_numeric($data['price']) ? (float) $data['price'] : null;
-                            }
-                            return $data;
-                        })->toArray()
-                    ];
-                });
+                return [
+                    'scout_parent' => $group->first()->parent,
+                    'min_price' => $validPrices->isNotEmpty() ? $validPrices->min() : null,
+                    'product_count' => $group->count(),
+                    'all_data' => $group->map(function ($item) {
+                        $data = is_array($item->data) ? $item->data : [];
+                        if (isset($data['price'])) {
+                            $data['price'] = is_numeric($data['price']) ? (float) $data['price'] : null;
+                        }
+                        return $data;
+                    })->toArray()
+                ];
+            });
 
             $productListData = DB::table('product_master')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
             $skus = $productListData->keys()->toArray();
@@ -398,6 +398,12 @@ class ForecastAnalysisController extends Controller
             $movementMap = DB::table('movement_analysis')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
 
             $mfrgProgressMap = DB::table('mfrg_progress')
+                ->select('sku', DB::raw('SUM(qty) as total_qty'))
+                ->groupBy('sku')
+                ->get()
+                ->keyBy(fn($item) => strtoupper(trim($item->sku)));
+
+            $readyToShip = DB::table('ready_to_ship')
                 ->select('sku', DB::raw('SUM(qty) as total_qty'))
                 ->groupBy('sku')
                 ->get()
@@ -448,7 +454,11 @@ class ForecastAnalysisController extends Controller
                         $item->order_given = 0;
                     }
 
-                    $item->transit = $forecast->transit ?? '';
+                    if ($readyToShip->has($sheetSku)) {
+                        $item->transit = $readyToShip[$sheetSku]->total_qty ?? 0;
+                    } else {
+                        $item->transit = 0;
+                    }
                     $item->nr = $forecast->nr ?? '';
                     $item->req = $forecast->req ?? '';
                     $item->hide = $forecast->hide ?? '';
