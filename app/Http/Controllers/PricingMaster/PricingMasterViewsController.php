@@ -446,8 +446,12 @@ class PricingMasterViewsController extends Controller
                     ($ebay && $ebay->views && $ebay->ebay_l30 ? (($inv * 20)) : 0) +
                     ($ebay2 && $ebay2->views && $ebay2->ebay_l30 ? (($inv * 20)) : 0) +
                     ($ebay3 && $ebay3->views && $ebay3->ebay_l30 ? (($inv * 20)) : 0) +
-                    ($amazon && $amazon->sessions_l30 && $amazon->units_ordered_l30 ? (($inv * 20)) : 0)
+                    ($amazon && $amazon->sessions_l30 && $amazon->units_ordered_l30 ? (($inv * 20)) : 0) +
+                    ($shein && $shein->views_clicks && $shein->shopify_sheinl30 ? (($inv * 20)) : 0)
                 ),
+                //  100 / cvr * inv not cvr percentage 
+
+
 
                 // Amazon DataView values
                 'amz_sprice' => isset($amazonDataView[$sku]) ?

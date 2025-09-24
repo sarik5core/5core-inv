@@ -1013,6 +1013,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //Update Forecast Sheet
     Route::post('/update-forecast-data', [ForecastAnalysisController::class, 'updateForcastSheet'])->name('update.forecast.data');
     Route::get('/inventory-stages', [ForecastAnalysisController::class, 'invetoryStagesView'])->name('inventory.stages');
+    Route::get('/inventory-stages/data', [ForecastAnalysisController::class, 'invetoryStagesData']);
 
     //MFRG In Progress
     Route::get('/mfrg-in-progress', [MFRGInProgressController::class, 'index'])->name('mfrg.in.progress');
