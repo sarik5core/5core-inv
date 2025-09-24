@@ -98,6 +98,8 @@ class Kernel extends ConsoleKernel
 
         // Sync Walmart sheet command
         $schedule->command('sync:walmart-sheet')->everyTenMinutes();
+        $schedule->command('sync:temu-sheet-data')->everyTwelveHours();
+
 
         // Sync eBay 2 sheet command
         $schedule->command('sync:ebay-two-sheet')->everyTenMinutes();

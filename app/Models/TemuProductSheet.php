@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TemuProductSheet extends Model
 {
-    protected $table = 'temu_product_sheets';
+    protected $table = 'temu_sheet_data_total';
 
     protected $fillable = [
         'sku', 'price', 'pft', 'roi', 'l30', 'dil', 'buy_link','l60'
