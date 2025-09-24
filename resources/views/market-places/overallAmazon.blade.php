@@ -3515,12 +3515,39 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(res) {
+                        // Update local filteredData to reflect the change for realtime totals
+                        let updated = false;
+                        for (let i = 0; i < filteredData.length; i++) {
+                            if (filteredData[i]['(Child) sku'] === sku) {
+                                let raw = filteredData[i].raw_data;
+                                if (typeof raw === 'string') {
+                                    try {
+                                        raw = JSON.parse(raw || '{}');
+                                    } catch (e) {
+                                        raw = {};
+                                    }
+                                } else if (typeof raw !== 'object' || raw === null) {
+                                    raw = {};
+                                }
+                                raw[field] = value;
+                                filteredData[i].raw_data =
+                                raw; 
+                                updated = true;
+                                break;
+                            }
+                        }   
+
+                        if (updated) {
+                            calculateTotals(); 
+                        }
+
                         console.log(`${field} updated for SKU ${sku}`);
                     },
                     error: function(err) {
                         console.error('Update failed', err);
                         alert('Failed to update. Try again.');
-                        $cb.prop('checked', !value); // revert on error
+                        $cb.prop('checked', !value); // Revert checkbox on error
+                        // No need to revert local data since server update failed
                     }
                 });
             });

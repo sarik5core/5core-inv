@@ -49,8 +49,8 @@ class EbayTwoController extends Controller
         $demo = $request->query('demo');
 
         // Get percentage directly from database
-        $marketplaceData = MarketplacePercentage::where('marketplace', 'EbayTwo')->first();
-        $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
+        $marketplaceData = ChannelMaster::where('channel', 'EbayTwo')->first();
+        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
 
         return view('market-places.ebayTwoAnalysis', [
             'mode' => $mode,

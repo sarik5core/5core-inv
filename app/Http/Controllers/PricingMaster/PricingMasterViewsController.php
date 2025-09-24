@@ -86,6 +86,22 @@ class PricingMasterViewsController extends Controller
             'records' => $processedData, // processed data table ke liye
         ]);
     }
+
+     public function inventoryBySalesValue(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+
+        $processedData = $this->processPricingData();
+
+        return view('pricing-master.inventory_by_sales_value', [
+            'mode' => $mode,
+            'demo' => $demo,
+            'records' => $processedData, // processed data table ke liye
+        ]);
+    }
+
+
     protected function processPricingData($searchTerm = '')
     {
         $productData = ProductMaster::whereNull('deleted_at')

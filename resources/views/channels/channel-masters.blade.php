@@ -700,6 +700,7 @@
                                 G ROI%
                             </th>
                             <th>Red Margin</th>
+                            <th>Channel Percentage</th>
                             <th>NR</th>
                             <th>type</th>
                             <th>Listing Counts</th>
@@ -1722,6 +1723,7 @@
                                     'Brand Registry': toNum(pick(item, ['brand_registry', 'brandregistry'], 0), 0),
                                     'Update': toNum(pick(item, ['update_flag', 'update','Update'], 0), 0),
                                     'Ac Health': pick(item, ['account_health', 'ac_health', 'accounthealth'], ''),
+                                    'Channel Percentage': pctFix(pick(item, ['channel_percentage'], 0), 0),
                                     
                                 };
                                 
@@ -1847,6 +1849,13 @@
                             }
                         },
                         { data: 'Red Margin', render: v => `<span class="metric-value">${toNum(v).toLocaleString('en-US')}</span>` },
+                        {
+                            data: 'Channel Percentage',
+                            render: function (v, t, row) {
+                                return `<input type="integer" class="form-control form-control-sm channel-percentage-input"
+                                            value="${v || ''}" data-channel="${row['Channel']}"  style="min-width: 100px;" placeholder="Enter Percentage">`;
+                            }
+                        },
                         {
                             data: 'NR',
                             render: function (v, t, row) {
@@ -2700,6 +2709,37 @@
                                 success: function (response) {
                                     if (response.success) {
                                         console.log('Type updated successfully');
+                                    } else {
+                                        console.warn('Update failed:', response.message);
+                                    }
+                                },
+                                error: function (xhr) {
+                                    console.error('Error updating type:', xhr.responseText);
+                                }
+                            });
+                        });
+
+
+                        // Save "Channel Percentage" value on change
+                        jq(document).on('change', '.channel-percentage-input', function () {
+                            const channel = jq(this).data('channel')?.trim();
+                            const newValue = jq(this).val()?.trim();
+
+                            if (!channel) return;
+
+                            jq.ajax({
+                                url: '/update-channel-percentage',
+                                type: 'POST',
+                                data: {
+                                    channel: channel,
+                                    channel_percentage: newValue
+                                },
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                success: function (response) {
+                                    if (response.success) {
+                                        console.log('Channel Percentage updated successfully');
                                     } else {
                                         console.warn('Update failed:', response.message);
                                     }
