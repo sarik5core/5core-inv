@@ -143,6 +143,12 @@ class FetchEbay2Metrics extends Command
             'Content-Type' => 'application/json',
         ])->post($apiUrl, $payload);
                 
+        if (!$response->successful()) {
+            $this->error("Task creation failed: " . $response->body());
+            logger()->error("Task creation error", ['response' => $response->json()]);
+            return [];
+        }
+
         $location = $response->header('Location');
         info('location', [$location]);
         if (!$location) {
@@ -226,7 +232,9 @@ class FetchEbay2Metrics extends Command
 
                     logger()->info("Root Element: " . $xml->getName());
                     
+
                     // Example conversion (customize based on XML structure)
+
                     $data = [];
                     foreach ($xml->ActiveInventoryReport->SKUDetails as $item) {
                         $itemId = (string) $item->ItemID ?? null;
@@ -237,7 +245,8 @@ class FetchEbay2Metrics extends Command
                             'sku' => $item->SKU ?? '',
                             'price' => (float) ($item->Price ?? 0),
                         ];
-                    
+
+                        
                         // Handle variations if any
                         if (!empty($item->Variations->Variation)) {
                             foreach ($item->Variations->Variation as $variation) {
