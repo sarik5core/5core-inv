@@ -9,7 +9,7 @@ use App\Models\Supplier;
 use App\Models\TransitContainerDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class ReadyToShipController extends Controller
 {
@@ -55,7 +55,7 @@ class ReadyToShipController extends Controller
             }
 
             if (!isset($productMaster[$sku])) {
-                \Log::warning("SKU missing in product_master: [$sku] <- original: [{$item->sku}]");
+                Log::warning("SKU missing in product_master: [$sku] <- original: [{$item->sku}]");
             } else {
                 $valuesRaw = $productMaster[$sku]->Values ?? '{}';
                 $values = json_decode($valuesRaw, true);
@@ -68,10 +68,10 @@ class ReadyToShipController extends Controller
                     if (isset($values['cbm'])) {
                         $cbm = (float) $values['cbm'];
                     } else {
-                        \Log::warning("CBM missing in values for SKU: $sku");
+                        Log::warning("CBM missing in values for SKU: $sku");
                     }
                 } else {
-                    \Log::warning("Values decode failed for SKU: $sku");
+                    Log::warning("Values decode failed for SKU: $sku");
                 }
             }
 
