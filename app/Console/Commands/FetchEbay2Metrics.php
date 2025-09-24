@@ -142,7 +142,13 @@ class FetchEbay2Metrics extends Command
             'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
         ])->post($apiUrl, $payload);
-        
+                
+        if (!$response->successful()) {
+            $this->error("Task creation failed: " . $response->body());
+            logger()->error("Task creation error", ['response' => $response->json()]);
+            return [];
+        }
+
         $location = $response->header('Location');
         info('location', [$location]);
         if (!$location) {
@@ -226,7 +232,9 @@ class FetchEbay2Metrics extends Command
 
                     logger()->info("Root Element: " . $xml->getName());
                     
+
                     // Example conversion (customize based on XML structure)
+
                     $data = [];
                     foreach ($xml->ActiveInventoryReport->SKUDetails as $item) {
                         $itemId = (string) $item->ItemID ?? null;
@@ -237,7 +245,8 @@ class FetchEbay2Metrics extends Command
                             'sku' => $item->SKU ?? '',
                             'price' => (float) ($item->Price ?? 0),
                         ];
-                    
+
+                        
                         // Handle variations if any
                         if (!empty($item->Variations->Variation)) {
                             foreach ($item->Variations->Variation as $variation) {
@@ -347,7 +356,7 @@ class FetchEbay2Metrics extends Command
         return $allQuantities;
     }
 
-    private function generateEbayToken(): ?string
+    public function generateEbayToken(): ?string
     {
         $clientId = env('EBAY2_APP_ID');
         $clientSecret = env('EBAY2_CERT_ID');
@@ -362,6 +371,7 @@ class FetchEbay2Metrics extends Command
             'https://api.ebay.com/oauth/api_scope/sell.stores',
             'https://api.ebay.com/oauth/api_scope/sell.finances',
             'https://api.ebay.com/oauth/api_scope/sell.marketing',
+            'https://api.ebay.com/oauth/api_scope/commerce.identity.readonly',
         ]);
 
         try {
@@ -375,7 +385,12 @@ class FetchEbay2Metrics extends Command
 
             if ($response->successful()) {
                 Log::error('eBay2 token', ['response' => 'Token generated!']);
-                return $response->json()['access_token'];
+                $token = $response->json()['access_token'];
+                
+                $sellerResponse = Http::withToken($token)->get('https://api.ebay.com/sell/account/v1/seller');
+                Log::info('eBay2 Seller info', $sellerResponse->json());
+                
+                return $token;
             }
 
             Log::error('eBay2 token refresh error', ['response' => $response->json()]);
