@@ -371,6 +371,7 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            document.body.style.zoom = "85%";
 
             const getDilColor = (value) => {
                 const percent = parseFloat(value) * 100;
@@ -1371,9 +1372,6 @@
                     });
                 }
             });
-
-
-            document.body.style.zoom = "90%";
         });
     </script>
 
