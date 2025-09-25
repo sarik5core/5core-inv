@@ -38,6 +38,9 @@ class PricingMasterController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
         $records = PricingMaster::orderBy('updated_at', 'desc')->get();
+
+       
+
         return view('pricing-master.pricing_master', [
             'mode' => $mode,
             'demo' => $demo,
