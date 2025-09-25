@@ -2671,7 +2671,7 @@
                         reqViewsColor = "green";
                     }
 
-                    $row.append($('<td>').html(
+                    $row.append($('<td data-field="sbid">').html(
                         `<span class="dil-percent-value ${sbidColor}">
                            ${sbid}
                         </span>`
