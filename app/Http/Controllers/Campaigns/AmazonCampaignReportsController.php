@@ -51,7 +51,6 @@ class AmazonCampaignReportsController extends Controller
                 SUM(purchases1d) as orders, 
                 SUM(sales1d) as sales
             ')
-            ->where('ad_type', 'SPONSORED_PRODUCTS')
             ->whereDate('report_date_range', '>=', $thirtyDaysAgo)
             ->where(function($query) {
                 $query->whereRaw("campaignName NOT LIKE '%PT'")
@@ -85,7 +84,6 @@ class AmazonCampaignReportsController extends Controller
                 SUM(sales1d) as sales
             ')
             ->whereBetween('report_date_range', [$start, $end])
-            ->where('ad_type', 'SPONSORED_PRODUCTS')
             ->groupBy('report_date_range')
             ->orderBy('report_date_range', 'asc')
             ->get();

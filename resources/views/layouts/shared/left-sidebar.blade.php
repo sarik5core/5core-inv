@@ -1896,7 +1896,16 @@
                                         <a href="walmartPricingCVR">Walmart Pricing - CVR</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('walmart.utilized.kw') }}">Walmart Utilized KW</a>
+                                        <a href="{{ route('walmart.utilized.kw') }}">Walmart Kw Ads Report</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.over.utilized') }}">Walmart Over Utili.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.under.utilized') }}">Walmart Under Utili.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.correctly.utilized') }}">Walmart Correctly Utili.</a>
                                     </li>
                                 </ul>
                             </div>

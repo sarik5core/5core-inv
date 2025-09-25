@@ -1822,6 +1822,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(WalmartUtilisationController::class)->group(function () {
         Route::get('/walmart/utilized/kw', 'index')->name('walmart.utilized.kw');
+        Route::get('/walmart/over/utilized', 'overUtilisedView')->name('walmart.over.utilized');
+        Route::get('/walmart/under/utilized', 'underUtilisedView')->name('walmart.under.utilized');
+        Route::get('/walmart/correctly/utilized', 'correctlyUtilisedView')->name('walmart.correctly.utilized');
         Route::get('/walmart/utilized/kw/data', 'getWalmartAdsData');
     });
 
