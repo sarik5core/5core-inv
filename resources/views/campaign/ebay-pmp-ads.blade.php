@@ -2664,7 +2664,7 @@
                     let reqViews = item.INV * 10;
                     let reqViewsColor = "";
 
-                    if (reqViews < item.VIEWS) {
+                    if (reqViews > item.VIEWS) {
                         reqViewsColor = "red";
                         sbid = sbid + 2;       
                     } else {
