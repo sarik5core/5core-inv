@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Walmart - Kw Ads Report', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Walmart - Under Utilised', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Walmart - Kw Ads Report',
-        'sub_title' => 'Walmart - Kw Ads Report',
+        'page_title' => 'Walmart - Under Utilised',
+        'sub_title' => 'Walmart - Under Utilised',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Walmart - Kw Ads Report
+                            Walmart - Under Utilised
                         </h4>
 
                         <!-- Filters Row -->

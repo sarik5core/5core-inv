@@ -289,7 +289,7 @@
         let groupedSkuData = {};
 
         const table = new Tabulator("#forecast-table", {
-            ajaxURL: "/forecast-analysis-data-view",
+            ajaxURL: "/inventory-stages/data",
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
@@ -446,7 +446,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="S-MSL"
                         data-original="${value ?? ''}" 
                         data-sku='${sku}' 
@@ -457,7 +456,7 @@
                     }
                 },
                 {
-                    title: "Order Given",
+                    title: "MIP",
                     field: "order_given",
                     accessor: row => (row ? row["order_given"] : null),
                     sorter: "number",
@@ -471,7 +470,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="ORDER given" 
                         data-original='${value ?? ''}' 
                         data-sku='${sku}' 
@@ -482,7 +480,7 @@
                     }
                 },
                 {
-                    title: "Transit",
+                    title: "R2S",
                     field: "transit",
                     accessor: row => (row ? row["transit"] : null),
                     sorter: "number",
@@ -496,7 +494,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="Transit" 
                         data-original="${value ?? ''}" 
                         data-sku='${sku}' 
@@ -541,7 +538,6 @@
 
                         return `<div 
                         class="editable-qty" 
-                        contenteditable="true" 
                         data-field="Approved QTY" 
                         data-original="${value ?? ''}" 
                         data-sku='${sku}' 
@@ -627,9 +623,9 @@
 
                     const toOrder = Math.round(msl - inv - transit - orderGiven);
 
-                    // if(toOrder == 0){
-                    //     return false;
-                    // }
+                    if(toOrder == 0){
+                        return false;
+                    }
 
                     if (!groupedMSL[parentKey]) groupedMSL[parentKey] = 0;
                     groupedMSL[parentKey] += msl;
@@ -708,10 +704,8 @@
                     (currentColorFilter === 'red' ?
                         child.to_order < 0 :
                         currentColorFilter === 'yellow' ?
-                        child.to_order >= 0 && (!child["Approved QTY"] || child["Approved QTY"].toString()
-                        .trim() === '') :
-                        true) &&
-                    !(child["Approved QTY"] && child["Approved QTY"].toString().trim() !== '')
+                        child.to_order >= 0 :
+                        true)
                 );
 
                 if (matchingChildren.length > 0) {
@@ -724,30 +718,27 @@
 
                 const isChild = !data.is_parent;
                 const isParent = data.is_parent;
-                const approvedQty = data["Approved QTY"];
 
                 const matchesColor =
                     currentColorFilter === 'red' ?
                     data.to_order < 0 :
                     currentColorFilter === 'yellow' ?
-                    data.to_order >= 0 && (!approvedQty || approvedQty.toString().trim() === '') :
+                    data.to_order >= 0 :
                     true;
 
                 const matchesNR = hideNRYes ? data.nr !== 'NR' : true;
-                const matchesApprovedQty = isParent ? true : !(approvedQty && approvedQty.toString().trim() !== '');
 
                 // 🎯 Force filter to one parent group if play mode is active
                 if (currentParentFilter) {
                     if (isParent) {
                         return data.Parent === currentParentFilter;
                     } else {
-                        return data.Parent === currentParentFilter && matchesColor && matchesNR &&
-                            matchesApprovedQty;
+                        return data.Parent === currentParentFilter && matchesColor && matchesNR;
                     }
                 }
 
                 if (isChild) {
-                    const showChild = matchesColor && matchesNR && matchesApprovedQty;
+                    const showChild = matchesColor && matchesNR;
                     if (currentRowTypeFilter === 'parent') return false;
                     if (currentRowTypeFilter === 'sku') return showChild;
                     return showChild;
@@ -772,8 +763,7 @@
             const yellowCount = visibleRows.filter(r =>
                 r.to_order >= 0 &&
                 !r.is_parent &&
-                r.nr !== 'NR' &&
-                (!r["Approved QTY"] || r["Approved QTY"].toString().trim() === '')
+                r.nr !== 'NR'
             ).length;
 
             document.getElementById('yellow-count-box').textContent = `Approval Pending: ${yellowCount}`;

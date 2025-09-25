@@ -14,6 +14,14 @@ class GoogleShoppingAdsController extends Controller
         return view('campaign.google-shopping-ads');
     }
 
+    public function googleOverUtilizeView(){
+        return view('campaign.google-shopping-over-utilize');
+    }
+
+    public function googleUnderUtilizeView(){
+        return view('campaign.google-shopping-under-utilize');
+    }
+
     public function googleShoppingSerp(){
         return view('campaign.google-shopping-ads-serp');
     }
@@ -39,8 +47,18 @@ class GoogleShoppingAdsController extends Controller
 
         $googleCampaigns = DB::connection('apicentral')
             ->table('google_ads_campaigns')
-            ->select('campaign_name')
+            ->select(
+                'campaign_name',
+                'campaign_status',
+                'budget_amount_micros',
+                'range_type',
+                'metrics_cost_micros',
+                'metrics_clicks',
+                'metrics_impressions'
+            )
             ->get();
+
+        $ranges = ['L1', 'L7', 'L30'];
 
         $result = [];
 
@@ -53,21 +71,38 @@ class GoogleShoppingAdsController extends Controller
             $matchedCampaign = $googleCampaigns->first(function ($c) use ($sku) {
                 $campaign = strtoupper(trim($c->campaign_name));
                 $parts = array_map('trim', explode(',', $campaign));
-                foreach ($parts as $part) {
-                    if ($part === $sku) {
-                        return true;
-                    }
-                }
-                return false;
+                return in_array($sku, $parts);
             });
+
+            if (!$matchedCampaign) continue;
 
             $row = [];
             $row['parent'] = $parent;
             $row['sku']    = $pm->sku;
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
+            
             $row['campaignName'] = $matchedCampaign->campaign_name ?? null;
+            $row['campaignBudgetAmount'] = $matchedCampaign->budget_amount_micros ?? null;
+            $row['campaignBudgetAmount'] = $row['campaignBudgetAmount'] ? $row['campaignBudgetAmount'] / 1000000 : null;
             $row['status'] = $matchedCampaign->campaign_status ?? null;
+
+            foreach ($ranges as $range) {
+                $campaignRange = $googleCampaigns->first(function ($c) use ($sku, $range) {
+                    $campaign = strtoupper(trim($c->campaign_name));
+                    $parts = array_map('trim', explode(',', $campaign));
+                    return in_array($sku, $parts) && $c->range_type === $range;
+                });
+
+
+                $row["spend_$range"] = isset($campaignRange->metrics_cost_micros)
+                    ? $campaignRange->metrics_cost_micros / 1000000
+                    : 0;
+
+                $row["clicks_$range"] = $campaignRange->metrics_clicks ?? 0;
+                $row["impressions_$range"] = $campaignRange->metrics_impressions ?? 0;
+                $row["cpc_$range"] = $row["clicks_$range"] ? $row["spend_$range"] / $row["clicks_$range"] : 0;
+            }
 
 
             $result[] = (object) $row;

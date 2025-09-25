@@ -811,28 +811,29 @@ function updateActiveTabSummary(index, table) {
   let totalCBM = 0;
 
   data.forEach(row => {
-    const values = (() => {
-      if (!row.Values) return {};
-      if (typeof row.Values === "string") {
-        try {
-          return JSON.parse(row.Values);
-        } catch (e) {
-          console.error("Invalid JSON in Values:", row.Values);
-          return {};
-        }
-      }
-      return row.Values;
-    })();
-    const ctn = parseFloat(row.total_ctn) || 0;
-    const units = parseFloat(row.no_of_units) || 0;
-    const rate = parseFloat(row.rate) || 0;
-    const cbm = parseFloat(values.cbm) || 0;
+        const ctn = parseFloat(row.total_ctn) || 0;
+        const units = parseFloat(row.no_of_units) || 0;
+        const rate = parseFloat(row.rate) || 0;
 
-    totalCtn += ctn;
-    totalQty += ctn * units;
-    totalAmount += ctn * units * rate;
-    totalCBM += cbm;
-  });
+        const qty = ctn * units;
+
+        let cbmPerUnit = 0;
+        if (row.Values) {
+            try {
+                const values = typeof row.Values === 'string' ? JSON.parse(row.Values) : row.Values;
+                cbmPerUnit = parseFloat(values.cbm) || 0;
+            } catch (e) {
+                console.error("Invalid JSON in Values:", row.Values);
+            }
+        }
+
+        const rowCBM = qty * cbmPerUnit;
+
+        totalCtn += ctn;
+        totalQty += qty;
+        totalAmount += qty * rate;
+        totalCBM += rowCBM;
+    });
 
   document.getElementById("total-cartons-display").textContent = totalCtn;
   document.getElementById("total-qty-display").textContent = totalQty;

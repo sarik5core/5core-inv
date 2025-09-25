@@ -756,11 +756,11 @@
                     if (!sku || !column) return;
                     
                     if (column === 'ready_to_ship' && value === 'Yes') {
-                        const photoPacking = row.querySelector('td[data-column="14"] a')?.href?.trim() || '';
-                        const photoIntSale = row.querySelector('td[data-column="15"] a')?.href?.trim() || '';
-                        const barcodeSku = row.querySelector('td[data-column="18"] a')?.href?.trim() || '';
-                        const artwork = row.querySelector('td[data-column="19"] input')?.value?.trim() || '';
-                        const notes = row.querySelector('td[data-column="20"] input')?.value?.trim() || '';
+                        const photoPacking = row.querySelector('td[data-column="15"] a')?.href?.trim() || '';
+                        const photoIntSale = row.querySelector('td[data-column="16"] a')?.href?.trim() || '';
+                        const barcodeSku = row.querySelector('td[data-column="19"] a')?.href?.trim() || '';
+                        const artwork = row.querySelector('td[data-column="20"] input')?.value?.trim() || '';
+                        const notes = row.querySelector('td[data-column="21"] input')?.value?.trim() || '';
 
                         if (!photoPacking || !photoIntSale || !barcodeSku || !artwork || !notes) {
                             alert("❌ Please fill all fields before marking 'Ready to Ship':\n- Photo Packing\n- Photo Internal Sale\n- Barcode SKU\n- Artwork Manual Book\n- Notes");

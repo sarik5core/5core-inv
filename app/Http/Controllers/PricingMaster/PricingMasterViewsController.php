@@ -104,10 +104,14 @@ class PricingMasterViewsController extends Controller
 
     protected function processPricingData($searchTerm = '')
     {
-        $productData = ProductMaster::whereNull('deleted_at')
 
-            ->orderBy('id', 'asc')
-            ->get();
+        $normalizeSku = fn($sku) => strtoupper(trim(preg_replace('/\s+/', ' ', str_replace("\xc2\xa0", ' ', $sku))));
+    
+        $productData = DB::table('product_master')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
+
+        // Shopify data with normalized SKU
+        $shopifyData = ShopifySku::all()->keyBy(fn($item) => $normalizeSku($item->sku));
+
 
         $skus = $productData
             ->pluck('sku')
@@ -116,9 +120,8 @@ class PricingMasterViewsController extends Controller
             })
             ->unique()
             ->toArray();
-        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(function ($item) {
-            return trim(strtoupper($item->sku));
-        });
+
+
         $amazonData  = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy('sku');
         $amazonListingData = AmazonListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebayData    = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
@@ -434,7 +437,7 @@ class PricingMasterViewsController extends Controller
                 'lmp' => $shein ? ($shein->lmp ?? 0) : 0,
                 'shopify_sheinl30' => $shein ? ($shein->shopify_sheinl30 ?? 0) : 0,
                
-                // // Total required views from all channels
+                // Total required views from all channels
                 // 'total_req_view' => (
                 //     ($ebay && $ebay->views  && $ebay->ebay_l30 ? (($inv / 30) * 30) / (($ebay->ebay_l30 / $ebay->views)) : 0) +
                 //     ($ebay2 && $ebay2->views  && $ebay2->ebay_l30 ? (($inv / 30) * 30) / (($ebay2->ebay_l30 / $ebay2->views)) : 0) +
@@ -442,13 +445,16 @@ class PricingMasterViewsController extends Controller
                 //     ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv / 30) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30)) : 0)
                 // ),
 
-
-                     'total_req_view' => (
-                    ($ebay && $ebay->views  && $ebay->ebay_l30 ? ($inv * 30) : 0) +
-                    ($ebay2 && $ebay2->views  && $ebay2->ebay_l30 ? (($inv * 30) / (($ebay2->ebay_l30 / $ebay2->views))) : 0) +
-                    ($ebay3 && $ebay3->views  && $ebay3->ebay_l30 ? (($inv * 30) / (($ebay3->ebay_l30 / $ebay3->views))) : 0) +
-                    ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30))) : 0)
+                    'total_req_view' => (
+                    ($ebay && $ebay->views && $ebay->ebay_l30 ? (($inv * 20)) : 0) +
+                    ($ebay2 && $ebay2->views && $ebay2->ebay_l30 ? (($inv * 20)) : 0) +
+                    ($ebay3 && $ebay3->views && $ebay3->ebay_l30 ? (($inv * 20)) : 0) +
+                    ($amazon && $amazon->sessions_l30 && $amazon->units_ordered_l30 ? (($inv * 20)) : 0) +
+                    ($shein && $shein->views_clicks && $shein->shopify_sheinl30 ? (($inv * 20)) : 0)
                 ),
+                //  100 / cvr * inv not cvr percentage 
+
+
 
                 // Amazon DataView values
                 'amz_sprice' => isset($amazonDataView[$sku]) ?

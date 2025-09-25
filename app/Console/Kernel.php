@@ -88,7 +88,7 @@ class Kernel extends ConsoleKernel
             ->dailyAt('02:10')
             ->timezone('UTC');
         // Sync Temu sheet command
-        $schedule->command('sync:temu-sheet')->everyTenMinutes();
+      
         // Sync Newegg sheet command
         $schedule->command('sync:neweegg-sheet')->everyTenMinutes();
         // Sync Wayfair sheet command
@@ -129,7 +129,7 @@ class Kernel extends ConsoleKernel
             ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-over-pt-bids')
             ->dailyAt('12:00')
-            ->timezone('Asia/Kolkata');
+            ->timezone('Asia/Kolkata'); 
         $schedule->command('amazon:auto-update-over-hl-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
@@ -164,7 +164,6 @@ class Kernel extends ConsoleKernel
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('sync:amazon-prices')->everyMinute();
-        $schedule->command('sync:ebay-prices')->everyMinute();
         $schedule->command('sync:sync-temu-sip')->everyMinute();
         $schedule->command('sync:walmart-metrics-data')->everyMinute();
     }

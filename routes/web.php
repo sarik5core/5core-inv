@@ -1013,6 +1013,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //Update Forecast Sheet
     Route::post('/update-forecast-data', [ForecastAnalysisController::class, 'updateForcastSheet'])->name('update.forecast.data');
     Route::get('/inventory-stages', [ForecastAnalysisController::class, 'invetoryStagesView'])->name('inventory.stages');
+    Route::get('/inventory-stages/data', [ForecastAnalysisController::class, 'invetoryStagesData']);
 
     //MFRG In Progress
     Route::get('/mfrg-in-progress', [MFRGInProgressController::class, 'index'])->name('mfrg.in.progress');
@@ -1781,6 +1782,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon/campaign/reports', 'index')->name('amazon.campaign.reports');
         Route::get('/amazon/kw/ads', 'amazonKwAdsView')->name('amazon.kw.ads');
         Route::get('/amazon/kw/ads/data', 'getAmazonKwAdsData');
+        Route::get('/amazon-kw-ads/filter', 'filterKwAds')->name('amazonKwAds.filter');
         Route::get('/amazon/pt/ads', 'amazonPtAdsView')->name('amazon.pt.ads');
         Route::get('/amazon/pt/ads/data', 'getAmazonPtAdsData');
         Route::get('/amazon/hl/ads', 'amazonHlAdsView')->name('amazon.hl.ads');
@@ -1820,6 +1822,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::controller(WalmartUtilisationController::class)->group(function () {
         Route::get('/walmart/utilized/kw', 'index')->name('walmart.utilized.kw');
+        Route::get('/walmart/over/utilized', 'overUtilisedView')->name('walmart.over.utilized');
+        Route::get('/walmart/under/utilized', 'underUtilisedView')->name('walmart.under.utilized');
+        Route::get('/walmart/correctly/utilized', 'correctlyUtilisedView')->name('walmart.correctly.utilized');
         Route::get('/walmart/utilized/kw/data', 'getWalmartAdsData');
     });
 
@@ -1827,6 +1832,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/google/shopping', 'index')->name('google.shopping');
         Route::get('/google/shopping/serp', 'googleShoppingSerp')->name('google.shopping.serp');
         Route::get('/google/shopping/pmax', 'googleShoppingPmax')->name('google.shopping.pmax');
+        Route::get('/google/shopping/over/utilize', 'googleOverUtilizeView')->name('google.shopping.over.utilize');
+        Route::get('/google/shopping/under/utilize', 'googleUnderUtilizeView')->name('google.shopping.under.utilize');
         Route::get('/google/shopping/running', 'googleShoppingAdsRunning')->name('google.shopping.running');
         Route::get('/google/shopping/data', 'getGoogleShoppingAdsData');
     });

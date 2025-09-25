@@ -235,7 +235,7 @@
                         <div class="col-md-3 mb-3 mb-md-0">
                             <div class="p-3 border rounded bg-light h-100">
                                 <div class="text-muted small">Clicks</div>
-                                <div class="h3 mb-0 fw-bold text-primary">{{ $clicks->sum() }}</div>
+                                <div class="h3 mb-0 fw-bold text-primary card-clicks">{{ $clicks->sum() }}</div>
                             </div>
                         </div>
 
@@ -243,7 +243,7 @@
                         <div class="col-md-3 mb-3 mb-md-0">
                             <div class="p-3 border rounded bg-light h-100">
                                 <div class="text-muted small">Spend</div>
-                                <div class="h3 mb-0 fw-bold text-success">
+                                <div class="h3 mb-0 fw-bold text-success card-spend">
                                     US${{ number_format($spend->sum(), 2) }}
                                 </div>
                             </div>
@@ -253,7 +253,7 @@
                         <div class="col-md-3 mb-3 mb-md-0">
                             <div class="p-3 border rounded bg-light h-100">
                                 <div class="text-muted small">Orders</div>
-                                <div class="h3 mb-0 fw-bold text-danger">{{ $orders->sum() }}</div>
+                                <div class="h3 mb-0 fw-bold text-danger card-orders">{{ $orders->sum() }}</div>
                             </div>
                         </div>
 
@@ -263,7 +263,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <div class="text-muted small">Sales</div>
-                                        <div class="h3 mb-0 fw-bold text-info">
+                                        <div class="h3 mb-0 fw-bold text-info card-sales">
                                             US${{ number_format($sales->sum(), 2) }}
                                         </div>
                                     </div>
@@ -371,6 +371,7 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            document.body.style.zoom = "85%";
 
             const getDilColor = (value) => {
                 const percent = parseFloat(value) * 100;
@@ -1371,9 +1372,6 @@
                     });
                 }
             });
-
-
-            document.body.style.zoom = "90%";
         });
     </script>
 
@@ -1500,9 +1498,6 @@
             }
         });
 
-    </script>
-
-    <script>
         document.addEventListener("DOMContentLoaded", function() {
             const toggleBtn = document.getElementById("toggleChartBtn");
             const chartContainer = document.getElementById("chartContainer");
@@ -1539,18 +1534,42 @@
                     'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 }
             }, function(start, end) {
-                const startDate = start.format("D MMM");
-                const endDate   = end.format("D MMM YYYY");
+                const startDate = start.format("YYYY-MM-DD");
+                const endDate   = end.format("YYYY-MM-DD");
+
                 $('#daterange-btn span').html("Date range: " + startDate + " - " + endDate);
+                fetchChartData(startDate, endDate);
             });
 
             // Reset on cancel
             $('#daterange-btn').on('cancel.daterangepicker', function(ev, picker) {
                 $(this).find('span').html("Date range: Select");
+                fetchChartData(); 
             });
 
         });
 
+        function fetchChartData(startDate, endDate) {
+            $.ajax({
+                url: "{{ route('amazonKwAds.filter') }}",
+                type: "GET",
+                data: { startDate, endDate },
+                success: function(response) {
+                    const formattedDates = response.dates.map(d => moment(d).format('MMM DD'));
+                    chart.data.labels = formattedDates;
+                    chart.data.datasets[0].data = response.clicks;
+                    chart.data.datasets[1].data = response.spend;
+                    chart.data.datasets[2].data = response.orders;
+                    chart.data.datasets[3].data = response.sales;
+                    chart.update();
+
+                    $('.card-clicks').text(response.totals.clicks);
+                    $('.card-spend').text('$' + Number(response.totals.spend).toFixed(2));
+                    $('.card-orders').text(response.totals.orders);
+                    $('.card-sales').text('$' + Number(response.totals.sales).toFixed(2));
+                }
+            });
+        }
     </script>
 @endsection
 

@@ -1896,7 +1896,16 @@
                                         <a href="walmartPricingCVR">Walmart Pricing - CVR</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('walmart.utilized.kw') }}">Walmart Utilized KW</a>
+                                        <a href="{{ route('walmart.utilized.kw') }}">Walmart Kw Ads Report</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.over.utilized') }}">Walmart Over Utili.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.under.utilized') }}">Walmart Under Utili.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('walmart.correctly.utilized') }}">Walmart Correctly Utili.</a>
                                     </li>
                                 </ul>
                             </div>
@@ -1914,7 +1923,10 @@
                                         <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('google.shopping') }}">Google Shopping</a>
+                                        <a href="{{ route('google.shopping.over.utilize') }}">G-Shopping Over Util.</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('google.shopping.under.utilize') }}">G-Shopping Under Util.</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('google.shopping.serp') }}">Google SERP</a>

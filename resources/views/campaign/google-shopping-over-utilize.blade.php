@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Walmart - Kw Ads Report', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'G-Shopping Over Utilized', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -130,8 +130,8 @@
 @endsection
 @section('content')
     @include('layouts.shared.page-title', [
-        'page_title' => 'Walmart - Kw Ads Report',
-        'sub_title' => 'Walmart - Kw Ads Report',
+        'page_title' => 'G-Shopping Over Utilized',
+        'sub_title' => 'G-Shopping Over Utilized',
     ])
     <div class="row">
         <div class="col-12">
@@ -141,7 +141,7 @@
                         <!-- Title -->
                         <h4 class="fw-bold text-primary mb-3 d-flex align-items-center">
                             <i class="fa-solid fa-chart-line me-2"></i>
-                            Walmart - Kw Ads Report
+                            G-Shopping Over Utilized
                         </h4>
 
                         <!-- Filters Row -->
@@ -170,6 +170,9 @@
                                     <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
                                         APR ALL SBID
                                     </button>
+                                    <a href="javascript:void(0)" id="export-btn" class="btn btn-sm btn-success d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-file-export me-1"></i> Export Excel/CSV
+                                    </a>
                                     <button class="btn btn-success btn-md">
                                         <i class="fa fa-arrow-down me-1"></i>
                                         Need to decrease bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
@@ -226,6 +229,8 @@
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
@@ -245,7 +250,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/walmart/utilized/kw/data",
+                ajaxURL: "/google/shopping/data",
                 layout: "fitData",
                 pagination: "local",
                 paginationSize: 25,
@@ -312,39 +317,6 @@
                         visible: false
                     },
                     {
-                        title: "WL 30",
-                        field: "WA_L30",
-                        visible: false
-                    },
-                    {
-                        title: "NRL",
-                        field: "NRL",
-                        formatter: function(cell) {
-                            const row = cell.getRow();
-                            const sku = row.getData().sku;
-                            const value = cell.getValue();
-
-                            let bgColor = "";
-                            if (value === "NRL") {
-                                bgColor = "background-color:#dc3545;color:#fff;"; // red
-                            } else if (value === "RL") {
-                                bgColor = "background-color:#28a745;color:#fff;"; // green
-                            }
-
-                            return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-sku="${sku}" 
-                                        data-field="NRL"
-                                        style="width: 90px; ${bgColor}">
-                                    <option value="RL" ${value === 'RL' ? 'selected' : ''}>RL</option>
-                                    <option value="NRL" ${value === 'NRL' ? 'selected' : ''}>NRL</option>
-                                </select>
-                            `;
-                        },
-                        visible: false,
-                        hozAlign: "center"
-                    },
-                    {
                         title: "CAMPAIGN",
                         field: "campaignName"
                     },
@@ -352,39 +324,26 @@
                         title: "BGT",
                         field: "campaignBudgetAmount",
                         hozAlign: "right",
-                        formatter: (cell) => parseFloat(cell.getValue() || 0)
                     },
                     {
-                        title: "ACOS L30",
-                        field: "acos_L30",
+                        title: "Clicks L30 ",
+                        field: "clicks_L30",
                         hozAlign: "right",
-                        formatter: function(cell) {
-                            return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
-                            `;
-                            
-                        },
-                        visible: false,
-                    },
-                    {
-                        title: "Clicks L30",
-                        field: "clicks_l30",
-                        hozAlign: "right",
-                        formatter: function(cell) {
-                            return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
-                            `;
+                        formatter: function(cell){
+                            var row = cell.getRow().getData();
+                            var clicks_L30 = parseFloat(row.clicks_L30) || 0;
+                            return clicks_L30;
                         }
                     },
                     {
                         title: "7 UB%",
-                        field: "spend_l7",
+                        field: "spend_L7",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var spend_l7 = parseFloat(row.spend_l7) || 0;
+                            var spend_L7 = parseFloat(row.spend_L7) || 0;
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub7 = budget > 0 ? (spend_l7 / (budget * 7)) * 100 : 0;
+                            var ub7 = budget > 0 ? (spend_L7 / (budget * 7)) * 100 : 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
@@ -397,17 +356,26 @@
                             }
 
                             return ub7.toFixed(0) + "%";
-                        }
+                        },
+                        sorter: function(a, b, aRow, bRow, column, dir) {
+                            var dataA = aRow.getData();
+                            var dataB = bRow.getData();
+
+                            var ubA = dataA.campaignBudgetAmount > 0 ? (parseFloat(dataA.spend_L7) / (parseFloat(dataA.campaignBudgetAmount) * 7)) * 100 : 0;
+                            var ubB = dataB.campaignBudgetAmount > 0 ? (parseFloat(dataB.spend_L7) / (parseFloat(dataB.campaignBudgetAmount) * 7)) * 100 : 0;
+
+                            return ubA - ubB; 
+                        },
                     },
                     {
                         title: "1 UB%",
-                        field: "spend_l1",
+                        field: "spend_L1",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var spend_l1 = parseFloat(row.spend_l1) || 0;
+                            var spend_L1 = parseFloat(row.spend_L1) || 0;
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub1 = budget > 0 ? (spend_l1 / budget) * 100 : 0;
+                            var ub1 = budget > 0 ? (spend_L1 / budget) * 100 : 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
@@ -424,22 +392,22 @@
                     },
                     {
                         title: "L7 CPC",
-                        field: "cpc_l7",
+                        field: "cpc_L7",
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
-                            return cpc_l7.toFixed(2);
+                            var cpc_L7 = parseFloat(row.cpc_L7) || 0;
+                            return cpc_L7.toFixed(2);
                         }
                     },
                     {
                         title: "L1 CPC",
-                        field: "cpc_l1",
+                        field: "cpc_L1",
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var cpc_l1 = parseFloat(row.cpc_l1) || 0;
-                            return cpc_l1.toFixed(2);
+                            var cpc_L1 = parseFloat(row.cpc_L1) || 0;
+                            return cpc_L1.toFixed(2);
                         }
                     },
                     {
@@ -448,13 +416,13 @@
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var cpc_l1 = parseFloat(row.cpc_l1) || 0;
-                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
+                            var cpc_L1 = parseFloat(row.cpc_L1) || 0;
+                            var cpc_L7 = parseFloat(row.cpc_L7) || 0;
                             var sbid;
-                            if(cpc_l1 > cpc_l7) {
-                                sbid = (cpc_l1 * 0.9).toFixed(2);
+                            if(cpc_L1 > cpc_L7) {
+                                sbid = (cpc_L1 * 0.95).toFixed(2);
                             }else{
-                                sbid = (cpc_l7 * 0.9).toFixed(2);
+                                sbid = (cpc_L1 * 0.95).toFixed(2);
                             }
                             return sbid;
                         },
@@ -474,18 +442,21 @@
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
                                 var row = cell.getRow().getData();
-                                var cpc_l1 = parseFloat(row.cpc_l1) || 0;
-                                var cpc_l7 = parseFloat(row.cpc_l7) || 0;
+                                var cpc_L1 = parseFloat(row.cpc_L1) || 0;
+                                var cpc_L7 = parseFloat(row.cpc_L7) || 0;
                                 var sbid;
-                                if(cpc_l1 > cpc_l7) {
-                                    sbid = (cpc_l1 * 0.9).toFixed(2);
+                                if(cpc_L1 > cpc_L7) {
+                                    sbid = (cpc_L1 * 0.95).toFixed(2);
                                 }else{
-                                    sbid = (cpc_l7 * 0.9).toFixed(2);
+                                    sbid = (cpc_L1 * 0.95).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
                         }
                     },
+                ],
+                initialSort: [
+                    { column: "spend_L7", dir: "desc" }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
@@ -528,10 +499,44 @@
                 }
             });
 
+            // document.addEventListener("change", function(e){
+            //     if(e.target.classList.contains("editable-select")){
+            //         let sku   = e.target.getAttribute("data-sku");
+            //         let field = e.target.getAttribute("data-field");
+            //         let value = e.target.value;
+
+            //         fetch('/update-amazon-nr-nrl-fba', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'Content-Type': 'application/json',
+            //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            //             },
+            //             body: JSON.stringify({
+            //                 sku: sku,
+            //                 field: field,
+            //                 value: value
+            //             })
+            //         })
+            //         .then(res => res.json())
+            //         .then(data => {
+            //             console.log(data);
+            //         })
+            //         .catch(err => console.error(err));
+            //     }
+            // });
+
 
             table.on("tableBuilt", function () {
 
                 function combinedFilter(data) {
+                    let budget = parseFloat(data.campaignBudgetAmount) || 0;
+                    let spend_L7 = parseFloat(data.spend_L7) || 0;
+                    let spend_l1 = parseFloat(data.spend_l1) || 0;
+
+                    let ub7 = budget > 0 ? (spend_L7 / (budget * 7)) * 100 : 0;
+
+                    if (!(ub7 > 90)) return false;
+
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal) {
                         let campaignMatch = data.campaignName?.toLowerCase().includes(searchVal);
@@ -548,12 +553,12 @@
                     }
 
                     let invFilterVal = $("#inv-filter").val();
-                    let invVal = parseFloat(data.INV || 0);
-
-                    if (invFilterVal === "INV_0") {
-                        if (invVal !== 0) return false;
+                    if (invFilterVal === "ALL") {
+                        // if (parseFloat(data.INV) === 0) return false;
+                    } else if (invFilterVal === "INV_0") {
+                        if (parseFloat(data.INV) !== 0) return false;
                     } else if (invFilterVal === "OTHERS") {
-                        if (invVal === 0) return false;
+                        if (parseFloat(data.INV) === 0) return false;
                     }
 
                     let nrlFilterVal = $("#nrl-filter").val();
@@ -609,6 +614,92 @@
                 }
             });
 
+            // document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
+            //     const overlay = document.getElementById("progress-overlay");
+            //     overlay.style.display = "flex";
+
+            //     var filteredData = table.getSelectedRows();
+                
+            //     var campaignIds = [];
+            //     var bids = [];
+
+            //     filteredData.forEach(function(row){
+            //         var rowEl = row.getElement();
+            //         if(rowEl && rowEl.offsetParent !== null){
+            //             var rowData = row.getData();
+            //             var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
+            //             var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
+            //             var sbid;
+            //             if(l1_cpc > l7_cpc) {
+            //                 sbid = (l1_cpc * 0.9).toFixed(2);
+            //             }else{
+            //                 sbid = (l7_cpc * 0.9).toFixed(2);
+            //             }
+
+            //             campaignIds.push(rowData.campaign_id);
+            //             bids.push(sbid);
+            //         }
+            //     });
+            //     console.log("Campaign IDs:", campaignIds);
+            //     console.log("Bids:", bids);
+            //     fetch('/update-keywords-bid-price', {
+            //         method: 'PUT',
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            //         },
+            //         body: JSON.stringify({
+            //             campaign_ids: campaignIds,
+            //             bids: bids
+            //         })
+            //     })
+            //     .then(res => res.json())
+            //     .then(data => {
+            //         console.log("Backend response:", data);
+            //         if(data.status === 200){
+            //             alert("Keywords updated successfully!");
+            //         } else {
+            //             alert("Something went wrong: " + data.message);
+            //         }
+            //     })
+            //     .catch(err => console.error(err))
+            //     .finally(() => {
+            //         overlay.style.display = "none";
+            //     });
+            // });
+
+            // function updateBid(aprBid, campaignId) {
+            //     const overlay = document.getElementById("progress-overlay");
+            //     overlay.style.display = "flex";
+
+            //     console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
+            //     fetch('/update-keywords-bid-price', {
+            //         method: 'PUT',
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            //         },
+            //         body: JSON.stringify({
+            //             campaign_ids: [campaignId],
+            //             bids: [aprBid]
+            //         })
+            //     })
+            //     .then(res => res.json())
+            //     .then(data => {
+            //         console.log("Backend response:", data);
+            //         if(data.status === 200){
+            //             alert("Keywords updated successfully!");
+            //         } else {
+            //             alert("Something went wrong: " + data.message);
+            //         }
+            //     })
+            //     .catch(err => console.error(err))
+            //     .finally(() => {
+            //         overlay.style.display = "none";
+            //     });
+            // }
+
+            // Safe selector function
             function getRowSelectBySkuAndField(sku, field) {
                 try {
                     let escapedSku = CSS.escape(sku); // escape special chars
@@ -618,6 +709,38 @@
                     return null;
                 }
             }
+
+            document.getElementById("export-btn").addEventListener("click", function () {
+                let filteredData = table.getData("active");
+
+                let exportData = filteredData.map(row => {
+                    let cpc_L1 = parseFloat(row.cpc_L1 || 0);
+                    let cpc_L7 = parseFloat(row.cpc_L7 || 0);
+                    let sbid = 0;
+
+                    if (cpc_L1 > 0) {
+                        sbid = (cpc_L1 * 0.95).toFixed(2);
+                    } else {
+                        sbid = (cpc_L1 * 0.95).toFixed(2);
+                    }
+
+                    return {
+                        campaignName: row.campaignName || "",
+                        sbid: sbid
+                    };
+                });
+
+                if (exportData.length === 0) {
+                    alert("No data available to export!");
+                    return;
+                }
+
+                let ws = XLSX.utils.json_to_sheet(exportData);
+                let wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Campaigns");
+
+                XLSX.writeFile(wb, "ebay_over_acos_pink.xlsx");
+            });
 
             document.body.style.zoom = "78%";
         });
