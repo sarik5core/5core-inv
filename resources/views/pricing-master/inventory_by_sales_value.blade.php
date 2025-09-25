@@ -1186,6 +1186,27 @@ const table = new Tabulator("#forecast-table", {
                     return valA - valB;
                 }
             },
+
+             {
+                title: "COGS",
+                field: "COGS",
+                hozAlign: "center",
+                headerSort: true,
+                formatter: function(cell) {
+                    const value = parseFloat(cell.getValue()) || 0;
+                    return `<span class="text-success">${Math.round(value)}</span>`;
+                },
+                sorter: function(a, b, aRow, bRow) {
+                    const valA = parseFloat(a) || 0;
+                    const valB = parseFloat(b) || 0;
+                    if (valA === valB) {
+                        const skuA = aRow.getData().SKU || "";
+                        const skuB = bRow.getData().SKU || "";
+                        return skuA.localeCompare(skuB);
+                    }
+                    return valA - valB;
+                }
+            },
        
 
         {
@@ -1668,6 +1689,12 @@ const table = new Tabulator("#forecast-table", {
                 const inv = item.INV || 0;
                 const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
                 item.inv_value = (inv * shopifyPrice).toFixed(2);
+            }
+
+            if (!item.COGS){
+                const lp = parseFloat(item.LP) || 0;
+                const inv = item.INV || 0;
+                item.COGS = (lp * inv).toFixed(2);
             }
 
                 return {
