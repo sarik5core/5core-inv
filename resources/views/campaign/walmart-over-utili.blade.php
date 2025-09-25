@@ -366,61 +366,25 @@
                         },
                         visible: false,
                     },
-                    // {
-                    //     title: "ACOS L15",
-                    //     field: "acos_L15",
-                    //     hozAlign: "right",
-                    //     visible: false,
-                    //     formatter: function(cell) {
-                    //         return parseFloat(cell.getValue() || 0).toFixed(0) + "%";
-                    //     }
-                    // },
-                    // {
-                    //     title: "ACOS L7",
-                    //     field: "acos_L7",
-                    //     hozAlign: "right",
-                    //     visible: false,
-                    //     formatter: function(cell) {
-                    //         return parseFloat(cell.getValue() || 0).toFixed(0) + "%";
-                    //     }
-                    // },
                     {
                         title: "Clicks L30",
-                        field: "clicks_L30",
+                        field: "clicks_l30",
                         hozAlign: "right",
                         formatter: function(cell) {
                             return `
-                                <span>${parseFloat(cell.getValue() || 0).toFixed(0) + "%"}</span>
+                                <span>${parseFloat(cell.getValue() || 0).toFixed(0)}</span>
                             `;
                         }
                     },
-                    // {
-                    //     title: "Clicks L15",
-                    //     field: "clicks_L15",
-                    //     hozAlign: "right",
-                    //     visible: false,
-                    //     formatter: function(cell) {
-                    //         return parseFloat(cell.getValue() || 0).toFixed(0);
-                    //     }
-                    // },
-                    // {
-                    //     title: "Clicks L7",
-                    //     field: "clicks_L7",
-                    //     hozAlign: "right",
-                    //     visible: false,
-                    //     formatter: function(cell) {
-                    //         return parseFloat(cell.getValue() || 0).toFixed(0);
-                    //     }
-                    // },
                     {
                         title: "7 UB%",
-                        field: "l7_spend",
+                        field: "spend_l7",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l7_spend = parseFloat(row.l7_spend) || 0;
+                            var spend_l7 = parseFloat(row.spend_l7) || 0;
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub7 = budget > 0 ? (l7_spend / (budget * 7)) * 100 : 0;
+                            var ub7 = budget > 0 ? (spend_l7 / (budget * 7)) * 100 : 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
@@ -437,13 +401,13 @@
                     },
                     {
                         title: "1 UB%",
-                        field: "l1_spend",
+                        field: "spend_l1",
                         hozAlign: "right",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l1_spend = parseFloat(row.l1_spend) || 0;
+                            var spend_l1 = parseFloat(row.spend_l1) || 0;
                             var budget = parseFloat(row.campaignBudgetAmount) || 0;
-                            var ub1 = budget > 0 ? (l1_spend / budget) * 100 : 0;
+                            var ub1 = budget > 0 ? (spend_l1 / budget) * 100 : 0;
 
                             var td = cell.getElement();
                             td.classList.remove('green-bg', 'pink-bg', 'red-bg');
@@ -460,22 +424,22 @@
                     },
                     {
                         title: "L7 CPC",
-                        field: "l7_cpc",
+                        field: "cpc_l7",
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
-                            return l7_cpc.toFixed(2);
+                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
+                            return cpc_l7.toFixed(2);
                         }
                     },
                     {
                         title: "L1 CPC",
-                        field: "l1_cpc",
+                        field: "cpc_l1",
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            return l1_cpc.toFixed(2);
+                            var cpc_l1 = parseFloat(row.cpc_l1) || 0;
+                            return cpc_l1.toFixed(2);
                         }
                     },
                     {
@@ -484,13 +448,13 @@
                         hozAlign: "center",
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
-                            var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                            var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                            var cpc_l1 = parseFloat(row.cpc_l1) || 0;
+                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
                             var sbid;
-                            if(l1_cpc > l7_cpc) {
-                                sbid = (l1_cpc * 0.9).toFixed(2);
+                            if(cpc_l1 > cpc_l7) {
+                                sbid = (cpc_l1 * 0.9).toFixed(2);
                             }else{
-                                sbid = (l7_cpc * 0.9).toFixed(2);
+                                sbid = (cpc_l7 * 0.9).toFixed(2);
                             }
                             return sbid;
                         },
@@ -510,13 +474,13 @@
                         cellClick: function(e, cell) {
                             if (e.target.classList.contains("update-row-btn")) {
                                 var row = cell.getRow().getData();
-                                var l1_cpc = parseFloat(row.l1_cpc) || 0;
-                                var l7_cpc = parseFloat(row.l7_cpc) || 0;
+                                var cpc_l1 = parseFloat(row.cpc_l1) || 0;
+                                var cpc_l7 = parseFloat(row.cpc_l7) || 0;
                                 var sbid;
-                                if(l1_cpc > l7_cpc) {
-                                    sbid = (l1_cpc * 0.9).toFixed(2);
+                                if(cpc_l1 > cpc_l7) {
+                                    sbid = (cpc_l1 * 0.9).toFixed(2);
                                 }else{
-                                    sbid = (l7_cpc * 0.9).toFixed(2);
+                                    sbid = (cpc_l7 * 0.9).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
@@ -563,32 +527,6 @@
                     });
                 }
             });
-
-            // document.addEventListener("change", function(e){
-            //     if(e.target.classList.contains("editable-select")){
-            //         let sku   = e.target.getAttribute("data-sku");
-            //         let field = e.target.getAttribute("data-field");
-            //         let value = e.target.value;
-
-            //         fetch('/update-amazon-nr-nrl-fba', {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            //             },
-            //             body: JSON.stringify({
-            //                 sku: sku,
-            //                 field: field,
-            //                 value: value
-            //             })
-            //         })
-            //         .then(res => res.json())
-            //         .then(data => {
-            //             console.log(data);
-            //         })
-            //         .catch(err => console.error(err));
-            //     }
-            // });
 
 
             table.on("tableBuilt", function () {
@@ -671,119 +609,6 @@
                 }
             });
 
-            // document.addEventListener("click", function(e) {
-            //     if (e.target.classList.contains("toggle-acos-cols-btn")) {
-            //         let colsToToggle = ["acos_L15", "acos_L7"]; 
-
-            //         colsToToggle.forEach(colField => {
-            //             let col = table.getColumn(colField);
-            //             if (col) {
-            //                 col.toggle();
-            //             }
-            //         });
-            //     }
-            // });
-
-
-            // document.addEventListener("click", function(e) {
-            //     if (e.target.classList.contains("toggle-clicks-cols-btn")) {
-            //         let colsToToggle = ["clicks_L15", "clicks_L7"]; 
-
-            //         colsToToggle.forEach(colField => {
-            //             let col = table.getColumn(colField);
-            //             if (col) {
-            //                 col.toggle();
-            //             }
-            //         });
-            //     }
-            // });
-
-            // document.getElementById("apr-all-sbid-btn").addEventListener("click", function(){
-            //     const overlay = document.getElementById("progress-overlay");
-            //     overlay.style.display = "flex";
-
-            //     var filteredData = table.getSelectedRows();
-                
-            //     var campaignIds = [];
-            //     var bids = [];
-
-            //     filteredData.forEach(function(row){
-            //         var rowEl = row.getElement();
-            //         if(rowEl && rowEl.offsetParent !== null){
-            //             var rowData = row.getData();
-            //             var l1_cpc = parseFloat(rowData.l1_cpc) || 0;
-            //             var l7_cpc = parseFloat(rowData.l7_cpc) || 0;
-            //             var sbid;
-            //             if(l1_cpc > l7_cpc) {
-            //                 sbid = (l1_cpc * 0.9).toFixed(2);
-            //             }else{
-            //                 sbid = (l7_cpc * 0.9).toFixed(2);
-            //             }
-
-            //             campaignIds.push(rowData.campaign_id);
-            //             bids.push(sbid);
-            //         }
-            //     });
-            //     console.log("Campaign IDs:", campaignIds);
-            //     console.log("Bids:", bids);
-            //     fetch('/update-keywords-bid-price', {
-            //         method: 'PUT',
-            //         headers: {
-            //             'Content-Type': 'application/json',
-            //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            //         },
-            //         body: JSON.stringify({
-            //             campaign_ids: campaignIds,
-            //             bids: bids
-            //         })
-            //     })
-            //     .then(res => res.json())
-            //     .then(data => {
-            //         console.log("Backend response:", data);
-            //         if(data.status === 200){
-            //             alert("Keywords updated successfully!");
-            //         } else {
-            //             alert("Something went wrong: " + data.message);
-            //         }
-            //     })
-            //     .catch(err => console.error(err))
-            //     .finally(() => {
-            //         overlay.style.display = "none";
-            //     });
-            // });
-
-            // function updateBid(aprBid, campaignId) {
-            //     const overlay = document.getElementById("progress-overlay");
-            //     overlay.style.display = "flex";
-
-            //     console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
-            //     fetch('/update-keywords-bid-price', {
-            //         method: 'PUT',
-            //         headers: {
-            //             'Content-Type': 'application/json',
-            //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            //         },
-            //         body: JSON.stringify({
-            //             campaign_ids: [campaignId],
-            //             bids: [aprBid]
-            //         })
-            //     })
-            //     .then(res => res.json())
-            //     .then(data => {
-            //         console.log("Backend response:", data);
-            //         if(data.status === 200){
-            //             alert("Keywords updated successfully!");
-            //         } else {
-            //             alert("Something went wrong: " + data.message);
-            //         }
-            //     })
-            //     .catch(err => console.error(err))
-            //     .finally(() => {
-            //         overlay.style.display = "none";
-            //     });
-            // }
-
-            // Safe selector function
             function getRowSelectBySkuAndField(sku, field) {
                 try {
                     let escapedSku = CSS.escape(sku); // escape special chars
