@@ -88,7 +88,7 @@ class Kernel extends ConsoleKernel
             ->dailyAt('02:10')
             ->timezone('UTC');
         // Sync Temu sheet command
-        $schedule->command('sync:temu-sheet')->everyTenMinutes();
+      
         // Sync Newegg sheet command
         $schedule->command('sync:neweegg-sheet')->everyTenMinutes();
         // Sync Wayfair sheet command
