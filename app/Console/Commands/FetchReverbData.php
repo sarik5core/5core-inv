@@ -32,10 +32,17 @@ class FetchReverbData extends Command
         $listings = $this->fetchAllListings();
 
         $today = Carbon::today();
-        $l30Start = $today->copy()->subDays(30);
-        $l30End   = $today->copy()->subDay();
-        $l60Start = $today->copy()->subDays(60);
-        $l60End   = $l30Start->copy()->subDay();
+        // $l30Start = $today->copy()->subDays(30);
+        // $l30End   = $today->copy()->subDay();
+        // $l60Start = $today->copy()->subDays(60);
+        // $l60End   = $l30Start->copy()->subDay();
+
+        $l30Start = $today->copy()->subDays(30); // 2025-08-27
+        $l30End   = $today->copy();              // 2025-09-26
+
+        // L60: 60 days ending the day before L30 starts
+        $l60End   = $l30Start->copy()->subDay(); // 2025-08-26
+        $l60Start = $l60End->copy()->subDays(60); // 2025-07-25
 
 
         // $rL30 = $this->getOrderQuantities(30);

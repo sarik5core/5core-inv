@@ -678,10 +678,10 @@ class VerificationAdjustmentController extends Controller
         // Fetch inventory data from Shopify
         $shopifyInventoryController = new ShopifyApiInventoryController();
         $inventoryResponse = $shopifyInventoryController->fetchInventoryWithCommitment();
-        Log::info('Fetched inventory response:', $inventoryResponse);
+        // Log::info('Fetched inventory response:', $inventoryResponse);
 
         $inventoryData = collect($inventoryResponse);
-        Log::info('Shopify Inventory Data:', $inventoryData->toArray());
+        // Log::info('Shopify Inventory Data:', $inventoryData->toArray());
 
         // Fetch data from the local product_master table
         $productMasterData = ProductMaster::all();
@@ -764,7 +764,7 @@ class VerificationAdjustmentController extends Controller
                     $item->AVAILABLE_TO_SELL = $shopifyRow['available_to_sell'];
                     $item->IMAGE_URL = $shopifyRow['image_url'] ?? $item->IMAGE_URL;
 
-                    // ✅ Ensure SKU is stored/updated in ShopifyInventory table
+                    // Ensure SKU is stored/updated in ShopifyInventory table
                     ShopifyInventory::updateOrCreate(
                         ['sku' => $childSku],
                         [
@@ -809,7 +809,7 @@ class VerificationAdjustmentController extends Controller
         });
 
         $processedData = $mergedData->values();
-        Log::info('Processed data count: ' . count($processedData));
+        // Log::info('Processed data count: ' . count($processedData));
 
         return response()->json([
             'message' => 'Data fetched successfully',
@@ -1017,7 +1017,7 @@ class VerificationAdjustmentController extends Controller
                     ->get("https://{$this->shopifyDomain}/admin/api/2025-01/products.json", $queryParams);
 
                 if (!$response->successful()) {
-                    Log::error('Failed to fetch products from Shopify', ['status' => $response->status()]);
+                    // Log::error('Failed to fetch products from Shopify', ['status' => $response->status()]);
                     break;
                 }
 
@@ -1043,7 +1043,7 @@ class VerificationAdjustmentController extends Controller
             } while (!$inventoryItemId && $pageInfo);
 
             if (!$inventoryItemId) {
-                Log::error('Inventory item ID not found for SKU', ['sku' => $sku]);
+                // Log::error('Inventory item ID not found for SKU', ['sku' => $sku]);
                 return response()->json(['success' => false, 'message' => 'Inventory item ID not found for SKU.']);
             }
 
@@ -1068,7 +1068,7 @@ class VerificationAdjustmentController extends Controller
                     'available_adjustment' => $toAdjust,
                 ]);
 
-            Log::info('Shopify Adjust Response', $adjustResponse->json());
+            // Log::info('Shopify Adjust Response', $adjustResponse->json());
 
             if (!$adjustResponse->successful()) {
                 return response()->json(['success' => false, 'message' => 'Failed to update Shopify inventory.']);

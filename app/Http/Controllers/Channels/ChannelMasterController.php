@@ -993,7 +993,8 @@ class ChannelMasterController extends Controller
                         (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
 
                 $lp   = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
-                $ship = isset($values['ship']) ? (float) $values['ship'] : ($pm->ship ?? 0);
+                $ship = isset($values['temu_ship']) ? (float) $values['temu_ship'] : ($pm->temu_ship ?? 0);
+
             }
 
             // Profit per unit
