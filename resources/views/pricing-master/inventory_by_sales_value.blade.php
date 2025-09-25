@@ -1173,7 +1173,7 @@ const table = new Tabulator("#forecast-table", {
                 headerSort: true,
                 formatter: function(cell) {
                     const value = parseFloat(cell.getValue()) || 0;
-                    return `<span class="text-success">${value.toFixed(2)}</span>`;
+                    return `<span class="text-success">${Math.round(value)}</span>`;
                 },
                 sorter: function(a, b, aRow, bRow) {
                     const valA = parseFloat(a) || 0;
@@ -1212,16 +1212,21 @@ const table = new Tabulator("#forecast-table", {
             
         },
 
-         {
+        {
             title: "Avg CVR",
             field: "avgCvr",
             hozAlign: "center",
             headerSort: false,
             formatter: function(cell) {
-                const value = cell.getValue() || 0;
-                return `<span class="text-primary">${value} </span>`;
+                let value = cell.getValue() || 0;
+                // Remove % if present and parse as float
+                if (typeof value === "string" && value.includes("%")) {
+                    value = value.replace("%", "");
+                }
+                value = parseFloat(value);
+                if (isNaN(value)) value = 0;
+                return `<span class="text-primary">${Math.round(value)}</span>`;
             }
-            
         },
 
 
