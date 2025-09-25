@@ -56,7 +56,6 @@ class GoogleShoppingAdsController extends Controller
                 'metrics_clicks',
                 'metrics_impressions'
             )
-            // ->where('campaign_status', 'ENABLED')
             ->get();
 
         $ranges = ['L1', 'L7', 'L30'];

@@ -170,6 +170,9 @@
                                     <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
                                         APR ALL SBID
                                     </button>
+                                    <a href="javascript:void(0)" id="export-btn" class="btn btn-sm btn-success d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-file-export me-1"></i> Export Excel/CSV
+                                    </a>
                                     <button class="btn btn-success btn-md">
                                         <i class="fa fa-arrow-down me-1"></i>
                                         Need to decrease bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
@@ -226,6 +229,8 @@
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
@@ -415,9 +420,9 @@
                             var cpc_L7 = parseFloat(row.cpc_L7) || 0;
                             var sbid;
                             if(cpc_L1 > cpc_L7) {
-                                sbid = (cpc_L1 * 0.9).toFixed(2);
+                                sbid = (cpc_L1 * 0.95).toFixed(2);
                             }else{
-                                sbid = (cpc_L7 * 0.9).toFixed(2);
+                                sbid = (cpc_L1 * 0.95).toFixed(2);
                             }
                             return sbid;
                         },
@@ -441,9 +446,9 @@
                                 var cpc_L7 = parseFloat(row.cpc_L7) || 0;
                                 var sbid;
                                 if(cpc_L1 > cpc_L7) {
-                                    sbid = (cpc_L1 * 0.9).toFixed(2);
+                                    sbid = (cpc_L1 * 0.95).toFixed(2);
                                 }else{
-                                    sbid = (cpc_L7 * 0.9).toFixed(2);
+                                    sbid = (cpc_L1 * 0.95).toFixed(2);
                                 }
                                 updateBid(sbid, rowData.campaign_id);
                             }
@@ -524,6 +529,14 @@
             table.on("tableBuilt", function () {
 
                 function combinedFilter(data) {
+                    let budget = parseFloat(data.campaignBudgetAmount) || 0;
+                    let spend_L7 = parseFloat(data.spend_L7) || 0;
+                    let spend_l1 = parseFloat(data.spend_l1) || 0;
+
+                    let ub7 = budget > 0 ? (spend_L7 / (budget * 7)) * 100 : 0;
+
+                    if (!(ub7 > 90)) return false;
+
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal) {
                         let campaignMatch = data.campaignName?.toLowerCase().includes(searchVal);
@@ -696,6 +709,38 @@
                     return null;
                 }
             }
+
+            document.getElementById("export-btn").addEventListener("click", function () {
+                let filteredData = table.getData("active");
+
+                let exportData = filteredData.map(row => {
+                    let cpc_L1 = parseFloat(row.cpc_L1 || 0);
+                    let cpc_L7 = parseFloat(row.cpc_L7 || 0);
+                    let sbid = 0;
+
+                    if (cpc_L1 > 0) {
+                        sbid = (cpc_L1 * 0.95).toFixed(2);
+                    } else {
+                        sbid = (cpc_L1 * 0.95).toFixed(2);
+                    }
+
+                    return {
+                        campaignName: row.campaignName || "",
+                        sbid: sbid
+                    };
+                });
+
+                if (exportData.length === 0) {
+                    alert("No data available to export!");
+                    return;
+                }
+
+                let ws = XLSX.utils.json_to_sheet(exportData);
+                let wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Campaigns");
+
+                XLSX.writeFile(wb, "ebay_over_acos_pink.xlsx");
+            });
 
             document.body.style.zoom = "78%";
         });

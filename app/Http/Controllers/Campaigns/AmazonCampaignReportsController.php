@@ -11,6 +11,7 @@ use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AmazonCampaignReportsController extends Controller
 {
@@ -39,8 +40,10 @@ class AmazonCampaignReportsController extends Controller
         return view('campaign.amazon-campaign-reports',compact('dates', 'clicks', 'spend', 'orders', 'sales'));
     }
 
-    public function amazonKwAdsView(){
-        $data = DB::table('amazon_sp_campaign_reports')
+    public function amazonKwAdsView() {
+        $thirtyDaysAgo = \Carbon\Carbon::now()->subDays(30)->format('Y-m-d');
+
+        $data = DB::connection('apicentral')->table('amazon_sp_campaign_reports')
             ->selectRaw('
                 report_date_range,
                 SUM(clicks) as clicks, 
@@ -48,19 +51,60 @@ class AmazonCampaignReportsController extends Controller
                 SUM(purchases1d) as orders, 
                 SUM(sales1d) as sales
             ')
-            ->whereIn('report_date_range', ['L60','L30','L15','L7','L1'])
+            ->where('ad_type', 'SPONSORED_PRODUCTS')
+            ->whereDate('report_date_range', '>=', $thirtyDaysAgo)
+            ->where(function($query) {
+                $query->whereRaw("campaignName NOT LIKE '%PT'")
+                    ->whereRaw("campaignName NOT LIKE '%PT.'");
+            })
             ->groupBy('report_date_range')
-            ->orderByRaw("FIELD(report_date_range, 'L60','L30','L15','L7','L1')")
+            ->orderBy('report_date_range', 'asc')
             ->get();
 
-        $dates  = $data->pluck('report_date_range');
+        $dates  = $data->pluck('report_date_range')->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'));
         $clicks = $data->pluck('clicks')->map(fn($v) => (int) $v);
         $spend  = $data->pluck('spend')->map(fn($v) => (float) $v);
         $orders = $data->pluck('orders')->map(fn($v) => (int) $v);
         $sales  = $data->pluck('sales')->map(fn($v) => (float) $v);
         
-        return view('campaign.amazon-kw-ads',compact('dates', 'clicks', 'spend', 'orders', 'sales'));
+        return view('campaign.amazon-kw-ads', compact('dates', 'clicks', 'spend', 'orders', 'sales'));
     }
+
+
+    public function filterKwAds(Request $request)
+    {
+        $start = $request->startDate;
+        $end   = $request->endDate;  
+
+        $data = DB::connection('apicentral')->table('amazon_sp_campaign_reports')
+            ->selectRaw('
+                report_date_range,
+                SUM(clicks) as clicks,
+                SUM(spend) as spend,
+                SUM(purchases1d) as orders,
+                SUM(sales1d) as sales
+            ')
+            ->whereBetween('report_date_range', [$start, $end])
+            ->where('ad_type', 'SPONSORED_PRODUCTS')
+            ->groupBy('report_date_range')
+            ->orderBy('report_date_range', 'asc')
+            ->get();
+
+        return response()->json([
+            'dates'  => $data->pluck('report_date_range'),
+            'clicks' => $data->pluck('clicks')->map(fn($v) => (int) $v),
+            'spend'  => $data->pluck('spend')->map(fn($v) => (float) $v),
+            'orders' => $data->pluck('orders')->map(fn($v) => (int) $v),
+            'sales'  => $data->pluck('sales')->map(fn($v) => (float) $v),
+            'totals' => [
+                'clicks' => $data->sum('clicks'),
+                'spend'  => $data->sum('spend'),
+                'orders' => $data->sum('orders'),
+                'sales'  => $data->sum('sales'),
+            ]
+        ]);
+    }
+
 
     public function getAmazonKwAdsData(){
 
