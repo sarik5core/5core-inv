@@ -384,15 +384,29 @@
                 <!-- Product Details Section -->
                 <div class="section-title">Product Specifications(产品规格)</div>
 
-                <div class="form-row">
+                <div class="form-row row">
+                    {{-- Pehle non-select fields --}}
                     @foreach($rfqForm->fields as $field)
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                {{ $field['label'] }}
-                                @if(!empty($field['required'])) <span class="text-danger">*</span> @endif
-                            </label>
+                        @if($field['type'] !== 'select')
+                            <div class="form-group">
+                                <label class="form-label @if(!empty($field['required'])) required @endif">
+                                    {{ $field['label'] }}
+                                </label>
+                                <input type="{{ $field['type'] }}" 
+                                    name="{{ $field['name'] }}" 
+                                    class="form-control"
+                                    @if(!empty($field['required'])) required @endif>
+                            </div>
+                        @endif
+                    @endforeach
 
-                            @if($field['type'] === 'select')
+                    {{-- Ab select fields --}}
+                    @foreach($rfqForm->fields as $field)
+                        @if($field['type'] === 'select')
+                            <div class="form-group">
+                                <label class="form-label @if(!empty($field['required'])) required @endif">
+                                    {{ $field['label'] }}
+                                </label>
                                 <select name="{{ $field['name'] }}" class="form-select" @if(!empty($field['required'])) required @endif>
                                     <option value="">Select</option>
                                     @if(!empty($field['options']))
@@ -401,15 +415,11 @@
                                         @endforeach
                                     @endif
                                 </select>
-                            @else
-                                <input type="{{ $field['type'] }}" 
-                                    name="{{ $field['name'] }}" 
-                                    class="form-control"
-                                    @if(!empty($field['required'])) required @endif>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
                     @endforeach
                 </div>
+
 
                 <div class="form-row">
                     <div class="form-group">

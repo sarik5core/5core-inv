@@ -3148,7 +3148,7 @@
                     let tacosValue = (isNaN(tacos) || !isFinite(tacos)) ? 0 : Math.round(tacos * 100);
 
                     $row.append($('<td>').html(
-                        `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${tacosValue}%</span>
+                        `<span class="dil-percent-value ${getTacosColor(item.tacos)}">${tacosValue}%</span>
                             <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
                                 data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
                                 data-item='${JSON.stringify(item.raw_data)}'></i>`

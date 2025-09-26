@@ -109,7 +109,7 @@
                                     <input type="text" name="fields[0][label]" class="form-control field-label" placeholder="Field Label" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="text" name="fields[0][name]" class="form-control field-name" placeholder="Field Name (auto)" disabled>
+                                    <input type="text" name="fields[0][name]" class="form-control field-name" placeholder="Field Name (auto)" readonly>
                                 </div>
                                 <div class="col-md-2">
                                     <select name="fields[0][type]" class="form-select field-type">
@@ -166,7 +166,7 @@ function createFieldRow(index){
             <input type="text" name="fields[${index}][label]" class="form-control field-label" placeholder="Field Label" required>
         </div>
         <div class="col-md-3">
-            <input type="text" name="fields[${index}][name]" class="form-control field-name" placeholder="Field Name (auto)" required>
+            <input type="text" name="fields[${index}][name]" class="form-control field-name" placeholder="Field Name (auto)" readonly>
         </div>
         <div class="col-md-2">
             <select name="fields[${index}][type]" class="form-select field-type">
