@@ -32,7 +32,7 @@ class FetchTemuMetrics extends Command
         $this->fetchSkus();
         $this->fetchQuantity();
         $this->fetchGoodsId();
-        // $this->fetchBasePrice();
+        $this->fetchBasePrice();
         $this->fetchProductAnalyticsData();
     }
 
@@ -108,8 +108,56 @@ class FetchTemuMetrics extends Command
         $this->info("Analytics data updated successfully.");
     }
 
-    private function fetchBasePrice(){
-        // Currently not any API provides base price.
+    // private function fetchBasePrice(){
+    //     // Currently not any API provides base price.
+    // }
+
+    private function fetchBasePrice()
+    {
+        $skus = TemuMetric::pluck('sku_id')->toArray();
+
+        foreach ($skus as $skuId) {
+            $requestBody = [
+                "type" => "bg.local.goods.sku.list.price.query",
+                "skuIds" => [$skuId], // API ko array me SKU IDs bhejni hoti hain
+            ];
+
+            $signedRequest = $this->generateSignValue($requestBody);
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post('https://openapi-b-us.temu.com/openapi/router', $signedRequest);
+
+            if ($response->failed()) {
+                $this->error("Price request failed for SKU: {$skuId} | " . $response->body());
+                continue;
+            }
+
+            $data = $response->json();
+
+            if (!($data['success'] ?? false)) {
+                $this->error("Temu Price API error for SKU: {$skuId} | " . ($data['errorMsg'] ?? 'Unknown'));
+                continue;
+            }
+
+            $priceInfoList = $data['result']['skuPriceInfoList'] ?? [];
+            if (empty($priceInfoList)) {
+                $this->warn("No price info found for SKU: {$skuId}");
+                continue;
+            }
+
+            $priceInfo = $priceInfoList[0];
+
+            TemuMetric::where('sku_id', $skuId)->update([
+                'base_price' => $priceInfo['basePrice'] ?? null,
+                'currency'   => $priceInfo['currency'] ?? null,
+                'price_last_updated' => now(),
+            ]);
+
+            $this->info("Price updated for SKU: {$skuId}");
+        }
+
+        $this->info("Base Prices updated successfully.");
     }
 
     public function fetchGoodsId(){
@@ -386,6 +434,7 @@ class FetchTemuMetrics extends Command
         $this->info("SKUs Synced Successfully with Prices.");
     }
 
+    
     private function generateSignValue($requestBody)
     {
         // Environment/config variables
