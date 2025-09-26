@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ProductMaster;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
+use App\Models\LinkedProductData;
 use App\Models\Permission;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
@@ -612,5 +613,18 @@ class ProductMasterController extends Controller
         ->values(); // reset keys for JSON
 
         return response()->json(['data' => $data]);
+    }
+
+    public function showUpdatedQty()
+    {
+        return view('inventory-management.auto-updated-qty');
+    }
+
+    // Data for DataTable / AJAX
+    public function showUpdatedQtyList(Request $request)
+    {
+        $data = LinkedProductData::latest()->get(['group_id', 'sku', 'old_qty', 'new_qty']);
+
+        return response()->json($data);
     }
 }

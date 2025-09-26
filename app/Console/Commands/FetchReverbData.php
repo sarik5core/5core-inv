@@ -37,12 +37,11 @@ class FetchReverbData extends Command
         // $l60Start = $today->copy()->subDays(60);
         // $l60End   = $l30Start->copy()->subDay();
 
-        $l30Start = $today->copy()->subDays(30); // 2025-08-27
-        $l30End   = $today->copy();              // 2025-09-26
+        $l30End   = $today->copy()->subDay();     // 2025-09-25
+        $l30Start = $l30End->copy()->subDays(29); // 2025-08-27
 
-        // L60: 60 days ending the day before L30 starts
-        $l60End   = $l30Start->copy()->subDay(); // 2025-08-26
-        $l60Start = $l60End->copy()->subDays(60); // 2025-07-25
+        $l60End   = $l30Start->copy()->subDay();  // 2025-08-26
+        $l60Start = $l60End->copy()->subDays(59); // 2025-07-29
 
 
         // $rL30 = $this->getOrderQuantities(30);
@@ -62,7 +61,7 @@ class FetchReverbData extends Command
             $r30 = $rL30[$sku] ?? 0;
             $r60 = $rL60[$sku] ?? 0;
 
-            $this->line("Listing SKU: $sku | R_L30: $r30 | R_L60: $r60");
+            // $this->line("Listing SKU: $sku | R_L30: $r30 | R_L60: $r60");
 
             // Store record
             ReverbProduct::updateOrCreate(
@@ -132,7 +131,7 @@ class FetchReverbData extends Command
                 $qty = $order['quantity'] ?? 0;
 
                 if ($sku) {
-                    $this->line("Order SKU: $sku, Qty: $qty");
+                    // $this->line("Order SKU: $sku, Qty: $qty");
                     $quantityMap[$sku] = ($quantityMap[$sku] ?? 0) + $qty;
                 }
             }
