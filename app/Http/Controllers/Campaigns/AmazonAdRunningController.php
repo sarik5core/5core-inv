@@ -159,6 +159,8 @@ class AmazonAdRunningController extends Controller
             $row['kw_impr_L7']  = $matchedCampaignKwL7->impressions ?? 0;
             $row['kw_clicks_L30'] = $matchedCampaignKwL30->clicks ?? 0;
             $row['kw_clicks_L7']  = $matchedCampaignKwL7->clicks ?? 0;
+            $row['kw_spend_L30']  = $matchedCampaignKwL30->spend ?? 0;
+            $row['kw_spend_L7']  = $matchedCampaignKwL7->spend ?? 0;
             $row['kw_campaign_L30'] = $matchedCampaignKwL30->campaignName ?? null;
             $row['kw_campaign_L7']  = $matchedCampaignKwL7->campaignName ?? null;
 
@@ -167,6 +169,8 @@ class AmazonAdRunningController extends Controller
             $row['pt_impr_L7']  = $matchedCampaignPtL7->impressions ?? 0;
             $row['pt_clicks_L30'] = $matchedCampaignPtL30->clicks ?? 0;
             $row['pt_clicks_L7']  = $matchedCampaignPtL7->clicks ?? 0;
+            $row['pt_spend_L30']  = $matchedCampaignPtL30->spend ?? 0;
+            $row['pt_spend_L7']  = $matchedCampaignPtL7->spend ?? 0;
             $row['pt_campaign_L30'] = $matchedCampaignPtL30->campaignName ?? null;
             $row['pt_campaign_L7']  = $matchedCampaignPtL7->campaignName ?? null;
 
@@ -175,6 +179,8 @@ class AmazonAdRunningController extends Controller
             $row['hl_impr_L7']  = $matchedCampaignHlL7->impressions ?? 0;
             $row['hl_clicks_L30'] = $matchedCampaignHlL30->clicks ?? 0;
             $row['hl_clicks_L7']  = $matchedCampaignHlL7->clicks ?? 0;
+            $row['hl_spend_L30']  = $matchedCampaignHlL30->cost ?? 0;
+            $row['hl_spend_L7']  = $matchedCampaignHlL7->cost ?? 0;
             $row['hl_campaign_L30'] = $matchedCampaignHlL30->campaignName ?? null;
             $row['hl_campaign_L7']  = $matchedCampaignHlL7->campaignName ?? null;
 
@@ -190,6 +196,9 @@ class AmazonAdRunningController extends Controller
 
             $row['CLICKS_L30'] = ($row['pt_clicks_L30'] + $row['kw_clicks_L30'] + $hl_share_clicks_L30);
             $row['CLICKS_L7']  = ($row['pt_clicks_L7']  + $row['kw_clicks_L7']  + $hl_share_clicks_L7);
+
+            $row['SPEND_L30']  = ($row['pt_spend_L30']  + $row['kw_spend_L30']  + $row['hl_spend_L30']);
+            $row['SPEND_L7']  = ($row['pt_spend_L7']  + $row['kw_spend_L7']  + $row['hl_spend_L7']);
 
             $row['NRL']  = '';
             $row['NRA'] = '';

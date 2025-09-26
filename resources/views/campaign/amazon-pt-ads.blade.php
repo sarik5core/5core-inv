@@ -982,6 +982,11 @@
                         },
                         visible: false
                     },
+                    {
+                        title: "TPFT%",
+                        field: "tpft",
+                        hozAlign: "center"
+                    }
 
                 ],
                 ajaxResponse: function(url, params, response) {

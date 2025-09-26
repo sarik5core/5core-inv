@@ -15,6 +15,8 @@ use App\Models\JungleScoutProductData;
 use App\Http\Controllers\ApiController;
 use App\Jobs\UpdateAmazonSPriceJob;
 use App\Models\AmazonDatasheet;
+use App\Models\AmazonSbCampaignReport;
+use App\Models\AmazonSpCampaignReport;
 use App\Models\ChannelMaster;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -46,9 +48,9 @@ class OverallAmazonController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        $marketplaceData = ChannelMaster::where('channel', 'Amazon')->first();
+        $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
 
-        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
         $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
         return view('market-places.overallAmazon', [
@@ -128,7 +130,6 @@ class OverallAmazonController extends Controller
 
         $parents = $productMasters->pluck('parent')->filter()->unique()->map('strtoupper')->values()->all();
 
-        // JungleScout Data
         $jungleScoutData = JungleScoutProductData::whereIn('parent', $parents)
             ->get()
             ->groupBy(function ($item) {
@@ -157,20 +158,42 @@ class OverallAmazonController extends Controller
 
         $nrValues = AmazonDataView::whereIn('sku', $skus)->pluck('value', 'sku', 'fba');
 
-        // 🔹 Fetch marketplace percentage + ad_updates in one query (cached)
-        // 🔹 Always fetch fresh marketplace percentage + ad_updates
         $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
 
-        $percentage = $marketplaceData ? ($marketplaceData->percentage / 100) : 1; // Default = 100%
-        $adUpdates  = $marketplaceData ? $marketplaceData->ad_updates : 0;         // Default = 0
+        $percentage = $marketplaceData ? ($marketplaceData->percentage / 100) : 1; 
+        $adUpdates  = $marketplaceData ? $marketplaceData->ad_updates : 0;         
+        
+        $amazonKwL30 = AmazonSpCampaignReport::where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . $sku . '%');
+                }
+            })
+            ->where('campaignName', 'NOT LIKE', '%PT')
+            ->where('campaignName', 'NOT LIKE', '%PT.')
+            ->get();
 
+        $amazonPtL30 = AmazonSpCampaignReport::where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
+
+        $amazonHlL30 = AmazonSbCampaignReport::where('report_date_range', 'L30')
+            ->where(function ($q) use ($skus) {
+                foreach ($skus as $sku) {
+                    $q->orWhere('campaignName', 'LIKE', '%' . strtoupper($sku) . '%');
+                }
+            })
+            ->get();
 
         $result = [];
 
         foreach ($productMasters as $pm) {
             $sku = strtoupper($pm->sku);
 
-            // Skip parent rows
             if (str_starts_with($sku, 'PARENT ')) {
                 continue;
             }
@@ -196,6 +219,40 @@ class OverallAmazonController extends Controller
             $row['L30'] = $shopify->quantity ?? 0;
             $row['fba'] = $pm->fba;
 
+            $campaignSpend = 0;
+
+            // KW campaigns (child SKU exact match)
+            $kwCampaign = $amazonKwL30->first(function ($item) use ($sku) {
+                return strcasecmp(trim($item->campaignName), $sku) === 0;
+            });
+            if ($kwCampaign) {
+                $campaignSpend = $kwCampaign->spend ?? 0;
+            } else {
+                // PT campaigns (child SKU ending with PT)
+                $ptCampaign = $amazonPtL30->first(function ($item) use ($sku) {
+                    $cleanName = strtoupper(trim($item->campaignName));
+                    return (
+                        str_ends_with($cleanName, $sku . ' PT') || str_ends_with($cleanName, $sku . ' PT.')
+                    ) && strtoupper($item->campaignStatus) === 'ENABLED';
+                });
+                if ($ptCampaign) {
+                    $campaignSpend = $ptCampaign->spend ?? 0;
+                } else {
+                    // HL campaigns (match parent SKU instead of child SKU)
+                    $parentSku = strtoupper(trim($pm->parent));
+                    $hlCampaign = $amazonHlL30->first(function ($item) use ($parentSku) {
+                        $cleanName = strtoupper(trim($item->campaignName));
+                        return ($cleanName === $parentSku || $cleanName === $parentSku . ' HEAD')
+                            && strtoupper($item->campaignStatus) === 'ENABLED';
+                    });
+                    if ($hlCampaign) {
+                        $campaignSpend = $hlCampaign->cost ?? 0;
+                    }
+                }
+            }
+
+            $row['ad_spend'] = round($campaignSpend, 2);
+
 
             // LP & ship cost
             $values = is_array($pm->Values) ? $pm->Values : (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
@@ -214,7 +271,6 @@ class OverallAmazonController extends Controller
             $price = isset($row['price']) ? floatval($row['price']) : 0;
             $units_ordered_l30 = isset($row['A_L30']) ? floatval($row['A_L30']) : 0;
 
-            // 🔹 Include ad_updates in each row
             $row['Total_pft'] = round((($price * $percentage) - $lp - $ship) * $units_ordered_l30, 2);
             $row['T_Sale_l30'] = round($price * $units_ordered_l30, 2);
             $row['PFT_percentage'] = round($price > 0 ? ((($price * $percentage) - $lp - $ship) / $price) * 100 : 0, 2);
@@ -240,7 +296,6 @@ class OverallAmazonController extends Controller
             $row['SROI'] = null;
             $row['Listed'] = null;
             $row['Live'] = null;
-            $row['Spend'] = null;
             $row['APlus'] = null;
             $row['js_comp_manual_api_link'] = null;
             $row['js_comp_manual_link'] = null;
@@ -259,7 +314,6 @@ class OverallAmazonController extends Controller
                     $row['shopify_id'] = $shopify->id ?? null;
                     $row['SPRICE'] = $raw['SPRICE'] ?? null;
                     $row['Spft%'] = $raw['SPFT'] ?? null;
-                    $row['Spend'] = $raw['Spend'] ?? null;
                     $row['SROI'] = $raw['SROI'] ?? null;
                     $row['Listed'] = isset($raw['Listed']) ? filter_var($raw['Listed'], FILTER_VALIDATE_BOOLEAN) : null;
                     $row['Live'] = isset($raw['Live']) ? filter_var($raw['Live'], FILTER_VALIDATE_BOOLEAN) : null;

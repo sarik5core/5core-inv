@@ -299,7 +299,6 @@ class AmzUnderUtilizedBgtController extends Controller
     }
 
     public function amzUnderUtilizedBgtKw(){
-        // return Cache::get('amazon_ads_access_token');
         return view('campaign.amz-under-utilized-bgt-kw');
     }
 
