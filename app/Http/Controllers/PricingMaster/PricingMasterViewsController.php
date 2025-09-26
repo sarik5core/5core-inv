@@ -105,13 +105,10 @@ class PricingMasterViewsController extends Controller
     protected function processPricingData($searchTerm = '')
     {
 
-        $normalizeSku = fn($sku) => strtoupper(trim(preg_replace('/\s+/', ' ', str_replace("\xc2\xa0", ' ', $sku))));
-    
-        $productData = DB::table('product_master')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
+         $productData = ProductMaster::whereNull('deleted_at')
 
-        // Shopify data with normalized SKU
-        $shopifyData = ShopifySku::all()->keyBy(fn($item) => $normalizeSku($item->sku));
-
+            ->orderBy('id', 'asc')
+            ->get();
 
         $skus = $productData
             ->pluck('sku')
@@ -120,7 +117,9 @@ class PricingMasterViewsController extends Controller
             })
             ->unique()
             ->toArray();
-
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy(function ($item) {
+            return trim(strtoupper($item->sku));
+        });
 
         $amazonData  = AmazonDatasheet::whereIn('sku', $skus)->get()->keyBy('sku');
         $amazonListingData = AmazonListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');

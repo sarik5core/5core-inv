@@ -619,23 +619,11 @@
                             }
                         }
                     },
-                    // {
-                    //     title: "CRNT BID",
-                    //     field: "crnt_bid",
-                    //     hozAlign: "center"
-                    // },
                     {
-                        title: "SBGT",
-                        field: "sbgt",
-                        hozAlign: "center",
-                        editor: "input"
-                    },
-                    {
-                        title: "APR BGT",
-                        field: "apr_bgt",
-                        hozAlign: "center",
-                        editor: "input"
-                    },
+                        title: "TPFT%",
+                        field: "tpft",
+                        hozAlign: "center"
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;

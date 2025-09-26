@@ -545,6 +545,11 @@
                             return l1_cpc.toFixed(2);
                         }
                     },
+                    {
+                        title: "TPFT%",
+                        field: "tpft",
+                        hozAlign: "center"
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;

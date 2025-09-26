@@ -484,6 +484,11 @@
                         title: "SBGT",
                         field: "sbgt",
                         hozAlign: "center"
+                    },
+                    {
+                        title: "TPFT%",
+                        field: "tpft",
+                        hozAlign: "center"
                     }
                 ],
                 ajaxResponse: function(url, params, response) {
