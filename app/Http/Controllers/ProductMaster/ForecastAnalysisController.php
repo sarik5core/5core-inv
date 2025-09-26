@@ -483,9 +483,17 @@ class ForecastAnalysisController extends Controller
                     $stage = trim($toOrderMap[$skuKey]->stage ?? '');
 
                     if ($stage === '' || $stage === null) {
-                        $skuStage = 'To Order Analysis';
+                        if (isset($mfrgProgressMap[$skuKey]) && strtolower($mfrgProgressMap[$skuKey]->ready_to_ship ?? '') === 'yes') {
+                            $skuStage = 'Ready To Ship';
+                        } elseif (isset($readyToShip[$skuKey]) && ($readyToShip[$skuKey]->total_qty ?? 0) > 0) {
+                            $skuStage = 'Ready To Ship';
+                        } else {
+                            $skuStage = 'To Order Analysis';
+                        }
                     } elseif ($stage === 'Mfrg Progress') {
                         if (isset($mfrgProgressMap[$skuKey]) && strtolower($mfrgProgressMap[$skuKey]->ready_to_ship ?? '') === 'yes') {
+                            $skuStage = 'Ready To Ship';
+                        } elseif (isset($readyToShip[$skuKey]) && ($readyToShip[$skuKey]->total_qty ?? 0) > 0) {
                             $skuStage = 'Ready To Ship';
                         } else {
                             $skuStage = 'Mfrg Progress';
@@ -494,10 +502,18 @@ class ForecastAnalysisController extends Controller
                         $skuStage = $stage;
                     }
                 } else {
-                    $skuStage = '';
+                    if (isset($mfrgProgressMap[$skuKey]) && strtolower($mfrgProgressMap[$skuKey]->ready_to_ship ?? '') === 'yes') {
+                        $skuStage = 'Ready To Ship';
+                    } elseif (isset($readyToShip[$skuKey]) && ($readyToShip[$skuKey]->total_qty ?? 0) > 0) {
+                        $skuStage = 'Ready To Ship';
+                    } else {
+                        $skuStage = 'To Order Analysis';
+                    }
                 }
 
                 $item->sku_stage = $skuStage;
+
+
 
 
 
