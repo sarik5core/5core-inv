@@ -554,11 +554,6 @@
                         field: "tpft",
                         hozAlign: "center"
                     },
-                    {
-                        title: "TROI %",
-                        field: "troi",
-                        hozAlign: "center",
-                    },
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
