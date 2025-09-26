@@ -1636,7 +1636,7 @@
                                             AD Spend <span class="sort-arrow">↓</span>
                                         </div>
                                         <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
-                                        <div class="metric-total" id="Tpft-total">0%</div>
+                                        {{-- <div class="metric-total" id="Tpft-total">0</div> --}}
                                     </div>
                                 </th>
 
@@ -2561,12 +2561,14 @@
                                     SPRICE: item.SPRICE || 0,
                                     SPFT: item.SPFT || 0,
                                     SROI: item.SROI || 0,
-                                    Spend: item.Spend || 0,
+                                    Spend: item.ad_spend || 0,
                                 };
                             });
 
                             // console.log('Data loaded successfully:', tableData);
                             filteredData = [...tableData];
+
+                            console.log(filteredData);
 
                         }
                     },
@@ -2621,7 +2623,7 @@
                         NRL: item.NRL !== undefined ? item.NRL : '',
                         NRA: item.NRA !== undefined ? item.NRA : '',
                         FBA: item.FBA !== undefined ? item.FBA : null,
-                        Spend: item.Spend || 0,
+                        Spend: item.ad_spend || 0,
                         listed: listedVal,
                         live: liveVal,
                         SPRICE: item.SPRICE || 0,
@@ -3081,7 +3083,7 @@
                     const soldAmount = aL30 * price;
                     const pftAmt = (soldAmount * rawPft) / 100;
                     const PFTafterPFT = pftAmt - spend;
-                    const adSpend = Number(item['Ad_Spend']) || 0;
+                    const adSpend = Number(item.Spend) || 0;
                     const tacos = spend / soldAmount;
                     const totalProfit = (aL30 * price) * rawPft / 100;
 
@@ -3094,7 +3096,7 @@
 
                     // spend in advertising     
                     $row.append($('<td>').html(
-                        `<button class="btn  btn-danger"> $${adSpend.toFixed(2)} </button>`
+                        `$${adSpend.toFixed(2)}`
                     ));
 
 
@@ -3114,25 +3116,6 @@
 
 
 
-
-
-
-
-
-
-                    // $row.append($('<td>').html(
-                    //     `
-                //     <span class="badge bg-secondary">$${Math.round(parseFloat(Spend))}</span>
-                //     <button class="btn btn-sm btn-outline-secondary ms-2"
-                //         onclick="openSpendModal('${sku}', '${Spend}', this)"
-                //         title="Edit Spend">
-                //         <i class="fas fa-pen"></i>
-                //     </button>
-                //     `
-                    // ));
-
-
-
                     const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
 
                     $row.append($('<td>').html(
@@ -3143,139 +3126,6 @@
                     </span>
                     ` : ''
                     ));
-
-
-
-
-                    // // Calculate: newPft = PFT_percentage - Spend
-                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
-                    // const spend = parseFloat(item['Spend']) || 0;
-                    // const newPft = rawPft - spend;
-
-
-
-                    // // Append to the row
-                    // $row.append($('<td>').html(
-                    //     typeof newPft === 'number' && !isNaN(newPft) ?
-                    //     `
-                //     <span class="dil-percent-value ${getPftColor(newPft)}">
-                //         ${Math.round(newPft)}%
-                //     </span>
-                // ` : ''
-                    // ));
-
-
-
-
-                    // // Sold amomt calculation
-                    // const aL30 = Number(item['A L30']) || 0;
-                    // const price = Number(item.price) || 0;
-                    // const soldAmount = aL30 * price;
-
-                    // $row.append($('<td>').html(
-                    //     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
-                    // ));
-
-
-
-                    // const pftAmt = (soldAmount * item['PFT_percentage']) / 100;
-
-                    // $row.append($('<td>').html(
-                    //     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">${pftAmt.toFixed(6)}</span>`
-                    // ));
-
-
-                    // const PFTafterPFT = pftAmt - spend;
-                    // $row.append($('<td>').html(
-                    //     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
-                    //     `
-                //         <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
-                //         ${PFTafterPFT.toFixed(6)}
-                //         </span>
-                //     ` : ''
-                    // ));
-
-
-
-
-
-
-                    // const aL30 = Number(item['A L30']) || 0;
-                    // const price = Number(item.price) || 0;
-                    // const soldAmount = aL30 * price;
-
-                    // $row.append($('<td>').html(
-                    //     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
-                    // ));
-
-                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
-                    // const spend = parseFloat(item['Spend']) || 0;
-
-                    // const pftAmt = (soldAmount * rawPft) / 100;
-
-                    // $row.append($('<td>').html(
-                    //     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">${pftAmt.toFixed(6)}</span>`
-                    // ));
-
-                    // const PFTafterPFT = pftAmt - spend;
-                    // $row.append($('<td>').html(
-                    //     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
-                    //     `
-                //         <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
-                //             ${PFTafterPFT.toFixed(6)}
-                //         </span>
-                //     ` : ''
-                    // ));
-
-                    // // ✅ New PFT % based on actual profit after spend
-                    // const newPft = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
-
-                    // $row.append($('<td>').html(
-                    //     typeof newPft === 'number' && !isNaN(newPft) ?
-                    //     `
-                //     <span class="dil-percent-value ${getPftColor(newPft)}">
-                //         ${newPft.toFixed(2)}%
-                //     </span>
-                //     ` : ''
-                    // ));
-
-                    // Raw values
-                    // const rawPft = parseFloat(item['PFT_percentage']) || 0;
-                    // const spend = parseFloat(item['Spend']) || 0;
-                    // const aL30 = Number(item['A L30']) || 0;
-                    // const price = Number(item.price) || 0;
-
-                    // // Sold Amount
-                    // const soldAmount = aL30 * price;
-
-
-
-                    //                 $row.append($('<td>').html(
-                    //                     `<span class="badge bg-success">${soldAmount.toFixed(2)}</span>`
-                    //                 ));
-
-                    //                 // PFT Amount
-                    //                 // const pftAmt = (soldAmount * rawPft) / 100;
-
-                    //                 $row.append($('<td>').html(
-                    //                     `<span class="badge bg-warning" style=" background-color: #6200a8 !important; font-weight: bold;">
-                //     ${pftAmt.toFixed(6)}
-                // </span>`
-                    //                 ));
-
-                    //                 // PFT After Spend
-                    //                 // const PFTafterPFT = pftAmt - spend;
-
-                    //                 $row.append($('<td>').html(
-                    //                     typeof PFTafterPFT === 'number' && !isNaN(PFTafterPFT) ?
-                    //                     `
-                //     <span class="dil-percent-value ${getPftColor(PFTafterPFT)}">
-                //         ${PFTafterPFT.toFixed(6)}
-                //     </span>
-                // ` : ''
-                    //                 ));
-
-                    // ✅ New PFT (%) after spend
 
 
                     // ROI with color coding
@@ -3290,9 +3140,9 @@
 
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getTacosColor(item.Tacos30)}">${tacosValue}%</span>
-    <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
-        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
-        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                            <i class="fas fa-a text-info tooltip-icon advertisement-view-trigger" 
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Advertisement view"
+                                data-item='${JSON.stringify(item.raw_data)}'></i>`
                     ));
 
 
