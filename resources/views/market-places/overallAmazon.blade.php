@@ -1629,13 +1629,13 @@
                                         </div>
                                     </div>
                                 </th>
-                                <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
+                                {{-- <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="d-flex align-items-center">
                                             Total Profit <span class="sort-arrow">↓</span>
                                         </div>
                                     </div>
-                                </th>
+                                </th> --}}
                                 <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="d-flex align-items-center" style="gap: 4px">
@@ -1647,7 +1647,7 @@
                                 </th>
 
 
-                                <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
+                                {{-- <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="d-flex align-items-center" style="gap: 4px">
                                             TPFT<span class="sort-arrow">↓</span>
@@ -1666,7 +1666,7 @@
                                         <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                         <div class="metric-total" id="Tpft-total">0%</div>
                                     </div>
-                                </th>
+                                </th> --}}
 
                                 <th data-field="profit" style="vertical-align: middle; white-space: nowrap;">
                                     <div class="d-flex flex-column align-items-center">
@@ -3099,9 +3099,9 @@
                         `$${soldAmount.toFixed(2)}`
                     ));
 
-                    $row.append($('<td>').html(
-                        `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
-                    ));
+                    // $row.append($('<td>').html(
+                    //     `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
+                    // ));
 
 
                     // spend in advertising     
@@ -3114,28 +3114,26 @@
                     const profitAfterAd = totalProfit - adSpend;
                     const tpft = rawPft + amazonAdUpdates - tacos;
 
-                    $row.append(
-                        $('<td>').html(
-                            `<span class="badge bg-info">$${Math.round(tpft)}</span>`
-                        )
-                    );
+                    // $row.append(
+                    //     $('<td>').html(
+                    //         `<span class="badge bg-info">$${Math.round(tpft)}</span>`
+                    //     )
+                    // );
 
-                    // profitAfterAd 
+                    // // profitAfterAd 
+                    // $row.append($('<td>').html(
+                    //     `<span class="badge bg-info">${Math.round((profitAfterAd / (price * aL30)) * 100)}%</span>`
+                    // ));
+
+
+                    const newPftPercentage = tpft > 0 ? tpft : 0;
+
                     $row.append($('<td>').html(
-                        `<span class="badge bg-info">${Math.round((profitAfterAd / (price * aL30)) * 100)}%</span>`
-                    ));
-
-
-
-                    const newPftPercentage = soldAmount > 0 ? (PFTafterPFT / soldAmount) * 100 : 0;
-
-                    $row.append($('<td>').html(
-                        typeof newPftPercentage === 'number' && !isNaN(newPftPercentage) ?
                         `
-                    <span class="dil-percent-value ${getPftColor(newPftPercentage)}">
-                        ${Math.round(newPftPercentage)}%
-                    </span>
-                    ` : ''
+                            <span class="dil-percent-value ${getPftColor(tpft)}">
+                                ${Math.round(newPftPercentage)}%
+                            </span>
+                        ` 
                     ));
 
 
