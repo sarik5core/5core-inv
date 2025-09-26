@@ -438,6 +438,7 @@ class AmzUnderUtilizedBgtController extends Controller
                     $row['NRL']  = $raw['NRL'] ?? null;
                     $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
+                    $row['TPFT'] = $raw['TPFT'] ?? null;
                 }
             }
 
@@ -581,6 +582,7 @@ class AmzUnderUtilizedBgtController extends Controller
                     $row['NRL']  = $raw['NRL'] ?? null;
                     $row['NRA'] = $raw['NRA'] ?? null;
                     $row['FBA'] = $raw['FBA'] ?? null;
+                    $row['TPFT'] = $raw['TPFT'] ?? null;
                 }
             }
 

@@ -424,17 +424,13 @@ class OverallAmazonController extends Controller
     }
 
 
-
-
-
-
-
     public function saveNrToDatabase(Request $request)
     {
         $sku = $request->input('sku');
-        $nrInput = $request->input('nr');   // Optional
-        $fbaInput = $request->input('fba'); // Optional
-        $spend = $request->input('spend');  // Optional
+        $nrInput = $request->input('nr');     // Optional
+        $fbaInput = $request->input('fba');   // Optional
+        $spend = $request->input('spend');    // Optional
+        $tpft = $request->input('tpft');      // Optional, new
 
         if (!$sku) {
             return response()->json(['error' => 'SKU is required.'], 400);
@@ -451,12 +447,10 @@ class OverallAmazonController extends Controller
         // Handle NR
         if ($nrInput) {
             $nr = is_array($nrInput) ? $nrInput : json_decode($nrInput, true);
-
             if (!is_array($nr)) {
                 return response()->json(['error' => 'Invalid NR format.'], 400);
             }
 
-            // Example: {NRL: "Low"} OR {NRA: "Approved"}
             foreach ($nr as $key => $val) {
                 if (in_array($key, ['NRL', 'NRA'])) {
                     $existing[$key] = $val;
@@ -473,9 +467,14 @@ class OverallAmazonController extends Controller
             $existing['FBA'] = $fba['FBA'];
         }
 
-        // Handle spend
+        // Handle Spend
         if (!is_null($spend)) {
             $existing['Spend'] = $spend;
+        }
+
+        // Handle tpft (total profit percentage)
+        if (!is_null($tpft)) {
+            $existing['TPFT'] = $tpft;
         }
 
         $amazonDataView->value = $existing;
@@ -483,12 +482,6 @@ class OverallAmazonController extends Controller
 
         return response()->json(['success' => true, 'data' => $amazonDataView]);
     }
-
-
-
-
-
-
 
     public function saveSpriceToDatabase(Request $request)
     {
@@ -521,8 +514,6 @@ class OverallAmazonController extends Controller
 
         return response()->json(['message' => 'Data saved successfully.', 'data' => $price]);
     }
-
-
 
     public function amazonPriceIncreaseDecrease(Request $request)
     {
@@ -571,11 +562,6 @@ class OverallAmazonController extends Controller
             'amazonAdUpdates' => $adUpdates
         ]);
     }
-
-
-    // API JUNGLE SCOUT. LINK 
-
-
 
 
     public function saveManualLink(Request $request)

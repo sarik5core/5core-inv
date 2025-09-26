@@ -2574,8 +2574,6 @@
                             // console.log('Data loaded successfully:', tableData);
                             filteredData = [...tableData];
 
-                            console.log(filteredData);
-
                         }
                     },
                     error: function(xhr, status, error) {
@@ -2840,11 +2838,11 @@
                     // OV DIL with color coding and WMPNM tooltip
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>
-        <span class="text-info tooltip-icon wmpnm-view-trigger" 
-        data-bs-toggle="tooltip" 
-        data-bs-placement="left" 
-        title="WMPNM View"
-        data-item='${JSON.stringify(item.raw_data)}'>W</span>`
+                            <span class="text-info tooltip-icon wmpnm-view-trigger" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-placement="left" 
+                            title="WMPNM View"
+                            data-item='${JSON.stringify(item.raw_data)}'>W</span>`
                     ));
 
 
@@ -3056,8 +3054,6 @@
                             data-item='${JSON.stringify(item.raw_data)}'>P</span>`
                     ));
 
-
-
                     // PFT with color coding
                     $row.append($('<td>').html(
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
@@ -3075,7 +3071,6 @@
                         </span>` :
                         ''
                     ));
-
 
 
                     const sku = String(item["(Child) sku"]).replace(/'/g, "\\'");
@@ -3099,35 +3094,31 @@
                         `$${soldAmount.toFixed(2)}`
                     ));
 
-                    // $row.append($('<td>').html(
-                    //     `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
-                    // ));
-
 
                     // spend in advertising     
                     $row.append($('<td>').html(
                         `$${adSpend.toFixed(2)}`
                     ));
 
-
-                    // profit after advertising
-                    const profitAfterAd = totalProfit - adSpend;
                     const tpft = rawPft + amazonAdUpdates - tacos;
 
-                    // $row.append(
-                    //     $('<td>').html(
-                    //         `<span class="badge bg-info">$${Math.round(tpft)}</span>`
-                    //     )
-                    // );
-
-                    // // profitAfterAd 
-                    // $row.append($('<td>').html(
-                    //     `<span class="badge bg-info">${Math.round((profitAfterAd / (price * aL30)) * 100)}%</span>`
-                    // ));
-
-
                     const newPftPercentage = tpft > 0 ? tpft : 0;
-
+                    
+                    $.ajax({
+                        url: '/amazon/save-nr',
+                        type: 'POST',
+                        data: {
+                            sku: item['(Child) sku'],
+                            tpft: newPftPercentage.toFixed(2),
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(res) {
+                            // console.log("Auto NRA saved for", item['(Child) sku']);
+                        },
+                        error: function(err) {
+                            console.error("Auto-save failed:", err);
+                        }
+                    });
                     $row.append($('<td>').html(
                         `
                             <span class="dil-percent-value ${getPftColor(tpft)}">
@@ -3145,7 +3136,12 @@
                     ));
 
                     // TACOS with color coding and tooltip
-                    let tacosValue = (isNaN(tacos) || !isFinite(tacos)) ? 0 : Math.round(tacos * 100);
+                    let tacosValue;
+                    if (soldAmount === 0 && adSpend > 0) {
+                        tacosValue = 100;
+                    } else {
+                        tacosValue = (isNaN(tacos) || !isFinite(tacos)) ? 0 : Math.round(tacos * 100);
+                    }
 
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getTacosColor(item.tacos)}">${tacosValue}%</span>
@@ -3189,20 +3185,6 @@
                         </div>
                         ` : ''
                     ));
-
-                    // // SPFT Column (optional to show badge in table)
-                    // $row.append($('<td>').html(
-                    //     item.SPFT !== null && !isNaN(parseFloat(item.SPFT)) ?
-                    //     `<span class="badge bg-success">${Math.round(parseFloat(item.SPFT))}%</span>` :
-                    //     ''
-                    // ));
-
-                    // // SROI Column (optional to show badge in table)
-                    // $row.append($('<td>').html(
-                    //     item.SROI !== null && !isNaN(parseFloat(item.SROI)) ?
-                    //     `<span class="badge bg-info">${Math.round(parseFloat(item.SROI))}%</span>` :
-                    //     ''
-                    // ));
 
 
                     $tbody.append($row);
