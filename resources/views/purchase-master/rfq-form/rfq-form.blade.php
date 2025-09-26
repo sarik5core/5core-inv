@@ -385,48 +385,30 @@
                 <div class="section-title">Product Specifications(产品规格)</div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="mainProductImage" class="required">Your Product Image</label>
-                        <input type="file" id="mainProductImage" name="mainProductImage" accept="image/*"
-                            class="file-input" required>
-                        <img class="file-preview" src="#" alt="Preview">
-                    </div>
-                    @if ($rfqForm->category && ($rfqForm->category->name === "STAND" || $rfqForm->category->name === "Stand"))
-                        <div class="form-group">
-                            <label for="material" class="required">Material</label>
-                            <select id="material" name="material" required>
-                                <option value="">Select</option>
-                                <option value="Alimunium">Alimunium</option>
-                                <option value="Steel">Steel</option>
-                            </select>
+                    @foreach($rfqForm->fields as $field)
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                {{ $field['label'] }}
+                                @if(!empty($field['required'])) <span class="text-danger">*</span> @endif
+                            </label>
+
+                            @if($field['type'] === 'select')
+                                <select name="{{ $field['name'] }}" class="form-select" @if(!empty($field['required'])) required @endif>
+                                    <option value="">Select</option>
+                                    @if(!empty($field['options']))
+                                        @foreach(explode(',', $field['options']) as $option)
+                                            <option value="{{ trim($option) }}">{{ trim($option) }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            @else
+                                <input type="{{ $field['type'] }}" 
+                                    name="{{ $field['name'] }}" 
+                                    class="form-control"
+                                    @if(!empty($field['required'])) required @endif>
+                            @endif
                         </div>
-                    @elseif ($rfqForm->category && $rfqForm->category->name === "Wired Microphone")
-                        <div class="form-group">
-                            <label for="material" class="required">Pollar Pattern</label>
-                            <select id="PollarPattern" name="pollar_pattern" required="">
-                                <option value="">Select</option>
-                                <option value="Cardioid">Cardioid</option>
-                                <option value="Omnidirectional">Omnidirectional</option>
-                                <option value="Bidirectional">Bidirectional</option>
-                                <option value="Supercardioid">Supercardioid</option>
-                                <option value="Hypercardioid">Hypercardioid</option>
-                            </select>
-                        </div>
-                    @elseif ($rfqForm->category && $rfqForm->category->name === "Wireless Microphone")
-                        <div class="form-group">
-                            <label for="material" class="required">Pollar Pattern</label>
-                           <select id="MicrophoneType" name="MicrophoneType" required="">
-                                <option value="">Select</option>
-                                <option value="Dynamic">Dynamic</option>
-                                <option value="Condensor">Condensor</option>
-                            </select>
-                        </div>
-                    @else
-                        <div class="form-group">
-                            <label for="material" class="required">Material</label>
-                            <input type="text" id="Load_Capacity" name="Load_Capacity" required>
-                        </div>
-                    @endif
+                    @endforeach
                 </div>
 
                 <div class="form-row">

@@ -1622,6 +1622,13 @@
                                         <div class="metric-total" id="pft-total">0%</div>
                                     </div>
                                 </th>
+                                <th data-field="total_sales" style="vertical-align: middle; white-space: nowrap;">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            Total Sales <span class="sort-arrow">↓</span>
+                                        </div>
+                                    </div>
+                                </th>
                                 <th data-field="tpft" style="vertical-align: middle; white-space: nowrap;">
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="d-flex align-items-center">
@@ -1629,7 +1636,6 @@
                                         </div>
                                     </div>
                                 </th>
-
                                 <th data-field="spend" style="vertical-align: middle; white-space: nowrap;">
                                     <div class="d-flex flex-column align-items-center">
                                         <div class="d-flex align-items-center" style="gap: 4px">
@@ -3023,9 +3029,9 @@
 
                     $row.append($('<td>').html(
                         `<span class="dil-percent-value ${getCvrColor(item.SCVR)}">${Math.round(item.SCVR * 100)}%</span>
-    <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
-        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
-        data-item='${JSON.stringify(item.raw_data)}'></i>`
+                            <i class="fas fa-check-circle text-success tooltip-icon conversion-view-trigger ms-2"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conversion view"
+                                data-item='${JSON.stringify(item.raw_data)}'></i>`
                     ));
 
 
@@ -3057,16 +3063,16 @@
                         typeof item['PFT_percentage'] === 'number' && !isNaN(item[
                             'PFT_percentage']) ?
                         `<span class="dil-percent-value ${getPftColor(item['PFT_percentage'])}">
-        ${Math.round(item['PFT_percentage'])}%
-    </span>
-    <span class="tooltip-container" style="margin-left:8px">
-        <i class="fas fa-tag text-warning price-view-trigger" 
-            style="transform:translateY(1px)"
-            data-bs-toggle="tooltip" 
-            data-bs-placement="top-end" 
-            title="Pricing view"
-            data-item='${JSON.stringify(item.raw_data)}'></i>
-    </span>` :
+                            ${Math.round(item['PFT_percentage'])}%
+                        </span>
+                        <span class="tooltip-container" style="margin-left:8px">
+                            <i class="fas fa-tag text-warning price-view-trigger" 
+                                style="transform:translateY(1px)"
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top-end" 
+                                title="Pricing view"
+                                data-item='${JSON.stringify(item.raw_data)}'></i>
+                        </span>` :
                         ''
                     ));
 
@@ -3087,8 +3093,11 @@
                     const tacos = spend / soldAmount;
                     const totalProfit = (aL30 * price) * rawPft / 100;
 
+                    // total sales 
+                    $row.append($('<td>').html(
+                        `$${soldAmount.toFixed(2)}`
+                    ));
 
-                    // total profit 
                     $row.append($('<td>').html(
                         `<button class="btn  btn-success"> $${totalProfit.toFixed(2)}</button>`
                     ));

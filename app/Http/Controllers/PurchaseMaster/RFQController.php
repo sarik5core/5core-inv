@@ -28,7 +28,7 @@ class RFQController extends Controller
             'main_image' => 'nullable|image|max:2048'
         ]);
 
-        $slug = Str::slug($request->rfq_form_name) . '-' . Str::random(5);
+        $slug = Str::slug($request->rfq_form_name);
 
         $imagePath = null;
         if($request->hasFile('main_image')){
@@ -47,13 +47,12 @@ class RFQController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'RFQ Form created successfully!',
-            // 'form_url' => route('rfq.form.fill', $slug)
         ]);
     }
 
     public function showRfqForm($slug)
     {
-        $rfqForm = RfqForm::with('category')->where('slug', $slug)->firstOrFail();
+        $rfqForm = RfqForm::where('slug', $slug)->firstOrFail();
 
         return view('purchase-master.rfq-form.rfq-form', compact('rfqForm'));
     }
