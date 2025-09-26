@@ -13,9 +13,9 @@ class RFQController extends Controller
     {
         $categories = Category::all();
 
-        $rfqForms = RfqForm::all();
+        // $rfqForms = RfqForm::all();
 
-        return view('purchase-master.rfq-form.index', compact('categories', 'rfqForms'));
+        return view('purchase-master.rfq-form.index', compact('categories'));
     }
 
     public function storeRFQForm(Request $request)
