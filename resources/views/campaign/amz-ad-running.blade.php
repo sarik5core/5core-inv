@@ -400,12 +400,68 @@
                         visible: false
                     },
                     {
+                        title: "SPEND L30",
+                        field: "SPEND_L30",
+                        formatter: function(cell) {
+                            let SPEND_L30 = cell.getValue();
+                            return `
+                                <span>${SPEND_L30.toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary toggle-spendL30-btn" 
+                                data-spend-l30="${SPEND_L30}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
+                    },
+                    {
+                        title: "KW Spend L30",
+                        field: "kw_spend_L30",
+                        visible: false
+                    },
+                    {
+                        title: "PT Spend L30",
+                        field: "pt_spend_L30",
+                        visible: false
+                    },
+                    {
+                        title: "HL Spend L30",
+                        field: "hl_spend_L30",
+                        visible: false
+                    },
+                    {
+                        title: "SPEND L7",
+                        field: "SPEND_L7",
+                        formatter: function(cell) {
+                            let SPEND_L7 = cell.getValue();
+                            return `
+                                <span>${SPEND_L7.toFixed(0)}</span>
+                                <i class="fa fa-info-circle text-primary toggle-spendL7-btn" 
+                                data-spend-l7="${SPEND_L7}" 
+                                style="cursor:pointer; margin-left:8px;"></i>
+                            `;
+                        }
+                    },
+                    {
+                        title: "KW Spend L7",
+                        field: "kw_spend_L7",
+                        visible: false
+                    },
+                    {
+                        title: "PT Spend L7",
+                        field: "pt_spend_L7",
+                        visible: false
+                    },
+                    {
+                        title: "HL Spend L7",
+                        field: "hl_spend_L7",
+                        visible: false
+                    },
+                    {
                         title: "CLICKS L30",
                         field: "CLICKS_L30",
                         formatter: function(cell) {
                             let CLICKS_L30 = cell.getValue();
                             return `
-                                <span>${CLICKS_L30}</span>
+                                <span>${CLICKS_L30.toFixed(0)}</span>
                                 <i class="fa fa-info-circle text-primary toggle-clicksL30-btn" 
                                 data-clicks-l30="${CLICKS_L30}" 
                                 style="cursor:pointer; margin-left:8px;"></i>
@@ -433,7 +489,7 @@
                         formatter: function(cell) {
                             let CLICKS_L7 = cell.getValue();
                             return `
-                                <span>${CLICKS_L7}</span>
+                                <span>${CLICKS_L7.toFixed(0)}</span>
                                 <i class="fa fa-info-circle text-primary toggle-clicksL7-btn" 
                                 data-clicks-l7="${CLICKS_L7}" 
                                 style="cursor:pointer; margin-left:8px;"></i>
@@ -461,7 +517,7 @@
                         formatter: function(cell) {
                             let IMP_L30 = cell.getValue();
                             return `
-                                <span>${IMP_L30}</span>
+                                <span>${IMP_L30.toFixed(0)}</span>
                                 <i class="fa fa-info-circle text-primary toggle-impL30-btn" 
                                 data-clicks-l7="${IMP_L30}" 
                                 style="cursor:pointer; margin-left:8px;"></i>
@@ -489,7 +545,7 @@
                         formatter: function(cell) {
                             let IMP_L7 = cell.getValue();
                             return `
-                                <span>${IMP_L7}</span>
+                                <span>${IMP_L7.toFixed(0)}</span>
                                 <i class="fa fa-info-circle text-primary toggle-impL7-btn" 
                                 data-clicks-l7="${IMP_L7}" 
                                 style="cursor:pointer; margin-left:8px;"></i>
@@ -718,6 +774,26 @@
             });
 
             document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("toggle-spendL30-btn")) {
+                    let colsToToggle = ["kw_spend_L30", "pt_spend_L30", "hl_spend_L30"];
+
+                    colsToToggle.forEach(colField => {
+                        let col = table.getColumn(colField);
+                        if (col) {
+                            col.toggle();
+                        }
+                    });
+                }
+                if (e.target.classList.contains("toggle-spendL7-btn")) {
+                    let colsToToggle = ["kw_spend_L7", "pt_spend_L7", "hl_spend_L7"];
+
+                    colsToToggle.forEach(colField => {
+                        let col = table.getColumn(colField);
+                        if (col) {
+                            col.toggle();
+                        }
+                    });
+                }
                 if (e.target.classList.contains("toggle-clicksL30-btn")) {
                     let colsToToggle = ["kw_clicks_L30", "pt_clicks_L30", "hl_clicks_L30"];
 
