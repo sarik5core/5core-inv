@@ -1173,7 +1173,7 @@ const table = new Tabulator("#forecast-table", {
                 headerSort: true,
                 formatter: function(cell) {
                     const value = parseFloat(cell.getValue()) || 0;
-                    return `<span class="text-success">${Math.round(value)}</span>`;
+                    return `<span class="text-success">$${Math.round(value)}</span>`;
                 },
                 sorter: function(a, b, aRow, bRow) {
                     const valA = parseFloat(a) || 0;
@@ -1194,7 +1194,7 @@ const table = new Tabulator("#forecast-table", {
                 headerSort: true,
                 formatter: function(cell) {
                     const value = parseFloat(cell.getValue()) || 0;
-                    return `<span class="text-success">${Math.round(value)}</span>`;
+                    return `<span class="text-success">$${Math.round(value)}</span>`;
                 },
                 sorter: function(a, b, aRow, bRow) {
                     const valA = parseFloat(a) || 0;
@@ -1676,132 +1676,136 @@ const table = new Tabulator("#forecast-table", {
         },
      
     ],
-        ajaxResponse: function(url, params, response) {
-            groupedSkuData = {}; // clear previous
+       ajaxResponse: function(url, params, response) {
+    groupedSkuData = {}; // clear previous
 
-            // Add calculated fields + mark parent rows
-            response.data = response.data.map((item, index) => {
-                const sku = item.SKU || "";
-                const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
+    // Add calculated fields + mark parent rows
+    response.data = response.data.map((item, index) => {
+        const sku = item.SKU || "";
+        const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
 
-                 // Ensure inv_value is numeric
-            if (!item.inv_value) {
-                const inv = item.INV || 0;
-                const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
-                item.inv_value = (inv * shopifyPrice).toFixed(2);
+        // Ensure inv_value is numeric
+        if (!item.inv_value) {
+            const inv = item.INV || 0;
+            const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
+            item.inv_value = (inv * shopifyPrice).toFixed(2);
+        }
+
+        // Ensure COGS is numeric
+        if (!item.COGS) {
+            const lp = parseFloat(item.LP) || 0;
+            const inv = item.INV || 0;
+            item.COGS = (lp * inv).toFixed(2);
+        }
+
+        return {
+            ...item,
+            calculatedRoi: calculateROI(item),
+            calculatedProfit: calculateAvgProfit(item),
+            sl_no: index + 1,
+            is_parent: isParent ? 1 : 0,
+            isParent: isParent,
+            raw_data: item || {}
+        };
+    });
+
+    // Group by Parent
+    let grouped = {};
+    response.data.forEach(item => {
+        const parentKey = item.Parent || "";
+        if (!grouped[parentKey]) grouped[parentKey] = [];
+        grouped[parentKey].push(item);
+
+        // Group for play button use
+        if (!groupedSkuData[parentKey]) {
+            groupedSkuData[parentKey] = [];
+        }
+        groupedSkuData[parentKey].push(item);
+    });
+
+    // Aggregate for parent rows
+    Object.keys(grouped).forEach(parentKey => {
+        const rows = grouped[parentKey];
+        const children = rows.filter(item => !item.is_parent);
+        const parent = rows.find(item => item.is_parent);
+
+        if (!parent || children.length === 0) return;
+
+        // Additive fields to sum
+        const additiveFields = ['INV', 'total_views', 'total_req_view', 'inv_value', 'COGS']; // Added COGS
+        additiveFields.forEach(field => {
+            parent[field] = children.reduce((sum, c) => sum + (parseFloat(c[field]) || 0), 0).toFixed(2);
+        });
+
+        // Rate fields to average
+        const rateFields = ['Dil%', 'avgCvr', 'MSRP', 'MAP', 'LP', 'SHIP', 'temu_ship'];
+        rateFields.forEach(field => {
+            const values = children.map(c => parseFloat(c[field]) || 0);
+            const valid = values.filter(v => !isNaN(v) && v !== 0); // Exclude 0 to avoid skew if defaults
+            parent[field] = valid.length > 0 ? valid.reduce((sum, v) => sum + v, 0) / valid.length : 
+                (values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0);
+        });
+
+        // Marketplaces for l30 sum and price weighted average
+        const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c'];
+        mps.forEach(mp => {
+            const l30Field = (mp === 'shopifyb2c' ? 'shopifyb2c_l30' : `${mp}_l30`);
+            const priceField = (mp === 'shopifyb2c' ? 'shopifyb2c_price' : `${mp}_price`);
+
+            // Sum l30
+            parent[l30Field] = children.reduce((sum, c) => sum + (parseFloat(c[l30Field]) || 0), 0);
+
+            // Weighted average price by l30
+            let totalWeighted = 0;
+            let totalWeight = 0;
+            children.forEach(c => {
+                const price = parseFloat(c[priceField]) || 0;
+                const weight = parseFloat(c[l30Field]) || 0;
+                totalWeighted += price * weight;
+                totalWeight += weight;
+            });
+
+            parent[priceField] = totalWeight > 0 ? totalWeighted / totalWeight : 
+                (children.reduce((sum, c) => sum + (parseFloat(c[priceField]) || 0), 0) / children.length);
+        });
+
+        // Recalculate inv_value for parent based on aggregated INV and shopifyb2c_price
+        const inv = parent.INV || 0;
+        const shopifyPrice = parent.shopifyb2c_price || 0;
+        parent.inv_value = (inv * shopifyPrice).toFixed(2);
+
+        // Recalculate COGS for parent based on aggregated LP and INV
+        const lp = parseFloat(parent.LP) || 0;
+        parent.COGS = (lp * inv).toFixed(2); // Ensure COGS is recalculated
+
+        // Set image from first child if missing
+        if (!parent.shopifyb2c_image && children[0]) {
+            parent.shopifyb2c_image = children[0].shopifyb2c_image;
+        }
+
+        // Set ovl30 if needed (assuming it's shopifyb2c_l30)
+        parent.ovl30 = parent.shopifyb2c_l30;
+    });
+
+    // Sort inside each group: child rows first, parent bottom
+    let finalData = [];
+    Object.values(grouped).forEach(rows => {
+        rows.sort((a, b) => {
+            if (a.is_parent !== b.is_parent) {
+                return a.is_parent - b.is_parent; // parent last
             }
+            return (a.SKU || "").localeCompare(b.SKU || "");
+        });
+        finalData = finalData.concat(rows);
+    });
 
-            if (!item.COGS){
-                const lp = parseFloat(item.LP) || 0;
-                const inv = item.INV || 0;
-                item.COGS = (lp * inv).toFixed(2);
-            }
+    setTimeout(() => {
+        setCombinedFilters();
+    }, 0);
 
-                return {
-                    ...item,
-                    calculatedRoi: calculateROI(item),
-                    calculatedProfit: calculateAvgProfit(item),
-                    sl_no: index + 1,
-                    is_parent: isParent ? 1 : 0,
-                    isParent: isParent,
-                    isParent: isParent,
-                    raw_data: item || {}
-                };
-            });
-
-            // Group by Parent
-            let grouped = {};
-            response.data.forEach(item => {
-                const parentKey = item.Parent || "";
-                if (!grouped[parentKey]) grouped[parentKey] = [];
-                grouped[parentKey].push(item);
-
-                // Group for play button use
-                if (!groupedSkuData[parentKey]) {
-                    groupedSkuData[parentKey] = [];
-                }
-                groupedSkuData[parentKey].push(item);
-            });
-
-            // Aggregate for parent rows
-            Object.keys(grouped).forEach(parentKey => {
-                const rows = grouped[parentKey];
-                const children = rows.filter(item => !item.is_parent);
-                const parent = rows.find(item => item.is_parent);
-
-                if (!parent || children.length === 0) return;
-
-                // Additive fields to sum
-                const additiveFields = ['INV', 'total_views', 'total_req_view', 'inv_value'];
-                additiveFields.forEach(field => {
-                    parent[field] = children.reduce((sum, c) => sum + (parseFloat(c[field]) || 0), 0);
-                });
-
-                // Rate fields to average
-                const rateFields = ['Dil%', 'avgCvr', 'MSRP', 'MAP', 'LP', 'SHIP', 'temu_ship'];
-                rateFields.forEach(field => {
-                    const values = children.map(c => parseFloat(c[field]) || 0);
-                    const valid = values.filter(v => !isNaN(v) && v !== 0); // Exclude 0 to avoid skew if defaults
-                    parent[field] = valid.length > 0 ? valid.reduce((sum, v) => sum + v, 0) / valid.length : 
-                        (values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0);
-                });
-
-                // Marketplaces for l30 sum and price weighted average
-                const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c'];
-                mps.forEach(mp => {
-                    const l30Field = (mp === 'shopifyb2c' ? 'shopifyb2c_l30' : `${mp}_l30`);
-                    const priceField = (mp === 'shopifyb2c' ? 'shopifyb2c_price' : `${mp}_price`);
-
-                    // Sum l30
-                    parent[l30Field] = children.reduce((sum, c) => sum + (parseFloat(c[l30Field]) || 0), 0);
-
-                    // Weighted average price by l30
-                    let totalWeighted = 0;
-                    let totalWeight = 0;
-                    children.forEach(c => {
-                        const price = parseFloat(c[priceField]) || 0;
-                        const weight = parseFloat(c[l30Field]) || 0;
-                        totalWeighted += price * weight;
-                        totalWeight += weight;
-                    });
-
-                    parent[priceField] = totalWeight > 0 ? totalWeighted / totalWeight : 
-                        (children.reduce((sum, c) => sum + (parseFloat(c[priceField]) || 0), 0) / children.length);
-                });
-
-                // Recalculate inv_value for parent based on aggregated INV and shopifyb2c_price
-                const inv = parent.INV || 0;
-                const shopifyPrice = parent.shopifyb2c_price || 0;
-                parent.inv_value = (inv * shopifyPrice).toFixed(2);
-
-                // Set image from first child if missing
-                if (!parent.shopifyb2c_image && children[0]) {
-                    parent.shopifyb2c_image = children[0].shopifyb2c_image;
-                }
-
-                // Set ovl30 if needed (assuming it's shopifyb2c_l30)
-                parent.ovl30 = parent.shopifyb2c_l30;
-            });
-
-            // Sort inside each group: child rows first, parent bottom
-            let finalData = [];
-            Object.values(grouped).forEach(rows => {
-                rows.sort((a, b) => {
-                    if (a.is_parent !== b.is_parent) {
-                        return a.is_parent - b.is_parent; // parent last
-                    }
-                    return (a.SKU || "").localeCompare(b.SKU || "");
-                });
-                finalData = finalData.concat(rows);
-            });
-
-            setTimeout(() => {
-                setCombinedFilters();
-            }, 0);
-
-            console.log("Processed Response:", finalData);
-            return finalData;
-        },
+    console.log("Processed Response:", finalData);
+    return finalData;
+},
 
 });
 
