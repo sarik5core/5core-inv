@@ -361,7 +361,16 @@
                     headerFilter: "input",
                     headerFilterPlaceholder: "Search sku.",
                     headerFilterFunc: "like",
-                    accessor: row => row["SKU"]
+                    accessor: row => row["SKU"],
+                    formatter: function(cell){
+                        const row = cell.getRow();
+                        const sku = row.getData().SKU;
+                        const sku_stage = row.getData().sku_stage;
+                        return `<div style="line-height:1.5;">
+                            <span style="font-weight:600;">${sku}</span><br>
+                            <small class="text-info"><span class="text-black">Stage:</span> ${sku_stage}</small>
+                        </div>`;
+                    }
                 },
                 {
                     title: "INV",

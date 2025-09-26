@@ -396,10 +396,16 @@ class ForecastAnalysisController extends Controller
 
             $movementMap = DB::table('movement_analysis')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
 
-            $mfrgProgressMap = DB::table('mfrg_progress')->select('sku', DB::raw('SUM(qty) as total_qty'))->groupBy('sku')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+            $mfrgProgressMap = DB::table('mfrg_progress')
+                ->select('sku', DB::raw('SUM(qty) as total_qty'), DB::raw('MAX(ready_to_ship) as ready_to_ship'))
+                ->groupBy('sku')
+                ->get()
+                ->keyBy(fn($item) => strtoupper(trim($item->sku)));
             
             $readyToShip = DB::table('ready_to_ship')->select('sku', DB::raw('SUM(qty) as total_qty'))->groupBy('sku')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
-
+            
+            $toOrderMap = DB::table('to_order_analysis')->select('sku', 'stage')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+            
             $processedData = [];
 
             foreach($productListDataBySku as $sheetSku => $prodData){
@@ -469,6 +475,32 @@ class ForecastAnalysisController extends Controller
                     $item->{'Total'} = ($item->L30 ?? 0) + $totalSum;
                     $item->{'Total month'} = $totalMonthCount + ((isset($item->L30) && $item->L30!=0)?1:0);
                 }
+
+                $skuStage = '';
+                $skuKey = strtoupper(trim($prodData->sku));
+
+                if ($toOrderMap->has($skuKey)) {
+                    $stage = trim($toOrderMap[$skuKey]->stage ?? '');
+
+                    if ($stage === '' || $stage === null) {
+                        $skuStage = 'To Order Analysis';
+                    } elseif ($stage === 'Mfrg Progress') {
+                        if (isset($mfrgProgressMap[$skuKey]) && strtolower($mfrgProgressMap[$skuKey]->ready_to_ship ?? '') === 'yes') {
+                            $skuStage = 'Ready To Ship';
+                        } else {
+                            $skuStage = 'Mfrg Progress';
+                        }
+                    } else {
+                        $skuStage = $stage;
+                    }
+                } else {
+                    $skuStage = '';
+                }
+
+                $item->sku_stage = $skuStage;
+
+
+
 
                 $processedData[] = $item;
             }
