@@ -280,9 +280,17 @@ class FetchTemuMetrics extends Command
 
             $skus = $data['result']['skuList'] ?? [];
 
+             Log::info("Temu SKU API Raw Response (first page)", $skus);
+
             foreach ($skus as $sku) {
+
+                $price = $sku['priceInfo']['salePrice'] 
+                        ?? $sku['priceInfo']['price']
+                        ?? $sku['salePrice'] 
+                        ?? 0;
                 TemuMetric::updateOrCreate(
                     ['sku' => $sku['outSkuSn'], 'sku_id' => $sku['skuId']],
+                    ['base_price' => $price]
                 );
             }
 

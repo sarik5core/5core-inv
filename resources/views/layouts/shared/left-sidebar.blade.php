@@ -1054,6 +1054,9 @@
                         <li>
                             <a href="{{ route('linked.products.view') }}">Linked products </a>
                         </li>
+                        <li>
+                            <a href="{{ route('show.updated.qty') }}">Auto Updated Products QTY </a>
+                        </li>
                         {{-- <li>
                             <a href="#">Trash Entries</a>
                         </li> --}}

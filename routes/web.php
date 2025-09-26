@@ -456,6 +456,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/linked-products-store', [ProductMasterController::class, 'linkedProductStore'])->name('linked.products.store');
     Route::get('/linked-products-data-list', [ProductMasterController::class, 'linkedProductsList']);
 
+    //show updated qty
+    Route::get('/show-updated-qty', [ProductMasterController::class, 'showUpdatedQty'])->name('show.updated.qty');
+    Route::get('/show-updated-qty-list', [ProductMasterController::class, 'showUpdatedQtyList']);
 
     //Stock Adjustment
     Route::get('/stock-adjustment-view', [StockAdjustmentController::class, 'index'])->name('stock.adjustment.view');
