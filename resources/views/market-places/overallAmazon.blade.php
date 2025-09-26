@@ -3084,6 +3084,7 @@
                     const spend = parseFloat(item['Spend']) || 0;
                     const aL30 = Number(item['A L30']) || 0;
                     const price = Number(item.price) || 0;
+                    const amazonAdUpdates = {{ $amazonAdUpdates ?? 0 }};
 
                     // Sold Amount
                     const soldAmount = aL30 * price;
@@ -3111,14 +3112,15 @@
 
                     // profit after advertising
                     const profitAfterAd = totalProfit - adSpend;
+                    const tpft = rawPft + amazonAdUpdates - tacos;
 
                     $row.append(
                         $('<td>').html(
-                            `<span class="badge bg-success">$${Math.round(profitAfterAd)}</span>`
+                            `<span class="badge bg-info">$${Math.round(tpft)}</span>`
                         )
                     );
 
-                    // TPFT 
+                    // profitAfterAd 
                     $row.append($('<td>').html(
                         `<span class="badge bg-info">${Math.round((profitAfterAd / (price * aL30)) * 100)}%</span>`
                     ));

@@ -48,9 +48,9 @@ class OverallAmazonController extends Controller
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
-        $marketplaceData = ChannelMaster::where('channel', 'Amazon')->first();
+        $marketplaceData = MarketplacePercentage::where('marketplace', 'Amazon')->first();
 
-        $percentage = $marketplaceData ? $marketplaceData->channel_percentage : 100;
+        $percentage = $marketplaceData ? $marketplaceData->percentage : 100;
         $adUpdates = $marketplaceData ? $marketplaceData->ad_updates : 0;
 
         return view('market-places.overallAmazon', [
