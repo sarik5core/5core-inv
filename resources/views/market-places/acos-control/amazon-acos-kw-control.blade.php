@@ -263,10 +263,10 @@
                 index: "Sku",
                 ajaxURL: "/amazon-acos-kw-control-data",
                 layout: "fitDataFill",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 initialSort:[
                     {column:"parent", dir:"asc"},  
                     {column:"sku", dir:"asc"},     

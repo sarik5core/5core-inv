@@ -34,20 +34,42 @@ class ContainerPlanningController extends Controller
         $paid         = $request->paid ?? 0;
         $balance      = $invoiceValue - $paid;
 
-        ContainerPlanning::create([
-            'container_number'   => $request->container_number,
-            'po_number'          => $request->po_number,
-            'supplier_id'        => $request->supplier_id,
-            'area'               => $request->area,
-            'packing_list_link'  => $request->packing_list_link,
-            'invoice_value'      => $invoiceValue,
-            'paid'               => $paid,
-            'balance'            => $balance,
-            'pay_term'           => $request->pay_term,
-        ]);
+        if ($request->id) {
+            // Update existing record
+            $container = ContainerPlanning::findOrFail($request->id);
+            $container->update([
+                'container_number'   => $request->container_number,
+                'po_number'          => $request->po_number,
+                'supplier_id'        => $request->supplier_id,
+                'area'               => $request->area,
+                'packing_list_link'  => $request->packing_list_link,
+                'invoice_value'      => $invoiceValue,
+                'paid'               => $paid,
+                'balance'            => $balance,
+                'pay_term'           => $request->pay_term,
+            ]);
 
-        return redirect()->back()->with('flash_message', 'Container Planning saved successfully!');
+            $message = 'Container Planning updated successfully!';
+        } else {
+            // Create new record
+            ContainerPlanning::create([
+                'container_number'   => $request->container_number,
+                'po_number'          => $request->po_number,
+                'supplier_id'        => $request->supplier_id,
+                'area'               => $request->area,
+                'packing_list_link'  => $request->packing_list_link,
+                'invoice_value'      => $invoiceValue,
+                'paid'               => $paid,
+                'balance'            => $balance,
+                'pay_term'           => $request->pay_term,
+            ]);
+
+            $message = 'Container Planning saved successfully!';
+        }
+
+        return redirect()->back()->with('flash_message', $message);
     }
+
 
     public function getContainerPlannings()
     {

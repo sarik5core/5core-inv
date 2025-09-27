@@ -179,6 +179,10 @@
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Search by SKU, Supplier, Parent..." 
                         style="max-width: 150px; border: 2px solid #2185ff; font-size: 0.95rem;">
 
+                        <button id="export-tab-excel" class="btn btn-sm btn-success">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+
                     {{-- push Inventory --}}
                     <button id="push-inventory-btn" class="btn btn-primary btn-sm">
                         <i class="fas fa-dolly"></i> Push Inventory
@@ -344,6 +348,8 @@
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 let tabCounter = {{ count($tabs) }};
 const groupedData = @json($groupedData);
@@ -716,6 +722,56 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
 
     window.tabTables = window.tabTables || {};
     window.tabTables[index] = table;
+
+
+    // ✅ Ensure listener runs only once
+    const exportBtn = document.getElementById("export-tab-excel");
+    exportBtn.replaceWith(exportBtn.cloneNode(true));
+    document.getElementById("export-tab-excel").addEventListener("click", function() {
+        const activeTabPane = document.querySelector(".tab-pane.active");
+        if (!activeTabPane) {
+            alert("No active tab found!");
+            return;
+        }
+
+        const tabIndex = Array.from(activeTabPane.parentElement.children).indexOf(activeTabPane);
+
+        const table = window.tabTables[tabIndex];
+        if (!table) {
+            alert("No table found for the active tab!");
+            return;
+        }
+
+        const data = table.getData();
+        if (data.length === 0) {
+            alert("No data to export for this tab.");
+            return;
+        }
+
+        const exportData = data
+          .filter(row => row.parent || row.our_sku)
+          .map(row => {
+              return {
+                  "SKU": row.our_sku,
+                  "Supplier": row.supplier_name,
+                  "Qty / Ctns": row.no_of_units,
+                  "Qty Ctns": row.total_ctn,
+                  "Qty": (parseFloat(row.no_of_units || 0) * parseFloat(row.total_ctn || 0)),
+                  "Rate ($)": row.rate,
+                  "Amt ($)": Math.round((parseFloat(row.no_of_units || 0) * parseFloat(row.total_ctn || 0)) * parseFloat(row.rate || 0)),
+                  "CBM": typeof row.Values === "string" ? JSON.parse(row.Values)?.cbm || 0 : row.Values?.cbm || 0,
+                  "Unit": row.unit
+              };
+          });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Tab Data");
+
+        const tabName = data[0]?.tab_name || `tab_${tabIndex + 1}`;
+        XLSX.writeFile(workbook, `${tabName}_data.xlsx`);
+    });
 
 });
 

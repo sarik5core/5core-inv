@@ -1295,7 +1295,7 @@
                                         </a>
                                         <div class="collapse" id="amazonBudget">
                                             <ul class="side-nav-fourth-level">
-                                                <li>
+                                                {{-- <li>
                                                     <a href="{{ url('campaign') }}">Utilization</a>
                                                 </li>
                                                 <li>
@@ -1303,7 +1303,7 @@
                                                 </li>
                                                 <li>
                                                     <a href=" {{ route('campaign.over') }} ">Over utilised</a>
-                                                </li>
+                                                </li> --}}
                                                 <li>
                                                     <a href=" {{ route('amazon-sp.amz-utilized-bgt-kw') }} ">AMZ >
                                                         UTILIZED BGT KW</a>

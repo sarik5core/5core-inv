@@ -256,10 +256,10 @@
                 index: "Sku",
                 ajaxURL: "/amazon-sb/get-amz-under-utilized-bgt-hl",
                 layout: "fitData",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';

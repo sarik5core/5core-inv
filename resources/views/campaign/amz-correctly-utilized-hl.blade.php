@@ -239,10 +239,10 @@
                 index: "Sku",
                 ajaxURL: "/get-amz-correctly-utilized-bgt-hl",
                 layout: "fitDataFill",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';

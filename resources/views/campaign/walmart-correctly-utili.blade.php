@@ -169,10 +169,9 @@
                                 <div class="d-flex gap-2 justify-content-end">
                                     <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
                                         APR ALL SBID
-                                    </button>
+                                    </button> 
                                     <button class="btn btn-success btn-md">
-                                        <i class="fa fa-arrow-down me-1"></i>
-                                        Need to decrease bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
+                                        Total bids: <span id="total-campaigns" class="fw-bold ms-1 fs-4">0</span>
                                     </button>
                                     <button class="btn btn-primary btn-md">
                                         <i class="fa fa-percent me-1"></i>
@@ -226,8 +225,11 @@
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            document.body.style.zoom = "88%";
 
             const invFilter  = document.querySelector("#inv-filter");
             const nrlFilter  = document.querySelector("#nrl-filter");
@@ -247,8 +249,6 @@
                 index: "Sku",
                 ajaxURL: "/walmart/utilized/kw/data",
                 layout: "fitData",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
                 rowFormatter: function(row) {
@@ -441,51 +441,7 @@
                             var cpc_l1 = parseFloat(row.cpc_l1) || 0;
                             return cpc_l1.toFixed(2);
                         }
-                    },
-                    {
-                        title: "SBID",
-                        field: "sbid",
-                        hozAlign: "center",
-                        formatter: function(cell) {
-                            var row = cell.getRow().getData();
-                            var cpc_l1 = parseFloat(row.cpc_l1) || 0;
-                            var cpc_l7 = parseFloat(row.cpc_l7) || 0;
-                            var sbid;
-                            if(cpc_l1 > cpc_l7) {
-                                sbid = (cpc_l1 * 0.9).toFixed(2);
-                            }else{
-                                sbid = (cpc_l7 * 0.9).toFixed(2);
-                            }
-                            return sbid;
-                        },
-                    },
-                    {
-                        title: "APR BID",
-                        field: "apr_bid",
-                        hozAlign: "center",
-                        formatter: function(cell, formatterParams, onRendered) {
-                            var value = cell.getValue() || 0;
-                            return `
-                                <div style="align-items:center; gap:5px;">
-                                    <button class="btn btn-primary update-row-btn">APR BID</button>
-                                </div>
-                            `;
-                        },
-                        cellClick: function(e, cell) {
-                            if (e.target.classList.contains("update-row-btn")) {
-                                var row = cell.getRow().getData();
-                                var cpc_l1 = parseFloat(row.cpc_l1) || 0;
-                                var cpc_l7 = parseFloat(row.cpc_l7) || 0;
-                                var sbid;
-                                if(cpc_l1 > cpc_l7) {
-                                    sbid = (cpc_l1 * 0.9).toFixed(2);
-                                }else{
-                                    sbid = (cpc_l7 * 0.9).toFixed(2);
-                                }
-                                updateBid(sbid, rowData.campaign_id);
-                            }
-                        }
-                    },
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
@@ -500,38 +456,18 @@
                 }
             });
 
-            table.on("cellEdited", function(cell){
-                if(cell.getField() === "crnt_bid"){
-                    var row = cell.getRow();
-                    var rowData = row.getData();
-                    var newCrntBid = parseFloat(rowData.crnt_bid) || 0;
-
-                    row.update({
-                        sbid: (newCrntBid * 0.9).toFixed(2)
-                    });
-
-                    $.ajax({
-                        url: '/update-amazon-sp-bid-price', 
-                        method: 'POST',
-                        data: {
-                            id: rowData.campaign_id,
-                            crnt_bid: newCrntBid,
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response){
-                            console.log(response);
-                        },
-                        error: function(xhr){
-                            alert('Error updating CRNT BID');
-                        }
-                    });
-                }
-            });
-
-
             table.on("tableBuilt", function () {
 
                 function combinedFilter(data) {
+                    var budget = parseFloat(data.campaignBudgetAmount) || 0;
+                    var spend_l7 = parseFloat(data.spend_l7 || 0);
+                    var spend_l1 = parseFloat(data.spend_l1 || 0);
+
+                    var ub7 = budget > 0 ? (spend_l7 / (budget * 7)) * 100 : 0;
+                    var ub1 = budget > 0 ? (spend_l1 / budget) * 100 : 0;
+
+                    if (!(ub7 >= 70 && ub7 <= 90)) return false;
+
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal) {
                         let campaignMatch = data.campaignName?.toLowerCase().includes(searchVal);
@@ -619,7 +555,6 @@
                 }
             }
 
-            document.body.style.zoom = "78%";
         });
     </script>
 @endsection
