@@ -268,7 +268,7 @@
                                         </div>
                                     </div>
                                     <!-- Arrow button -->
-                                    <button id="toggleChartBtn" class="btn btn-sm btn-light ms-2">
+                                    <button id="toggleChartBtn" class="btn btn-sm btn-info ms-2">
                                         <i id="chartArrow" class="fa-solid fa-chevron-down"></i>
                                     </button>
                                 </div>

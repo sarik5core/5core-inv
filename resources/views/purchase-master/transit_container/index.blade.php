@@ -619,14 +619,30 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
         }
     });
 
-    $('#delete-selected-btn').on('click', function() {
-        const selectedData = table.getSelectedData();
+    $('#delete-selected-btn').off('click').on('click', function() {
+        // Find active tab
+        const activeTabPane = document.querySelector(".tab-pane.active");
+        if (!activeTabPane) {
+            alert("No active tab found!");
+            return;
+        }
 
+        // Find tab index & table
+        const tabIndex = Array.from(activeTabPane.parentElement.children).indexOf(activeTabPane);
+        const table = window.tabTables[tabIndex];
+        if (!table) {
+            alert("No table found for the active tab!");
+            return;
+        }
+
+        // Get selected rows
+        const selectedData = table.getSelectedData();
         if (selectedData.length === 0) {
             alert('Please select at least one record to delete.');
             return;
         }
 
+        // Confirm delete
         if (!confirm(`Are you sure you want to delete ${selectedData.length} selected records?`)) {
             return;
         }
@@ -641,7 +657,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                 ids: ids
             },
             success: function(response) {
-                if(response.success){
+                if (response.success) {
                     ids.forEach(id => table.deleteRow(id));
                 } else {
                     alert("Failed to delete rows.");
@@ -652,6 +668,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             }
         });
     });
+
 
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -727,6 +744,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
     // ✅ Ensure listener runs only once
     const exportBtn = document.getElementById("export-tab-excel");
     exportBtn.replaceWith(exportBtn.cloneNode(true));
+
     document.getElementById("export-tab-excel").addEventListener("click", function() {
         const activeTabPane = document.querySelector(".tab-pane.active");
         if (!activeTabPane) {
