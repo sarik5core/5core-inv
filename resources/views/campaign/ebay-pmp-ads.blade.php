@@ -2664,14 +2664,14 @@
                     let reqViews = item.INV * 10;
                     let reqViewsColor = "";
 
-                    if (reqViews < item.VIEWS) {
+                    if (reqViews > item.VIEWS) {
                         reqViewsColor = "red";
                         sbid = sbid + 2;       
                     } else {
                         reqViewsColor = "green";
                     }
 
-                    $row.append($('<td>').html(
+                    $row.append($('<td data-field="sbid">').html(
                         `<span class="dil-percent-value ${sbidColor}">
                            ${sbid}
                         </span>`

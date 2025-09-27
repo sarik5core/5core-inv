@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Campaigns;
 use App\Http\Controllers\Controller;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
+use App\Models\WalmartCampaignReport;
 use App\Models\WalmartDataView;
 use App\Models\WalmartProductSheet;
-use Illuminate\Http\Request;
 
 class WalmartUtilisationController extends Controller
 {
@@ -49,6 +49,12 @@ class WalmartUtilisationController extends Controller
 
         $nrValues = WalmartDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
+        $walmartCampaignReportsAll = WalmartCampaignReport::whereIn('campaignName', $skus)->get()->keyBy(fn($item) => $normalizeSku($item->campaignName));
+
+        $walmartCampaignReportsL30 = WalmartCampaignReport::where('report_range', 'L30')->whereIn('campaignName', $skus)->get();
+        $walmartCampaignReportsL7  = WalmartCampaignReport::where('report_range', 'L7')->whereIn('campaignName', $skus)->get();
+        $walmartCampaignReportsL1  = WalmartCampaignReport::where('report_range', 'L1')->whereIn('campaignName', $skus)->get();
+
         $result = [];
 
         foreach ($productMasters as $pm) {
@@ -58,6 +64,18 @@ class WalmartUtilisationController extends Controller
             $amazonSheet = $walmartProductSheet[$sku] ?? null;
             $shopify = $shopifyData[$sku] ?? null;
 
+            // Campaign name & budget without report_range
+            $matchedCampaign = $walmartCampaignReportsAll[$sku] ?? null;
+
+            if (!$matchedCampaign) {
+                continue;
+            }
+
+            // Metrics by report_range
+            $matchedCampaignL30 = $walmartCampaignReportsL30->first(fn($item) => $normalizeSku($item->campaignName) === $sku);
+            $matchedCampaignL7  = $walmartCampaignReportsL7->first(fn($item) => $normalizeSku($item->campaignName) === $sku);
+            $matchedCampaignL1  = $walmartCampaignReportsL1->first(fn($item) => $normalizeSku($item->campaignName) === $sku);
+
             $row = [];
             $row['parent'] = $parent;
             $row['sku']    = $pm->sku;
@@ -65,19 +83,28 @@ class WalmartUtilisationController extends Controller
             $row['L30']    = $shopify->quantity ?? 0;
             $row['WA_L30'] = $amazonSheet->l30 ?? 0;
 
+            // Campaign info (all SKUs)
+            $row['campaignName'] = $matchedCampaign->campaignName ?? '';
+            $row['campaignBudgetAmount'] = $matchedCampaign->budget ?? '';
+
+            // Metrics
+            $row['clicks_l30'] = $matchedCampaignL30->clicks ?? 0;
+            $row['spend_l7']   = $matchedCampaignL7->spend ?? 0;
+            $row['spend_l1']   = $matchedCampaignL1->spend ?? 0;
+            $row['cpc_l7']     = $matchedCampaignL7->cpc ?? 0;
+            $row['cpc_l1']     = $matchedCampaignL1->cpc ?? 0;
+
+            // NR/FBA data
             $row['NRL']  = '';
             $row['NRA']  = '';
             $row['FBA']  = '';
-
             if (isset($nrValues[$pm->sku])) {
                 $raw = $nrValues[$pm->sku];
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
-                }
+                if (!is_array($raw)) $raw = json_decode($raw, true);
                 if (is_array($raw)) {
-                    $row['NRL']  = $raw['NRL'] ?? null;
-                    $row['NRA']  = $raw['NRA'] ?? null;
-                    $row['FBA']  = $raw['FBA'] ?? null;
+                    $row['NRL'] = $raw['NRL'] ?? null;
+                    $row['NRA'] = $raw['NRA'] ?? null;
+                    $row['FBA'] = $raw['FBA'] ?? null;
                 }
             }
 
@@ -92,5 +119,6 @@ class WalmartUtilisationController extends Controller
             'status'  => 200,
         ]);
     }
+
 
 }

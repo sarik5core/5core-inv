@@ -32,7 +32,7 @@ class FetchTemuMetrics extends Command
         $this->fetchSkus();
         $this->fetchQuantity();
         $this->fetchGoodsId();
-        // $this->fetchBasePrice();
+        $this->fetchBasePrice();
         $this->fetchProductAnalyticsData();
     }
 
@@ -108,8 +108,56 @@ class FetchTemuMetrics extends Command
         $this->info("Analytics data updated successfully.");
     }
 
-    private function fetchBasePrice(){
-        // Currently not any API provides base price.
+    // private function fetchBasePrice(){
+    //     // Currently not any API provides base price.
+    // }
+
+    private function fetchBasePrice()
+    {
+        $skus = TemuMetric::pluck('sku_id')->toArray();
+
+        foreach ($skus as $skuId) {
+            $requestBody = [
+                "type" => "bg.local.goods.sku.list.price.query",
+                "skuIds" => [$skuId], // API ko array me SKU IDs bhejni hoti hain
+            ];
+
+            $signedRequest = $this->generateSignValue($requestBody);
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post('https://openapi-b-us.temu.com/openapi/router', $signedRequest);
+
+            if ($response->failed()) {
+                $this->error("Price request failed for SKU: {$skuId} | " . $response->body());
+                continue;
+            }
+
+            $data = $response->json();
+
+            if (!($data['success'] ?? false)) {
+                $this->error("Temu Price API error for SKU: {$skuId} | " . ($data['errorMsg'] ?? 'Unknown'));
+                continue;
+            }
+
+            $priceInfoList = $data['result']['skuPriceInfoList'] ?? [];
+            if (empty($priceInfoList)) {
+                $this->warn("No price info found for SKU: {$skuId}");
+                continue;
+            }
+
+            $priceInfo = $priceInfoList[0];
+
+            TemuMetric::where('sku_id', $skuId)->update([
+                'base_price' => $priceInfo['basePrice'] ?? null,
+                'currency'   => $priceInfo['currency'] ?? null,
+                'price_last_updated' => now(),
+            ]);
+
+            $this->info("Price updated for SKU: {$skuId}");
+        }
+
+        $this->info("Base Prices updated successfully.");
     }
 
     public function fetchGoodsId(){
@@ -247,13 +295,62 @@ class FetchTemuMetrics extends Command
         $this->info("Quantity Purchased Update Successfully.");
     }
 
-    private function fetchSkus(){
+    // private function fetchSkus(){
+    //     $pageToken = null;
+    //     do {
+    //         $requestBody = [
+    //             "type" => "temu.local.sku.list.retrieve",                
+    //             "skuSearchType" => "ACTIVE",
+    //             "pageSize" => 100,
+    //         ];
+
+    //         if ($pageToken) {
+    //             $requestBody["pageToken"] = $pageToken;
+    //         }
+
+    //         $signedRequest = $this->generateSignValue($requestBody);
+
+    //         $response = Http::withHeaders([
+    //             'Content-Type' => 'application/json'
+    //         ])->post('https://openapi-b-us.temu.com/openapi/router', $signedRequest);
+
+    //         if ($response->failed()) {
+    //             $this->error("Request failed: " . $response->body());
+    //             break;
+    //         }
+
+    //         $data = $response->json();
+            
+    //         if (!($data['success'] ?? false)) {
+    //             $this->error("Temu Error: " . $data['errorMsg'] ?? 'Unknown');
+    //             break;
+    //         }
+
+    //         $skus = $data['result']['skuList'] ?? [];
+
+    //         foreach ($skus as $sku) {
+    //             TemuMetric::updateOrCreate(
+    //                 ['sku' => $sku['outSkuSn'], 'sku_id' => $sku['skuId']],
+    //             );
+    //         }
+
+    //         $pageToken = $data['result']['pagination']['nextToken'] ?? null;
+
+    //     } while ($pageToken);
+
+    //     $this->info("SKUs Synced Successfully.");
+    // }
+
+    private function fetchSkus()
+    {
         $pageToken = null;
+        $pageCount = 0;
+
         do {
             $requestBody = [
                 "type" => "temu.local.sku.list.retrieve",                
                 "skuSearchType" => "ACTIVE",
-                "pageSize" => 100,
+                "pageSize" => 50, // reduce size to avoid timeout
             ];
 
             if ($pageToken) {
@@ -262,9 +359,14 @@ class FetchTemuMetrics extends Command
 
             $signedRequest = $this->generateSignValue($requestBody);
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json'
-            ])->post('https://openapi-b-us.temu.com/openapi/router', $signedRequest);
+            try {
+                $response = Http::timeout(40) // ⏳ avoid hanging forever
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->post('https://openapi-b-us.temu.com/openapi/router', $signedRequest);
+            } catch (\Exception $e) {
+                $this->error("HTTP Request Exception: " . $e->getMessage());
+                break;
+            }
 
             if ($response->failed()) {
                 $this->error("Request failed: " . $response->body());
@@ -274,25 +376,65 @@ class FetchTemuMetrics extends Command
             $data = $response->json();
             
             if (!($data['success'] ?? false)) {
-                $this->error("Temu Error: " . $data['errorMsg'] ?? 'Unknown');
+                $this->error("Temu Error: " . ($data['errorMsg'] ?? 'Unknown'));
                 break;
             }
 
             $skus = $data['result']['skuList'] ?? [];
 
+            if (empty($skus)) {
+                $this->warn("No SKUs found on page {$pageCount}");
+                break;
+            }
+
             foreach ($skus as $sku) {
+                $outSkuSn = $sku['outSkuSn'] ?? null;
+                $skuId = $sku['skuId'] ?? null;
+
+                if (!$outSkuSn || !$skuId) {
+                    Log::warning("Missing SKU data", $sku);
+                    continue;
+                }
+
+                // ✅ Extract base price safely
+                $price = null;
+
+                if (isset($sku['priceInfo'])) {
+                    $price = $sku['priceInfo']['salePrice'] 
+                        ?? $sku['priceInfo']['price'] 
+                        ?? null;
+                }
+
+                if (!$price && isset($sku['salePrice'])) {
+                    $price = $sku['salePrice'];
+                }
+
+                // Ensure numeric
+                $price = is_numeric($price) ? (float) $price : null;
+
+                if ($price === null) {
+                    Log::warning("Price missing for SKU {$outSkuSn}", $sku);
+                    continue; // don’t overwrite with 0
+                }
+
                 TemuMetric::updateOrCreate(
-                    ['sku' => $sku['outSkuSn'], 'sku_id' => $sku['skuId']],
+                    ['sku' => $outSkuSn, 'sku_id' => $skuId],
+                    ['base_price' => $price]
                 );
             }
 
             $pageToken = $data['result']['pagination']['nextToken'] ?? null;
+            $pageCount++;
+
+            // Small delay to avoid API rate limits
+            usleep(500000); // 0.5 sec
 
         } while ($pageToken);
 
-        $this->info("SKUs Synced Successfully.");
+        $this->info("SKUs Synced Successfully with Prices.");
     }
 
+    
     private function generateSignValue($requestBody)
     {
         // Environment/config variables

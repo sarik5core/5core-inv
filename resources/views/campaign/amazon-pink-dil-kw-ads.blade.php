@@ -484,6 +484,19 @@
                         title: "SBGT",
                         field: "sbgt",
                         hozAlign: "center"
+                    },
+                    {
+                        title: "TPFT%",
+                        field: "TPFT",
+                        hozAlign: "center",
+                        formatter: function(cell){
+                            let value = parseFloat(cell.getValue()) || 0;
+                            return `
+                                <span style="font-weight:600;">
+                                    ${value.toFixed(0)}%
+                                </span>
+                            `;
+                        }
                     }
                 ],
                 ajaxResponse: function(url, params, response) {

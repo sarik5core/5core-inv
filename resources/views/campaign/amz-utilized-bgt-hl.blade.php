@@ -554,24 +554,19 @@
                             }
                         }
                     },
-                    // {
-                    //     title: "CRNT BID",
-                    //     field: "crnt_bid",
-                    //     hozAlign: "center",
-                    //     editor: "input"
-                    // },
                     {
-                        title: "SBGT",
-                        field: "sbgt",
+                        title: "TPFT%",
+                        field: "TPFT",
                         hozAlign: "center",
-                        editor: "input"
-                    },
-                    {
-                        title: "APR BGT",
-                        field: "apr_bgt",
-                        hozAlign: "center",
-                        editor: "input"
-                    },
+                        formatter: function(cell){
+                            let value = parseFloat(cell.getValue()) || 0;
+                            return `
+                                <span style="font-weight:600;">
+                                    ${value.toFixed(0)}%
+                                </span>
+                            `;
+                        }
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
