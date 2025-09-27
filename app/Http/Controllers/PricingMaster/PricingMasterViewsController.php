@@ -47,7 +47,7 @@ use App\Models\WalmartMetrics;
 use App\Models\SheinSheetData;
 use App\Models\SheinListingStatus;
 use App\Models\BestbuyUsaProduct;
-use App\Models\BestbuyUsaDataView;
+use App\Models\BestbuyUSADataView;
 use App\Models\BestbuyUSAListingStatus;
 use App\Models\CvrLqs;
 use App\Models\TemuMetric;
@@ -198,7 +198,7 @@ class PricingMasterViewsController extends Controller
         $sheinDataView = SheinDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $sheinData = SheinSheetData::whereIn('sku', $skus)->get()->keyBy('sku');
         $bestbuyUsaLookup = BestbuyUsaProduct::whereIn('sku', $skus)->get()->keyBy('sku');
-        $bestbuyUsaDataView = BestbuyUsaDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $bestbuyUsaDataView = BestbuyUSADataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiendamiaLookup = TiendamiaProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiendamiaDataView = TiendamiaDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
