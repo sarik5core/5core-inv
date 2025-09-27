@@ -143,14 +143,20 @@ class Kernel extends ConsoleKernel
         //     ->dailyAt('12:00')
         //     ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-amz-bgt-kw')
-            ->dailyAt('12:00')
+            ->days([1, 4]) // 1 = Monday, 4 = Thursday
+            ->at('12:00')
             ->timezone('Asia/Kolkata');
+
         $schedule->command('amazon:auto-update-amz-bgt-pt')
-            ->dailyAt('12:00')
+            ->days([1, 4])
+            ->at('12:00')
             ->timezone('Asia/Kolkata');
+
         $schedule->command('amazon:auto-update-amz-bgt-hl')
-            ->dailyAt('12:00')
+            ->days([1, 4])
+            ->at('12:00')
             ->timezone('Asia/Kolkata');
+
         $schedule->command('amazon:auto-update-pink-dil-kw-ads')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
