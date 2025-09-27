@@ -20,5 +20,6 @@ class TemuMetric extends Model
         'product_clicks_l30',
         'product_impressions_l60',
         'product_clicks_l60',
+        'temu_sheet_price',
     ];
 }

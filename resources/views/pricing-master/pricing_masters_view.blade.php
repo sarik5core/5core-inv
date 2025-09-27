@@ -668,6 +668,8 @@
                 { label: "eBay3", prefix: "ebay3" },
                 { label: "Shopify B2C", prefix: "shopifyb2c" },
                 { label: "Shein", prefix: "shein" },
+                { label: "Bestbuy", prefix: "bestbuy" },
+                { label: "Tiendamia", prefix: "tiendamia" },
             ];
 
             const labels = [];
@@ -818,7 +820,9 @@
                 (parseFloat(data.ebay3_l30) || 0) +
                 (parseFloat(data.ebay2_l30) || 0) +
                 (parseFloat(data.walmart_l30) || 0) +
-                (parseFloat(data.shein_l30) || 0);
+                (parseFloat(data.shein_l30) || 0) +
+                (parseFloat(data.bestbuy_l30) || 0) +
+                (parseFloat(data.tiendamia_l30) || 0);
 
             const SHIP = parseFloat(data.SHIP) || 0;
             const temuship = parseFloat(data.temu_ship) || 0;
@@ -847,11 +851,14 @@
                 data.walmart_l30) || 0) : 0;
             const sheinProfit = data.shein_price ? ((parseFloat(data.shein_price) * 0.80) - LP - SHIP) * (parseFloat(
                 data.shein_l30) || 0) : 0;
-
+            const bestbuyProfit = data.bestbuy_price ? ((parseFloat(data.bestbuy_price) * 0.80) - LP - SHIP) * (parseFloat(data
+                .bestbuy_l30) || 0) : 0;
+            const tiendamiaProfit = data.tiendamia_price ? ((parseFloat(data.tiendamia_price) * 0.80) - LP - SHIP) * (parseFloat(data
+                .tiendamia_l30) || 0) : 0;
 
 
             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit + sheinProfit;
+                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit + sheinProfit + bestbuyProfit + tiendamiaProfit;
 
             return totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
         }
@@ -1784,7 +1791,9 @@
                 { label: "eBay2", prefix: "ebay2", logo: "{{ asset('uploads/2.png') }}" },
                 { label: "eBay3", prefix: "ebay3", logo: "{{ asset('uploads/3.png') }}" },
                 { label: "Shopify B2C", prefix: "shopifyb2c", logo: "{{ asset('uploads/shopify.png') }}" },
-                { label: "Shein", prefix: "shein", logo: "{{ asset('uploads/Shein.jpg') }}" }
+                { label: "Shein", prefix: "shein", logo: "{{ asset('uploads/Shein.jpg') }}" },
+                { label: "Bestbuy", prefix: "bestbuy", logo: "{{ asset('uploads/bestbuy.jpeg') }}" },
+                { label: "Tiendamia", prefix: "tiendamia", logo: "{{ asset('uploads/ten.jpg') }}" }
             ];
 
 
@@ -1902,6 +1911,12 @@
                                  ` : r.prefix === 'shein' ? `
                                     ${data.shein_seller_link ? `<div><strong>SL:</strong> <a href="${data.shein_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
                                     ${data.shein_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shein_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'bestbuy' ? `
+                                    ${data.bestbuy_seller_link ? `<div><strong>SL:</strong> <a href="${data.bestbuy_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.bestbuy_buyer_link ? `<div><strong>BL:</strong> <a href="${data.bestbuy_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'tiendamia' ? `
+                                    ${data.tiendamia_seller_link ? `<div><strong>SL:</strong> <a href="${data.tiendamia_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.tiendamia_buyer_link ? `<div><strong>BL:</strong> <a href="${data.tiendamia_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
                                 ` : ''}
 
                             </div>
@@ -1945,6 +1960,8 @@
                                 : r.prefix === 'ebay2' ? (data.ebay2_views ?? "-") 
                                 : r.prefix === 'ebay3' ? (data.ebay3_views ?? "-") 
                                 : r.prefix === 'shein' ? (data.views_clicks ?? "-")
+                                : r.prefix === 'reverb' ? (data.reverb_views ?? "-")
+                                : r.prefix === 'temu' ? (data.temu_views ?? "-")
                                 : "-" }
                         </div>
                     </td>
@@ -1960,6 +1977,10 @@
                                 }
                                 else if (r.prefix === 'shein' && cvr) {
                                     return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                } else if (r.prefix === 'reverb' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                } else if (r.prefix === 'temu' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
                                 }
 
                                 return "N/A";
@@ -1972,7 +1993,11 @@
                             r.prefix === 'ebay' ? Math.round(data.ebay_req_view) ?? "-" :
                             r.prefix === 'ebay2' ? Math.round(data.ebay2_req_view) ?? "-" :
                             r.prefix === 'ebay3' ? Math.round(data.ebay3_req_view) ?? "-" :
-                            r.prefix === 'shein' ? Math.round(data.shein_req_view) ?? "-" : "-"}
+                            r.prefix === 'shein' ? Math.round(data.shein_req_view) ?? "-" : 
+                            r.prefix === 'reverb' ? Math.round(data.reverb_req_view) ?? "-" :
+                            r.prefix === 'temu' ? Math.round(data.temu_req_view) ?? "-" :
+                            r.prefix === 'bestbuy' ? Math.round(data.bestbuy_req_view) ?? "-" :
+                            r.prefix === 'tiendamia' ? Math.round(data.tiendamia_req_view) ?? "-" : "-"}
                         </div>
                     </td>
 
@@ -2005,6 +2030,8 @@
                                 : r.prefix === 'reverb' ? (data.reverb_sprice || '')
                                 : r.prefix === 'walmart' ? (data.walmart_sprice || '')
                                 : r.prefix === 'shein' ? (data.shein_sprice || '')
+                                : r.prefix === 'bestbuy' ? (data.bestbuy_sprice || '')
+                                : r.prefix === 'tiendamia' ? (data.tiendamia_sprice || '')
                             
                                 : ''
                             }"
@@ -2056,6 +2083,12 @@
                             else if (r.prefix === 'shein' && data.shein_spft) {
                                 value = Math.round(data.shein_spft);
                             }
+                            else if (r.prefix === 'bestbuy' && data.bestbuy_spft) {
+                                value = Math.round(data.bestbuy_spft);
+                            }
+                            else if (r.prefix === 'tiendamia' && data.tiendamia_spft) {
+                                value = Math.round(data.tiendamia_spft);
+                            }
 
                             if (value !== undefined) {
                                 if (value < 11) {
@@ -2104,6 +2137,10 @@
                                 value = Math.round(data.walmart_sroi);
                             } else if (r.prefix === 'shein' && data.shein_sroi) {
                                 value = Math.round(data.shein_sroi);
+                            } else if (r.prefix === 'bestbuy' && data.bestbuy_sroi) {
+                                value = Math.round(data.bestbuy_sroi);
+                            } else if (r.prefix === 'tiendamia' && data.tiendamia_sroi) {
+                                value = Math.round(data.tiendamia_sroi);
                             }
 
                             if (value !== undefined) {

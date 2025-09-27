@@ -46,6 +46,14 @@ use App\Models\WalmartListingStatus;
 use App\Models\WalmartMetrics;
 use App\Models\SheinSheetData;
 use App\Models\SheinListingStatus;
+use App\Models\BestbuyUsaProduct;
+use App\Models\BestbuyUsaDataView;
+use App\Models\BestbuyUSAListingStatus;
+use App\Models\CvrLqs;
+use App\Models\TemuMetric;
+use App\Models\TiendamiaProduct;
+use App\Models\TiendamiaDataView;
+use App\Models\TiendamiaListingStatus;
 use App\Services\AmazonSpApiService;
 use App\Services\DobaApiService;
 use App\Services\EbayApiService;
@@ -87,7 +95,7 @@ class PricingMasterViewsController extends Controller
         ]);
     }
 
-     public function inventoryBySalesValue(Request $request)
+    public function inventoryBySalesValue(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
@@ -105,7 +113,7 @@ class PricingMasterViewsController extends Controller
     protected function processPricingData($searchTerm = '')
     {
 
-         $productData = ProductMaster::whereNull('deleted_at')
+        $productData = ProductMaster::whereNull('deleted_at')
 
             ->orderBy('id', 'asc')
             ->get();
@@ -134,7 +142,9 @@ class PricingMasterViewsController extends Controller
         $reverbListingData = ReverbListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $walmartListingData = WalmartListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $sheinListingData = SheinListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $bestbuyUsaListingData = BestbuyUSAListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $dobaListingData = DobaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $tiendamiaListingData = TiendamiaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
 
 
 
@@ -157,6 +167,8 @@ class PricingMasterViewsController extends Controller
             ->keyBy('sku');
 
 
+            
+
 
 
         $dobaData = DB::connection('apicentral')
@@ -175,6 +187,7 @@ class PricingMasterViewsController extends Controller
 
         $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebay3Lookup = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+        $temuMetricLookup = TemuMetric::whereIn('sku', $skus)->get()->keyBy('sku');
         $amazonDataView = AmazonDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebayDataView = EbayDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $shopifyb2cDataView = Shopifyb2cDataView::whereIn('sku', $skus)->get()->keyBy('sku');
@@ -184,6 +197,10 @@ class PricingMasterViewsController extends Controller
         $macyDataView = MacyDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $sheinDataView = SheinDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $sheinData = SheinSheetData::whereIn('sku', $skus)->get()->keyBy('sku');
+        $bestbuyUsaLookup = BestbuyUsaProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+        $bestbuyUsaDataView = BestbuyUsaDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $tiendamiaLookup = TiendamiaProduct::whereIn('sku', $skus)->get()->keyBy('sku');
+        $tiendamiaDataView = TiendamiaDataView::whereIn('sku', $skus)->get()->keyBy('sku');
 
         // Fetch LMPA data from 5core_repricer database - get lowest price per SKU (excluding 0 prices)
         $lmpaLookup = collect();
@@ -240,7 +257,7 @@ class PricingMasterViewsController extends Controller
             $ship = (float) ($values['ship'] ?? 0);
             $temuship = (float) ($values['temu_ship'] ?? 0);
             $ebay2ship = (float) ($values['ebay2_ship'] ?? 0);
-            $initialQuantity = (float) ($values['initial_quantity'] ?? 0); 
+            $initialQuantity = (float) ($values['initial_quantity'] ?? 0);
 
             $amazon  = $amazonData[$sku] ?? null;
             $ebay    = $ebayData[$sku] ?? null;
@@ -249,12 +266,15 @@ class PricingMasterViewsController extends Controller
             $macy    = $macyData[$sku] ?? null;
             $reverb  = $reverbData[$sku] ?? null;
             $temu    = $temuLookup[$sku] ?? null;
+            $temuMetric = $temuMetricLookup[$sku] ?? null;
             $walmart = $walmartLookup[$sku] ?? null;
             $ebay2   = $ebay2Lookup[$sku] ?? null;
             $ebay3   = $ebay3Lookup[$sku] ?? null;
             $lmpa    = $lmpaLookup[$sku] ?? null;
             $lmp     = $lmpLookup[$sku] ?? null;
             $shein   = $sheinData[$sku] ?? null;
+            $bestbuyUsa = $bestbuyUsaLookup[$sku] ?? null;
+            $tiendamia = $tiendamiaLookup[$sku] ?? null;
 
             // Get Shopify data for L30 and INV
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
@@ -266,7 +286,9 @@ class PricingMasterViewsController extends Controller
                 ($ebay ? ($ebay->views ?? 0) : 0) +
                 ($ebay2 ? ($ebay2->views ?? 0) : 0) +
                 ($ebay3 ? ($ebay3->views ?? 0) : 0) +
-                ($shein ? ($shein->views_clicks ?? 0) : 0);
+                ($shein ? ($shein->views_clicks ?? 0) : 0) +
+                ($reverb ? ($reverb->views ?? 0) : 0) +
+                ($temuMetric ? (($temuMetric->product_impressions_l30 ?? 0) + ($temuMetric->product_clicks_l30 ?? 0)) : 0);
 
 
             $avgCvr = $total_views > 0
@@ -357,18 +379,31 @@ class PricingMasterViewsController extends Controller
                 'reverb_price' => $reverb ? ($reverb->price ?? 0) : 0,
                 'reverb_l30'   => $reverb ? ($reverb->r_l30 ?? 0) : 0,
                 'reverb_l60'   => $reverb ? ($reverb->r_l60 ?? 0) : 0,
+                'reverb_views' => $reverb ? ($reverb->views ?? 0) : 0,
                 'reverb_pft'   => $reverb && $reverb->price > 0 ? (($reverb->price * 0.77 - $lp - $ship) / $reverb->price) : 0,
                 'reverb_roi'   => $reverb && $lp > 0 && $reverb->price > 0 ? (($reverb->price * 0.77 - $lp - $ship) / $lp) : 0,
+                'reverb_req_view' => $reverb && $reverb->views > 0 && $reverb->r_l30 > 0 ? (($inv / 90) * 30) / (($reverb->r_l30 / $reverb->views)) : 0,
+                'reverb_cvr' => $reverb ? $this->calculateCVR($reverb->r_l30 ?? 0, $reverb->views ?? 0) : null,
 
                 'reverb_buyer_link' => isset($reverbListingData[$sku]) ? ($reverbListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'reverb_seller_link' => isset($reverbListingData[$sku]) ? ($reverbListingData[$sku]->value['seller_link'] ?? null) : null,
 
                 // Temu
-                'temu_price' => $temu ? (float) ($temu->{'price'} ?? 0) : 0,
-                'temu_l30'   => $temu ? (float) ($temu->{'l30'} ?? 0) : 0,
-                'temu_dil'   => $temu ? (float) ($temu->{'dil'} ?? 0) : 0,
-                'temu_pft'   => $temu && ($temu->price ?? 0) > 0 ? (($temu->price * 0.87 - $lp - $temuship) / $temu->price) : 0,
-                'temu_roi'   => $temu && $lp > 0 && ($temu->price ?? 0) > 0 ? (($temu->price * 0.87 - $lp - $temuship) / $lp) : 0,
+                'temu_price' => $temuMetric ? (float) ($temuMetric->{'temu_sheet_price'} ?? 0) : 0,
+                'temu_l30'   => $temuMetric ? (float) ($temuMetric->{'quantity_purchased_l30'} ?? 0) : 0,
+                'temu_l60'   => $temuMetric ? (float) ($temuMetric->{'quantity_purchased_l60'} ?? 0) : 0,
+                'temu_dil'   => $temuMetric ? (float) ($temuMetric->{'dil'} ?? 0) : 0,
+                'temu_views' => $temuMetric ? (float) ($temuMetric->{'product_clicks_l30'} ?? 0) : 0,
+
+                'temu_pft'   => $temuMetric && ($temuMetric->temu_sheet_price ?? 0) > 0 ? (($temuMetric->temu_sheet_price * 0.87 - $lp - $temuship) / $temuMetric->temu_sheet_price) : 0,
+                'temu_roi'   => $temuMetric && $lp > 0 && ($temuMetric->temu_sheet_price ?? 0) > 0 ? (($temuMetric->temu_sheet_price * 0.87 - $lp - $temuship) / $lp) : 0,
+                'temu_cvr' => $temuMetric
+                    ? $this->calculateCVR($temuMetric->{'quantity_purchased_l30'} ?? 0, $temuMetric->{'product_clicks_l30'} ?? 0)
+                    : null,
+
+                'temu_req_view' => $temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0
+                    ? ($inv * 20)
+                    : 0,
                 'temu_buyer_link' => isset($temuListingData[$sku]) ? ($temuListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'temu_seller_link' => isset($temuListingData[$sku]) ? ($temuListingData[$sku]->value['seller_link'] ?? null) : null,
 
@@ -431,11 +466,33 @@ class PricingMasterViewsController extends Controller
                 'shein_link1' => $shein ? ($shein->link1 ?? null) : null,
                 'shein_cvr' => $shein ? $this->calculateCVR($shein->shopify_sheinl30 ?? 0, ($shein->views_clicks ?? 0) * 3.7) : null,
 
+                // Bestbuy
+                'bestbuy_price' => $bestbuyUsa ? ($bestbuyUsa->price ?? 0) : 0,
+                'bestbuy_l30'   => $bestbuyUsa ? ($bestbuyUsa->m_l30 ?? 0) : 0,
+                'bestbuy_l60'   => $bestbuyUsa ? ($bestbuyUsa->m_l60 ?? 0) : 0,
+                'bestbuy_pft'   => $bestbuyUsa && ($bestbuyUsa->price ?? 0) > 0 ? (($bestbuyUsa->price * 0.80 - $lp - $ship) / $bestbuyUsa->price) : 0,
+                'bestbuy_roi'   => $bestbuyUsa && $lp > 0 && ($bestbuyUsa->price ?? 0) > 0 ? (($bestbuyUsa->price * 0.80 - $lp - $ship) / $lp) : 0,
+                'bestbuy_req_view' => 0, // No views data
+                'bestbuy_cvr' => null, // No views data
+                'bestbuy_buyer_link' => isset($bestbuyUsaListingData[$sku]) ? ($bestbuyUsaListingData[$sku]->value['buyer_link'] ?? null) : null,
+                'bestbuy_seller_link' => isset($bestbuyUsaListingData[$sku]) ? ($bestbuyUsaListingData[$sku]->value['seller_link'] ?? null) : null,
+
+                // Tiendamia
+                'tiendamia_price' => $tiendamia ? ($tiendamia->price ?? 0) : 0,
+                'tiendamia_l30'   => $tiendamia ? ($tiendamia->m_l30 ?? 0) : 0,
+                'tiendamia_l60'   => $tiendamia ? ($tiendamia->m_l60 ?? 0) : 0,
+                'tiendamia_pft'   => $tiendamia && ($tiendamia->price ?? 0) > 0 ? (($tiendamia->price * 0.80 - $lp - $ship) / $tiendamia->price) : 0,
+                'tiendamia_roi'   => $tiendamia && $lp > 0 && ($tiendamia->price ?? 0) > 0 ? (($tiendamia->price * 0.80 - $lp - $ship) / $lp) : 0,
+                'tiendamia_req_view' => 0, // No views data
+                'tiendamia_cvr' => null, // No views data
+                'tiendamia_buyer_link' => isset($tiendamiaListingData[$sku]) ? ($tiendamiaListingData[$sku]->value['buyer_link'] ?? null) : null,
+                'tiendamia_seller_link' => isset($tiendamiaListingData[$sku]) ? ($tiendamiaListingData[$sku]->value['seller_link'] ?? null) : null,
+
                 // Direct assignments for blade template
                 'views_clicks' => $shein ? ($shein->views_clicks ?? 0) : 0,
                 'lmp' => $shein ? ($shein->lmp ?? 0) : 0,
                 'shopify_sheinl30' => $shein ? ($shein->shopify_sheinl30 ?? 0) : 0,
-               
+
                 // Total required views from all channels
                 // 'total_req_view' => (
                 //     ($ebay && $ebay->views  && $ebay->ebay_l30 ? (($inv / 30) * 30) / (($ebay->ebay_l30 / $ebay->views)) : 0) +
@@ -444,12 +501,14 @@ class PricingMasterViewsController extends Controller
                 //     ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv / 30) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30)) : 0)
                 // ),
 
-                    'total_req_view' => (
+                'total_req_view' => (
                     ($ebay && $ebay->views && $ebay->ebay_l30 ? (($inv * 20)) : 0) +
                     ($ebay2 && $ebay2->views && $ebay2->ebay_l30 ? (($inv * 20)) : 0) +
                     ($ebay3 && $ebay3->views && $ebay3->ebay_l30 ? (($inv * 20)) : 0) +
                     ($amazon && $amazon->sessions_l30 && $amazon->units_ordered_l30 ? (($inv * 20)) : 0) +
-                    ($shein && $shein->views_clicks && $shein->shopify_sheinl30 ? (($inv * 20)) : 0)
+                    ($shein && $shein->views_clicks && $shein->shopify_sheinl30 ? (($inv * 20)) : 0) +
+                    ($reverb && $reverb->views && $reverb->r_l30 ? (($inv * 20)) : 0) +
+                    ($temuMetric && (($temuMetric->{'product_impressions_l30'} ?? 0) + ($temuMetric->{'product_clicks_l30'} ?? 0)) && ($temuMetric->{'quantity_purchased_l30'} ?? 0) ? (($inv * 20)) : 0)
                 ),
                 //  100 / cvr * inv not cvr percentage 
 
@@ -556,6 +615,23 @@ class PricingMasterViewsController extends Controller
                     (is_array($sheinDataView[$sku]->value) ?
                         ($sheinDataView[$sku]->value['SROI'] ?? null) : (json_decode($sheinDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
+                'bestbuy_sprice' => isset($bestbuyUsaDataView[$sku]) ?
+                    (is_array($bestbuyUsaDataView[$sku]->value) ?
+                        ($bestbuyUsaDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($bestbuyUsaDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'bestbuy_spft' => isset($bestbuyUsaDataView[$sku]) ? (is_array($bestbuyUsaDataView[$sku]->value) ?
+                    ($bestbuyUsaDataView[$sku]->value['SPFT'] ?? null) : (json_decode($bestbuyUsaDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'bestbuy_sroi' => isset($bestbuyUsaDataView[$sku]) ?
+                    (is_array($bestbuyUsaDataView[$sku]->value) ?
+                        ($bestbuyUsaDataView[$sku]->value['SROI'] ?? null) : (json_decode($bestbuyUsaDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+                'tiendamia_sprice' => isset($tiendamiaDataView[$sku]) ?
+                    (is_array($tiendamiaDataView[$sku]->value) ?
+                        ($tiendamiaDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($tiendamiaDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'tiendamia_spft' => isset($tiendamiaDataView[$sku]) ? (is_array($tiendamiaDataView[$sku]->value) ?
+                    ($tiendamiaDataView[$sku]->value['SPFT'] ?? null) : (json_decode($tiendamiaDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'tiendamia_sroi' => isset($tiendamiaDataView[$sku]) ?
+                    (is_array($tiendamiaDataView[$sku]->value) ?
+                        ($tiendamiaDataView[$sku]->value['SROI'] ?? null) : (json_decode($tiendamiaDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
 
             ];
@@ -637,7 +713,7 @@ class PricingMasterViewsController extends Controller
     }
 
 
-// Get Pricing ROI Dashboard Data 
+    // Get Pricing ROI Dashboard Data 
 
 
     protected function applyFilters($data, $dilFilter, $dataType, $parentFilter, $skuFilter)
@@ -750,7 +826,7 @@ class PricingMasterViewsController extends Controller
         $ship = $data['SHIP'];
         $temuship = $data['temu_ship'];
 
-    switch ($type) {
+        switch ($type) {
             case 'shein':
                 // Shein logic
                 $sheinDataView = SheinDataView::firstOrNew(['sku' => $sku]);
@@ -1380,11 +1456,7 @@ class PricingMasterViewsController extends Controller
 
     public function pricingMasterCopy(Request $request)
     {
-       
-        return view('pricing-master.pricing_master_copy', [
-        ]);
+
+        return view('pricing-master.pricing_master_copy', []);
     }
-
-
- 
 }
