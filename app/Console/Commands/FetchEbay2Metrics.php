@@ -16,7 +16,7 @@ class FetchEbay2Metrics extends Command
      *
      * @var string
      */
-    protected $signature = 'app:fetch-ebay2-metrics';
+    protected $signature = 'app:fetch-ebay-two-metrics';
 
     /**
      * The console command description.
@@ -34,6 +34,14 @@ class FetchEbay2Metrics extends Command
 
         if (!$token) {
             $this->error('Failed to generate token.');
+            return;
+        }
+
+        $rateLimit = $this->getRateLimit();
+        if ($rateLimit) {
+            $this->info('Rate limit data: ' . json_encode($rateLimit));
+        } else {
+            $this->error('Failed to get rate limit data.');
             return;
         }
 
@@ -323,6 +331,9 @@ class FetchEbay2Metrics extends Command
         }
     }
 
+    
+
+
     private function getQuantityBySkuFromOrders($token, Carbon $from, Carbon $to, array $onlyTheseSkus = [])
     {
         $allQuantities = [];
@@ -401,4 +412,27 @@ class FetchEbay2Metrics extends Command
 
         return null;
     }
+
+
+    public function getRateLimit()
+    {
+        $token = $this->generateEbayToken();
+        if (!$token) {
+            return null;
+        }
+
+        try {
+            $response = Http::withToken($token)->get('https://api.ebay.com/developer/analytics/v1_beta/rate_limit/');
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Exception $e) {
+            Log::error('eBay2 getRateLimit exception: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+
+
 }

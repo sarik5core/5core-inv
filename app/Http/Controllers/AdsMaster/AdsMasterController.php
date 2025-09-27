@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\PricingMaster;
+namespace App\Http\Controllers\AdsMaster;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
@@ -55,9 +55,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PricingMasterViewsController extends Controller
+class AdsMasterController extends Controller
 {
-    protected $apiController;
+      protected $apiController;
     protected $walmart;
     protected $doba;
     protected $ebay;
@@ -70,34 +70,21 @@ class PricingMasterViewsController extends Controller
         $this->ebay = new EbayApiService();
     }
 
-    
-    public function pricingMaster(Request $request)
+
+    public function adsMaster(Request $request)
     {
         $mode = $request->query('mode');
         $demo = $request->query('demo');
 
         $processedData = $this->processPricingData();
 
-        return view('pricing-master.pricing_masters_view', [
+        return view('pricing-master.ads_master_view', [
             'mode' => $mode,
             'demo' => $demo,
             'records' => $processedData, // processed data table ke liye
         ]);
     }
 
-    public function inventoryBySalesValue(Request $request)
-    {
-        $mode = $request->query('mode');
-        $demo = $request->query('demo');
-
-        $processedData = $this->processPricingData();
-
-        return view('pricing-master.inventory_by_sales_value', [
-            'mode' => $mode,
-            'demo' => $demo,
-            'records' => $processedData, // processed data table ke liye
-        ]);
-    }
 
 
     protected function processPricingData($searchTerm = '')

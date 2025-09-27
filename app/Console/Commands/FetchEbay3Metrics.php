@@ -16,7 +16,7 @@ class FetchEbay3Metrics extends Command
      *
      * @var string
      */
-    protected $signature = 'app:fetch-ebay3-metrics';
+    protected $signature = 'app:fetch-ebay-metrics';
 
     /**
      * The console command description.
