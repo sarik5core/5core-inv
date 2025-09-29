@@ -1142,6 +1142,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/pricing-master/roi-dashboard', [PricingMasterViewsController::class, 'getViewPricingAnalysisROIDashboardData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
     Route::get('/parent.pricing-masters', [PricingMasterViewsController::class, 'pricingMasterCopy']);
+    Route::get('/calculate-cvr-masters', [PricingMasterViewsController::class, 'calculateCVRMasters']); 
 
 
 

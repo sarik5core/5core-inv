@@ -177,6 +177,11 @@
                             <a href="{{ url('pricing-masters.pricing_masters') }}">Pricing masters </a>
                         </li>
 
+
+                        <li>
+                            <a href="{{ url('calculate-cvr-masters') }}">CVR Masters</a>
+                        </li>
+
                            <li>
                             <a href="{{ url('inventory-by-sales-value') }}">Inv by Sales Value </a>
                         </li>

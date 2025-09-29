@@ -1406,4 +1406,39 @@ class ApiController extends Controller
             ], 500);
         }
     }
+
+
+
+     public function fetchDataFromTiktokDataSheet()
+    {
+        $url = 'https://script.google.com/macros/s/AKfycbyj1Z0xGDKHOWZvqj1fdnBi02abq67NzwBc7fj0XckA9O3zGbZOyHnLLDXuOPnTLC3E/exec';
+
+        try {
+            $response = Http::timeout(seconds: 120)->get($url);
+            if ($response->successful()) {
+                $data = $response->json();
+
+                return response()->json([
+                    'message' => 'Tiktok fetched successfully',
+                    'data' => $data,
+                    'status' => 200
+                ]);
+            } else {
+                Log::error('Failed to fetch data from Google Sheet. Response:', $response->body());
+
+                return response()->json([
+                    'message' => 'Failed to fetch data from Google Sheet',
+                    'status' => $response->status()
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception while fetching data from Google Sheet:', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage(),
+                'status' => 500
+            ], 500);
+        }
+    }
 }
