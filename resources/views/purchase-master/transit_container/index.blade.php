@@ -376,6 +376,11 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                 width: 50
             },
             {
+                title: "Id",
+                field: "id",
+                visible: false,
+            },
+            {
             title: "Sl No.",
             formatter: function(cell) {
                 return cell.getRow().getPosition(true) + 0;
@@ -882,7 +887,7 @@ document.getElementById("push-arrived-container-btn").addEventListener("click", 
     }
 
     // Confirm before pushing
-    if (!confirm("Are you sure you want to push this container’s inventory?")) {
+    if (!confirm("Are you sure you want to push this container to arrived container?")) {
         return;
     }
 
@@ -902,6 +907,7 @@ document.getElementById("push-arrived-container-btn").addEventListener("click", 
     .then(response => {
         if (response.success) {
             alert("Container saved in Arrived Container successfully!");
+            window.location.reload();
         } else {
             alert(response.message || "Push failed!");
         }

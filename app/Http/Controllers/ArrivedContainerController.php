@@ -6,6 +6,7 @@ use App\Models\ArrivedContainer;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use App\Models\Supplier;
+use App\Models\TransitContainerDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -84,7 +85,6 @@ class ArrivedContainerController extends Controller
 
     public function pushArrivedContainer(Request $request)
     {
-        Log::info("Response ", $request->all());
         $tabName = $request->input('tab_name');
         $rows = $request->input('data', []);
 
@@ -99,7 +99,6 @@ class ArrivedContainerController extends Controller
                 'total_ctn'         => !empty($row['total_ctn']) ? (int) $row['total_ctn'] : null,
                 'rate'              => !empty($row['rate']) ? (float) $row['rate'] : null,
                 'unit'              => $row['unit'] ?? null,
-                'status'            => $row['status'] ?? null,
                 'changes'           => $row['changes'] ?? null,
                 'package_size'      => $row['package_size'] ?? null,
                 'product_size_link' => $row['product_size_link'] ?? null,
@@ -109,6 +108,12 @@ class ArrivedContainerController extends Controller
                 'photos'            => $row['photos'] ?? null,
                 'specification'     => $row['specification'] ?? null,
             ]);
+
+            if (!empty($row['id'])) {
+                TransitContainerDetail::where('id', $row['id'])->update([
+                    'status' => 'inactive',
+                ]);
+            }
         }
 
         return response()->json([
