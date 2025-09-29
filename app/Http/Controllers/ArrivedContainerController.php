@@ -89,11 +89,14 @@ class ArrivedContainerController extends Controller
         $rows = $request->input('data', []);
 
         foreach ($rows as $row) {
-            ArrivedContainer::create([
-                'tab_name'          => $row['tab_name'] ?? $tabName,
+            ArrivedContainer::updateOrCreate(
+                [
+                    'our_sku' => $row['our_sku'],
+                    'tab_name' => $row['tab_name'] ?? $tabName,
+                ],
+                [
                 'supplier_name'     => $row['supplier_name'] ?? null,
                 'company_name'      => $row['company_name'] ?? null,
-                'our_sku'           => $row['our_sku'] ?? null,
                 'parent'            => $row['parent'] ?? null,
                 'no_of_units'       => !empty($row['no_of_units']) ? (int) $row['no_of_units'] : null,
                 'total_ctn'         => !empty($row['total_ctn']) ? (int) $row['total_ctn'] : null,
