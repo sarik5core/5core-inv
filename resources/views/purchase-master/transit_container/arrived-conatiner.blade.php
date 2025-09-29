@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Transit Container INV'])
+@extends('layouts.vertical', ['title' => 'Arrived Container'])
 @section('css')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
@@ -143,7 +143,7 @@
 
 </style>
 @section('content')
-@include('layouts.shared.page-title', ['page_title' => 'Transit Container INV', 'sub_title' => 'Transit Container INV'])
+@include('layouts.shared.page-title', ['page_title' => 'Arrived Container', 'sub_title' => 'Arrived Container'])
 
 <div class="row">
     <div class="col-12">
@@ -168,7 +168,7 @@
                     <!-- 🔽 Filter Type Dropdown -->
                     <div class="d-flex align-items-center gap-2">
                         <label for="filter-type" class="fw-semibold mb-0" style="font-size: 0.95rem;">Filter Type:</label>
-                        <select id="filter-type" class="form-select form-select-sm" style="width: 75px;">
+                        <select id="filter-type" class="form-select form-select-sm" style="width: 120px;">
                             <option value="">All</option>
                             <option value="new">New</option>
                             <option value="changes">Changes</option>
@@ -177,32 +177,12 @@
 
                     <!-- 🔍 Search Input -->
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Search by SKU, Supplier, Parent..." 
-                        style="max-width: 150px; border: 2px solid #2185ff; font-size: 0.95rem;">
+                        style="max-width: 180px; border: 2px solid #2185ff; font-size: 0.95rem;">
 
-                        <button id="export-tab-excel" class="btn btn-sm btn-success">
-                            <i class="fas fa-file-excel"></i> Export Excel
-                        </button>
-
-                    {{-- push Inventory --}}
-                    <button id="push-inventory-btn" class="btn btn-primary btn-sm">
-                        <i class="fas fa-dolly"></i> Push Inventory
+                    <button id="export-tab-excel" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel"></i> Export Excel
                     </button>
 
-                    <button id="push-arrived-container-btn" class="btn btn-info btn-sm">
-                        Arrived Container
-                    </button>
-
-                    <!-- ➕ Add Container Button -->
-                    <button id="add-tab-btn" class="btn btn-success btn-sm">
-                        <i class="fas fa-plus"></i> Add Container
-                    </button>
-
-                    <button id="add-items-btn" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                        <i class="fas fa-plus"></i> Add Items
-                    </button>
-                    <button class="btn btn-danger btn-sm d-none" id="delete-selected-btn">
-                        <i class="fas fa-trash me-1"></i> Delete
-                    </button>
                 </div>
 
                 <!-- Tabs Navigation -->
@@ -240,112 +220,6 @@
   <img src="" style="max-height:250px; max-width:350px;">
 </div>
 
-<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered shadow-none">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="addItemModalLabel">
-                    <i class="fas fa-file-invoice me-2"></i> Add Items
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <form id="purchaseOrderForm" method="POST" action="{{ url('transit-container/save') }}" enctype="multipart/form-data" autocomplete="off">
-                @csrf
-                <div class="modal-body">
-                    {{-- Product Section --}}
-                    <div>
-                        <h5 class="fw-semibold mb-2 text-primary">
-                            <i class="fas fa-boxes-stacked me-1"></i> Items
-                        </h5>
-                        <div class="row g-2">
-                          <div class="col-md-3">
-                              <label class="form-label fw-semibold">Container <span class="text-danger">*</span></label>
-                              <select class="form-select" name="tab_name" required>
-                                  <option value="" disabled selected>select container</option>
-                                  @foreach($tabs as $tab)
-                                      <option value="{{ $tab }}">{{ $tab }}</option>
-                                  @endforeach
-                              </select>
-                          </div>
-                        </div>
-                        <div id="productRowsWrapper">
-                            <div class="row g-2 product-row border rounded p-2 mt-2 position-relative">
-                                <div class="d-flex justify-content-end position-absolute top-0 end-0 p-2 ">
-                                    <i class="fas fa-trash-alt text-danger delete-product-row-btn" style="cursor: pointer; font-size: 1.2rem; margin-top:-10px;"></i>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">SKU <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="our_sku[]" required>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Supplier</label>
-                                    <select class="form-select" name="supplier_name[]">
-                                        <option value="" disabled>Select Supplier</option>
-                                        @foreach($suppliers as $supplier)
-                                            <option value="{{ $supplier->name }}">{{ $supplier->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Qty/Ctns</label>
-                                    <input type="number" class="form-control" name="no_of_units[]" step="any">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Qty Ctns</label>
-                                    <input type="number" class="form-control" name="total_ctn[]" step="any">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Qty</label>
-                                    <input type="number" class="form-control" name="pcs_qty[]" step="any">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Rate ($)</label>
-                                    <input type="number" class="form-control" name="rate[]" step="any">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">CBM</label>
-                                    <input type="number" class="form-control" name="cbm[]" step="any">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Unit</label>
-                                    <select class="form-select" name="unit[]">
-                                        <option value="" disabled>select unit</option>
-                                        <option value="pieces">pieces</option>
-                                        <option value="pair">pair</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Changes</label>
-                                    <input type="text" class="form-control" name="changes[]">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Specifications</label>
-                                    <textarea type="text" class="form-control" name="specification[]" rows="2"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="addItemRowBtn">
-                                <i class="fas fa-plus-circle me-1"></i> Add Item Row
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-footer bg-white">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Close
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Save
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 @endsection
 
@@ -355,6 +229,7 @@
     <!-- SheetJS for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+document.body.style.zoom = "80%";
 let tabCounter = {{ count($tabs) }};
 const groupedData = @json($groupedData);
 
@@ -368,13 +243,7 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
         rowHeight: 55,
         index: "id",
         selectable: true,
-        columns: [{
-                formatter: "rowSelection",
-                titleFormatter: "rowSelection",
-                hozAlign: "center",
-                headerSort: false,
-                width: 50
-            },
+        columns: [
             {
             title: "Sl No.",
             formatter: function(cell) {
@@ -389,74 +258,6 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             {
               title: "Images",
               field: "photos",
-              editor: function(cell, onRendered, success, cancel) {
-                const container = document.createElement("div");
-                container.style.display = "flex";
-                container.style.flexDirection = "column";
-
-                const preview = document.createElement("div");
-                preview.style.marginBottom = "6px";
-
-                const input = document.createElement("input");
-                input.type = "file";
-                input.accept = "image/*";
-                input.multiple = false;
-                input.style.marginBottom = "6px";
-
-                input.addEventListener("change", function (e) {
-                  if (e.target.files.length > 0) {
-                    handleUpload(e.target.files[0]);
-                  }
-                });
-
-                container.appendChild(input);
-                container.appendChild(preview);
-
-                setTimeout(() => {
-                  container.focus();
-                }, 200);
-
-                container.setAttribute("contenteditable", true);
-                container.addEventListener("paste", function (e) {
-                  e.preventDefault();
-                  for (let item of e.clipboardData.items) {
-                    if (item.type.indexOf("image") !== -1) {
-                      const blob = item.getAsFile();
-                      handleUpload(blob);
-                    }
-                  }
-                });
-
-                function handleUpload(file) {
-                  const formData = new FormData();
-                  formData.append("image", file);
-                  formData.append("_token", document.querySelector('meta[name="csrf-token"]').content);
-
-                  fetch("/upload-image", {
-                    method: "POST",
-                    body: formData,
-                  })
-                  .then(res => res.json())
-                  .then(data => {
-                    if (data.url) {
-                      preview.innerHTML = `<img src="${data.url}" style="height: 50px;"/>`;
-                      success(data.url);
-                    } else {
-                      alert("Upload failed.");
-                      cancel();
-                    }
-                  })
-                  .catch(err => {
-                    console.error(err);
-                    alert("Upload error.");
-                    cancel();
-                  });
-                }
-
-                return container;
-              },
-
-              // ✅ Enhanced formatter with fallback to `TransitContainerDetail.photos` or default image
               formatter: function(cell) {
                 const row = cell.getRow().getData();
                 let url = cell.getValue(); // primary from TransitContainerDetail.photos
@@ -486,8 +287,8 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                 style="height:40px;border-radius:4px;border:1px solid #ccc;cursor:zoom-in;">`;
               }
             },
-            { title: "Qty / Ctns", field: "no_of_units", editor: "input" },
-            { title: "Qty Ctns", field: "total_ctn", editor: "input" },
+            { title: "Qty / Ctns", field: "no_of_units", editor: "false" },
+            { title: "Qty Ctns", field: "total_ctn", editor: "false" },
             { 
               title: "Qty", 
               field: "pcs_qty", 
@@ -499,11 +300,11 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                   return units * ctn;
               }
             },
-            { title: "Rate ($)", field: "rate", editor: "input" },
+            { title: "Rate ($)", field: "rate", editor: "false" },
             { 
               title: "CBM", 
               field: "cbm", 
-              editor: "input",
+              editor: "false",
               formatter: function(cell) {
                   const data = cell.getRow().getData();
                   let values = data.Values;
@@ -581,12 +382,6 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                   return '<span class="badge bg-info text-dark" style="font-size:0.98rem;padding:6px 14px;border-radius:6px;">Pair</span>';
                 return `<span class="badge bg-secondary" style="font-size:0.98rem;padding:6px 14px;border-radius:6px;">${value || "—"}</span>`;
                 },
-                cellClick: function (e, cell) {
-                cell.edit(true);
-                },
-                cellDblClick: function (e, cell) {
-                cell.edit(true);
-                },
               },
             {
               title: "Amt($)", 
@@ -600,11 +395,11 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
                 return Math.round(rate * pcs_qty);
               }
             },
-            { title: "Changes", field: "changes", editor: "input" },
+            { title: "Changes", field: "changes", editor: "false" },
             { 
               title: "Spec.",
               field: "specification", 
-              editor: "input",
+              editor: "false",
               formatter: function(cell) {
                 const value = cell.getValue();
                 return `<div title="${value?.replace(/"/g, '&quot;') ?? ''}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
@@ -614,66 +409,6 @@ Object.entries(groupedData).forEach(([tabName, data], index) => {
             },
         ],
     });
-
-    table.on("rowSelectionChanged", function(data, rows){
-        if(data.length > 0){
-            $('#delete-selected-btn').removeClass('d-none');
-        } else {
-            $('#delete-selected-btn').addClass('d-none');
-        }
-    });
-
-    $('#delete-selected-btn').off('click').on('click', function() {
-        // Find active tab
-        const activeTabPane = document.querySelector(".tab-pane.active");
-        if (!activeTabPane) {
-            alert("No active tab found!");
-            return;
-        }
-
-        // Find tab index & table
-        const tabIndex = Array.from(activeTabPane.parentElement.children).indexOf(activeTabPane);
-        const table = window.tabTables[tabIndex];
-        if (!table) {
-            alert("No table found for the active tab!");
-            return;
-        }
-
-        // Get selected rows
-        const selectedData = table.getSelectedData();
-        if (selectedData.length === 0) {
-            alert('Please select at least one record to delete.');
-            return;
-        }
-
-        // Confirm delete
-        if (!confirm(`Are you sure you want to delete ${selectedData.length} selected records?`)) {
-            return;
-        }
-
-        const ids = selectedData.map(row => row.id);
-
-        $.ajax({
-            url: '/transit-container/delete',
-            type: 'POST',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content'),
-                ids: ids
-            },
-            success: function(response) {
-                if (response.success) {
-                    ids.forEach(id => table.deleteRow(id));
-                } else {
-                    alert("Failed to delete rows.");
-                }
-            },
-            error: function(xhr) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-
-
 
     window.addEventListener("DOMContentLoaded", () => {
       document.documentElement.setAttribute("data-sidenav-size", "condensed");
@@ -855,62 +590,6 @@ document.getElementById("push-inventory-btn").addEventListener("click", function
     });
 });
 
-//push arrived container to inventory warehouse 
-document.getElementById("push-arrived-container-btn").addEventListener("click", function () {
-    // Find the active tab index
-    const activeTab = document.querySelector(".nav-link.active");
-    if (!activeTab) {
-        alert("No container tab selected.");
-        return;
-    }
-
-    const tabId = activeTab.getAttribute("data-bs-target"); // e.g. #tab-0
-    const index = tabId.replace("#tab-", ""); // get the index
-    const table = window.tabTables[index];
-
-    if (!table) {
-        alert("No data found for this container.");
-        return;
-    }
-
-    // Get data from the active container tab
-    const containerData = table.getData();
-
-    if (containerData.length === 0) {
-        alert("This container has no data to push.");
-        return;
-    }
-
-    // Confirm before pushing
-    if (!confirm("Are you sure you want to push this container’s inventory?")) {
-        return;
-    }
-
-    // Send data to backend
-    fetch("/arrived/container/push", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            tab_name: activeTab.textContent.trim(),
-            data: containerData
-        })
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-            alert("Container saved in Arrived Container successfully!");
-        } else {
-            alert(response.message || "Push failed!");
-        }
-    })
-    .catch(err => {
-        console.error("Push error:", err);
-        alert("Something went wrong while Arrived Container.");
-    });
-});
 
 document.getElementById('add-tab-btn').addEventListener('click', async function () {
     const tabName = prompt("Enter new container name:");

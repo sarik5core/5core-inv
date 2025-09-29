@@ -405,6 +405,7 @@ class ForecastAnalysisController extends Controller
             $readyToShip = DB::table('ready_to_ship')->select('sku', DB::raw('SUM(qty) as total_qty'))->groupBy('sku')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
             
             $toOrderMap = DB::table('to_order_analysis')->select('sku', 'stage')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
+            $transitContainer = DB::table('transit_container_details')->select('our_sku', 'tab_name', 'no_of_units', 'total_ctn')->get()->keyBy(fn($item) => strtoupper(trim($item->our_sku)));
             
             $processedData = [];
 
@@ -437,9 +438,9 @@ class ForecastAnalysisController extends Controller
                 $item->L30 = $shopify->quantity ?? 0;
 
                 // JungleScout
-                if(!empty($item->Parent) && $jungleScoutData->has($item->Parent)){
-                    $item->scout_data = json_decode(json_encode($jungleScoutData[$item->Parent]), true);
-                }
+                // if(!empty($item->Parent) && $jungleScoutData->has($item->Parent)){
+                //     $item->scout_data = json_decode(json_encode($jungleScoutData[$item->Parent]), true);
+                // }
 
                 // Forecast
                 $forecastKey = $item->Parent.'|'.$prodData->sku;
@@ -448,7 +449,6 @@ class ForecastAnalysisController extends Controller
                     $item->{'s-msl'} = $forecast->s_msl ?? '';
                     $item->{'Approved QTY'} = $forecast->approved_qty ?? '';
                     $item->order_given = $mfrgProgressMap[strtoupper(trim($prodData->sku))]->total_qty ?? 0;
-                    $item->transit = $readyToShip[strtoupper(trim($prodData->sku))]->total_qty ?? 0;
                     $item->nr = $forecast->nr ?? '';
                     $item->req = $forecast->req ?? '';
                     $item->hide = $forecast->hide ?? '';
@@ -460,6 +460,11 @@ class ForecastAnalysisController extends Controller
                     $item->date_apprvl = $forecast->date_apprvl ?? '';
                 }
 
+                $item->containerName = $transitContainer[strtoupper(trim($prodData->sku))]->tab_name ?? '';
+                    $noOfUnit = $transitContainer[strtoupper(trim($prodData->sku))]->no_of_units ?? 0;
+                    $totalCtn = $transitContainer[strtoupper(trim($prodData->sku))]->total_ctn	 ?? 0;
+                    $item->c_sku_qty = $noOfUnit * $totalCtn;
+                    
                 // Movement
                 if($movementMap->has(strtoupper(trim($prodData->sku)))){
                     $months = json_decode($movementMap[strtoupper(trim($prodData->sku))]->months ?? '{}',true);
@@ -488,7 +493,7 @@ class ForecastAnalysisController extends Controller
                         } elseif (isset($readyToShip[$skuKey]) && ($readyToShip[$skuKey]->total_qty ?? 0) > 0) {
                             $skuStage = 'Ready To Ship';
                         } else {
-                            $skuStage = 'To Order Analysis';
+                            $skuStage = '2 Order Analysis';
                         }
                     } elseif ($stage === 'Mfrg Progress') {
                         if (isset($mfrgProgressMap[$skuKey]) && strtolower($mfrgProgressMap[$skuKey]->ready_to_ship ?? '') === 'yes') {
@@ -507,16 +512,11 @@ class ForecastAnalysisController extends Controller
                     } elseif (isset($readyToShip[$skuKey]) && ($readyToShip[$skuKey]->total_qty ?? 0) > 0) {
                         $skuStage = 'Ready To Ship';
                     } else {
-                        $skuStage = 'To Order Analysis';
+                        $skuStage = '2 Order Analysis';
                     }
                 }
 
                 $item->sku_stage = $skuStage;
-
-
-
-
-
 
                 $processedData[] = $item;
             }

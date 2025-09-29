@@ -130,6 +130,9 @@
                         <li>
                             <a href="{{ route('transit.container.details') }}">Transit Container INV</a>
                         </li>
+                        <li>
+                            <a href="{{ route('arrived.container') }}">Arrived Container</a>
+                        </li>
                         {{-- <li>
                             <a href="{{ route('transit.container.changes') }}">Transit Container Changes</a>
                         </li>
