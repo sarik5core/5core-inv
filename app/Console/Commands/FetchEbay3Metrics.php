@@ -16,7 +16,7 @@ class FetchEbay3Metrics extends Command
      *
      * @var string
      */
-    protected $signature = 'app:fetch-ebay3-metrics';
+    protected $signature = 'app:fetch-ebay-metrics';
 
     /**
      * The console command description.
@@ -71,38 +71,38 @@ class FetchEbay3Metrics extends Command
                 }
             }
 
-            // 3. Store views in EbayMetric table for each SKU
-            foreach ($viewsByItemId as $itemId => $views) {
-                $sku = $itemIdToSku[$itemId] ?? null;
-                if ($sku) {
-                    Ebay3Metric::where('item_id', $itemId)->update(['views' => $views]);
-                }
-            }
         }
-        
+
         foreach ($listingData as $row) {
             $itemId = $row['item_id'] ?? null;
             if (!$itemId) continue;
         
-            $updateData = [
-                'sku' => $row['sku'] ?? '',                
-                'ebay_price' => $row['price'] ?? null,        
-                'report_range' => now()->toDateString(),
-            ];
-        
-            Ebay3Metric::updateOrCreate(['item_id' => $itemId], $updateData);
+            Ebay3Metric::updateOrCreate(
+                ['item_id' => $itemId, 'sku' => $row['sku'] ?? ''],
+                [
+                    'ebay_price' => $row['price'] ?? null,
+                    'report_range' => now()->toDateString(),
+                ]
+            );
         }
 
-        $existingItemIds = Ebay3Metric::pluck('item_id')->filter()->toArray();
-        $l30Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l30']['start'], $dateRanges['l30']['end'], $existingItemIds);
-        $l60Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l60']['start'], $dateRanges['l60']['end'], $existingItemIds);
+        // 3. Store views in Ebay3Metric table for each item_id
+        if (!empty($viewsByItemId)) {
+            foreach ($viewsByItemId as $itemId => $views) {
+                Ebay3Metric::where('item_id', $itemId)->update(['views' => $views]);
+            }
+        }
+
+        $existingSkus = Ebay3Metric::pluck('sku')->filter()->toArray();
+        $l30Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l30']['start'], $dateRanges['l30']['end'], $existingSkus);
+        $l60Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l60']['start'], $dateRanges['l60']['end'], $existingSkus);
         
-        foreach ($existingItemIds as $item_id) {
-            $record = Ebay3Metric::where('item_id', $item_id)->first();
+        foreach ($existingSkus as $sku) {
+            $record = Ebay3Metric::where('sku', $sku)->first();
             if (!$record) continue;
             
-            $record->ebay_l30 = $l30Qty[$item_id] ?? 0;
-            $record->ebay_l60 = $l60Qty[$item_id] ?? 0;
+            $record->ebay_l30 = $l30Qty[$sku] ?? 0;
+            $record->ebay_l60 = $l60Qty[$sku] ?? 0;
             $record->save();
         }
         $this->info('eBay3 metrics fetched and stored successfully.');
@@ -141,6 +141,11 @@ class FetchEbay3Metrics extends Command
             'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
         ])->post($apiUrl, $payload);
+        
+        if (!$response->successful()) {
+            $this->error('Failed to create inventory task: ' . $response->status() . ' ' . $response->body());
+            return [];
+        }
         
         $location = $response->header('Location');
         info('location', [$location]);
@@ -313,7 +318,7 @@ class FetchEbay3Metrics extends Command
         }
     }
 
-    private function getQuantityBySkuFromOrders($token, Carbon $from, Carbon $to, array $onlyTheseItemIds = [])
+    private function getQuantityBySkuFromOrders($token, Carbon $from, Carbon $to, array $onlyTheseSkus = [])
     {
         $allQuantities = [];
 
@@ -331,11 +336,11 @@ class FetchEbay3Metrics extends Command
                 
                 foreach ($order['lineItems'] ?? [] as $line) {
                     
-                    $item_id = $line['legacyItemId'] ?? null;
+                    $sku = $line['sku'] ?? null;
                     $qty = (int) ($line['quantity'] ?? 0);
-                    if (!$item_id || !in_array($item_id, $onlyTheseItemIds)) continue;
+                    if (!$sku || !in_array($sku, $onlyTheseSkus)) continue;
     
-                    $allQuantities[$item_id] = ($allQuantities[$item_id] ?? 0) + $qty;
+                    $allQuantities[$sku] = ($allQuantities[$sku] ?? 0) + $qty;
                 }
             }
     

@@ -243,7 +243,7 @@
                                         <th>RFQ Form <i class="mdi mdi-link-variant"></i> </th>
                                         <th>Rfq Report <i class="mdi mdi-link-variant"></i> </th>
                                         <th>Sheet <i class="mdi mdi-link-variant"></i> </th>
-                                        <th>NRL</th>
+                                        <th>NRP</th>
                                         <th>Stage</th>
                                         <th>Adv date</th>
                                         <th>Order Qty</th>

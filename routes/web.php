@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdsMaster\AdsMasterController;
 use App\Http\Controllers\Channels\ChannelPromotionMasterController;
 use App\Http\Controllers\MarketingMaster\CvrLQSMasterController;
 use App\Http\Controllers\MarketingMaster\ListingMasterController;
@@ -157,6 +158,7 @@ use App\Http\Controllers\AdvertisementMaster\Promoted_Advt\PromotedEbayControlle
 use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingController;
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
+use App\Http\Controllers\ArrivedContainerController;
 use App\Http\Controllers\Campaigns\AmazonAdRunningController;
 use App\Http\Controllers\Campaigns\AmazonCampaignReportsController;
 use App\Http\Controllers\Campaigns\AmazonPinkDilAdController;
@@ -224,6 +226,7 @@ use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
 use App\Http\Controllers\MarketingMaster\MovementPricingMaster;
 use App\Http\Controllers\NewPermissionController;
 use App\Http\Controllers\MarketingMaster\OverallCvrLqsController;
+use App\Models\ArrivedContainer;
 
 /*  
 |--------------------------------------------------------------------------
@@ -1057,6 +1060,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');
 
 
+    Route::controller(ArrivedContainerController::class)->group(function(){
+        Route::get('/arrived/container', 'index')->name('arrived.container');
+        Route::post('/arrived/container/push', 'pushArrivedContainer');
+    });
+
 
     Route::controller(QualityEnhanceController::class)->group(function () {
         Route::get('/quality-enhance/list', 'index')->name('quality.enhance');
@@ -1110,8 +1118,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/amazon-low-visibility/reason-action/update', [AmazonLowVisibilityController::class, 'updateReasonAction']);
 
 
-    Route::get('/pricing-master.pricing_master', [PricingMasterController::class, 'pricingMaster']);
-    Route::get('/pricing-analysis-data-view', [PricingMasterController::class, 'getViewPricingAnalysisData']);
+    // Route::get('/pricing-master.pricing_master', [PricingMasterController::class, 'pricingMaster']);
+    // Route::get('/pricing-analysis-data-view', [PricingMasterController::class, 'getViewPricingAnalysisData']);
+
+
     Route::get('/pricing-analysis-data-view', [PricingMasterViewsController::class, 'getViewPricingAnalysisData']);
     Route::post('/update-amazon-price', action: [PricingMasterViewsController::class, 'updatePrice'])->name('amazon.priceChange');
     Route::post('/push-shopify-price', action: [PricingMasterViewsController::class, 'pushShopifyPriceBySku'])->name('shopify.priceChange');
@@ -1147,6 +1157,14 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/movement-pricing-master', [MovementPricingMaster::class, 'MovementPricingMaster']);
     Route::get('/pricing-analysis-data-views', [MovementPricingMaster::class, 'getViewPricingAnalysisData']);
     Route::post('/pricing-master/save', [MovementPricingMaster::class, 'save']);
+
+
+
+    Route::get('/ads-pricing-master', [AdsMasterController::class, 'adsMaster']);
+    Route::get('/ads-pricing-analysis-data-views', [AdsMasterController::class, 'getViewPricingAnalysisData']);
+    Route::post('/pricing-master/save', [AdsMasterController::class, 'save']);
+
+
 
 
     // Analysis routes

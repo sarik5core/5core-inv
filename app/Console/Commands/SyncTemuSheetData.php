@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Http\Controllers\ApiController;
+use App\Models\TemuMetric;
 use App\Models\TemuProductSheet;
 
 class SyncTemuSheetData extends Command
@@ -35,16 +36,16 @@ class SyncTemuSheetData extends Command
             $sku = trim($row->{'(Child) sku'} ?? '');
             if (!$sku) continue;
 
-            TemuProductSheet::updateOrCreate(
+            TemuMetric::updateOrCreate(
                 ['sku' => $sku],
                 [
-                    'price'     => $this->toDecimalOrNull($row->{'R prc'} ?? null),
-                    'pft'       => $this->toDecimalOrNull($row->{'Pft%'} ?? null),
-                    'roi'       => $this->toDecimalOrNull($row->{'ROI%'} ?? null),
-                    'l30'       => $this->toIntOrNull($row->{'TL30'} ?? null),
-                    'l60'       => $this->toIntOrNull($row->{'T L60'} ?? null),
-                    'dil'       => $this->toDecimalOrNull($row->{'Dil%'} ?? null),
-                    'clicks'    => $this->toIntOrNull($row->{'Clicks'} ?? null)
+                    'temu_sheet_price'     => $this->toDecimalOrNull($row->{'R prc'} ?? null),
+                    // 'pft'       => $this->toDecimalOrNull($row->{'Pft%'} ?? null),
+                    // 'roi'       => $this->toDecimalOrNull($row->{'ROI%'} ?? null),
+                    // 'l30'       => $this->toIntOrNull($row->{'TL30'} ?? null),
+                    // 'l60'       => $this->toIntOrNull($row->{'T L60'} ?? null),
+                    // 'dil'       => $this->toDecimalOrNull($row->{'Dil%'} ?? null),
+                    // 'clicks'    => $this->toIntOrNull($row->{'Clicks'} ?? null)
                    
                 ]
             );

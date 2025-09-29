@@ -530,7 +530,7 @@
                     accessor: row => row["Supplier Tag"]
                 },
                 {
-                    title: "NR",
+                    title: "NRP",
                     field: "nr",
                     accessor: row => row ? (row["nr"] ?? null) : null,
                     headerSort: false,

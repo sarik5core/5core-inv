@@ -293,7 +293,7 @@
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
-            paginationSize: 50,
+            paginationSize: 100,
             movableColumns: false,
             resizableColumns: true,
             height: "650px",
@@ -400,10 +400,14 @@
 
                         if (!isNaN(l30) && !isNaN(inv) && inv !== 0) {
                             const dilDecimal = (l30 / inv);
-                            const color = getDilColor(dilDecimal);
-                            return `<div class="text-center"><span class="dil-percent-value ${color}">${Math.round(dilDecimal * 100)}%</span></div>`;
+                            let color = getDilColor(dilDecimal);
+                            if(color === 'red'){
+                                color = 'white';
+                                textColor = 'red';
+                            }
+                            return `<div class="text-center"><span class="dil-percent-value ${color}" >${Math.round(dilDecimal * 100)}%</span></div>`;
                         }
-                        return `<div class="text-center"><span class="dil-percent-value red">0%</span></div>`;
+                        return `<div class="text-center"><span class="dil-percent-value" style="color:red;">0%</span></div>`;
                     }
                 },
 
@@ -489,27 +493,21 @@
                     }
                 },
                 {
-                    title: "R2S",
-                    field: "transit",
-                    accessor: row => (row ? row["transit"] : null),
+                    title: "Transit",
+                    field: "c_sku_qty",
+                    accessor: row => (row ? row["c_sku_qty"] : null),
                     sorter: "number",
                     headerSort: true,
+                    hozAlign: "center",
                     formatter: function(cell) {
-                        const value = cell.getValue();
-                        const rowData = cell.getRow().getData();
-
-                        const sku = rowData.SKU ?? '';
-                        const parent = rowData.Parent ?? '';
-
-                        return `<div 
-                        class="editable-qty" 
-                        data-field="Transit" 
-                        data-original="${value ?? ''}" 
-                        data-sku='${sku}' 
-                        data-parent='${parent}' 
-                        style="outline:none; min-width:40px; text-align:center; font-weight:bold;">
-                        ${value ?? ''}
-                    </div>`;
+                        const row = cell.getRow();
+                        const c_sku_qty = row.getData().c_sku_qty;
+                        let containerName = row.getData().containerName;
+                        containerName = containerName.replace(/Container\s*(\d+)/i, "C-$1");
+                        return `<div style="line-height:1.5;">
+                            <span style="font-weight:600;">${c_sku_qty}</span><br>
+                            <small class="text-info">${containerName}</small>
+                        </div>`;
                     }
                 },
                 {
@@ -521,8 +519,8 @@
 
                         return `<div style="text-align: center;">
                         <span style="
-                            background-color: ${isNegative ? 'red' : 'yellow'};
-                            color: ${isNegative ? 'white' : 'black'};
+                            background-color: ${isNegative ? 'white' : 'yellow'};
+                            color: ${isNegative ? 'red' : 'black'};
                             padding: 2px 6px;
                             border-radius: 4px;
                             display: inline-block;
@@ -534,7 +532,7 @@
                     }
                 },
                 {
-                    title: "Approved QTY",
+                    title: "App. QTY",
                     field: "Approved QTY",
                     accessor: row => row?.["Approved QTY"] ?? null,
                     headerSort: false,
@@ -558,7 +556,7 @@
                 },
 
                 {
-                    title: "Supplier Tag",
+                    title: "Supplier",
                     field: "Supplier Tag",
                     accessor: row => row["Supplier Tag"]
                 },
@@ -576,41 +574,42 @@
                             data-type="NR"
                             data-sku='${rowData["SKU"]}'
                             data-parent='${rowData["Parent"]}'
-                            style="width: auto; min-width: 85px; padding: 4px 24px 4px 8px;
+                            style="width: auto; width: 50px; padding: 4px 24px 4px 8px;
                                 font-size: 0.875rem; border-radius: 4px; border: 1px solid #dee2e6;
                                 background-color: #fff;">
-                            <option value="REQ" ${value === 'REQ' ? 'selected' : ''}>REQ</option>
+                            <option value="REQ" ${value === 'REQ' ? 'selected' : ''}>R</option>
                             <option value="NR" ${value === 'NR' ? 'selected' : ''}>NR</option>
-                            <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LATER</option>
+                            <option value="LATER" ${value === 'LATER' ? 'selected' : ''}>LAT</option>
                         </select>
                     `;
                     }
                 },
-                {
-                    title: "Hide",
-                    field: "hide",
-                    accessor: row => row?.["hide"] ?? null,
-                    headerSort: false,
-                    formatter: function(cell) {
-                        const value = cell.getValue() ?? '';
-                        const rowData = cell.getRow().getData();
+                // {
+                //     title: "Hide",
+                //     field: "hide",
+                //     accessor: row => row?.["hide"] ?? null,
+                //     headerSort: false,
+                //     formatter: function(cell) {
+                //         const value = cell.getValue() ?? '';
+                //         const rowData = cell.getRow().getData();
 
-                        return `
-                        <select class="form-select form-select-sm editable-select"
-                            data-type="Hide"
-                            data-sku='${rowData["SKU"]}'
-                            data-parent='${rowData["Parent"]}'
-                            style="width: auto; min-width: 100px; padding: 4px 24px 4px 8px;
-                                font-size: 0.875rem; border-radius: 4px; border: 1px solid #dee2e6;
-                                background-color: #fff;">
-                            <option value="">Select</option>
-                            <option value="@Need" ${value === '@Need' ? 'selected' : ''}>@Need</option>
-                            <option value="@Taken" ${value === '@Taken' ? 'selected' : ''}>@Taken</option>
-                            <option value="@Senior" ${value === '@Senior' ? 'selected' : ''}>@Senior</option>
-                        </select>
-                    `;
-                    }
-                },
+                //         return `
+                //         <select class="form-select form-select-sm editable-select"
+                //             data-type="Hide"
+                //             data-sku='${rowData["SKU"]}'
+                //             data-parent='${rowData["Parent"]}'
+                //             style="width: auto; width: 60px; padding: 4px 24px 4px 8px;
+                //                 font-size: 0.875rem; border-radius: 4px; border: 1px solid #dee2e6;
+                //                 background-color: #fff;">
+                //             <option value="">Select</option>
+                //             <option value="@Need" ${value === '@Need' ? 'selected' : ''}>@Need</option>
+                //             <option value="@Taken" ${value === '@Taken' ? 'selected' : ''}>@Taken</option>
+                //             <option value="@Senior" ${value === '@Senior' ? 'selected' : ''}>@Senior</option>
+                //         </select>
+                //     `;
+                //     },
+                //     visible: false,
+                // },
             ],
             ajaxResponse: function(url, params, response) {
                 groupedSkuData = {}; // clear previous
@@ -1308,11 +1307,11 @@
             setCombinedFilters();
 
             table.setSort([{
-                column: "transit",
+                column: "c_sku_qty",
                 dir: "desc",
                 sorter: function(a, b) {
-                    const aValue = a.getData().transit ? 1 : 0;
-                    const bValue = b.getData().transit ? 1 : 0;
+                    const aValue = a.getData().c_sku_qty ? 1 : 0;
+                    const bValue = b.getData().c_sku_qty ? 1 : 0;
                     return bValue - aValue;
                 }
             }]);

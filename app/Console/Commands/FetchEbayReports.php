@@ -74,13 +74,6 @@ class FetchEbayReports extends Command
                 }
             }
 
-            // 3. Store views in EbayMetric table for each SKU
-            foreach ($viewsByItemId as $itemId => $views) {
-                $sku = $itemIdToSku[$itemId] ?? null;
-                if ($sku) {
-                    EbayMetric::where('item_id', $itemId)->update(['views' => $views]);
-                }
-            }
         }
 
         foreach ($listingData as $row) {
@@ -108,9 +101,11 @@ class FetchEbayReports extends Command
             $percentage = $percentage / 100;
 
             $metric = EbayMetric::updateOrCreate(
-                ['item_id' => $itemId],
                 [
-                    'sku'         => $row['sku'] ?? '',
+                    'item_id' => $itemId,
+                    'sku'     => $row['sku'] ?? '',
+                ],
+                [
                     'ebay_price'  => $row['price'] ?? null,
                     'report_date' => now()->toDateString(),
                 ]
@@ -137,8 +132,12 @@ class FetchEbayReports extends Command
             }
         }
 
-       
-
+        // 3. Store views in EbayMetric table for each SKU
+        if (!empty($viewsByItemId)) {
+            foreach ($viewsByItemId as $itemId => $views) {
+                EbayMetric::where('item_id', $itemId)->update(['views' => $views]);
+            }
+        }
 
         // 🔹 Orders se L30 & L60 quantities update karo
         $existingSkus = EbayMetric::pluck('sku')->filter()->toArray();
@@ -190,6 +189,11 @@ class FetchEbayReports extends Command
             'Authorization' => 'Bearer ' . $token,
             'Content-Type' => 'application/json',
         ])->post($apiUrl, $payload);
+        
+        if (!$response->successful()) {
+            $this->error('Failed to create inventory task: ' . $response->status() . ' ' . $response->body());
+            return [];
+        }
         
         $location = $response->header('Location');
         info('location', [$location]);

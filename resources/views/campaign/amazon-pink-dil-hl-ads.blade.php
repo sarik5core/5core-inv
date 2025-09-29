@@ -241,10 +241,10 @@
                 index: "Sku",
                 ajaxURL: "/amazon/pink-dil/hl/ads/data",
                 layout: "fitData",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
@@ -487,8 +487,31 @@
                     },
                     {
                         title: "TPFT%",
-                        field: "tpft",
-                        hozAlign: "center"
+                        field: "TPFT",
+                        hozAlign: "center",
+                        formatter: function(cell){
+                            let value = parseFloat(cell.getValue()) || 0;
+                            let percent = value.toFixed(0);
+                            let color = "";
+
+                            if (value < 10) {
+                                color = "red";
+                            } else if (value >= 10 && value < 15) {
+                                color = "#ffc107";
+                            } else if (value >= 15 && value < 20) {
+                                color = "blue";
+                            } else if (value >= 20 && value <= 40) {
+                                color = "green";
+                            } else if (value > 40) {
+                                color = "#e83e8c";
+                            }
+
+                            return `
+                                <span style="font-weight:600; color:${color};">
+                                    ${percent}%
+                                </span>
+                            `;
+                        }
                     }
                 ],
                 ajaxResponse: function(url, params, response) {
@@ -604,8 +627,16 @@
 
                     let percentage = total > 0 ? ((filtered / total) * 100).toFixed(0) : 0;
 
-                    document.getElementById("total-campaigns").innerText = currentPage;
-                    document.getElementById("percentage-campaigns").innerText = percentage + "%";
+                    let totalEl = document.getElementById("total-campaigns");
+                    let percentageEl = document.getElementById("percentage-campaigns");
+
+                    if (totalEl) {
+                        totalEl.innerText = currentPage;
+                    }
+
+                    if (percentageEl) {
+                        percentageEl.innerText = percentage + "%";
+                    }
                 }
 
                 table.on("dataFiltered", updateCampaignStats);

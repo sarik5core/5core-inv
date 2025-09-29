@@ -101,24 +101,26 @@ class Kernel extends ConsoleKernel
         $schedule->command('sync:temu-sheet-data')->everyTwelveHours();
 
 
-        // Sync eBay 2 sheet command
-        $schedule->command('sync:ebay-two-sheet')->everyTenMinutes();
-        // Sync eBay 3 sheet command
-        $schedule->command('sync:ebay-three-sheet')->everyTenMinutes();
+        // // Sync eBay 2 sheet command
+        // $schedule->command('sync:ebay-two-sheet')->everyTenMinutes();
+        // // Sync eBay 3 sheet command
+        // $schedule->command('sync:ebay-three-sheet')->everyTenMinutes();
 
         // Sync Shopify sheet command
         $schedule->command('sync:shopify-quantity')->everyTenMinutes()
-            ->timezone('UTC');        
-        $schedule->command('app:fetch-ebay3-metrics')
+            ->timezone('UTC');   
+
+        $schedule->command('app:fetch-ebay-three-metrics')
             ->dailyAt('02:00')
             ->timezone('America/Los_Angeles');
+            
         $schedule->command('app:ebay3-campaign-reports')
             ->dailyAt('04:00')
             ->timezone('America/Los_Angeles');
         $schedule->command('app:fetch-temu-metrics')
             ->dailyAt('03:00')
             ->timezone('America/Los_Angeles');
-        $schedule->command('app:fetch-ebay2-metrics')
+        $schedule->command('app:fetch-ebay-two-metrics')
             ->dailyAt('01:00')
             ->timezone('America/Los_Angeles');
         $schedule->command('app:ebay2-campaign-reports')
@@ -143,14 +145,20 @@ class Kernel extends ConsoleKernel
         //     ->dailyAt('12:00')
         //     ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-amz-bgt-kw')
-            ->dailyAt('12:00')
+            ->days([1, 4]) // 1 = Monday, 4 = Thursday
+            ->at('12:00')
             ->timezone('Asia/Kolkata');
+
         $schedule->command('amazon:auto-update-amz-bgt-pt')
-            ->dailyAt('12:00')
+            ->days([1, 4])
+            ->at('12:00')
             ->timezone('Asia/Kolkata');
+
         $schedule->command('amazon:auto-update-amz-bgt-hl')
-            ->dailyAt('12:00')
+            ->days([1, 4])
+            ->at('12:00')
             ->timezone('Asia/Kolkata');
+
         $schedule->command('amazon:auto-update-pink-dil-kw-ads')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');

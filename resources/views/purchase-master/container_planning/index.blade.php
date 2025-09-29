@@ -91,7 +91,6 @@
         </div>
     </div>
 
-
     <div class="modal fade" id="createContainerPlanning" tabindex="-1" aria-labelledby="createContainerPlanningLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered shadow-none">
@@ -104,12 +103,12 @@
                         aria-label="Close"></button>
                 </div>
 
-                <form method="POST" action="{{ route('container.planning.save') }}" enctype="multipart/form-data"
+                <form id="containerPlanningForm" method="POST" action="{{ route('container.planning.save') }}" enctype="multipart/form-data"
                     autocomplete="off">
                     @csrf
+                    <input type="hidden" name="id" id="record_id">
                     <div class="modal-body">
                         <div class="row g-3">
-
                             <!-- Container Number -->
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Container Number</label>
@@ -224,7 +223,8 @@
                         title: "Sr. No",
                         formatter: "rownum",
                         hozAlign: "center",
-                        width: 90
+                        width: 90,
+                        visible: false
                     },
                     {
                         title: "Container No",
@@ -245,24 +245,41 @@
                     {
                         title: "Packing List",
                         field: "packing_list_link",
-                        formatter: "link",
-                        formatterParams: {
-                            labelField: "packing_list_link",
-                            urlField: "packing_list_link",
-                            target: "_blank"
+                        hozAlign: "center",
+                        formatter: function(cell){
+                            let url = cell.getValue();
+                            if (url) {
+                                return `<a href="${url}" class="btn btn-sm btn-outline-primary" target="_blank" title="Open Packing List">
+                                            <i class="fa fa-link"></i> Open
+                                        </a>`;
+                            } else {
+                                return "";
+                            }
                         }
                     },
                     {
                         title: "Invoice",
-                        field: "invoice_value"
+                        field: "invoice_value",
+                        formatter: function(cell){
+                            let value = cell.getValue() ?? 0; 
+                            return `<span>${parseFloat(value).toFixed(0)}</span>`;
+                        }
                     },
                     {
                         title: "Paid",
-                        field: "paid"
+                        field: "paid",
+                        formatter: function(cell){
+                            let value = cell.getValue() ?? 0; 
+                            return `<span>${parseFloat(value).toFixed(0)}</span>`;
+                        }
                     },
                     {
                         title: "Balance",
-                        field: "balance"
+                        field: "balance",
+                        formatter: function(cell){
+                            let value = cell.getValue() ?? 0; 
+                            return `<span>${parseFloat(value).toFixed(0)}</span>`;
+                        }
                     },
                     {
                         title: "Pay Term",
@@ -272,6 +289,22 @@
                         title: "Created At",
                         field: "created_at"
                     },
+                    {
+                        title: "Action",
+                        hozAlign: "center",
+                        formatter: function(cell){
+                            return `
+                                <button class="btn btn-sm btn-primary edit-btn">
+                                    <i class="fa fa-edit me-1"></i>Edit
+                                </button>
+                            `;
+                        },
+                        cellClick: function(e, cell){
+                            let rowData = cell.getRow().getData();
+                            openEditModal(rowData);
+                        }
+                    }
+
                 ],
                 ajaxResponse: function(url, params, response) {
                     updateBalances();
@@ -415,6 +448,31 @@
                         .catch(err => console.error(err));
                 });
             }
+
+            function openEditModal(rowData) {
+                // Hidden ID set
+                document.getElementById("record_id").value = rowData.id;
+                console.log("Container Number from row:", rowData.container_number);
+
+                // Form ke saare fields set karna
+                document.querySelector('select[name="container_number"]').value = rowData.container_number;
+                document.querySelector('select[name="po_number"]').value = rowData.po_number;
+                document.querySelector('select[name="supplier_id"]').value = rowData.supplier_id;
+                document.querySelector('input[name="area"]').value = rowData.area || '';
+                document.querySelector('input[name="packing_list_link"]').value = rowData.packing_list_link || '';
+                document.querySelector('input[name="invoice_value"]').value = rowData.invoice_value || '';
+                document.querySelector('input[name="paid"]').value = rowData.paid || '';
+                document.querySelector('input[name="balance"]').value = rowData.balance || '';
+                document.querySelector('select[name="pay_term"]').value = rowData.pay_term || '';
+
+                // Modal ka title change
+                document.getElementById("createContainerPlanningLabel").innerText = "Edit Container Planning";
+
+                // Modal open karo
+                let modal = new bootstrap.Modal(document.getElementById("createContainerPlanning"));
+                modal.show();
+            }
+
         });
     </script>
 @endsection

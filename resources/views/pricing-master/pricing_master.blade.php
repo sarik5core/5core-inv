@@ -1,4475 +1,2954 @@
-@extends('layouts.vertical', ['title' => 'Pricing masters', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Pricing Masters Analysis'])
 
-<meta name="csrf-token" content="{{ csrf_token() }}">
 @section('css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
     <style>
-        /* ========== TABLE STRUCTURE ========== */
-        .table-container {
-            overflow-x: auto;
-            overflow-y: visible;
-            position: relative;
-            max-height: 600px;
+        #image-hover-preview {
+            transition: opacity 0.2s ease;
         }
 
-        .custom-resizable-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0;
+        /* Table Styling */
+        #forecast-table {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+         
         }
 
-        .parent-row .avg-price-cell {
-            display: none;
+        .image-preview-container {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .custom-resizable-table th,
-        .custom-resizable-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-            position: relative;
-            white-space: nowrap;
-            overflow: visible !important;
+        .image-preview-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        .custom-resizable-table th {
-            background-color: #f8f9fa;
+        .image-preview-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none; /* JS se toggle hoga */
+            cursor: pointer;
+        }
+
+        .channel-logo {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        }
+        .channel-logo:hover {
+        transform: scale(1.1);
+        }
+
+
+        .inventory-cell {
             font-weight: 600;
-            user-select: none;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            background-color: #f8f9fa;
         }
 
-        /* ========== RESIZABLE COLUMNS ========== */
-        .resize-handle {
+      
+        .inventory-cell.low {
+            color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .inventory-cell.medium {
+            color: #ffc107;
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+
+        .inventory-cell.high {
+            color: #198754;
+            background-color: rgba(25, 135, 84, 0.1);
+        }
+
+        /* Tooltip styles */
+        .cell-tooltip {
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 5px;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.1);
-            cursor: col-resize;
-            z-index: 100;
-        }
-
-        .resize-handle:hover,
-        .resize-handle.resizing {
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        /* ========== TOOLTIP SYSTEM ========== */
-        .tooltip-container {
-            position: relative;
-            display: inline-block;
-            margin-left: 8px;
-        }
-
-        .tooltip-icon {
-            cursor: pointer;
-            transform: translateY(1px);
-        }
-
-        .tooltip {
-            z-index: 9999 !important;
-            pointer-events: none;
-        }
-
-        .tooltip-inner {
-            transform: translate(-5px, -5px) !important;
-            max-width: 300px;
-            padding: 6px 10px;
-            font-size: 13px;
-        }
-
-        .bs-tooltip-top .tooltip-arrow {
-            bottom: 0;
-        }
-
-        .bs-tooltip-top .tooltip-arrow::before {
-            transform: translateX(5px) !important;
-            border-top-color: var(--bs-tooltip-bg);
-        }
-
-        /* ========== COLOR CODED CELLS ========== */
-        .dil-percent-cell {
-            padding: 8px 4px !important;
-        }
-
-        .dil-percent-value {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .dil-percent-value.red {
-            background-color: #dc3545;
+            background: #333;
             color: white;
-        }
-
-        .dil-percent-value.blue {
-            background-color: #3591dc;
-            color: white;
-        }
-
-        .dil-percent-value.yellow {
-            background-color: #ffc107;
-            color: #212529;
-        }
-
-        .dil-percent-value.green {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .dil-percent-value.pink {
-            background-color: #e83e8c;
-            color: white;
-        }
-
-        .dil-percent-value.gray {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        /* ========== TABLE CONTROLS ========== */
-        .table-controls {
-            position: sticky;
-            bottom: 0;
-            background: white;
-            padding: 10px 0;
-            border-top: 1px solid #ddd;
-        }
-
-        /* ========== SORTING ========== */
-        .sortable {
-            cursor: pointer;
-        }
-
-        .sortable:hover {
-            background-color: #f1f1f1;
-        }
-
-        .sort-arrow {
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        /* ========== PARENT ROWS ========== */
-        .parent-row {
-            background-color: rgba(69, 233, 255, 0.1) !important;
-        }
-
-        /* ========== SKU TOOLTIPS ========== */
-        .sku-tooltip-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .sku-tooltip {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 1000;
             visibility: hidden;
-            width: auto;
-            min-width: 120px;
-            background-color: #fff;
-            color: #333;
-            text-align: left;
-            border-radius: 4px;
-            padding: 8px;
-            position: absolute;
-            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border: 1px solid #ddd;
-            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .sku-tooltip-container:hover .sku-tooltip {
+        .cell-with-tooltip:hover .cell-tooltip {
             visibility: visible;
             opacity: 1;
         }
 
-        .sku-link {
-            padding: 4px 0;
+
+
+        .tabulator .tabulator-header {
+            background: linear-gradient(135deg, #2c6ed5 0%, #1a56b7 100%) !important;
+            border-bottom: 2px solid #1a56b7;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tabulator .tabulator-header .tabulator-col {
+            background-color: transparent;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 18px;
+            vertical-align: middle;
+            color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .tabulator .tabulator-header .tabulator-col-content {
+            font-weight: 600;
+            color: #ffffff;
+            padding: 8px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.5px;
         }
 
-        .sku-link a {
-            color: #0d6efd;
-            text-decoration: none;
+        .tabulator .tabulator-header .tabulator-col-title {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        .sku-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* ========== DROPDOWNS ========== */
-        .custom-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .custom-dropdown-menu {
-            display: none;
-            position: absolute;
-            background-color: white;
-            min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
+        /* Style for header filter inputs */
+        .tabulator .tabulator-header .tabulator-col input {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: none;
             border-radius: 4px;
-        }
-
-        .custom-dropdown-menu.show {
-            display: block;
-        }
-
-        .column-toggle-item {
-            padding: 8px 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        .column-toggle-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .column-toggle-checkbox {
-            margin-right: 8px;
-        }
-
-        /* ========== LOADER ========== */
-        .card-loader-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 0.25rem;
-        }
-
-        .loader-content {
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .loader-text {
-            margin-top: 15px;
-            font-weight: 500;
             color: #333;
-        }
-
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-        }
-
-        /* ========== CARD BODY ========== */
-        .card-body {
-            position: relative;
-        }
-
-        /* ========== SEARCH DROPDOWNS ========== */
-        .dropdown-search-container {
-            position: relative;
-        }
-
-        .dropdown-search-results {
-            position: absolute;
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-size: 12px;
             width: 100%;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: none;
+            transition: all 0.2s;
         }
 
-        .dropdown-search-item {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-
-        .dropdown-search-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .no-results {
-            color: #6c757d;
+        .tabulator .tabulator-header .tabulator-col input::placeholder {
+            color: #8e9ab4;
             font-style: italic;
         }
 
-        /* ========== STATUS INDICATORS ========== */
-        .status-circle {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 6px;
-            vertical-align: middle;
-            border: 1px solid #fff;
-        }
-
-        .status-circle.default {
-            background-color: #6c757d;
-        }
-
-        .status-circle.red {
-            background-color: #dc3545;
-        }
-
-        .status-circle.yellow {
-            background-color: #ffc107;
-        }
-
-        .status-circle.blue {
-            background-color: #007bff;
-        }
-
-        .status-circle.green {
-            background-color: #28a745;
-        }
-
-        .status-circle.pink {
-            background-color: #e83e8c;
-        }
-
-        /* ========== FILTER CONTROLS ========== */
-        .d-flex.flex-wrap.gap-2 {
-            gap: 0.5rem !important;
-            margin-bottom: 1rem;
-        }
-
-        .btn-sm i.fas {
-            margin-right: 5px;
-        }
-
-        .manual-dropdown-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .manual-dropdown-container .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 1000;
-            min-width: 160px;
-            padding: 5px 0;
-            margin: 2px 0 0;
-            background-color: #fff;
-            border: 1px solid rgba(0, 0, 0, .15);
-            border-radius: 4px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
-        }
-
-        .manual-dropdown-container.show .dropdown-menu {
-            display: block;
-        }
-
-        .dropdown-item {
-            display: block;
-            width: 100%;
-            padding: 8px 16px;
-            clear: both;
-            font-weight: 400;
-            color: #212529;
-            text-align: inherit;
-            white-space: nowrap;
-            background-color: transparent;
-            border: 0;
-        }
-
-        .dropdown-item:hover {
-            color: #16181b;
-            text-decoration: none;
-            background-color: #f8f9fa;
-        }
-
-        /* ========== MODAL SYSTEM ========== */
-        .custom-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1050;
-            overflow: hidden;
-            outline: 0;
-            pointer-events: none;
-        }
-
-        .custom-modal.show {
-            display: block;
-        }
-
-        .custom-modal-dialog {
-            position: fixed;
-            width: auto;
-            min-width: 600px;
-            max-width: 90vw;
-            margin: 1.75rem auto;
-            pointer-events: auto;
-            z-index: 1051;
-            transition: transform 0.3s ease-out;
+        .tabulator .tabulator-header .tabulator-col input:focus {
             background-color: white;
-            border-radius: 0.3rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        .custom-modal-content {
-            pointer-events: auto;
-        }
-
-        .custom-modal-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
-            border-top-left-radius: 0.3rem;
-            border-top-right-radius: 0.3rem;
-            background-color: #f8f9fa;
-        }
-
-        .custom-modal-title {
-            margin-bottom: 0;
-            line-height: 1.5;
-            font-size: 1.25rem;
-        }
-
-        .custom-modal-close {
-            padding: 0;
-            background-color: transparent;
-            border: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
-            line-height: 1;
-            color: #000;
-            text-shadow: 0 1px 0 #fff;
-            opacity: 0.5;
-            cursor: pointer;
-        }
-
-        .custom-modal-close:hover {
-            opacity: 0.75;
-        }
-
-        .custom-modal-body {
-            position: relative;
-            flex: 1 1 auto;
-            padding: 1rem;
-            overflow-y: auto;
-            max-height: 70vh;
-        }
-
-        /* Multiple Modal Stacking */
-        .custom-modal:nth-child(1) .custom-modal-dialog {
-            top: 20px;
-            right: 20px;
-            z-index: 1051;
-        }
-
-        .custom-modal:nth-child(2) .custom-modal-dialog {
-            top: 40px;
-            right: 40px;
-            z-index: 1052;
-        }
-
-        .custom-modal:nth-child(3) .custom-modal-dialog {
-            top: 60px;
-            right: 60px;
-            z-index: 1053;
-        }
-
-        .custom-modal:nth-child(4) .custom-modal-dialog {
-            top: 80px;
-            right: 80px;
-            z-index: 1054;
-        }
-
-        .custom-modal:nth-child(5) .custom-modal-dialog {
-            top: 100px;
-            right: 100px;
-            z-index: 1055;
-        }
-
-        /* For more than 5 modals - dynamic calculation */
-        .custom-modal:nth-child(n+6) .custom-modal-dialog {
-            top: calc(100px + (var(--modal-offset) * 20px));
-            right: calc(100px + (var(--modal-offset) * 20px));
-            z-index: calc(1055 + var(--modal-offset));
-        }
-
-        /* Animations */
-        @keyframes modalSlideIn {
-            from {
-                transform: translateX(30px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .custom-modal.show .custom-modal-dialog {
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        .custom-modal-backdrop.show {
-            display: block;
-            animation: modalFadeIn 0.15s linear;
-        }
-
-        /* Body scroll lock */
-        body.custom-modal-open {
-            overflow: hidden;
-            padding-right: 15px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .custom-modal-dialog {
-                min-width: 95vw;
-                max-width: 95vw;
-                margin: 0.5rem auto;
-            }
-
-            .custom-modal:nth-child(1) .custom-modal-dialog,
-            .custom-modal:nth-child(2) .custom-modal-dialog,
-            .custom-modal:nth-child(3) .custom-modal-dialog,
-            .custom-modal:nth-child(4) .custom-modal-dialog,
-            .custom-modal:nth-child(5) .custom-modal-dialog,
-            .custom-modal:nth-child(n+6) .custom-modal-dialog {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                margin: 0 auto;
-            }
-        }
-
-        .image-wrapper {
-            width: 40px;
-            height: 40px;
-            overflow: visible;
-            /* show zoom outside cell */
-            position: relative;
-        }
-
-        .zoom-image {
-            width: 100%;
-            height: auto;
-            border-radius: 4px;
-            transition: transform 0.3s ease;
-            display: block;
-        }
-
-        .zoom-image:hover {
-            transform: scale(2);
-            z-index: 999;
-            position: absolute;
-            top: 0;
-            left: 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            background: #fff;
-        }
-
-        /* Status color overlays */
-        .custom-modal .card.card-bg-red {
-            background: linear-gradient(135deg, rgba(245, 0, 20, 0.69), rgba(255, 255, 255, 0.85));
-            border-color: rgba(220, 53, 70, 0.72);
-        }
-
-        .custom-modal .card.card-bg-green {
-            background: linear-gradient(135deg, rgba(3, 255, 62, 0.424), rgba(255, 255, 255, 0.85));
-            border-color: rgba(40, 167, 69, 0.3);
-        }
-
-        .custom-modal .card.card-bg-yellow {
-            background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 255, 255, 0.85));
-            border-color: rgba(255, 193, 7, 0.3);
-        }
-
-        .custom-modal .card.card-bg-blue {
-            background: linear-gradient(135deg, rgba(0, 123, 255, 0.15), rgba(255, 255, 255, 0.85));
-            border-color: rgba(0, 123, 255, 0.3);
-        }
-
-        .custom-modal .card.card-bg-pink {
-            background: linear-gradient(135deg, rgba(232, 62, 140, 0.15), rgba(255, 255, 255, 0.85));
-            border-color: rgba(232, 62, 141, 0.424);
-        }
-
-        .custom-modal .card.card-bg-gray {
-            background: linear-gradient(135deg, rgba(108, 117, 125, 0.15), rgba(255, 255, 255, 0.85));
-            border-color: rgba(108, 117, 125, 0.3);
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .custom-modal.show .custom-modal-dialog {
-            animation: slideInRight 0.3s ease-out;
-        }
-
-        /* Close All button */
-        #close-all-modals {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1060;
-        }
-
-        .custom-modal-dialog {
-            position: fixed !important;
-            top: 20px;
-            right: 20px;
-            margin: 0 !important;
-            transform: none !important;
-            cursor: move;
-        }
-
-        .custom-modal-header {
-            cursor: move;
-        }
-
-
-        /* ========== PLAY/PAUSE NAVIGATION BUTTONS ========== */
-        .time-navigation-group {
-            margin-left: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 50px;
-            overflow: hidden;
-            padding: 2px;
-            background: #f8f9fa;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .time-navigation-group button {
-            padding: 0;
-            border-radius: 50% !important;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 3px;
-            transition: all 0.2s ease;
-            border: 1px solid #dee2e6;
-            background: white;
-            cursor: pointer;
-        }
-
-        .time-navigation-group button:hover {
-            background-color: #f1f3f5 !important;
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .time-navigation-group button:active {
-            transform: scale(0.95);
-        }
-
-        .time-navigation-group button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        .time-navigation-group button i {
-            font-size: 1.1rem;
-            transition: transform 0.2s ease;
-        }
-
-        /* Play button */
-        #play-auto {
-            color: #28a745;
-        }
-
-        #play-auto:hover {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
-
-        /* Pause button */
-        #play-pause {
-            color: #ffc107;
-            display: none;
-        }
-
-        #play-pause:hover {
-            background-color: #ffc107 !important;
-            color: white !important;
-        }
-
-        /* Navigation buttons */
-        #play-backward,
-        #play-forward {
-            color: #007bff;
-        }
-
-        #play-backward:hover,
-        #play-forward:hover {
-            background-color: #007bff !important;
-            color: white !important;
-        }
-
-        /* Button state colors - must come after hover styles */
-        #play-auto.btn-success,
-        #play-pause.btn-success {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
-
-        #play-auto.btn-warning,
-        #play-pause.btn-warning {
-            background-color: #ffc107 !important;
-            color: #212529 !important;
-        }
-
-        #play-auto.btn-danger,
-        #play-pause.btn-danger {
-            background-color: #dc3545 !important;
-            color: white !important;
-        }
-
-        #play-auto.btn-light,
-        #play-pause.btn-light {
-            background-color: #f8f9fa !important;
-            color: #212529 !important;
-        }
-
-        /* Ensure hover doesn't override state colors */
-        #play-auto.btn-success:hover,
-        #play-pause.btn-success:hover {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
-
-        #play-auto.btn-warning:hover,
-        #play-pause.btn-warning:hover {
-            background-color: #ffc107 !important;
-            color: #212529 !important;
-        }
-
-        #play-auto.btn-danger:hover,
-        #play-pause.btn-danger:hover {
-            background-color: #dc3545 !important;
-            color: white !important;
-        }
-
-        /* Active state styling */
-        .time-navigation-group button:focus {
+            box-shadow: 0 0 0 2px rgba(26, 86, 183, 0.3);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .time-navigation-group button {
-                width: 36px;
-                height: 36px;
-            }
-
-            .time-navigation-group button i {
-                font-size: 1rem;
-            }
+        .tabulator .tabulator-row {
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
         }
 
-        /* Add to your CSS file or style section */
-        .hide-column {
-            display: none !important;
+        .tabulator .tabulator-row:hover {
+            background-color: #f8f9fa !important;
         }
 
-        /*popup modal style*/
+        .tabulator .tabulator-row.parent-row {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            border-top: 2px solid #0d6efd;
+        }
 
-        .choose-file {
-            background-color: #ff6b2c;
+        .tabulator .tabulator-row.parent-row .tabulator-cell {
+            color: #0d6efd;
+        }
+
+        .tabulator .tabulator-row .tabulator-cell {
+            padding: 12px 8px;
+            border-right: 1px solid #eee;
+            position: relative;
+            overflow: visible;
+        }
+
+        /* Hover info tooltip */
+        .tabulator-cell[data-numeric='true']:hover::after {
+            content: attr(data-full-value);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
             color: white;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            width: 100%;
-            display: block;
-            transition: background-color 0.3s;
-        }
-
-        .choose-file:hover {
-            background-color: #e65c1e;
-        }
-
-        .modal-content {
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-label {
-            font-weight: 600;
-        }
-
-        .form-section {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        option[value="Todo"] {
-            background-color: #2196f3;
-        }
-
-        option[value="Not Started"] {
-            background-color: #ffff00;
-            color: #000;
-        }
-
-        option[value="Working"] {
-            background-color: #ff00ff;
-        }
-
-        option[value="In Progress"] {
-            background-color: #f1c40f;
-            color: #000;
-        }
-
-        option[value="Monitor"] {
-            background-color: #5c6bc0;
-        }
-
-        option[value="Done"] {
-            background-color: #00ff00;
-            color: #000;
-        }
-
-        option[value="Need Help"] {
-            background-color: #e91e63;
-        }
-
-        option[value="Review"] {
-            background-color: #ffffff;
-            color: #000;
-        }
-
-        option[value="Need Approval"] {
-            background-color: #d4ff00;
-            color: #000;
-        }
-
-        option[value="Dependent"] {
-            background-color: #ff9999;
-        }
-
-        option[value="Approved"] {
-            background-color: #ffeb3b;
-            color: #000;
-        }
-
-        option[value="Hold"] {
-            background-color: #ffffff;
-            color: #000;
-        }
-
-        option[value="Rework"] {
-            background-color: #673ab7;
-        }
-
-        option[value="Urgent"] {
-            background-color: #f44336;
-        }
-
-        option[value="Q-Task"] {
-            background-color: #ff00ff;
-        }
-
-        /*popup modal style end */
-
-        /* Search input group styling */
-        .input-group {
-            width: auto;
-            max-width: 300px;
-        }
-
-        .input-group .form-control {
-            border-right: 0;
-        }
-
-        .input-group-append .btn {
-            padding: 0.25rem 0.5rem;
-            border-left: 0;
-        }
-
-        .input-group-append .btn:first-child {
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-
-        .input-group-append .btn:not(:first-child) {
-            border-left: 1px solid #ced4da;
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-
-        /* Loading indicator for full data load */
-        .full-data-loading {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 10px 15px;
+            padding: 4px 8px;
             border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
+            font-size: 12px;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .full-data-loading .spinner {
-            margin-right: 10px;
+        /* Trending indicators */
+        .trend-up::after {
+            content: '↑';
+            color: #22c55e;
+            margin-left: 4px;
         }
 
-        /* Auto-closing success notification */
-        .alert-dismissible-auto-close {
-            animation: fadeOut 5s forwards;
+        .trend-down::after {
+            content: '↓';
+            color: #ef4444;
+            margin-left: 4px;
         }
 
-        @keyframes fadeOut {
-            0% {
-                opacity: 1;
-            }
 
-            90% {
-                opacity: 1;
-            }
 
-            100% {
-                opacity: 0;
-                display: none;
-            }
+        /* Pagination styling */
+        .tabulator-footer {
+            background-color: #f8f9fa;
+            border-top: 2px solid #dee2e6;
+            padding: 8px;
         }
 
-        /* Pagination button styling */
-        .pagination-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 20px;
-            gap: 5px;
-        }
-
-        .pagination-controls button {
-            min-width: 80px;
-            padding: 5px 10px;
-        }
-
-        .pagination-controls button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        #page-info {
-            margin: 0 15px;
+        .tabulator-paginator {
             font-weight: 500;
         }
 
-        #visible-rows {
-            background-color: #f8f9fa;
-            padding: 5px 10px;
+        .tabulator-page {
+            margin: 0 2px;
+            padding: 6px 12px;
             border-radius: 4px;
             border: 1px solid #dee2e6;
-            margin-left: 10px;
+            background-color: white;
+            color: #495057;
+            transition: all 0.2s ease;
         }
 
-        /* Notification styling */
-        .custom-notification {
-            transition: opacity 0.5s;
+        .tabulator-page:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
         }
 
-        .custom-notification.fade-out {
-            opacity: 0;
+        .tabulator-page.active {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+
+
+        /* Additional hover effects */
+        .hover-effect {
+            transition: transform 0.2s;
+        }
+
+        .hover-effect:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+
+        /* Modal enhancements */
+        .modal-xl .modal-body {
+            max-height: 95vh;
+            overflow-y: auto;
+           
+        }
+
+        .analysis-table th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        /* Enhanced Modal Styling */
+        .modal-draggable .modal-dialog {
+            cursor: move;
+            margin: 0;
+            pointer-events: all;
+            position: fixed;
+            /* left: 50%;
+            top: 50%; */
+            transform: translate(-50%, -50%);
+        }
+
+        .modal-content {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .modal-header.bg-gradient {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            padding: 1rem;
+            border: none;
+        }
+
+        .market-summary {
+            background-color: rgba(0, 0, 0, 0.02);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .summary-stats .badge {
+            font-size: 0.9em;
+            padding: 0.5em 1em;
+            font-weight: 500;
+        }
+
+        .view-controls .btn-group .btn {
+            padding: 0.375rem 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .view-controls .btn-group .btn.active {
+            background-color: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+
+        .modal-actions .btn-light-secondary {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .modal-actions .btn-light-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #ovl30Modal .table {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        #ovl30Modal .table thead th {
+            background-color: #f8f9fa;
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        #ovl30Modal .table tbody tr {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s;
+        }
+
+        #ovl30Modal .table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        #ovl30Modal .table tbody td {
+            padding: 1rem;
+            border: none;
+            vertical-align: middle;
+        }
+
+        /* Value indicators */
+        .value-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .value-indicator .trend {
+            font-size: 0.8em;
+        }
+
+        .value-indicator.positive {
+            color: #198754;
+        }
+
+        .value-indicator.negative {
+            color: #dc3545;
+        }
+
+        .value-indicator.neutral {
+            color: #6c757d;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            background: #ffffff;
+        }
+
+        /* Enhanced Table Styling for Modal */
+        .modal-body .table {
+            margin-bottom: 0;
+        }
+
+        .modal-body .table thead th {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .modal-body .table tbody td {
+            vertical-align: middle;
+            padding: 0.75rem;
+            border-color: #e9ecef;
+        }
+
+        .modal-body .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-close {
+            color: white;
+            text-shadow: none;
+            opacity: 0.8;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* Sorting styles */
+        .sortable-table th[data-sort] {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sortable-table th[data-sort] .bi {
+            font-size: 0.8em;
+            margin-left: 5px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .sortable-table th[data-sort]:hover .bi {
+            opacity: 1;
+        }
+
+        .sortable-table th.sort-asc .bi,
+        .sortable-table th.sort-desc .bi {
+            opacity: 1;
+            color: #0d6efd;
+        }
+
+        .sortable-table tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .sortable-table tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+
+        .sortable-table th.default-sort {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+
+        .sortable-table th.default-sort .bi {
+            color: #0d6efd;
+            opacity: 1;
         }
     </style>
 @endsection
 
 @section('content')
-    @include('layouts.shared/page-title', [
-        'page_title' => 'Pricing masters',
-        'sub_title' => 'Product masters',
+    @include('layouts.shared.page-title', [
+        'page_title' => 'Pricing Masters Analysis',
+        'sub_title' => 'Pricing Masters Analysis',
     ])
 
-    <!-- Add this somewhere in HTML -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="mainToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body" id="toastMessage">Saved successfully</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
+    <!-- Image Preview -->
+    <div id="image-hover-preview" style="display: none; position: fixed; z-index: 1000; pointer-events: none;">
+        <img id="preview-image"
+            style="max-width: 300px; max-height: 300px; border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
     </div>
-
 
     <div class="row">
         <div class="col-12">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <h4 class="header-title">Pricing masters Analysis</h4>
+                    <div class="mb-3 d-flex align-items-center gap-3">
+                        <!-- Play/Pause Controls -->
+                        <div class="d-flex align-items-center me-3">
+                            <div class="btn-group time-navigation-group" role="group" aria-label="Parent navigation">
+                                <button id="play-backward" class="btn btn-light rounded-circle shadow-sm me-1"
+                                    style="width: 36px; height: 36px; padding: 6px;">
+                                    <i class="fas fa-step-backward"></i>
+                                </button>
 
-                    <!-- Filter Controls -->
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <!-- Dil% Filter -->
-                        <div class="dropdown manual-dropdown-container">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="dilFilterDropdown">
-                                <span class="status-circle default"></span>DIL%
+                                <button id="play-pause" class="btn btn-light rounded-circle shadow-sm me-1"
+                                    style="width: 36px; height: 36px; padding: 6px; display: none;">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+
+                                <button id="play-auto" class="btn btn-primary rounded-circle shadow-sm me-1"
+                                    style="width: 36px; height: 36px; padding: 6px;">
+                                    <i class="fas fa-play"></i>
+                                </button>
+
+                                <button id="play-forward" class="btn btn-light rounded-circle shadow-sm"
+                                    style="width: 36px; height: 36px; padding: 6px;">
+                                    <i class="fas fa-step-forward"></i>
+                                </button>
+                            </div>
+                        </div>
+
+
+                      <div class="d-flex align-items-center flex-wrap gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1"
+                                type="button" id="hide-column-dropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+                                Manage Columns
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="dilFilterDropdown">
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="all">
-                                        <span class="status-circle default"></span> All DIL</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="red">
-                                        <span class="status-circle red"></span> Red</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="yellow">
-                                        <span class="status-circle yellow"></span> Yellow</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="green">
-                                        <span class="status-circle green"></span> Green</a></li>
-                                <li><a class="dropdown-item column-filter" href="#" data-column="Dil%"
-                                        data-color="pink">
-                                        <span class="status-circle pink"></span> Pink</a></li>
+                            <ul class="dropdown-menu p-3 shadow-lg border rounded-3" id="column-dropdown-menu"
+                                style="max-height: 300px; overflow-y: auto; min-width: 250px;">
+                                <li class="fw-semibold text-muted mb-2">Toggle Columns</li>
+                                <!-- Columns checkboxes dynamically append karoge -->
                             </ul>
                         </div>
 
-                        <!-- Task Board Button -->
-                        <button type="button" class="btn btn-primary btn-sm" id="createTaskBtn">
-                            <i class="bi bi-plus-circle me-2"></i>Create Task
-                        </button>
+                        <!-- Filter by Inventory -->
+                        <div class="btn-group" id="inv-filter" role="group" aria-label="Inventory Filter">
+                            <input type="radio" class="btn-check" name="invFilter" id="filterAll" value="all" checked>
+                            <label class="btn btn-outline-secondary" for="filterAll">All</label>
 
-                        <!-- Modal -->
+                            <input type="radio" class="btn-check" name="invFilter" id="filterZero" value="zero">
+                            <label class="btn btn-outline-danger" for="filterZero">0</label>
 
-                        <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="createTaskModalLabel">📝 Create New Task Ebay to Task
-                                            Manager</h4>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="taskForm">
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-12">
-                                                        <label class="form-label">Group</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Group">
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Title<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter Title">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Priority</label>
-                                                        <select class="form-select">
-                                                            <option>Low</option>
-                                                            <option>Medium</option>
-                                                            <option>High</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assignor<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option selected disabled>Select Assignor</option>
-                                                            <option>Srabani Ghosh</option>
-                                                            <option>Rahul Mehta</option>
-                                                            <option>Anjali Verma</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Status</label>
-                                                        <select class="form-select">
-                                                            <option disabled selected>Select Status</option>
-                                                            <option value="Todo">Todo</option>
-                                                            <option value="Not Started">Not Started</option>
-                                                            <option value="Working">Working</option>
-                                                            <option value="In Progress">In Progress</option>
-                                                            <option value="Monitor">Monitor</option>
-                                                            <option value="Done">Done</option>
-                                                            <option value="Need Help">Need Help</option>
-                                                            <option value="Review">Review</option>
-                                                            <option value="Need Approval">Need Approval</option>
-                                                            <option value="Dependent">Dependent</option>
-                                                            <option value="Approved">Approved</option>
-                                                            <option value="Hold">Hold</option>
-                                                            <option value="Rework">Rework</option>
-                                                            <option value="Urgent">Urgent</option>
-                                                            <option value="Q-Task">Q-Task</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Assign To<span
-                                                                class="text-danger">*</span></label>
-                                                        <select class="form-select">
-                                                            <option>Please Select</option>
-                                                            <option>Dev Team</option>
-                                                            <option>QA Team</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Duration<span
-                                                                class="text-danger">*</span></label>
-                                                        <input type="text" id="duration" class="form-control"
-                                                            placeholder="Select start and end date/time">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-section">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L1</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L1">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">L2</label>
-                                                        <input type="text" class="form-control"
-                                                            placeholder="Enter L2">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Description</label>
-                                                        <textarea class="form-control" rows="4" placeholder="Enter Description"></textarea>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Image</label>
-                                                        <label class="choose-file">
-                                                            Choose File
-                                                            <input type="file" class="form-control d-none">
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-warning text-white"
-                                            id="createBtn">Create</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-
-                        <!-- Close All Modals Button -->
-                        <button id="close-all-modals" class="btn btn-danger btn-sm" style="display: none;">
-                            <i class="fas fa-times"></i> Close All Modals
-                        </button>
-                    </div>
-
-                    <!-- play backward forwad  -->
-                    <div class="btn-group time-navigation-group" role="group" aria-label="Parent navigation">
-                        <button id="play-backward" class="btn btn-light rounded-circle" title="Previous parent">
-                            <i class="fas fa-step-backward"></i>
-                        </button>
-                        <button id="play-pause" class="btn btn-light rounded-circle" title="Show all products"
-                            style="display: none;">
-                            <i class="fas fa-pause"></i>
-                        </button>
-                        <button id="play-auto" class="btn btn-light rounded-circle" title="Show all products">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button id="play-forward" class="btn btn-light rounded-circle" title="Next parent">
-                            <i class="fas fa-step-forward"></i>
-                        </button>
-                    </div>
-
-                    <!-- Controls Row -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <!-- Left Side Controls -->
-                        <div class="form-inline">
-                            <div class="form-group mr-2">
-                                <label for="row-data-type" class="mr-2">Data Type:</label>
-                                <select id="row-data-type" class="form-control form-control-sm">
-                                    <option value="all">All</option>
-                                    <option value="sku">SKU (Child)</option>
-                                    <option value="parent">Parent</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Column Controls -->
-                        <div>
-                            <div class="form-group mr-2 custom-dropdown">
-                                <button id="hideColumnsBtn" class="btn btn-sm btn-outline-secondary">
-                                    Hide Columns
-                                </button>
-                                <div class="custom-dropdown-menu" id="columnToggleMenu">
-                                    <!-- Populated by JavaScript -->
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <button id="showAllColumns" class="btn btn-sm btn-outline-secondary">
-                                    Show All
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Search on Right -->
-                        <div class="form-inline">
-                            <div class="form-group">
-                                <div class="input-group">
-                                    <input type="text" id="search-input" class="form-control form-control-sm"
-                                        placeholder="Search all columns...">
-                                    <div class="input-group-append">
-                                        <button id="search-button" class="btn btn-lg btn-outline-primary" type="button">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                        <button id="clear-search" class="btn btn-lg btn-outline-secondary" type="button"
-                                            style="display: none;">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <input type="radio" class="btn-check" name="invFilter" id="filterOther" value="other">
+                            <label class="btn btn-outline-success" for="filterOther">Other</label>
                         </div>
                     </div>
 
-                    <!-- Table Container -->
-                    <div class="table-container">
-                        <table class="custom-resizable-table" id="amazon-table">
-                            <thead>
-                                <tr>
-                                    {{-- <th data-field="sl_no">SL No. <span class="sort-arrow">↓</span></th> --}}
-                                    <th data-field="sl_no">Image. <span class="sort-arrow">↓</span></th>
-                                    <th data-field="parent"
-                                        style="vertical-align: middle; white-space: nowrap; width:25px!important ">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center sortable-header">
-                                                Parent <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="dropdown-search-container position-relative">
-                                                <div class="input-group">
-                                                    <input type="text"
-                                                        class="form-control form-control-sm parent-search"
-                                                        placeholder="Search parent..." id="parentSearch" value="">
-                                                    <button class="btn btn-sm btn-outline-secondary clear-parent-filter"
-                                                        type="button" style="display: none;">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="dropdown-search-results" id="parentSearchResults"></div>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="child_sku" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center sortable">
-                                            <div class="d-flex align-items-center">
-                                                SKU <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="dropdown-search-container position-relative">
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control form-control-sm sku-search"
-                                                        placeholder="Search SKU..." id="skuSearch" value="">
-                                                    <button class="btn btn-sm btn-outline-secondary clear-sku-filter"
-                                                        type="button" style="display: none;">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="dropdown-search-results" id="skuSearchResults"></div>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-
-
-                                    <th data-field="inv" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                INV <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="inv-total">0</div>
-                                        </div>
-                                    </th>
-                                    <th data-field="l30" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                OV L30 <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="l30-total">0</div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="dil_pct" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Dil% <span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="dil-total">0%</div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="av_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                APRC <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-                                    <th data-field="sprice" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SPRC<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="sprofit" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SPFT<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="sroi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                SROI<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-
-
-                                    <!--<th data-field="ttl_prf" style="vertical-align: middle; white-space: nowrap;">-->
-                                    <!--    <div class="d-flex flex-column align-items-center">-->
-                                    <!--        <div class="d-flex align-items-center">-->
-                                    <!--            TOTAL PROFIT-->
-                                    <!--            <span class="sort-arrow">↓</span>-->
-                                    <!--        </div>-->
-                                    <!--    </div>-->
-                                    <!--</th>-->
-
-
-
-                                    <th data-field="av_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                AVG <br>PFT%
-                                                <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="av_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                AVG <br> ROI %<span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-
-                                    <th data-field="msrp" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                MSRP<span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="inv-total">0</div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="mapp" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                MAP<span class="sort-arrow">↓</span>
-                                            </div>
-                                            <div class="metric-total" id="inv-total">0</div>
-                                        </div>
-                                    </th>
-
-                                    {{-- 
-                                    <th data-field="amz_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                AMZ-P <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="amz_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                AMZ-PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="amz_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                AMZ-ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ebay_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay-P <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ebay_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay-PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ebay_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay-ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="shopifyb2c_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                ShopifyB2C-P <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="shopifyb2c_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                ShopifyB2C-PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="shopifyb2c_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                ShopifyB2C-ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="Macy_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Macy-P <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="Macy_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Macy-PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="Macy_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Macy-ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th> --}}
-                                    {{-- <th data-field="Macy_p" style="vertical-align: middle; white-space: nowrap;">
-                                  
-                                    <th data-field="reverb_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Reverb Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="reverb_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Reverb PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="reverb_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Reverb ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-                                    <th data-field="doba_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Doba Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="doba_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Doba PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="doba_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Doba ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-
-                                 
-
-                                    <th data-field="temu_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Temu Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="temu_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Temu PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="temu_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Temu ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-                                    <th data-field="wayfair_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Wayfair Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="wayfair_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Wayfair PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-
-                                    </th>
-                                    <th data-field="wayfair_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Wayfair ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-                                    <th data-field="ebay3_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay3 Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ebay3_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay3 PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-
-                                    </th>
-                                    <th data-field="ebay3_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay3 ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-                                    <th data-field="ebay2_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay2 Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-
-                                    </th>
-
-                                    <th data-field="ebay2_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay2 PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="ebay2_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Ebay2 ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-
-
-
-
-                                    <th data-field="walmart_p" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Walmart Price <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="walmart_pft" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Walmart PFT <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th>
-                                    <th data-field="walmart_roi" style="vertical-align: middle; white-space: nowrap;">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                Walmart ROI <span class="sort-arrow">↓</span>
-                                            </div>
-                                        </div>
-                                    </th> --}}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data populated by JavaScript -->
-                            </tbody>
-                        </table>
                     </div>
 
-                    <!-- Pagination Controls -->
-                    <div class="pagination-controls mt-2 d-flex justify-content-between align-items-center">
-                        <div class="form-inline">
-                            <div class="form-group mr-3">
-                                <label for="rows-per-page" class="mr-2">Rows per page:</label>
-                                <select id="rows-per-page" class="form-control form-control-sm">
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="250">250</option>
-                                    <option value="500">500</option>
-                                    <option value="all">All</option> <!-- New option -->
-                                </select>
-                            </div>
-                            <span id="visible-rows" class="badge badge-light" style="color: #dc3545;">Showing 1-25 of
-                                150</span>
-                        </div>
+                    <div id="forecast-table"></div>
 
-                        <div>
-                            <button id="first-page" class="btn btn-sm btn-outline-secondary mr-1">First</button>
-                            <button id="prev-page" class="btn btn-sm btn-outline-secondary mr-1">Previous</button>
-                            <span id="page-info" class="mx-2">Page 1 of 6</span>
-                            <button id="next-page" class="btn btn-sm btn-outline-secondary ml-1">Next</button>
-                            <button id="last-page" class="btn btn-sm btn-outline-secondary ml-1">Last</button>
-                        </div>
-                    </div>
-
-                    <div id="data-loader" class="card-loader-overlay" style="display: none;">
-                        <div class="loader-content">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <div class="loader-text">Loading Pricing masters data...</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="l30Modal" tabindex="-1" aria-labelledby="l30ModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="l30ModalLabel">OV L30 Breakdown</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="l30ModalBody">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="siteAnalysisModal" tabindex="-1" aria-labelledby="siteAnalysisModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Site Analysis: Price, L30, ROI%, PFT%</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <canvas id="siteAnalysisChart" height="120"></canvas>
-                        <hr />
-                        <div id="siteSummaryTableContainer" class="table-responsive mt-3">
-                            <table class="table table-bordered table-sm text-center align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Site</th>
-                                        <th>Price ($)</th>
-                                        <th>L30</th>
-                                        <th>ROI %</th>
-                                        <th>PFT %</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="siteSummaryTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-
-
-
-
-        <div class="modal fade" id="profitModal" tabindex="-1" aria-labelledby="profitModalLabel" aria-hidden="true">
-            <div class="modal-dialog  modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="profitModalLabel">Channel Price & Profit</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="profitModalBody">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="modal fade" id="roiModal" tabindex="-1" aria-labelledby="roiModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered ">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="roiModalLabel">Channel Price & ROI</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="roiModalBody">
-                        <!-- Filled by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
-@endsection
 
+    <!-- OVL30 Modal -->
+    <div class="modal fade modal-draggable" id="ovl30Modal" tabindex="-1" aria-labelledby="ovl30ModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient">
+                    <h5 class="modal-title d-flex align-items-center text-dark">
+                        <i class="bi bi-bar-chart-line-fill me-2"></i>
+                        OVL30 Analysis
+                        <span id="ovl30SkuLabel" class="badge  text-danger ms-2 animate__animated animate__fadeIn fw-bold fs-3"></span>
+                    </h5>
+                    <div class="modal-actions">
+                        <button class="btn btn-sm btn-light-secondary me-2">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-12">
+                            <div class="market-summary p-3 bg-light border-bottom position-sticky" style="top: 0; z-index: 1000; background-color: #f8f9fa !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="summary-stats">
+                                        <div class="d-flex align-items-center gap-3 mb-2">
+                                            <div class="input-group" style="width: 200px;">
+                                                @csrf
+                                                <input type="number" id="topPushPrice" class="form-control form-control-lg" step="any" placeholder="Enter Price" style="height: 40px;">
+                                                <button class="btn btn-success d-flex align-items-center" id="topSaveBtn" type="button" style="height: 40px;">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                                <button class="btn btn-primary d-flex align-items-center" id="topPushBtn" type="button" style="height: 40px;">
+                                                    <i class="fas fa-upload"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span class="badge text-dark fs-4 text-bold me-2 bg-success">INV : <span id="ovl30InvLabel">0%</span></span>
+                                            <span class="badge text-dark fs-4 text-bold">OV L30  : <span id="ovl30">0%</span></span>
+                                            <span class="badge text-dark fs-4 text-bold ">Dil : <span id="dilPercentage"> </span> %</span>
+                                            <span class="badge me-2 text-dark fs-4 text-bold">Avg Price: <span id="formattedAvgPrice">0%</span></span>
+                                            <span class="badge text-dark fs-4 text-bold me-2">Profit  : <span id="formattedProfitPercentage">0%</span> %</span>
+                                            <span class="badge text-dark fs-4  me-2">ROI : <span id="formattedRoiPercentage">0%</span> %</span>
+                                            <span class="badge text-dark fs-4  me-2">Total Views : <span id="total_views">0</span></span>
+                                            <span class="badge text-dark fs-4  me-2">Avg CVR : <span id="avgCvr">0%</span></span>
+                                        </div>
+                                    </div>
+                                  <div class="view-controls d-flex justify-content-center align-items-center">
+                                        <div class="image-preview-container">
+                                            <img id="ovl30Img" src="" alt="Preview">
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div id="ovl30Content" class="p-3" style="color: #000000; width:100%; max-height: 70vh; overflow-y: auto;">
+                                <!-- Marketplace data table will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {{-- Marketplace Price Comparison Modal --}}
+    <div class="modal fade" id="priceComparisonModal" tabindex="-1" aria-labelledby="priceComparisonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header cursor-move">
+                <h5 class="modal-title" id="priceComparisonModalLabel">
+                    Marketplace Price Comparison for <span id="price-comparison-sku"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="priceComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@endsection
 @section('script')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.body.style.zoom = "85%";
-        $(document).ready(function() {
-            // Add global filter variables
-            let currentParentFilter = '';
-            let currentSkuFilter = '';
-            let isInitialLoad = true;
+        document.body.style.zoom = "95%";
 
-            // Initialize the modal
-            const createTaskModal = new bootstrap.Modal(document.getElementById('createTaskModal'));
+        function showPriceComparisonModal(row) {
+            const data = row.getData();
+            const sku = data.SKU;
 
-            // Handle create task button click
-            $('#createTaskBtn').on('click', function() {
-                createTaskModal.show();
+            document.getElementById('price-comparison-sku').textContent = sku;
+
+            const marketplaces = [
+                { label: "Amazon", prefix: "amz" },
+                { label: "eBay", prefix: "ebay" },
+                { label: "Doba", prefix: "doba" },
+                { label: "Macy", prefix: "macy" },
+                { label: "Reverb", prefix: "reverb" },
+                { label: "Temu", prefix: "temu" },
+                { label: "Walmart", prefix: "walmart" },
+                { label: "eBay2", prefix: "ebay2" },
+                { label: "eBay3", prefix: "ebay3" },
+                { label: "Shopify B2C", prefix: "shopifyb2c" },
+                { label: "Shein", prefix: "shein" },
+            ];
+
+            const labels = [];
+            const prices = [];
+
+            marketplaces.forEach(m => {
+                const price = data[`${m.prefix}_price`];
+                if (price !== null && price !== undefined && price > 0) {
+                    labels.push(m.label);
+                    prices.push(price);
+                }
             });
 
-            // Handle create button inside modal
-            $('#createBtn').on('click', function() {
-                const form = document.getElementById("taskForm");
-                const title = form.querySelector('input[placeholder="Enter Title"]').value.trim();
-                const assignor = form.querySelectorAll('select')[0].value;
-                const assignee = form.querySelectorAll('select')[2].value;
-                const duration = form.querySelector('#duration').value;
+            // Chart.js setup and rendering here
+             const modalEl = document.getElementById('priceComparisonModal');
+             const chartCanvas = document.getElementById('priceComparisonChart');
 
-                if (!title || assignor === "Select Assignor" || assignee === "Please Select" || !duration) {
-                    alert("Please fill in all required fields marked with *");
-                    return;
-                }
-
-                alert("🎉 Task Created Successfully!");
-                form.reset();
-                createTaskModal.hide();
-            });
-
-            // Filter state
-            const state = {
-                filters: {
-                    'Dil%': 'all',
-                }
-            };
-
-            // Current state
-            let currentPage = 1;
-            let rowsPerPage = 10000;
-            let currentSort = {
-                field: null,
-                direction: 1
-            };
-            let tableData = [];
-            let paginationInfo = {};
-            let isResizing = false;
-            let isLoading = false;
-            let dilFilter = 'all';
-
-            //
-            let filteredData = [];
-            let isNavigationActive = false;
-            let currentParentIndex = -1;
-            let uniqueParents = [];
-
-
-
-            function initPlaybackControls() {
-
-                console.log("initPlaybackControls called"); // ADD THIS
-                // Get all unique parent ASINs
-                uniqueParents = [...new Set(tableData.map(item => item.Parent))];
-
-                // Set up event handlers
-                $('#play-forward').click(nextParent);
-                $('#play-backward').click(previousParent);
-                $('#play-pause').click(stopNavigation);
-                $('#play-auto').click(startNavigation);
-
-                // Initialize button states
-                updateButtonStates();
+            // Destroy previous chart instance if it exists
+            if (window.priceChart instanceof Chart) {
+                window.priceChart.destroy();
             }
 
-            function startNavigation() {
-                console.log("🔥 startNavigation called"); // Make sure this stands out
-
-                if (uniqueParents.length === 0) {
-                    console.warn("No parents found!");
-                    return;
-                }
-
-                isNavigationActive = true;
-                currentParentIndex = 0;
-
-                $('th[data-field="r&a"], td:nth-child(4)').removeClass('hide-column');
-
-                showCurrentParent();
-
-                $('#play-auto').hide();
-                $('#play-pause').show().removeClass('btn-light');
-
-                checkParentRAStatus();
-            }
-
-
-            function stopNavigation() {
-                isNavigationActive = false;
-                currentParentIndex = -1;
-
-                // Hide R&A column
-                $('th[data-field="r&a"], td:nth-child(4)').addClass('hide-column');
-
-                // Update button visibility and reset color
-                $('#play-pause').hide();
-                $('#play-auto').show()
-                    .removeClass('btn-success btn-warning btn-danger')
-                    .addClass('btn-light');
-
-                // Show all products
-                filteredData = [...tableData];
-                currentPage = 1;
-                renderTable();
-                calculateTotals();
-                console.log("stopNavigation" + filteredData);
-            }
-
-            function nextParent() {
-                if (!isNavigationActive) return;
-                if (currentParentIndex >= uniqueParents.length - 1) return;
-
-                currentParentIndex++;
-                showCurrentParent();
-
-                console.log("Next btn click");
-            }
-
-            function previousParent() {
-                if (!isNavigationActive) return;
-                if (currentParentIndex <= 0) return;
-
-                currentParentIndex--;
-                showCurrentParent();
-                console.log("previousParent");
-            }
-
-            function showCurrentParent() {
-                if (!isNavigationActive || currentParentIndex === -1) return;
-
-                const currentParent = uniqueParents[currentParentIndex];
-                console.log("🔄 Showing parent:", currentParent);
-
-                // Filter data for current parent
-                filteredData = tableData.filter(item => item.Parent === currentParent);
-
-                // Sort to move "PARENT" rows to the bottom
-                filteredData.sort((a, b) => {
-                    const isAParentRow = a.SKU?.toUpperCase().includes('PARENT');
-                    const isBParentRow = b.SKU?.toUpperCase().includes('PARENT');
-                    if (isAParentRow && !isBParentRow) return 1;
-                    if (!isAParentRow && isBParentRow) return -1;
-                    return 0;
-                });
-
-                currentPage = 1;
-                renderTable();
-                calculateTotals();
-                updateButtonStates();
-                checkParentRAStatus();
-
-                // Scroll to bottom after DOM is updated
-                setTimeout(() => {
-                    const $lastRow = $('#amazon-table tbody tr:last-child');
-                    if ($lastRow.length > 0) {
-                        $lastRow[0].scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'end'
-                        });
-                    }
-                }, 150);
-            }
-
-
-
-            function updateButtonStates() {
-                // Enable/disable navigation buttons based on position
-                $('#play-backward').prop('disabled', !isNavigationActive || currentParentIndex <= 0);
-                $('#play-forward').prop('disabled', !isNavigationActive || currentParentIndex >= uniqueParents
-                    .length - 1);
-
-                // Update button tooltips
-                $('#play-auto').attr('title', isNavigationActive ? 'Show all products' : 'Start parent navigation');
-                $('#play-pause').attr('title', 'Stop navigation and show all');
-                $('#play-forward').attr('title', isNavigationActive ? 'Next parent' : 'Start navigation first');
-                $('#play-backward').attr('title', isNavigationActive ? 'Previous parent' :
-                    'Start navigation first');
-
-                // Update button colors based on state
-                if (isNavigationActive) {
-                    $('#play-forward, #play-backward').removeClass('btn-light').addClass('btn-primary');
-                } else {
-                    $('#play-forward, #play-backward').removeClass('btn-primary').addClass('btn-light');
-                }
-            }
-
-            function checkParentRAStatus() {
-                if (!isNavigationActive || currentParentIndex === -1) return;
-
-                const currentParent = uniqueParents[currentParentIndex];
-                const parentRows = tableData.filter(item => item.Parent === currentParent);
-
-                if (parentRows.length === 0) return;
-
-                let checkedCount = 0;
-                let rowsWithRAData = 0;
-
-                parentRows.forEach(row => {
-                    // Only count rows that have R&A data (not undefined/null/empty)
-                    if (row['R&A'] !== undefined && row['R&A'] !== null && row['R&A'] !== '') {
-                        rowsWithRAData++;
-                        if (row['R&A'] === true || row['R&A'] === 'true' || row['R&A'] === '1') {
-                            checkedCount++;
-                        }
-                    }
-                });
-
-                // Determine which button is currently visible
-                const $activeButton = $('#play-pause').is(':visible') ? $('#play-pause') : $('#play-auto');
-
-                // Remove all state classes first
-                $activeButton.removeClass('btn-success btn-warning btn-danger btn-light');
-
-                if (rowsWithRAData === 0) {
-                    // No rows with R&A data at all (all empty)
-                    $activeButton.addClass('btn-light');
-                } else if (checkedCount === rowsWithRAData) {
-                    // All rows with R&A data are checked (green)
-                    $activeButton.addClass('btn-success');
-                } else if (checkedCount > 0) {
-                    // Some rows with R&A data are checked (yellow)
-                    $activeButton.addClass('btn-warning');
-                } else {
-                    // No rows with R&A data are checked (red)
-                    $activeButton.addClass('btn-danger');
-                }
-            }
-
-            // Initialize everything
-            function initTable() {
-                loadData().then(() => {
-                    // Hide R&A column initially
-                    $('th[data-field="r&a"], td:nth-child(4)').addClass('hide-column');
-
-                    renderTable();
-                    initResizableColumns();
-                    initSorting();
-                    initPagination();
-                    initSearch();
-                    initColumnToggle();
-                    initFilters();
-                    initManualDropdowns();
-                    initPlaybackControls();
-                    // Load distinct values after initial render
-                    loadDistinctValues();
-                });
-            }
-
-            function loadDistinctValues() {
-                $.ajax({
-                    url: '/pricing-analysis-data-view',
-                    type: 'GET',
-                    data: {
-                        distinct_only: true,
-                        dil_filter: dilFilter,
-                        data_type: $('#row-data-type').val(),
-                        search: $('#search-input').val().trim(),
-                        parent: currentParentFilter,
-                        sku: currentSkuFilter
-                    },
-                    success: function(response) {
-                        if (response) {
-                            window.distinctParents = response.distinct_values?.parents || [];
-                            window.distinctSkus = response.distinct_values?.skus || [];
-                            initEnhancedDropdowns();
-                        }
-                    }
-                });
-            }
-
-            function loadData() {
-                showLoader();
-                return $.ajax({
-                    url: '/pricing-analysis-data-view',
-                    type: 'GET',
-                    data: {
-                        page: currentPage,
-                        per_page: rowsPerPage,
-                        dil_filter: dilFilter,
-                        data_type: $('#row-data-type').val(),
-                        search: $('#search-input').val().trim(),
-                        parent: currentParentFilter,
-                        sku: currentSkuFilter
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response) {
-                            tableData = response.data || [];
-                            paginationInfo = response.pagination || {};
-                            renderTable(); // ✅ Table updates here
-                            filteredData = [...tableData];
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error loading data:', error);
-                        showNotification('danger', 'Failed to load data. Please try again.');
-                    },
-                    complete: function() {
-                        hideLoader();
-                        if (paginationInfo) {
-                            updatePaginationButtons();
-                        }
-                    }
-                });
-            }
-
-
-
-            // Render table with current data
-            function renderTable() {
-                const $tbody = $('#amazon-table tbody');
-                $tbody.empty();
-
-                console.log("🧾 Rendering", filteredData.length, "rows");
-
-                if (filteredData.length === 0) {
-                    console.log("⚠️ No matching records to display.");
-                    $tbody.append('<tr><td colspan="15" class="text-center">No matching records found</td></tr>');
-                    return;
-                }
-
-                function safeDisplay(value, defaultValue = '0', decimals = 2) {
-                    if (value === null || value === undefined) return defaultValue;
-                    const num = parseFloat(value);
-                    return !isNaN(num) ? num.toFixed(decimals) : defaultValue;
-                }
-
-                function safeDisplayPercent(value, defaultValue = '0') {
-                    if (value === null || value === undefined) return defaultValue;
-                    const num = parseFloat(value);
-                    return !isNaN(num) ? Math.round(num) + '%' : defaultValue;
-                }
-
-                const getDilColor = (value) => {
-                    const percent = parseFloat(value) * 100;
-                    if (percent < 16.66) return 'red';
-                    if (percent >= 16.66 && percent < 25) return 'yellow';
-                    if (percent >= 25 && percent < 50) return 'green';
-                    return 'pink';
-                };
-
-                filteredData.forEach((item, index) => {
-                    const $row = $('<tr>');
-                    const slNo = ((currentPage - 1) * rowsPerPage) + index + 1;
-                    if (item.is_parent) $row.addClass('parent-row');
-
-                    // $row.append($('<td>').text(slNo));
-                    $row.append($('<td>').html(`
-                        <div class="image-wrapper">
-                            <img 
-                                src="${item.shopifyb2c_image || 'https://skala.or.id/wp-content/uploads/2024/01/dummy-post-square-1-1.jpg'}" 
-                                alt="Product Image" 
-                                class="zoom-image"
-                            >
-                        </div>
-                    `));
-
-                    $row.append(
-                        $('<td>')
-                        .text((item.Parent || '').substring(0, 6) + (item.Parent && item.Parent.length >
-                            10 ? '…' : ''))
-                        .attr('title', item.Parent || '')
-                    );
-                    $row.append(
-                        $('<td>')
-                        .text((item['SKU'] || '').substring(0, 25) + (item['SKU'] && item['SKU']
-                            .length > 8 ? '…' : ''))
-                        .attr('title', item['SKU'] || '')
-                    );
-
-
-
-                    const prices = {
-                        Amazon: parseFloat(item.amz_price) || Infinity,
-                        eBay: parseFloat(item.ebay_price) || Infinity,
-                        Shopify: parseFloat(item.shopifyb2c_price) || Infinity,
-                        Macy: parseFloat(item.macy_price) || Infinity,
+            window.priceChart = new Chart(chartCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Price',
+                            data: prices,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'L30',
+                            data: labels.map(label => data[`${label.toLowerCase()}_l30`] || 0),
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'L60', 
+                            data: labels.map(label => data[`${label.toLowerCase()}_l60`] || 0),
+                            borderColor: '#2a0032',
+                            backgroundColor: 'rgba(42, 0, 50, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        },
                       
-                        Reverb: parseFloat(item.reverb_price) || Infinity,
-                        doba: parseFloat(item.doba_price) || Infinity,
-                        temu: parseFloat(item.temu_price) || Infinity,
-                        wayfair: parseFloat(item.wayfair_price) || Infinity,
-                        ebay3: parseFloat(item.ebay3_price) || Infinity,
-                        ebay2: parseFloat(item.ebay2_price) || Infinity,
-                        walmart: parseFloat(item.walmart_price) || Infinity
-                    };
-
-                    
-                    // Find the channel with the minimum price
-                    let minChannel = '';
-                    let minPrice = Infinity;
-
-                    for (const [channel, price] of Object.entries(prices)) {
-                        if (price < minPrice) {
-                            minPrice = price;
-                            minChannel = channel;
-                        }
-                    }
-
-                    // If a valid minimum price was found, display it in MAP column
-
-
-
-                    $row.append($('<td>').text(item.INV || 0));
-
-
-                    // $row.append($('<td>').text(item.L30 || 0));
-                    $row.append($('<td>').html(`
-                    ${item.L30 || 0}
-                    ${
-                        !item.is_parent
-                            ? `<i class="fa fa-eye text-primary ms-2"  style="cursor: pointer;" data-inv="${item.INV || 0}" 
-                                                                                                            data-l30='${JSON.stringify({
-                                                                                                                Amazon: {
-                                                                                                                    price: item.amz_price,
-                                                                                                                    l30: item.amz_l30,
-                                                                                                                    pft: item.amz_pft,
-                                                                                                                    roi: item.amz_roi
-                                                                                                                },
-                                                                                                                eBay: {
-                                                                                                                    price: item.ebay_price,
-                                                                                                                    l30: item.ebay_l30,
-                                                                                                                    pft: item.ebay_pft,
-                                                                                                                    roi: item.ebay_roi
-                                                                                                                },
-                                                                                                                Shopify: {
-                                                                                                                    price: item.shopifyb2c_price,
-                                                                                                                    l30: item.shopifyb2c_l30,
-                                                                                                                    pft: item.shopifyb2c_pft,
-                                                                                                                    roi: item.shopifyb2c_roi
-                                                                                                                },
-                                                                                                                Macy: {
-                                                                                                                    price: item.macy_price,
-                                                                                                                    l30: item.macy_l30,
-                                                                                                                    pft: item.macy_pft,
-                                                                                                                    roi: item.macy_roi
-                                                                                                                },
-                                                                                                                // Newegg: {
-                                                                                                                //     price: item.neweegb2c_price,
-                                                                                                                //     l30: item.neweegb2c_l30,
-                                                                                                                //     pft: item.neweegb2c_pft,
-                                                                                                                //     roi: item.neweegb2c_roi
-                                                                                                                // },
-                                                                                                                Reverb: {
-                                                                                                                    price: item.reverb_price,
-                                                                                                                    l30: item.reverb_l30,
-                                                                                                                    pft: item.reverb_pft,
-                                                                                                                    roi: item.reverb_roi
-                                                                                                                }
-                                                                                                                ,
-                                                                                                                doba: {
-                                                                                                                    price: item.doba_price,
-                                                                                                                    l30: item.doba_l30,
-                                                                                                                    pft: item.doba_pft,
-                                                                                                                    roi: item.doba_roi
-                                                                                                                }
-                                                                                                                ,
-                                                                                                                temu: {
-                                                                                                                    price: item.temu_price,
-                                                                                                                    l30: item.temu_l30,
-                                                                                                                    pft: item.temu_pft,
-                                                                                                                    roi: item.temu_roi
-                                                                                                                }
-                                                                                                                ,
-                                                                                                                wayfair: {
-                                                                                                                    price: item.wayfair_price,
-                                                                                                                    l30: item.wayfair_l30,
-                                                                                                                    pft: item.wayfair_pft,
-                                                                                                                    roi: item.wayfair_roi
-                                                                                                                }
-                                                                                                                ,
-                                                                                                                ebay3: {
-                                                                                                                    price: item.ebay3_price,
-                                                                                                                    l30: item.ebay3_l30,
-                                                                                                                    pft: item.ebay3_pft,
-                                                                                                                    roi: item.ebay3_roi
-                                                                                                                }
-                                                                                                                ,
-                                                                                                                ebay2: {
-                                                                                                                    price: item.ebay2_price,
-                                                                                                                    l30: item.ebay2_l30,
-                                                                                                                    pft: item.ebay2_pft,
-                                                                                                                    roi: item.ebay2_roi
-                                                                                                                }
-                                                                                                                ,
-                                                                                                                walmart: {
-                                                                                                                    price: item.walmart_price,
-                                                                                                                    l30: item.walmart_l30,
-                                                                                                                    pft: item.walmart_pft,
-                                                                                                                    roi: item.walmart_roi
-                                                                                                                }
-
-                                                                                                            })}'
-                                                                                                            onclick="showL30Modal(this)">
-                                                                                                            </i>`
-                                                : ''
-                                        }
-                                    `));
-
-
-
-
-
-                    // Total Dil Percent 
-                    const dilValue = item['Dil%'];
-
-                    if (item.is_parent) {
-                        $row.append($('<td>').html('---'));
-                    } else {
-                        $row.append($('<td>').html(
-                            dilValue && dilValue > 0 ?
-                            `<span class="dil-percent-value ${getDilColor(dilValue)}">${Math.round(dilValue * 100)}%</span>` :
-                            '---'
-                        ));
-                    }
-
-
-
-
-                    // Average Price
-                    function formatPercentage(value) {
-                        const num = parseFloat(value);
-                        return value !== null && !isNaN(num) ? Math.round(num * 100) + '%' : '--';
-                    }
-
-
-                    const amzPrice = item.amz_price !== null ? '$' + parseFloat(item.amz_price).toFixed(2) :
-                        '0';
-                    const amzBuyerLink = item.amz_buy_link || '';
-
-
-
-
-                    const amzL30 = item.amz_l30 || 0;
-                    const totalInv = item.INV || 0;
-                    const amzDil = totalInv > 0 ? (amzL30 / totalInv).toFixed(2) : '0.00';
-
-
-
-                    const amzPriceVal = parseFloat(item.amz_price) || 0;
-                    const amzL30Val = parseFloat(item.amz_l30) || 0;
-                    const ebayPriceVal = parseFloat(item.ebay_price) || 0;
-                    const ebayL30Val = parseFloat(item.ebay_l30) || 0;
-                    const shopifyPriceVal = parseFloat(item.shopifyb2c_price) || 0;
-                    const shopifyL30Val = parseFloat(item.shopiyb2c_l30) || 0;
-                    const macyPriceVal = parseFloat(item.macy_price) || 0;
-                    const macyL30Val = parseFloat(item.macy_l30) || 0;
-                    const reverbPriceVal = parseFloat(item.reverb_price) || 0;
-                    const reverbL30Val = parseFloat(item.reverb_l30) || 0;
-                    // const neweggPriceVal = parseFloat(item.neweegb2c_price) || 0;
-                    // const neweggL30Val = parseFloat(item.neweegb2c_l30) || 0;
-                    const dobaPriceVal = parseFloat(item.doba_price) || 0;
-                    const dobaL30Val = parseFloat(item.doba_l30) || 0;
-                    const temuPriceVal = parseFloat(item.temu_price) || 0;
-                    const temuL30Val = parseFloat(item.temu_l30) || 0;
-                    const wayfairPriceVal = parseFloat(item.wayfair_price) || 0;
-                    const wayfairL30Val = parseFloat(item.wayfair_l30) || 0;
-                    const ebay3PriceVal = parseFloat(item.ebay3_price) || 0;
-                    const ebay3L30Val = parseFloat(item.ebay3_l30) || 0;
-                    const ebay2PriceVal = parseFloat(item.ebay2_price) || 0;
-                    const ebay2L30Val = parseFloat(item.ebay2_l30) || 0;
-                    const walmartPriceVal = parseFloat(item.walmart_price) || 0;
-                    const walmartL30Val = parseFloat(item.walmart_l30) || 0;
-
-                    const totalWeightedPrice =
-                        (amzPriceVal * amzL30Val) +
-                        (ebayPriceVal * ebayL30Val) +
-                        (shopifyPriceVal * shopifyL30Val) +
-                        (macyPriceVal * macyL30Val) +
-                        // (neweggPriceVal * neweggL30Val) +
-                        (reverbPriceVal * reverbL30Val) +
-                        (dobaPriceVal * dobaL30Val) +
-                        (temuPriceVal * temuL30Val) +
-                        (wayfairPriceVal * wayfairL30Val) +
-                        (ebay3PriceVal * ebay3L30Val) +
-                        (ebay2PriceVal * ebay2L30Val) + // ✅ Add eBay2
-                        (walmartPriceVal * walmartL30Val); // ✅ Add Walmart
-
-                    const totalL30 =
-                        amzL30Val + ebayL30Val + shopifyL30Val + macyL30Val +
-                        reverbL30Val + dobaL30Val + temuL30Val + wayfairL30Val + ebay3L30Val +
-                        ebay2L30Val + walmartL30Val; // ✅ Add Walmart
-
-                    const LP = parseFloat(item.LP) || 0;
-                    const SHIP = parseFloat(item.SHIP) || 0;
-
-
-                    const avgPrice = totalL30 > 0 ?
-                        parseFloat(totalWeightedPrice / totalL30).toFixed(2) : '---';
-
-                    const avgPriceValue = parseFloat(avgPrice);
-                    let avgPriceBgColor = '';
-
-                    // Set background color based on value
-                    if (avgPriceValue < 10) {
-                        avgPriceBgColor = '#dc3545'; // red
-                    } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
-                        avgPriceBgColor = '#fd7e14'; // orange
-                    } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
-                        avgPriceBgColor = '#0d6efd'; // blue
-                    } else if (avgPriceValue >= 20) {
-                        avgPriceBgColor = '#198754'; // green
-                    }
-
-                    // Final rendering logic
-                    if (item.is_parent || avgPrice === null || avgPrice === '' || isNaN(avgPriceValue)) {
-                        $row.append($('<td>').html('--'));
-                    } else {
-                        $row.append($('<td>').html(`
-                            <strong style="background-color:${avgPriceBgColor}; color:white; padding:2px 6px; border-radius:4px;">
-                                $${avgPrice}
-                            </strong>
-                        `));
-                    }
-
-
-
-                    // Sale Price with edit icon (skip edit for parent)
-                    // S-Price
-                    $row.append($('<td>').attr('id', `sprice-${item.SKU}`).html(
-                        item.is_parent ?
-                        `--` :
-                        (
-                            (item.sprice !== null && !isNaN(item.sprice)) ?
-                            `<span class="badge bg-primary">
-                    $${Math.round(item.sprice)}
-                    </span>
-                    <i class="fa fa-edit text-primary ms-2" style="cursor:pointer;" 
-                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>` :
-                            `<i class="fa fa-edit text-primary" style="cursor:pointer;" 
-                        onclick='openPricingModal(${JSON.stringify({ LP: item.LP, SHIP: item.SHIP, SKU: item.SKU })})'></i>`
-                        )
-                    ));
-
-                    // S-Profit Percent
-                    $row.append($('<td>').attr('id', `spft-${item.SKU}`).html(
-                        item.is_parent ?
-                        '--' :
-                        (!isNaN(item.sprofit_percent) && item.sprofit_percent !== null ?
-                            `<span class="badge bg-success">${Math.round(item.sprofit_percent)}%</span>` :
-                            `--`)
-                    ));
-
-                    // S-ROI Percent
-                    $row.append($('<td>').attr('id', `sroi-${item.SKU}`).html(
-                        item.is_parent ?
-                        '--' :
-                        (!isNaN(item.sroi_percent) && item.sroi_percent !== null ?
-                            `<span class="badge bg-info">${Math.round(item.sroi_percent)}%</span>` :
-                            `--`)
-                    ));
-
-
-
-                    // Site-wise profit per unit × L30 = total profit per site
-                    const amzProfit = ((amzPriceVal * 0.80 - LP - SHIP) * amzL30Val);
-                    const ebayProfit = ((ebayPriceVal * 0.74) - LP - SHIP) * ebayL30Val;
-                    const shopifyProfit = ((shopifyPriceVal * 0.75) - LP - SHIP) * shopifyL30Val;
-                    const macyProfit = ((macyPriceVal * 0.77) - LP - SHIP) * macyL30Val;
-                    const reverbProfit = ((reverbPriceVal * 0.84) - LP - SHIP) * reverbL30Val;
-                    const dobaProfit = ((dobaPriceVal * 0.95) - LP - SHIP) * dobaL30Val;
-                    // const neweggProfit = ((neweggPriceVal * 0.72) - LP - SHIP) * neweggL30Val;
-                    const temuProfit = ((temuPriceVal * 0.95) - LP - SHIP) * temuL30Val;
-                    const wayfairProfit = ((wayfairPriceVal * 0.90) - LP - SHIP) * wayfairL30Val;
-                    const ebay3Profit = ((ebay3PriceVal * 0.76) - LP - SHIP) * ebay3L30Val;
-                    const ebay2Profit = ((ebay2PriceVal * 0.88) - LP - SHIP) * ebay2L30Val;
-                    const walmartProfit = ((walmartPriceVal * 0.70) - LP - SHIP) * walmartL30Val;
-
-                    // ✅ Now correct totalProfit (includes L30 × per-unit profit)
-                    const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                        dobaProfit + temuProfit + wayfairProfit + ebay3Profit +
-                        ebay2Profit + walmartProfit;
-
-
-                    // $row.append($('<td>').html(`<strong>${totalProfit.toFixed(2)}</strong>`));
-
-                    const totalRevenueUsedForPft =
-                        (amzPriceVal * amzL30Val) +
-                        (ebayPriceVal * ebayL30Val) +
-                        (shopifyPriceVal * shopifyL30Val) +
-                        (macyPriceVal * macyL30Val) +
-                        (reverbPriceVal * reverbL30Val) +
-                        (dobaPriceVal * dobaL30Val) +
-                        // (neweggPriceVal * neweggL30Val) +
-                        (temuPriceVal * temuL30Val) +
-                        (wayfairPriceVal * wayfairL30Val) +
-                        (ebay3PriceVal * ebay3L30Val) + // ✅ Add eBay3
-                        (ebay2PriceVal * ebay2L30Val) + // ✅ Add eBay2
-                        (walmartPriceVal * walmartL30Val); // ✅ Add Walmart
-
-                    const avgPftPercent = totalRevenueUsedForPft > 0 ?
-                        ((totalProfit / totalRevenueUsedForPft) * 100).toFixed(2) : '0.00';
-
-                    // Profit background color logic
-                    let pftBgColor = 'pink'; // default color
-                    const pftValue = parseFloat(avgPftPercent);
-
-                    if (pftValue < 10) {
-                        pftBgColor = 'red';
-                    } else if (pftValue >= 10 && pftValue < 15) {
-                        pftBgColor = 'orange';
-                    } else if (pftValue >= 15 && pftValue < 20) {
-                        pftBgColor = 'blue';
-                    } else if (pftValue >= 20) {
-                        pftBgColor = 'green';
-                    }
-
-                    const profitData = {
-                        Amazon: {
-                            price: item.amz_price,
-                            profit: Math.round((item.amz_pft || 0) * 100)
-                        },
-                        eBay: {
-                            price: item.ebay_price,
-                            profit: Math.round((item.ebay_pft || 0) * 100)
-                        },
-                        Shopify: {
-                            price: item.shopifyb2c_price,
-                            profit: Math.round((item.shopifyb2c_pft || 0) * 100)
-                        },
-                        Macy: {
-                            price: item.macy_price,
-                            profit: Math.round((item.macy_pft || 0) * 100)
-                        },
-                        // Newegg: {
-                        //     price: item.neweegb2c_price,
-                        //     profit: Math.round((item.neweegb2c_pft || 0) * 100)
-                        // },
-                        Reverb: {
-                            price: item.reverb_price,
-                            profit: Math.round((item.reverb_pft || 0) * 100)
-                        } // ✅
-                        ,
-                        Doba: {
-                            price: item.doba_price,
-                            profit: Math.round((item.doba_pft || 0) * 100)
-                        },
-                        Temu: {
-                            price: item.temu_price,
-                            profit: Math.round((item.temu_pft || 0) * 100)
-                        },
-                        Wayfair: {
-                            price: item.wayfair_price,
-                            profit: Math.round((item.wayfair_pft || 0) * 100)
-                        },
-
-                        ebay3: {
-                            price: item.ebay3_price,
-                            profit: Math.round((item.ebay3_pft || 0) * 100)
-                        },
-                        ebay2: {
-                            price: item.ebay2_price,
-                            profit: Math.round((item.ebay2_pft || 0) * 100)
-                        },
-                        Walmart: {
-                            price: item.walmart_price,
-                            profit: Math.round((item.walmart_pft || 0) * 100)
-                        }
-
-                    };
-
-
-
-                    // Append with span styling
-                    $row.append(
-                        $('<td>').html(
-                            item.is_parent ?
-                            `--` :
-                            `
-                <span style="background-color:${pftBgColor}; color:white; padding:2px 6px; border-radius:4px;">
-                    <strong>${Math.round(avgPftPercent)}%</strong>
-                </span>
-               
-            `
-                        )
-                    );
-
-
-
-
-
-
-                    const totalL30ForROI = totalL30;
-                    const avgRoiPercent = (totalL30ForROI > 0 && (LP + SHIP) > 0) ?
-                        (((totalProfit / totalL30ForROI) / (LP + SHIP)) * 100).toFixed(2) : '0.00';
-
-
-                    // ROI background color logic
-                    let roiBgColor = 'pink'; // default
-                    const roiValue = parseFloat(avgRoiPercent);
-                    if (roiValue < 50) {
-                        roiBgColor = 'red';
-                    } else if (roiValue >= 50 && roiValue < 75) {
-                        roiBgColor = 'orange';
-                    } else if (roiValue >= 75 && roiValue < 100) {
-                        roiBgColor = 'green';
-                    }
-
-                    // Append with span having white text and background
-                    const roiData = {
-                        Amazon: {
-                            price: item.amz_price || 0,
-                            roi: Math.round((item.amz_roi || 0) * 100)
-                        },
-                        eBay: {
-                            price: item.ebay_price || 0,
-                            roi: Math.round((item.ebay_roi || 0) * 100)
-                        },
-                        Shopify: {
-                            price: item.shopifyb2c_price || 0,
-                            roi: Math.round((item.shopifyb2c_roi || 0) * 100)
-                        },
-                        Macy: {
-                            price: item.macy_price || 0,
-                            roi: Math.round((item.macy_roi || 0) * 100)
-                        },
-                        // Newegg: {
-                        //     price: item.neweegb2c_price || 0,
-                        //     roi: Math.round((item.neweegb2c_roi || 0) * 100)
-                        // },
-                        Reverb: {
-                            price: item.reverb_price || 0,
-                            roi: Math.round((item.reverb_roi || 0) * 100)
-                        } // ✅
-                        ,
-                        Doba: {
-                            price: item.doba_price || 0,
-                            roi: Math.round((item.doba_roi || 0) * 100)
-                        },
-                        Temu: {
-                            price: item.temu_price || 0,
-                            roi: Math.round((item.temu_roi || 0) * 100)
-                        },
-                        Wayfair: {
-                            price: item.wayfair_price || 0,
-                            roi: Math.round((item.wayfair_roi || 0) * 100)
-                        },
-                        ebay3: {
-                            price: item.ebay3_price || 0,
-                            roi: Math.round((item.ebay3_roi || 0) * 100)
-                        },
-                        ebay2: {
-                            price: item.ebay2_price || 0,
-                            roi: Math.round((item.ebay2_roi || 0) * 100)
-                        },
-                        Walmart: {
-                            price: item.walmart_price || 0,
-                            roi: Math.round((item.walmart_roi || 0) * 100)
-                        }
-
-                    };
-
-                    $row.append(
-                        $('<td>').html(
-                            item.is_parent ?
-                            `--` :
-                            `
-                <span style="background-color:${roiBgColor}; color:white; padding:2px 6px; border-radius:4px;">
-                    <strong>${Math.round(avgRoiPercent)}%</strong>
-                </span>
-               
-            `
-                        )
-                    );
-
-
-
-                    // MSRP PRICE
-                    $row.append($('<td>').text(
-                        item.is_parent ?
-                        '---' :
-                        (item.MSRP !== null && item.MSRP !== undefined ? parseInt(item.MSRP) : '0')
-                    ));
-
-                    // MAP PRICE
-                    const mapValue = (minPrice !== Infinity) ? `${minPrice.toFixed(2)}` : '0';
-                    $row.append($('<td>').text(item.is_parent ? '---' : mapValue));
-
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (amzBuyerLink || amzL30 || amzDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${amzPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${amzBuyerLink ? `<div class="sku-link"><a href="${amzBuyerLink}" target="_blank" rel="noopener noreferrer">Amazon Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(amzL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(amzDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(amzPrice));
-                    // }
-
-
-
-                    // const getPftColor = (value) => {
-                    //     const percent = parseFloat(value) * 100;
-                    //     if (percent < 10) return 'red';
-                    //     if (percent >= 10 && percent < 15) return 'yellow';
-                    //     if (percent >= 15 && percent < 20) return 'blue';
-                    //     if (percent >= 20 && percent <= 40) return 'green';
-                    //     return 'pink';
-                    // };
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.amz_pft === 'number' && !isNaN(item.amz_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getPftColor(item.amz_pft)}">${Math.round(item.amz_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.amz_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-
-                    // const getRoiColor = (value) => {
-                    //     const percent = parseFloat(value) * 100;
-                    //     if (percent >= 0 && percent < 50) return 'red';
-                    //     if (percent >= 50 && percent < 75) return 'yellow';
-                    //     if (percent >= 75 && percent <= 100) return 'green';
-                    //     return 'pink';
-                    // };
-                    // $row.append($('<td>').html(
-                    //     typeof item.amz_roi === 'number' && !isNaN(item.amz_roi) ?
-                    //     `<span class="dil-percent-value ${getRoiColor(item.amz_roi)}">${Math.round(item.amz_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // // eBay Price
-                    // const ebayPrice = item.ebay_price !== null ? '$' + parseFloat(item.ebay_price).toFixed(
-                    //     2) : '0';
-                    // const ebayBuyerLink = item.ebay_buy_link || '';
-
-
-                    // const ebayL30 = item.ebay_l30 || 0;
-                    // const ebayDil = item.INV !== 0 ? (ebayL30 / item.INV).toFixed(2) : '0.00';
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (ebayBuyerLink || ebayL30 || ebayDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${ebayPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${ebayBuyerLink ? `<div class="sku-link"><a href="${ebayBuyerLink}" target="_blank" rel="noopener noreferrer">eBay Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(ebayL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(ebayDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(ebayPrice));
-                    // }
-
-                    // eBay Metrics
-
-                    // const getebayRoiColor = (value) => {
-                    //     const percent = parseFloat(value) * 100;
-                    //     if (percent < 50) return 'red';
-                    //     if (percent >= 50 && percent < 75) return 'yellow';
-                    //     if (percent >= 75 && percent <= 125) return 'green';
-                    //     return 'pink';
-                    // };
-
-                    // eBay Metrics
-                    // $row.append($('<td>').text(formatPercentage(item.ebay_pft)));
-
-                    // const getebayPftColor = (value) => {
-                    //     const percent = parseFloat(value) * 100;
-                    //     if (percent < 10) return 'red';
-                    //     if (percent >= 10 && percent < 15) return 'yellow';
-                    //     if (percent >= 15 && percent < 20) return 'blue';
-                    //     if (percent >= 20 && percent <= 40) return 'green';
-                    //     return 'pink';
-                    // };
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.ebay_pft === 'number' && !isNaN(item.ebay_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getebayPftColor(item.ebay_pft)}">${Math.round(item.ebay_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.ebay_roi === 'number' && !isNaN(item.ebay_roi) ?
-                    //     `<span class="dil-percent-value ${getebayRoiColor(item.ebay_roi)}">${Math.round(item.ebay_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // Shopify Price
-                    // const shopifyPrice = item.shopifyb2c_price !== null ? '$' + parseFloat(item
-                    //     .shopifyb2c_price).toFixed(2) : '0';
-                    // const shopifyBuyerLink = item.shopiyb2c_buy_link || '';
-
-
-                    // const shopifyL30 = item.shopiyb2c_l30 || 0;
-                    // const shopifyDil = item.INV !== 0 ? (shopifyL30 / item.INV).toFixed(2) : '0.00';
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (shopifyBuyerLink || shopifyL30 || shopifyDil) {
-                    //     $row.append($('<td>').html(`
-                //     <div class="sku-tooltip-container">
-                //         <span class="price-text">${shopifyPrice}</span>
-                //         <div class="sku-tooltip">
-                //             ${shopifyBuyerLink ? `<div class="sku-link"><a href="${shopifyBuyerLink}" target="_blank" rel="noopener noreferrer">Shopify Buyer Link</a></div>` : ''}
-                //             <div class="sku-link"><strong>L30: ${parseFloat(shopifyL30 || 0).toFixed(2)}</strong></div>
-                //             <div class="sku-link"><strong>DIL: ${parseFloat(shopifyDil || 0).toFixed(2)}%</strong></div>
-                //         </div>
-                //     </div>
-                // `));
-                    // } else {
-                    //     $row.append($('<td>').text(shopifyPrice));
-                    // }
-
-                    // Shopify Metrics
-
-                    // const getshopifyPftColor = (value) => {
-                    //     const percent = parseFloat(value) * 100;
-                    //     if (percent < 10) return 'red';
-                    //     if (percent >= 10 && percent < 15) return 'yellow';
-                    //     if (percent >= 15 && percent < 20) return 'blue';
-                    //     if (percent >= 20 && percent <= 40) return 'green';
-                    //     return 'pink';
-                    // };
-
-                    // const getshopifyRoiColor = (value) => {
-                    //     const percent = parseFloat(value) * 100;
-                    //     if (percent >= 0 && percent < 50) return 'red';
-                    //     if (percent >= 50 && percent < 75) return 'yellow';
-                    //     if (percent >= 75 && percent <= 100) return 'green';
-                    //     return 'pink';
-                    // };
-                    // Shopify Metrics
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.shopifyb2c_pft === 'number' && !isNaN(item.shopifyb2c_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.shopifyb2c_pft)}">${Math.round(item.shopifyb2c_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.shopifyb2c_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.shopifyb2c_roi === 'number' && !isNaN(item.shopifyb2c_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.shopifyb2c_roi)}">${Math.round(item.shopifyb2c_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // Macy Price
-                    // const macyPrice = item.macy_price !== null ? '$' + parseFloat(item.macy_price).toFixed(
-                    //     2) : '0';
-                    // const macyBuyerLink = item.macy_buy_link || '';
-
-
-                    // const macyL30 = item.macy_l30 || 0;
-                    // const macyDil = item.INV !== 0 ? (macyL30 / item.INV).toFixed(2) : '0.00';
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (macyBuyerLink || macyL30 || macyDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${macyPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${macyBuyerLink ? `<div class="sku-link"><a href="${macyBuyerLink}" target="_blank" rel="noopener noreferrer">Macy Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(macyL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(macyDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(macyPrice));
-                    // }
-
-                    // // Macy's Metrics
-                    // $row.append($('<td>').html(
-                    //     typeof item.macy_pft === 'number' && !isNaN(item.macy_pft) ?
-                    //     `<div>
-                //     <span class="dil-percent-value ${getshopifyPftColor(item.macy_pft)}">${Math.round(item.macy_pft * 100)}%</span>
-                //     <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.macy_l30 || 0).toFixed(2)})</small>
-                // </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.macy_roi === 'number' && !isNaN(item.macy_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.macy_roi)}">${Math.round(item.macy_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-                    // Newegg Price
-                    // const neweggPrice = item.neweegb2c_price !== null ? '$' + parseFloat(item
-                    //     .neweegb2c_price).toFixed(2) : '0';
-                    // const neweggBuyerLink = item.neweegb2c_buy_link || '';
-
-                    // const neweggL30 = item.neweegb2c_l30 || 0;
-                    // const neweggDil = item.INV !== 0 ? (neweggL30 / item.INV).toFixed(2) : '0.00';
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (neweggBuyerLink || neweggL30 || neweggDil) {
-                    //     $row.append($('<td>').html(`
-                //     <div class="sku-tooltip-container">
-                //         <span class="price-text">${neweggPrice}</span>
-                //         <div class="sku-tooltip">
-                //             ${neweggBuyerLink ? `<div class="sku-link"><a href="${neweggBuyerLink}" target="_blank" rel="noopener noreferrer">Newegg Buyer Link</a></div>` : ''}
-                //             <div class="sku-link"><strong>L30: ${parseFloat(neweggL30 || 0).toFixed(2)}</strong></div>
-                //             <div class="sku-link"><strong>DIL: ${parseFloat(neweggDil || 0).toFixed(2)}%</strong></div>
-                //         </div>
-                //     </div>
-                // `));
-                    // } else {
-                    //     $row.append($('<td>').text(neweggPrice));
-                    // }
-
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.neweegb2c_pft === 'number' && !isNaN(item.neweegb2c_pft) ?
-                    //     `<div>
-                //             <span class="dil-percent-value ${getshopifyPftColor(item.neweegb2c_pft)}">
-                //                 ${Math.round(item.neweegb2c_pft * 100)}%
-                //             </span>
-                //             <small style="margin-left: 6px; color: #555;">
-                //                 (L30: ${parseFloat(item.neweegb2c_l30 || 0).toFixed(2)})
-                //             </small>
-                //         </div>` : ''
-                    // ));
-
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.neweegb2c_roi === 'number' && !isNaN(item.neweegb2c_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.neweegb2c_roi)}">
-                //             ${Math.round(item.neweegb2c_roi * 100)}%
-                //         </span>` : ''
-                    // ));
-
-                    // Newegg Metrics
-
-                    // const reverbPrice = item.reverb_price !== null ? '$' + parseFloat(item.reverb_price)
-                    //     .toFixed(2) : '0';
-                    // const reverbBuyerLink = item.reverb_buy_link || '';
-
-                    // const reverbL30 = item.reverb_l30 || 0;
-                    // const reverbDil = item.INV !== 0 ? (reverbL30 / item.INV).toFixed(2) : '0.00';
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (reverbBuyerLink || reverbL30 || reverbDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${reverbPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${reverbBuyerLink ? `<div class="sku-link"><a href="${reverbBuyerLink}" target="_blank" rel="noopener noreferrer">Reverb Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(reverbL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(reverbDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(reverbPrice));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.reverb_pft === 'number' && !isNaN(item.reverb_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.reverb_pft)}">${Math.round(item.reverb_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.reverb_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.reverb_roi === 'number' && !isNaN(item.reverb_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.reverb_roi)}">${Math.round(item.reverb_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // Doba Metrics
-
-                    // const dobaPrice = item.doba_price !== null ? '$' + parseFloat(item.doba_price).toFixed(
-                    //     2) : '0';
-                    // const dobaBuyerLink = item.doba_buy_link || '';
-
-                    // const dobaL30 = item.doba_l30 || 0;
-                    // const dobaDil = item.INV !== 0 ? (dobaL30 / item.INV).toFixed(2) : '0.00';
-
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (dobaBuyerLink || dobaL30 || dobaDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${dobaPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${dobaBuyerLink ? `<div class="sku-link"><a href="${dobaBuyerLink}" target="_blank" rel="noopener noreferrer">Doba Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(dobaL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(dobaDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(dobaPrice));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.doba_pft === 'number' && !isNaN(item.doba_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.doba_pft)}">${Math.round(item.doba_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.doba_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.doba_roi === 'number' && !isNaN(item.doba_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.doba_roi)}">${Math.round(item.doba_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-
-
-
-
-                    // Temu Metrics
-                    // const temuPrice = item.temu_price !== null ? '$' + parseFloat(item.temu_price).toFixed(
-                    //     2) : '0';
-                    // const temuBuyerLink = item.temu_buy_link || '';
-                    // const temuL30 = item.temu_l30 || 0;
-                    // const temuDil = item.INV !== 0 ? (temuL30 / item.INV).toFixed(2) : '0.00';
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (temuBuyerLink || temuL30 || temuDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${temuPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${temuBuyerLink ? `<div class="sku-link"><a href="${temuBuyerLink}" target="_blank" rel="noopener noreferrer">Temu Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(temuL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(temuDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(temuPrice));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.temu_pft === 'number' && !isNaN(item.temu_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.temu_pft)}">${Math.round(item.temu_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.temu_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-                    // $row.append($('<td>').html(
-                    //     typeof item.temu_roi === 'number' && !isNaN(item.temu_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.temu_roi)}">${Math.round(item.temu_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // // Wayfair Metrics
-                    // const wayfairPrice = item.wayfair_price !== null ? '$' + parseFloat(item.wayfair_price)
-                    //     .toFixed(2) : '0';
-                    // const wayfairBuyerLink = item.wayfair_buy_link || '';
-                    // const wayfairL30 = item.wayfair_l30 || 0;
-                    // const wayfairDil = item.INV !== 0 ? (wayfairL30 / item.INV).toFixed(2) : '0.00';
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (wayfairBuyerLink || wayfairL30 || wayfairDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text">${wayfairPrice}</span>
-                //             <div class="sku-tooltip">
-                //                 ${wayfairBuyerLink ? `<div class="sku-link"><a href="${wayfairBuyerLink}" target="_blank" rel="noopener noreferrer">Wayfair Buyer Link</a></div >` : ''}        
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(wayfairL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(wayfairDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(wayfairPrice));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.wayfair_pft === 'number' && !isNaN(item.wayfair_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.wayfair_pft)}">${Math.round(item.wayfair_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.wayfair_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.wayfair_roi === 'number' && !isNaN(item.wayfair_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.wayfair_roi)}">${Math.round(item.wayfair_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-                    // const ebay3BuyerLink = item.ebay3_buy_link || '';
-                    // const ebay3L30 = item.ebay3_l30 || 0;
-                    // const ebay3Dil = item.INV !== 0 ? (ebay3L30 / item.INV).toFixed(2) : '0.00';
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (ebay3BuyerLink || ebay3L30 || ebay3Dil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text
-                //                 ">${item.ebay3_price !== null ? '$' + parseFloat(item.ebay3_price).toFixed(2) : '0'}</span>
-                //             <div class="sku-tooltip">
-                //                 ${ebay3BuyerLink ? `<div class="sku-link"><a href="${ebay3BuyerLink}" target="_blank" rel="noopener noreferrer">eBay3 Buyer Link</  a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(ebay3L30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(ebay3Dil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(item.ebay3_price !== null ? '$' + parseFloat(item
-                    //         .ebay3_price).toFixed(2) : '0'));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.ebay3_pft === 'number' && !isNaN(item.ebay3_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.ebay3_pft)}">${Math.round(item.ebay3_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay3_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.ebay3_roi === 'number' && !isNaN(item.ebay3_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.ebay3_roi)}">${Math.round(item.ebay3_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // const ebay2BuyerLink = item.ebay2_buy_link || '';
-                    // const ebay2L30 = item.ebay2_l30 || 0;
-                    // const ebay2Dil = item.INV !== 0 ? (ebay2L30 / item.INV).toFixed(2) : '0.00';
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (ebay2BuyerLink || ebay2L30 || ebay2Dil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text
-                //                 ">${item.ebay2_price !== null ? '$' + parseFloat(item.ebay2_price).toFixed(2) : '0'}</span>
-                //             <div class="sku-tooltip">
-                //                 ${ebay2BuyerLink ? `<div class="sku-link"><a href="${ebay2BuyerLink}" target="_blank" rel="noopener noreferrer">eBay2 Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(ebay2L30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(ebay2Dil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(item.ebay2_price !== null ? '$' + parseFloat(item
-                    //         .ebay2_price).toFixed(2) : '0'));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.ebay2_pft === 'number' && !isNaN(item.ebay2_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.ebay2_pft)}">${Math.round(item.ebay2_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.ebay2_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.ebay2_roi === 'number' && !isNaN(item.ebay2_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.ebay2_roi)}">${Math.round(item.ebay2_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    // const walmartBuyerLink = item.walmart_buy_link || '';
-                    // const walmartL30 = item.walmart_l30 || 0;
-                    // const walmartDil = item.INV !== 0 ? (walmartL30 / item.INV).toFixed(2) : '0.00';
-                    // if (item.is_parent) {
-                    //     $row.append($('<td>').text('--'));
-                    // } else if (walmartBuyerLink || walmartL30 || walmartDil) {
-                    //     $row.append($('<td>').html(`
-                //         <div class="sku-tooltip-container">
-                //             <span class="price-text
-                //                 ">${item.walmart_price !== null ? '$' + parseFloat(item.walmart_price).toFixed(2) : '0'}</span>
-                //             <div class="sku-tooltip">
-                //                 ${walmartBuyerLink ? `<div class="sku-link"><a href="${walmartBuyerLink}" target="_blank" rel="noopener noreferrer">Walmart Buyer Link</a></div>` : ''}
-                //                 <div class="sku-link"><strong>L30: ${parseFloat(walmartL30 || 0).toFixed(2)}</strong></div>
-                //                 <div class="sku-link"><strong>DIL: ${parseFloat(walmartDil || 0).toFixed(2)}%</strong></div>
-                //             </div>
-                //         </div>
-                //     `));
-                    // } else {
-                    //     $row.append($('<td>').text(item.walmart_price !== null ? '$' + parseFloat(item
-                    //         .walmart_price).toFixed(2) : '0'));
-                    // }
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.walmart_pft === 'number' && !isNaN(item.walmart_pft) ?
-                    //     `<div>
-                //         <span class="dil-percent-value ${getshopifyPftColor(item.walmart_pft)}">${Math.round(item.walmart_pft * 100)}%</span>
-                //         <small style="margin-left: 6px; color: #555;">(L30: ${parseFloat(item.walmart_l30 || 0).toFixed(2)})</small>
-                //     </div>` : ''
-                    // ));
-
-                    // $row.append($('<td>').html(
-                    //     typeof item.walmart_roi === 'number' && !isNaN(item.walmart_roi) ?
-                    //     `<span class="dil-percent-value ${getshopifyRoiColor(item.walmart_roi)}">${Math.round(item.walmart_roi * 100)}%</span>` :
-                    //     ''
-                    // ));
-
-
-                    $tbody.append($row);
-
-                });
-
-                updatePaginationInfo();
-                initTooltips();
-                updatePaginationButtons();
-                calculateTotals();
-
-                console.log("✅ Table rendered successfully.");
-            }
-
-
-            // Update pagination information
-            function updatePaginationInfo() {
-                if (paginationInfo) {
-                    const start = ((paginationInfo.current_page - 1) * paginationInfo.per_page) + 1;
-                    const end = Math.min(
-                        paginationInfo.current_page * paginationInfo.per_page,
-                        paginationInfo.total
-                    );
-
-                    let rowsText;
-                    if ($('#rows-per-page').val() === 'all') {
-                        rowsText = `Showing all ${paginationInfo.total} rows`;
-                    } else {
-                        rowsText = `Showing ${start} to ${end} of ${paginationInfo.total} rows`;
-                    }
-
-                    $('#page-info').text(`Page ${paginationInfo.current_page} of ${paginationInfo.total_pages}`);
-                    $('#visible-rows').text(rowsText);
-                }
-            }
-
-            function updatePaginationButtons() {
-                if (paginationInfo) {
-                    const firstBtn = $('#first-page');
-                    const prevBtn = $('#prev-page');
-                    const nextBtn = $('#next-page');
-                    const lastBtn = $('#last-page');
-
-                    // Enable/disable buttons based on current page
-                    firstBtn.prop('disabled', currentPage === 1);
-                    prevBtn.prop('disabled', currentPage === 1);
-                    nextBtn.prop('disabled', currentPage === paginationInfo.total_pages);
-                    lastBtn.prop('disabled', currentPage === paginationInfo.total_pages);
-
-                    // Update page info text
-                    $('#page-info').text(`Page ${currentPage} of ${paginationInfo.total_pages}`);
-
-                    // Update visible rows text
-                    const start = ((currentPage - 1) * paginationInfo.per_page) + 1;
-                    const end = Math.min(currentPage * paginationInfo.per_page, paginationInfo.total);
-                    const total = paginationInfo.total;
-
-                    if ($('#rows-per-page').val() === 'all') {
-                        $('#visible-rows').text(`Showing all ${total} rows`);
-                    } else {
-                        $('#visible-rows').text(`Showing ${start} to ${end} of ${total} rows`);
-                    }
-                }
-            }
-
-            // Initialize tooltips
-            function initTooltips() {
-                $('[data-bs-toggle="tooltip"]').tooltip({
-                    trigger: 'hover',
-                    placement: 'top',
-                    boundary: 'window',
-                    container: 'body',
-                    offset: [0, 5],
-                    template: '<div class="tooltip" role="tooltip">' +
-                        '<div class="tooltip-arrow"></div>' +
-                        '<div class="tooltip-inner"></div></div>'
-                });
-            }
-
-            // Make columns resizable
-            function initResizableColumns() {
-                const $table = $('#amazon-table');
-                const $headers = $table.find('th');
-                let startX, startWidth, columnIndex;
-
-                $headers.each(function() {
-                    $(this).append('<div class="resize-handle"></div>');
-                });
-
-                $table.on('mousedown', '.resize-handle', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    isResizing = true;
-                    $(this).addClass('resizing');
-
-                    const $th = $(this).parent();
-                    columnIndex = $th.index();
-                    startX = e.pageX;
-                    startWidth = $th.outerWidth();
-
-                    $('body').css('user-select', 'none');
-                });
-
-                $(document).on('mousemove', function(e) {
-                    if (!isResizing) return;
-
-                    const $resizer = $('.resize-handle.resizing');
-                    if ($resizer.length) {
-                        const $th = $resizer.parent();
-                        const newWidth = startWidth + (e.pageX - startX);
-                        $th.css('width', newWidth + 'px');
-                        $th.css('min-width', newWidth + 'px');
-                        $th.css('max-width', newWidth + 'px');
-                    }
-                });
-
-                $(document).on('mouseup', function(e) {
-                    if (!isResizing) return;
-
-                    e.stopPropagation();
-                    $('.resize-handle').removeClass('resizing');
-                    $('body').css('user-select', '');
-                    isResizing = false;
-                });
-            }
-
-            // Initialize sorting functionality
-            function initSorting() {
-                $('th[data-field]').addClass('sortable').on('click', function(e) {
-                    if (isResizing) {
-                        e.stopPropagation();
-                        return;
-                    }
-
-                    if ($(e.target).is('input') || $(e.target).closest('.position-relative').length) {
-                        return;
-                    }
-
-                    const th = $(this).closest('th');
-                    const thField = th.data('field');
-                    const dataField = thField;
-
-                    if (currentSort.field === dataField) {
-                        currentSort.direction *= -1;
-                    } else {
-                        currentSort.field = dataField;
-                        currentSort.direction = 1;
-                    }
-
-                    $('.sort-arrow').html('↓');
-                    $(this).find('.sort-arrow').html(currentSort.direction === 1 ? '↑' : '↓');
-
-                    // We'll do client-side sorting for the current page
-                    const freshData = [...tableData];
-                    freshData.sort((a, b) => {
-                        const valA = a[dataField] || '';
-                        const valB = b[dataField] || '';
-
-                        if (dataField === 'sl_no' || dataField === 'INV' || dataField === 'L30') {
-                            return (parseFloat(valA) - parseFloat(valB)) * currentSort.direction;
-                        }
-
-                        return String(valA).localeCompare(String(valB)) * currentSort.direction;
-                    });
-
-                    tableData = freshData;
-                    renderTable();
-
-                });
-            }
-
-            // Initialize pagination
-            function initPagination() {
-                // First page
-                $('#first-page').off('click').on('click', function() {
-                    if (currentPage > 1) {
-                        currentPage = 1;
-                        loadData().then(renderTable);
-                    }
-                });
-
-                // Previous page
-                $('#prev-page').off('click').on('click', function() {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        loadData().then(renderTable);
-                    }
-                });
-
-                // Next page
-                $('#next-page').off('click').on('click', function() {
-                    if (paginationInfo && currentPage < paginationInfo.total_pages) {
-                        currentPage++;
-                        loadData().then(renderTable);
-                    }
-                });
-
-                // Last page
-                $('#last-page').off('click').on('click', function() {
-                    if (paginationInfo && currentPage < paginationInfo.total_pages) {
-                        currentPage = paginationInfo.total_pages;
-                        loadData().then(renderTable);
-                    }
-                });
-
-                // Fix for row data type selector
-                $('#row-data-type').off('change').on('change', function() {
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                });
-
-                // Rows per page
-                $('#rows-per-page').off('change').on('change', function() {
-                    const value = $(this).val();
-                    rowsPerPage = (value === 'all') ? 1000000 : parseInt(value);
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                });
-            }
-
-            // Initialize search functionality
-            function initSearch() {
-                // Handle search button click
-                $('#search-button').on('click', function() {
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                });
-
-                // Handle Enter key in search input
-                $('#search-input').on('keyup', function(e) {
-                    if (e.key === 'Enter') {
-                        currentPage = 1;
-                        loadData().then(renderTable);
-                    }
-                });
-
-                // Handle clear search button
-                $('#clear-search').on('click', function() {
-                    $('#search-input').val('');
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                    $(this).hide();
-                });
-            }
-
-            // Initialize column toggle functionality
-            function initColumnToggle() {
-                const $table = $('#amazon-table');
-                const $headers = $table.find('th[data-field]');
-                const $menu = $('#columnToggleMenu');
-                const $dropdownBtn = $('#hideColumnsBtn');
-
-                $menu.empty();
-
-                $headers.each(function() {
-                    const $th = $(this);
-                    const field = $th.data('field');
-                    const title = $th.text().trim().replace(' ↓', '');
-
-                    const $item = $(`
-                    <div class="column-toggle-item">
-                        <input type="checkbox" class="column-toggle-checkbox" 
-                               id="toggle-${field}" data-field="${field}" checked>
-                        <label for="toggle-${field}">${title}</label>
-                    </div>
-                `);
-
-                    $menu.append($item);
-                });
-
-                $dropdownBtn.on('click', function(e) {
-                    e.stopPropagation();
-                    $menu.toggleClass('show');
-                });
-
-                $(document).on('click', function(e) {
-                    if (!$(e.target).closest('.custom-dropdown').length) {
-                        $menu.removeClass('show');
-                    }
-                });
-
-                $menu.on('change', '.column-toggle-checkbox', function() {
-                    const field = $(this).data('field');
-                    const isVisible = $(this).is(':checked');
-
-                    const colIndex = $headers.filter(`[data-field="${field}"]`).index();
-                    $table.find('tr').each(function() {
-                        $(this).find('td, th').eq(colIndex).toggle(isVisible);
-                    });
-                });
-
-                $('#showAllColumns').on('click', function() {
-                    $menu.find('.column-toggle-checkbox').prop('checked', true).trigger('change');
-                    $menu.removeClass('show');
-                });
-            }
-
-            // Initialize filters
-            function initFilters() {
-                $('.dropdown-menu').on('click', '.column-filter', function(e) {
-                    e.preventDefault();
-                    const $this = $(this);
-                    const color = $this.data('color');
-                    const text = $this.find('span').text().trim();
-
-                    $this.closest('.dropdown')
-                        .find('.dropdown-toggle')
-                        .html(`<span class="status-circle ${color}"></span> DIL% (${text})`);
-
-                    dilFilter = color;
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                });
-
-                // Clear parent filter button
-                $(document).on('click', '.clear-parent-filter', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const $container = $(this).closest('.dropdown-search-container');
-                    const $input = $container.find('.parent-search');
-
-                    $input.val('');
-                    currentParentFilter = '';
-                    $container.find('.dropdown-search-results').hide();
-                    $(this).hide();
-
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                });
-
-                // Clear SKU filter button
-                $(document).on('click', '.clear-sku-filter', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const $container = $(this).closest('.dropdown-search-container');
-                    const $input = $container.find('.sku-search');
-
-                    $input.val('');
-                    currentSkuFilter = '';
-                    $container.find('.dropdown-search-results').hide();
-                    $(this).hide();
-
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                });
-            }
-
-            // Calculate and display totals
-            function calculateTotals() {
-                try {
-                    let invTotal = 0;
-                    let l30Total = 0;
-
-                    // Filter only child SKUs (exclude PARENT SKUs)
-                    const childRows = filteredData.filter(item => !(item.SKU && item.SKU.toUpperCase().includes(
-                        'PARENT')));
-
-                    if (childRows.length === 0) {
-                        $('#inv-total-parent').text('0');
-                        $('#l30-total-parent').text('0');
-                        return;
-                    }
-
-                    childRows.forEach(item => {
-                        invTotal += parseFloat(item.INV) || 0;
-                        l30Total += parseFloat(item.L30) || 0;
-                    });
-
-                    $('#inv-total-parent').text(invTotal.toLocaleString());
-                    $('#l30-total-parent').text(l30Total.toLocaleString());
-                } catch (error) {
-                    console.error('❌ Error calculating parent totals:', error);
-                    $('#inv-total-parent').text('0');
-                    $('#l30-total-parent').text('0');
-                }
-            }
-
-
-
-
-
-
-            // Initialize enhanced dropdowns
-            function initEnhancedDropdowns() {
-                // For parent search
-                $('#parentSearch').on('input', function() {
-                    const searchTerm = $(this).val().toLowerCase();
-                    const $results = $('#parentSearchResults');
-                    $results.empty();
-                    const $clearBtn = $(this).next('.clear-parent-filter');
-
-                    // Show/hide clear button based on input
-                    $clearBtn.toggle(searchTerm.length > 0);
-
-                    if (!window.distinctParents || window.distinctParents.length === 0) return;
-                    if (searchTerm.length === 0) {
-                        $results.hide();
-                        return;
-                    }
-
-                    const filtered = window.distinctParents.filter(parent =>
-                        parent.toLowerCase().includes(searchTerm)
-                    );
-
-                    if (filtered.length > 0) {
-                        filtered.forEach(value => {
-                            $results.append(
-                                `<div class="dropdown-search-item" tabindex="0" data-value="${value}">${value}</div>`
-                            );
-                        });
-                        $results.show();
-                    } else {
-                        $results.append(
-                            '<div class="dropdown-search-item no-results">No matches found</div>'
-                        );
-                        $results.show();
-                    }
-                });
-
-                // For SKU search
-                $('#skuSearch').on('input', function() {
-                    const searchTerm = $(this).val().toLowerCase();
-                    const $results = $('#skuSearchResults');
-                    const $clearBtn = $(this).next('.clear-sku-filter');
-
-                    // Show/hide clear button based on input
-                    $clearBtn.toggle(searchTerm.length > 0);
-                    $results.empty();
-
-                    if (!window.distinctSkus || window.distinctSkus.length === 0) return;
-                    if (searchTerm.length === 0) {
-                        $results.hide();
-                        return;
-                    }
-
-                    const filtered = window.distinctSkus.filter(sku =>
-                        sku.toLowerCase().includes(searchTerm)
-                    );
-
-                    if (filtered.length > 0) {
-                        filtered.forEach(value => {
-                            $results.append(
-                                `<div class="dropdown-search-item" tabindex="0" data-value="${value}">${value}</div>`
-                            );
-                        });
-                        $results.show();
-                    } else {
-                        $results.append(
-                            '<div class="dropdown-search-item no-results">No matches found</div>'
-                        );
-                        $results.show();
-                    }
-                });
-
-                // Handle selection
-                $('.dropdown-search-results').on('click', '.dropdown-search-item:not(.no-results)', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const value = $(this).data('value');
-                    const $container = $(this).closest('.dropdown-search-container');
-                    const $input = $container.find('input');
-                    const $clearBtn = $container.find('.btn-sm');
-                    const field = $input.attr('id');
-
-                    $input.val(value);
-                    $clearBtn.show();
-
-                    if (field === 'parentSearch') {
-                        currentParentFilter = value;
-                        currentSkuFilter = '';
-                        $('#skuSearch').val('').next('.clear-sku-filter').hide();
-                    } else if (field === 'skuSearch') {
-                        currentSkuFilter = value;
-                        currentParentFilter = '';
-                        $('#parentSearch').val('').next('.clear-parent-filter').hide();
-                    }
-
-                    currentPage = 1;
-                    loadData().then(renderTable);
-                    $('.dropdown-search-results').hide();
-                });
-
-                // Close dropdowns when clicking elsewhere
-                $(document).on('click', function(e) {
-                    if (!$(e.target).closest('.dropdown-search-container').length) {
-                        $('.dropdown-search-results').hide();
-                    }
-                });
-            }
-
-
-
-            // Initialize manual dropdowns
-            function initManualDropdowns() {
-                $(document).on('click', '.dropdown-toggle', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    $(this).next('.dropdown-menu').toggleClass('show');
-                    $('.dropdown-menu').not($(this).next('.dropdown-menu')).removeClass('show');
-                });
-
-                $(document).on('click', function(e) {
-                    if (!$(e.target).closest('.dropdown').length) {
-                        $('.dropdown-menu').removeClass('show');
-                    }
-                });
-
-                $(document).on('click', '.dropdown-item', function(e) {
-                    e.preventDefault();
-                    const $dropdown = $(this).closest('.dropdown');
-
-                    const color = $(this).data('color');
-                    const text = $(this).text().trim();
-                    $dropdown.find('.dropdown-toggle').html(
-                        `<span class="status-circle ${color}"></span> ${text.split(' ')[0]}`
-                    );
-
-                    $dropdown.find('.dropdown-menu').removeClass('show');
-
-                    const column = $(this).data('column');
-                    state.filters[column] = color;
-                    applyColumnFilters();
-                });
-
-
-                function showL30Modal(icon) {
-                    const data = JSON.parse(icon.getAttribute('data-l30') || '{}');
-
-                    const sites = [];
-                    const l30Values = [];
-                    const roiValues = [];
-                    const pftValues = [];
-                    const priceValues = [];
-
-                    let tableHtml = '';
-
-                    for (const [site, values] of Object.entries(data)) {
-                        const price = parseFloat(values.price) || 0;
-                        const l30 = parseFloat(values.l30) || 0;
-                        const roi = parseFloat(values.roi) || 0;
-                        const pft = parseFloat(values.pft) || 0;
-
-                        sites.push(site);
-                        priceValues.push(price);
-                        l30Values.push(l30);
-                        roiValues.push(roi);
-                        pftValues.push(pft);
-
-                        tableHtml += `
-            <tr>
-                <td>${site}</td>
-                <td>$${price.toFixed(2)}</td>
-                <td>${l30}</td>
-                <td>${roi.toFixed(2)}%</td>
-                <td>${pft.toFixed(2)}%</td>
-            </tr>
-        `;
-                    }
-
-                    // Update table in modal
-                    document.getElementById('siteSummaryTableBody').innerHTML = tableHtml;
-
-                    // Destroy previous chart
-                    if (window.l30ChartInstance) {
-                        window.l30ChartInstance.destroy();
-                    }
-
-                    // Build chart
-                    const ctx = document.getElementById('l30Chart').getContext('2d');
-                    window.l30ChartInstance = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: sites,
-                            datasets: [{
-                                    label: 'L30',
-                                    data: l30Values,
-                                    backgroundColor: '#4bc0c0'
-                                },
-                                {
-                                    label: 'ROI %',
-                                    data: roiValues,
-                                    backgroundColor: '#ff9f40'
-                                },
-                                {
-                                    label: 'PFT %',
-                                    data: pftValues,
-                                    backgroundColor: '#9966ff'
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: {
-                                    position: 'top'
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false
-                                }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Price ($)'
                             },
-                            interaction: {
-                                mode: 'nearest',
-                                axis: 'x',
-                                intersect: false
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
                             },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    title: {
-                                        display: true,
-                                        text: 'Values'
+                            title: {
+                                display: true,
+                                text: 'Sales Volume'
+                            }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(0) + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    
+                                    if (label === 'Price') {
+                                        return `${label}: $${value.toFixed(2)}`;
+                                    } else if (label.includes('%')) {
+                                        return `${label}: ${value.toFixed(1)}%`;
+                                    } else {
+                                        return `${label}: ${value}`;
                                     }
                                 }
                             }
                         }
+                    }
+                }
+            });
+                
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        // Helper function to calculate ROI
+        function calculateROI(data) {
+            const LP = parseFloat(data.LP) || 0;
+            if (LP === 0) return 0;
+
+            // Calculate total L30
+            const totalL30 = (parseFloat(data.amz_l30) || 0) +
+                (parseFloat(data.ebay_l30) || 0) +
+                (parseFloat(data.shopifyb2c_l30) || 0) +
+                (parseFloat(data.macy_l30) || 0) +
+                (parseFloat(data.reverb_l30) || 0) +
+                (parseFloat(data.doba_l30) || 0) +
+                (parseFloat(data.temu_l30) || 0) +
+                (parseFloat(data.ebay3_l30) || 0) +
+                (parseFloat(data.ebay2_l30) || 0) +
+                (parseFloat(data.walmart_l30) || 0) +
+                (parseFloat(data.shein_l30) || 0);
+
+            const SHIP = parseFloat(data.SHIP) || 0;
+            const temuship = parseFloat(data.temu_ship) || 0;
+
+            // Calculate profits
+            const amzProfit = data.amz_price ? ((parseFloat(data.amz_price) * 0.70) - LP - SHIP) * (parseFloat(data
+                .amz_l30) || 0) : 0;
+            const ebayProfit = data.ebay_price ? ((parseFloat(data.ebay_price) * 0.72) - LP - SHIP) * (parseFloat(data
+                .ebay_l30) || 0) : 0;
+            const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * (
+                parseFloat(data.shopifyb2c_l30) || 0) : 0;
+            const macyProfit = data.macy_price ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) * (parseFloat(data
+                .macy_l30) || 0) : 0;
+            const reverbProfit = data.reverb_price ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * (parseFloat(data
+                .reverb_l30) || 0) : 0;
+            const dobaProfit = data.doba_price ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * (parseFloat(data
+                .doba_l30) || 0) : 0;
+            const temuProfit = data.temu_price ? ((parseFloat(data.temu_price) * 0.87) - LP - temuship) * (parseFloat(data
+                .temu_l30) || 0) : 0;
+       
+            const ebay3Profit = data.ebay3_price ? ((parseFloat(data.ebay3_price) * 0.71) - LP - SHIP) * (parseFloat(data
+                .ebay3_l30) || 0) : 0;
+            const ebay2Profit = data.ebay2_price ? ((parseFloat(data.ebay2_price) * 0.80) - LP - SHIP) * (parseFloat(data
+                .ebay2_l30) || 0) : 0;
+            const walmartProfit = data.walmart_price ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) * (parseFloat(
+                data.walmart_l30) || 0) : 0;
+            const sheinProfit = data.shein_price ? ((parseFloat(data.shein_price) * 0.80) - LP - SHIP) * (parseFloat(
+                data.shein_l30) || 0) : 0;
+
+
+
+            const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
+                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit + sheinProfit;
+
+            return totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
+        }
+
+        // Helper function to calculate Average Profit
+        function calculateAvgProfit(data) {
+            const LP = parseFloat(data.LP) || 0;
+            const SHIP = parseFloat(data.SHIP) || 0;
+            const temuship = parseFloat(data.temu_ship) || 0;
+
+            // Calculate profits and revenue for each marketplace
+            const marketplaces = [
+                { name: "amz", price: data.amz_price, l30: data.amz_l30, percent: 0.70 },
+                { name: "ebay", price: data.ebay_price, l30: data.ebay_l30, percent: 0.72 },
+                { name: "shopifyb2c", price: data.shopifyb2c_price, l30: data.shopifyb2c_l30, percent: 0.75 },
+                { name: "macy", price: data.macy_price, l30: data.macy_l30, percent: 0.76 },
+                { name: "reverb", price: data.reverb_price, l30: data.reverb_l30, percent: 0.84 },
+                { name: "doba", price: data.doba_price, l30: data.doba_l30, percent: 0.95 },
+                { name: "temu", price: data.temu_price, l30: data.temu_l30, percent: 0.87 }, // 👈 Temu special case
+                { name: "ebay3", price: data.ebay3_price, l30: data.ebay3_l30, percent: 0.72 },
+                { name: "ebay2", price: data.ebay2_price, l30: data.ebay2_l30, percent: 0.80 },
+                { name: "walmart", price: data.walmart_price, l30: data.walmart_l30, percent: 0.89 },
+                { name: "shein", price: data.shein_price, l30: data.shein_l30, percent: 0.89 }
+            ];
+
+            let totalProfit = 0;
+            let totalRevenue = 0;
+
+            marketplaces.forEach(mp => {
+                const price = parseFloat(mp.price) || 0;
+                const l30 = parseFloat(mp.l30) || 0;
+                if (price && l30) {
+                    const shippingCost = mp.name === "temu" ? temuship : SHIP;
+
+                    totalProfit += ((price * mp.percent) - LP - shippingCost) * l30;
+                    totalRevenue += price * l30;
+                }
+            });
+
+            return totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+        }
+
+
+        // Image preview functions
+        function showImagePreview(img) {
+            const preview = document.getElementById('image-hover-preview');
+            const previewImg = document.getElementById('preview-image');
+
+            previewImg.src = img.src;
+            preview.style.display = 'block';
+
+            document.addEventListener('mousemove', moveImagePreview);
+        }
+
+        function hideImagePreview() {
+            const preview = document.getElementById('image-hover-preview');
+            preview.style.display = 'none';
+            document.removeEventListener('mousemove', moveImagePreview);
+        }
+
+        function moveImagePreview(e) {
+            const preview = document.getElementById('image-hover-preview');
+            const rect = preview.getBoundingClientRect();
+
+            // Calculate position, keeping the preview within viewport
+            let x = e.pageX + 20;
+            let y = e.pageY + 20;
+
+            // Adjust if preview would go off screen
+            if (x + rect.width > window.innerWidth) {
+                x = e.pageX - rect.width - 20;
+            }
+            if (y + rect.height > window.innerHeight) {
+                y = e.pageY - rect.height - 20;
+            }
+
+            preview.style.left = x + 'px';
+            preview.style.top = y + 'px';
+        }
+
+
+        //global variables for play btn
+        function renderGroup(parentKey) {
+        if (!groupedSkuData[parentKey]) return;
+
+            // Update current filter
+        currentParentFilter = parentKey;
+        setCombinedFilters();
+
+            // Apply Tabulator filter for the selected group
+        table.setFilter(function(data) {
+            return data.Parent === parentKey;
+        });
+        }
+
+        // Filter by Inventory radio buttons
+        
+        document.querySelectorAll("input[name='invFilter']").forEach(input => {
+            input.addEventListener("change", function() {
+                let value = this.value;
+
+                if (value === "all") {
+                    table.clearFilter();
+                } else if (value === "zero") {
+                    table.setFilter("inv", "=", 0);
+                } else if (value === "other") {
+                    table.setFilter("inv", ">", 0);
+                }
+            });
+        });
+   
+        
+        
+
+
+
+       const table = new Tabulator("#forecast-table", {
+            ajaxURL: "/pricing-master-data-views",
+            fixedHeader: true,
+         
+            width: "100%",
+            height: "700px",
+          
+            pagination: true, 
+            paginationSize: 50,
+        
+             rowFormatter: function(row) {
+                const data = row.getData();
+                const sku = data["SKU"] || '';
+
+                if (sku.toUpperCase().includes("PARENT")) {
+                    row.getElement().classList.add("parent-row");
+                }
+            },
+            columns: [{
+                    title: "Image",
+                    field: "shopifyb2c_image",
+                    formatter: function(cell) {
+                        const value = cell.getValue();
+                        if (!value) return "";
+                        return `<img src="${value}" width="40" height="40" class="product-thumb" onmouseover="showImagePreview(this)" onmouseout="hideImagePreview()" style="cursor: pointer">`;
+                    },
+                    headerSort: false,
+                    width: 70,
+                    hozAlign: "center"
+                },
+               
+                {
+                    title: "Parent",
+                    field: "Parent",
+                    headerFilter: "input",
+                    headerFilterPlaceholder: "Search Parent...",
+                    cssClass: "text-muted",
+                    tooltip: true,
+                    frozen: true
+                },
+                {
+                    title: "SKU",
+                    field: "SKU",
+                    headerFilter: "input",
+                    headerFilterPlaceholder: "Search SKU...",
+                    cssClass: "font-weight-bold",
+                    tooltip: true,
+                    frozen: true,
+                    formatter: function(cell) {
+                        let value = cell.getValue();
+                        return `
+                            <span class="sku-text">${value}</span>
+                            <i class="bi bi-clipboard ms-2 copy-icon" 
+                            style="cursor:pointer;color:#007bff;" 
+                            title="Copy SKU"></i>
+                            <span class="copied-msg" style="display:none;color:green;font-size:12px;margin-left:5px;">Copied!</span>
+                        `;
+                    },
+                    cellClick: function(e, cell) {
+                        if (e.target.classList.contains("copy-icon")) {
+                            let sku = cell.getValue();
+
+                            // copy to clipboard
+                            navigator.clipboard.writeText(sku).then(() => {
+                                let copiedMsg = cell.getElement().querySelector(".copied-msg");
+                                copiedMsg.style.display = "inline";
+
+                                setTimeout(() => {
+                                    copiedMsg.style.display = "none";
+                                }, 500);
+                            }).catch(err => {
+                                console.error("Failed to copy: ", err);
+                            });
+                        } else {
+                            showPriceComparisonModal(cell.getRow());
+                        }
+                    },
+                },
+                {
+                    title: "INV",
+                    field: "INV",
+                    hozAlign: "right",
+                    formatter: function(cell) {
+                        const value = cell.getValue();
+                        return `<strong>${value}</strong>`;
+                    }
+                    
+                },
+
+
+               {
+                    title: "OVL30",
+                    field: "ovl30",
+                    hozAlign: "center",
+                    headerSort: false,
+                    formatter: function(cell) {
+                        const data = cell.getRow().getData();
+                        const l30 = data.shopifyb2c_l30 || 0;
+
+                        // Determine button color based on L30 value
+
+                        return `<button class="btn btn-outline-primary  rounded-pill px-3 text-primary" style="cursor:default !important; background-color: #fff !important">
+                            <i class="bi bi-eye me-1"></i>${l30}
+                        </button>`;
+                    },
+                    cellClick: function(e, cell) {
+                        showOVL30Modal(cell.getRow());
+                    }
+                },
+             
+
+
+                    {
+                        title: "DIL%",
+                        field: "Dil%",
+                        hozAlign: "right",
+                        formatter: function (cell) {
+                            const data = cell.getRow().getData();
+                            const value = cell.getValue() || 0;
+                            const element = document.createElement("div");
+                        
+                            const rounded = Math.round(value);
+                            element.textContent = rounded + "%";
+                            if (rounded >= 0 && rounded <= 10) {
+                                element.style.color = "red"; // red text
+                            } else if (rounded >= 11 && rounded <= 15) {
+                                element.style.backgroundColor = "yellow"; // yellow background
+                                element.style.color = "black";
+                                element.style.padding = "2px 4px";
+                                element.style.borderRadius = "4px";
+                            } else if (rounded >= 16 && rounded <= 20) {
+                                element.style.color = "blue"; // blue text
+                            } else if (rounded >= 21 && rounded <= 40) {
+                                element.style.color = "green"; // green text
+                            } else if (rounded >= 41) {
+                                element.style.color = "purple"; // purple text (41 and above)
+                            }
+
+                            data.dilPercentage = rounded;
+                           
+                            return element;
+                        },
+                    }
+
+                    ,
+               
+
+                {
+                    title: "Total Views",
+                    field: "total_views",
+                    hozAlign: "center",
+                    headerSort: false,
+                    formatter: function(cell) {
+                        const value = cell.getValue() || 0;
+                        return `<span class="text-danger">${value} </span>`;
+                    }
+                    
+                },
+
+                 {
+                    title: "Total Req Views",
+                    field: "total_req_view",
+                    hozAlign: "center",
+                    headerSort: false,
+                    formatter: function(cell) {
+                        const value = cell.getValue() || 0;
+                        return `<span class="text-dark">${Math.round(value)} </span>`;
+                    }
+                    
+                },
+
+                 {
+                    title: "Avg CVR",
+                    field: "avgCvr",
+                    hozAlign: "center",
+                    headerSort: false,
+                    formatter: function(cell) {
+                        const value = cell.getValue() || 0;
+                        return `<span class="text-primary">${value} </span>`;
+                    }
+                    
+                },
+
+
+              
+                
+                {
+                    title: "AVG PRC",
+                    field: "avgPrice",
+                    hozAlign: "right",
+                    formatter: function(cell) {
+                        const data = cell.getRow().getData();
+
+                        // Calculate weighted average price
+                        const calculateAvgPrice = () => {
+                            const marketplaces = [{
+                                    price: data.amz_price,
+                                    l30: data.amz_l30
+                                },
+                                {
+                                    price: data.ebay_price,
+                                    l30: data.ebay_l30
+                                },
+                                {
+                                    price: data.macy_price,
+                                    l30: data.macy_l30
+                                },
+                                {
+                                    price: data.reverb_price,
+                                    l30: data.reverb_l30
+                                },
+                                {
+                                    price: data.doba_price,
+                                    l30: data.doba_l30
+                                },
+                                {
+                                    price: data.temu_price,
+                                    l30: data.temu_l30
+                                },
+                               
+                                {
+                                    price: data.ebay3_price,
+                                    l30: data.ebay3_l30
+                                },
+                                {
+                                    price: data.ebay2_price,
+                                    l30: data.ebay2_l30
+                                },
+                                {
+                                    price: data.walmart_price,
+                                    l30: data.walmart_l30
+                                },
+                                {
+                                    price: data.shopify_price,
+                                    l30: data.shopify_l30
+                                },
+                                {
+                                    price: data.shein_price,
+                                    l30: data.shein_l30
+                                },
+                            ];
+
+                            let totalWeightedPrice = 0;
+                            let totalL30 = 0;
+
+                            marketplaces.forEach(mp => {
+                                const price = parseFloat(mp.price) || 0;
+                                const l30 = parseFloat(mp.l30) || 0;
+                                totalWeightedPrice += (price * l30);
+                                totalL30 += l30;
+                            });
+
+                            return totalL30 > 0 ? (totalWeightedPrice / totalL30).toFixed(2) : '---';
+                        };
+
+                        const avgPrice = calculateAvgPrice();
+                        const avgPriceValue = parseFloat(avgPrice);
+
+                        // Determine colors based on value
+                        let textColor, bgColor;
+                        if (!isNaN(avgPriceValue)) {
+                            if (avgPriceValue < 10) {
+                                textColor = '#dc3545'; // red
+                               
+                            } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
+                                textColor = '#fd7e14'; // orange
+                             
+                            } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
+                                textColor = '#0d6efd'; // blue
+                              
+                            } else if (avgPriceValue >= 20) {
+                                textColor = '#198754'; // green
+                               
+                            }
+                        } else {
+                            textColor = '#6c757d'; // gray
+                           
+                        }
+
+                        const element = document.createElement('div');
+                        element.innerHTML = avgPrice === '---' ? avgPrice : `$${avgPrice}`;
+                        element.style.color = textColor;
+                        element.style.fontWeight = '700'; // Bolder text
+                        element.style.backgroundColor = bgColor;
+                        element.style.padding = '4px 8px';
+                        element.style.borderRadius = '4px';
+                        element.style.textAlign = 'center';
+
+                        data.formattedAvgPrice = avgPrice;
+                        return element;
+                    }
+                },
+
+                
+
+                /* === OVL30 button (VISIBLE) === */
+               
+                /* === MARKETPLACE COLUMNS (HIDDEN, but kept for modal data) === */
+
+
+                    // Total avg pft= (avg price * ovl30 ) * avg pft on top add sum of all columns 
+                    // avg sales = price * Ovl30 same as above
+                    // avgpft top = (total avg pft /avg sales) * 100
+
+                    // Avg cogs = Lp * Ov l30 on back sum on top
+
+                    // Avg Roi % = avg sales / Avg COGS * 100
+
+               
+               
+
+                {
+                     title: "AVG PFT%<br><span id='avgPftHeader' style='font-size:12px; color:#fff; '></span>",
+                    field: "avgPftPercent",
+                    hozAlign: "right",
+                    headerSort: true,
+                    sortable: true,
+                    sorterParams: {
+                        alignEmptyValues: "bottom"
+                    },
+                    sorter: function(a, b) {
+                        let rowA = this.getRow(a);
+                        let rowB = this.getRow(b);
+                        return calculateAvgProfit(rowA.getData()) - calculateAvgProfit(rowB.getData());
+                    },
+                    headerSort: true,
+                    sorter: function(a, b) {
+                        const valA = a || 0;
+                        const valB = b || 0;
+                        return valA - valB;
+                    },
+                    formatter: function(cell) {
+                        const data = cell.getRow().getData();
+
+                        // Calculate profits per site using L30
+                        const LP = parseFloat(data.LP) || 0;
+                        const SHIP = parseFloat(data.SHIP) || 0;
+                        const ovl30 = parseFloat(data.shopifyb2c_l30) || 0;
+                        const temuship = parseFloat(data.temu_ship) || 0;
+                        const avgPrice = parseFloat(data.formattedAvgPrice) || 0;
+
+                        // Get price and L30 values for each marketplace
+                        const amzPrice = parseFloat(data.amz_price) || 0;
+                        const ebayPrice = parseFloat(data.ebay_price) || 0;
+                        const shopifyPrice = parseFloat(data.shopifyb2c_price) || 0;
+                        const macyPrice = parseFloat(data.macy_price) || 0;
+                        const reverbPrice = parseFloat(data.reverb_price) || 0;
+                        const dobaPrice = parseFloat(data.doba_price) || 0;
+                        const temuPrice = parseFloat(data.temu_price) || 0;
+                        const ebay3Price = parseFloat(data.ebay3_price) || 0;
+                        const ebay2Price = parseFloat(data.ebay2_price) || 0;
+                        const walmartPrice = parseFloat(data.walmart_price) || 0;
+                        const sheinPrice = parseFloat(data.shein_price) || 0;
+
+                        const amzL30 = parseFloat(data.amz_l30) || 0;
+                        const ebayL30 = parseFloat(data.ebay_l30) || 0;
+                        const shopifyL30 = parseFloat(data.shopifyb2c_l30) || 0;
+                        const macyL30 = parseFloat(data.macy_l30) || 0;
+                        const reverbL30 = parseFloat(data.reverb_l30) || 0;
+                        const dobaL30 = parseFloat(data.doba_l30) || 0;
+                        const temuL30 = parseFloat(data.temu_l30) || 0;
+                        const ebay3L30 = parseFloat(data.ebay3_l30) || 0;
+                        const ebay2L30 = parseFloat(data.ebay2_l30) || 0;
+                        const walmartL30 = parseFloat(data.walmart_l30) || 0;
+                        const sheinL30 = parseFloat(data.shein_l30) || 0;
+
+                        // Calculate profit for each marketplace
+                        const amzProfit = ((amzPrice * 0.70) - LP - SHIP)  ;
+                        const ebayProfit = ((ebayPrice * 0.72) - LP - SHIP) ;
+                        const shopifyProfit = ((shopifyPrice * 0.75) - LP - SHIP) ;
+                        const macyProfit = ((macyPrice * 0.76) - LP - SHIP) ;
+                        const reverbProfit = ((reverbPrice * 0.84) - LP - SHIP) ;
+                        const dobaProfit = ((dobaPrice * 0.95) - LP - SHIP) ;
+                        const temuProfit = ((temuPrice * 0.87) - LP - temuship) ;
+                        const ebay3Profit = ((ebay3Price * 0.71) - LP - SHIP);
+                        const ebay2Profit = ((ebay2Price * 0.80) - LP - SHIP) ;
+                        const walmartProfit = ((walmartPrice * 0.80) - LP - SHIP) ;
+                        const sheinProfit = ((sheinPrice * 0.89) - LP - SHIP) ;
+
+
+ 
+
+                        // Calculate total profit
+                        const totalProfit = amzProfit * amzL30 + ebayProfit * ebayL30 + shopifyProfit * shopifyL30 + macyProfit * macyL30 +
+                            reverbProfit * reverbL30 + dobaProfit * dobaL30 + temuProfit * temuL30 +
+                            ebay3Profit * ebay3L30 + ebay2Profit * ebay2L30 + walmartProfit * walmartL30 +
+                            sheinProfit * sheinL30;
+
+                        // Calculate total revenue
+                        const totalRevenue =
+                            (amzPrice * amzL30) +
+                            (ebayPrice * ebayL30) +
+                            (shopifyPrice * shopifyL30) +
+                            (macyPrice * macyL30) +
+                            (reverbPrice * reverbL30) +
+                            (dobaPrice * dobaL30) +
+                            (temuPrice * temuL30) +
+                            (ebay3Price * ebay3L30) +
+                            (ebay2Price * ebay2L30) +
+                            (walmartPrice * walmartL30) +
+                            (sheinPrice * sheinL30);
+
+                        // Calculate average profit percentage and round to nearest integer
+                        let avgPftPercent = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+                        if (!isFinite(avgPftPercent) || isNaN(avgPftPercent)) {
+                            avgPftPercent = 0;
+                        }
+
+                        avgPftPercent = Math.round(avgPftPercent);
+
+
+                        // Profit top caculation start 
+
+                        // Style based on profit percentage
+                        let bgColor, textColor;
+                        if (avgPftPercent < 11) {
+                          
+                            textColor = '#ff0000';
+                        } else if (avgPftPercent >= 10 && avgPftPercent < 15) {
+                            bgColor = 'yellow'; // orange
+                            textColor = '#000000';
+                        } else if (avgPftPercent >= 15 && avgPftPercent < 20) {
+                           
+                            textColor = '#0d6efd';
+                        } else if (avgPftPercent >= 21 && avgPftPercent < 50) {
+                            textColor = '#198754';
+                        }
+                        else{
+                            textColor = '#800080'; // purple
+                        }
+
+                        const element = document.createElement('div');
+                        element.textContent = avgPftPercent + '%';
+                        element.style.backgroundColor = bgColor;
+                        element.style.color = textColor;
+                        element.style.padding = '4px 8px';
+                        element.style.borderRadius = '4px';
+                        element.style.fontWeight = '600';
+                        element.style.textAlign = 'center';
+
+                        data.avgPftPercent = avgPftPercent;
+
+                        // console
+
+
+                        
+                        // Top Calculation
+
+                        TotalAvgpft= (avgPrice * ovl30 ) * avgPftPercent / 100;
+                        TotalAvgSales = avgPrice * ovl30;
+
+
+                        TotalAvgpftForTop = (TotalAvgpft / TotalAvgSales) * 100;
+                        totalCogs = LP * ovl30;
+                        TotalAvgRoiPer = (TotalAvgpft / totalCogs) * 100;
+
+                        console.log("TotalAvgpft",TotalAvgpft);
+
+                        data.TotalAvgpft = Math.round(TotalAvgpft);
+                        data.TotalAvgSales = Math.round(TotalAvgSales);
+                        data.TotalAvgpftForTop = Math.round(TotalAvgpftForTop) ;
+                        data.totalCogs = Math.round(totalCogs);
+                        data.TotalAvgRoiPer = Math.round(TotalAvgRoiPer);
+                        console.log("TotalAvgpftForTop",TotalAvgpftForTop);  
+
+
+                       console.log("TotalAvgSales",TotalAvgSales);
+                       console.log("TotalAvgpftForTop",TotalAvgpftForTop);
+                       console.log("totalCogs",totalCogs);
+                       console.log("TotalAvgRoiPer",TotalAvgRoiPer);
+
+                        return element;
+                    }
+                },
+
+                {
+                        title: "AVG ROI%<br><span id='avgRoiHeader' style='font-size:12px; color:#fff; '></span>",
+                        field: "avgRoi",
+                        hozAlign: "right",
+                        headerSort: true,
+                        sorter: function(a, b) {
+                            const valA = parseFloat(a) || 0;
+                            const valB = parseFloat(b) || 0;
+                            return valA - valB;
+                        },
+                        formatter: function(cell) {
+                            const data = cell.getRow().getData();
+                            const LP = parseFloat(data.LP) || 0;
+                            const ovl30 = parseFloat(data.shopifyb2c_l30) || 0;
+                            const temuship = parseFloat(data.temu_ship) || 0;
+                            const avgPrice = parseFloat(data.formattedAvgPrice) || 0;
+                             const SHIP = parseFloat(data.SHIP) || 0;
+                            
+                            if (LP === 0) return "N/A";
+
+                            // Parse all L30 values
+                            const amzL30     = parseFloat(data.amz_l30) || 0;
+                            const ebayL30    = parseFloat(data.ebay_l30) || 0;
+                            const shopifyL30 = parseFloat(data.shopifyb2c_l30) || 0;
+                            const macyL30    = parseFloat(data.macy_l30) || 0;
+                            const reverbL30  = parseFloat(data.reverb_l30) || 0;
+                            const dobaL30    = parseFloat(data.doba_l30) || 0;
+                            const temuL30    = parseFloat(data.temu_l30) || 0;
+                            const ebay3L30   = parseFloat(data.ebay3_l30) || 0;
+                            const ebay2L30   = parseFloat(data.ebay2_l30) || 0;
+                            const walmartL30 = parseFloat(data.walmart_l30) || 0;
+                            const sheinL30   = parseFloat(data.shein_l30) || 0;
+
+                            // Total L30 across marketplaces
+                            const totalL30 = amzL30 + ebayL30 + shopifyL30 + macyL30 + reverbL30 + dobaL30 + temuL30  + ebay3L30 + ebay2L30 + walmartL30 + sheinL30;
+
+                            // Profit calculations (use parsed *_L30 variables)
+                            const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.70) - LP - SHIP) * amzL30 : 0;
+                            const ebayProfit    = data.ebay_price       ? ((parseFloat(data.ebay_price) * 0.72) - LP - SHIP) * ebayL30 : 0;
+                            const shopifyProfit = data.shopifyb2c_price ? ((parseFloat(data.shopifyb2c_price) * 0.75) - LP - SHIP) * shopifyL30 : 0;
+                            const macyProfit    = data.macy_price       ? ((parseFloat(data.macy_price) * 0.76) - LP - SHIP) * macyL30 : 0;
+                            const reverbProfit  = data.reverb_price     ? ((parseFloat(data.reverb_price) * 0.84) - LP - SHIP) * reverbL30 : 0;
+                            const dobaProfit    = data.doba_price       ? ((parseFloat(data.doba_price) * 0.95) - LP - SHIP) * dobaL30 : 0;
+                            const temuProfit    = data.temu_price       ? ((parseFloat(data.temu_price) * 0.87) - LP - temuship) * temuL30 : 0;
+                            const ebay3Profit   = data.ebay3_price      ? ((parseFloat(data.ebay3_price) * 0.71) - LP - SHIP) * ebay3L30 : 0;
+                            const ebay2Profit   = data.ebay2_price      ? ((parseFloat(data.ebay2_price) * 0.80) - LP - SHIP) * ebay2L30 : 0;
+                            const walmartProfit = data.walmart_price    ? ((parseFloat(data.walmart_price) * 0.80) - LP - SHIP) * walmartL30 : 0;
+                            const sheinProfit   = data.shein_price      ? ((parseFloat(data.shein_price) * 0.89) - LP - SHIP) * sheinL30 : 0;
+
+                            // Total profit
+                            const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
+                                                reverbProfit + dobaProfit + temuProfit  +
+                                                ebay3Profit + ebay2Profit + walmartProfit + sheinProfit;
+
+
+                            
+
+                            // ROI calculation
+                            const roi = totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
+
+                            data.TotalAvgRoiPer = Math.round(TotalAvgRoiPer);
+                            // Style based on ROI percentage
+                            let bgColor, textColor;
+                            if (roi < 11) {
+                                textColor = '#ff0000'; // red
+                            } else if (roi >= 10 && roi < 15) {
+                                bgColor = 'yellow';
+                                textColor = '#000000'; // black
+                            } else if (roi >= 15 && roi < 20) {
+                                textColor = '#0d6efd'; // blue
+                            } else if (roi >= 21 && roi < 50) {
+                                textColor = '#198754'; // green
+                            } else {
+                                textColor = '#800080'; // purple
+                            }
+
+                            // Build cell element
+                            const element = document.createElement('div');
+                            element.textContent = Math.round(roi) + '%';
+                            element.style.backgroundColor = bgColor;
+                            element.style.color = textColor;
+                            element.style.padding = '4px 8px';
+                            element.style.borderRadius = '4px';
+                            element.style.fontWeight = '600';
+                            element.style.textAlign = 'center';
+
+                            // Store for sorting
+                            data.avgRoi = Math.round(roi);
+                            return element;
+                        },
+                        visible: true
+                    }
+                    ,
+
+                 {
+                    title: "MSRP",
+                    field: "MSRP",
+                    hozAlign: "right",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+
+                  {
+                    title: "MAP",
+                    field: "MAP",
+                    hozAlign: "right",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+
+                {
+                    title: "LP",
+                    field: "LP",
+                    hozAlign: "right",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+                {
+                    title: "SHIP",
+                    field: "SHIP",
+                    hozAlign: "right",
+                    formatter: "money",
+                    formatterParams: {
+                        precision: 2
+                    }
+                },
+             
+            ],
+                ajaxResponse: function(url, params, response) {
+                    groupedSkuData = {}; // clear previous
+
+                    // Add calculated fields + mark parent rows
+                    response.data = response.data.map((item, index) => {
+                        const sku = item.SKU || "";
+                        const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
+
+                        return {
+                            ...item,
+                            calculatedRoi: calculateROI(item),
+                            calculatedProfit: calculateAvgProfit(item),
+                            sl_no: index + 1,
+                            is_parent: isParent ? 1 : 0,
+                             isParent: isParent,
+                            isParent: isParent,
+                            raw_data: item || {}
+                        };
                     });
 
-                    // Show modal
-                    $('#l30Modal').modal('show');
-                }
+                    // Group by Parent
+                    let grouped = {};
+                    response.data.forEach(item => {
+                        const parentKey = item.Parent || "";
+                        if (!grouped[parentKey]) grouped[parentKey] = [];
+                        grouped[parentKey].push(item);
 
-                $(document).on('keydown', '.dropdown', function(e) {
-                    const $menu = $(this).find('.dropdown-menu');
-                    const $items = $menu.find('.dropdown-item');
-                    const $active = $items.filter(':focus');
+                        // Group for play button use
+                        if (!groupedSkuData[parentKey]) {
+                            groupedSkuData[parentKey] = [];
+                        }
+                        groupedSkuData[parentKey].push(item);
+                    });
 
-                    switch (e.key) {
-                        case 'Escape':
-                            $menu.removeClass('show');
-                            $(this).find('.dropdown-toggle').focus();
-                            break;
-                        case 'ArrowDown':
-                            if ($menu.hasClass('show')) {
-                                e.preventDefault();
-                                $active.length ? $active.next().focus() : $items.first().focus();
+                    // Sort inside each group: child rows first, parent bottom
+                    let finalData = [];
+                    Object.values(grouped).forEach(rows => {
+                        rows.sort((a, b) => {
+                            if (a.is_parent !== b.is_parent) {
+                                return a.is_parent - b.is_parent; // parent last
                             }
-                            break;
-                        case 'ArrowUp':
-                            if ($menu.hasClass('show')) {
-                                e.preventDefault();
-                                $active.length ? $active.prev().focus() : $items.last().focus();
-                            }
-                            break;
-                        case 'Enter':
-                            if ($active.length) {
-                                e.preventDefault();
-                                $active.click();
-                            }
-                            break;
-                    }
-                });
-            }
+                            return (a.SKU || "").localeCompare(b.SKU || "");
+                        });
+                        finalData = finalData.concat(rows);
+                    });
 
-
-
-            // Show notification
-            function showNotification(type, message) {
-                // Remove any existing notifications
-                $('.custom-notification').remove();
-
-                const notification = $(`
-                    <div class="custom-notification position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-                        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                            ${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                `);
-
-                $('body').append(notification);
-
-                // Auto-hide success notifications after 5 seconds
-                if (type === 'success') {
                     setTimeout(() => {
-                        notification.fadeOut(500, () => notification.remove());
-                    }, 5000);
-                }
-            }
+                        setCombinedFilters();
+                    }, 0);
 
-            // Loader functions
-            function showLoader() {
-                $('#data-loader').fadeIn();
-            }
+                    console.log("Processed Response:", finalData);
+                    return finalData;
+                },
 
-            function hideLoader() {
-                $('#data-loader').fadeOut();
-            }
-
-            initTable();
         });
 
 
 
-        let filteredData = []; // Declare it at the top
 
-        // 2. Update the filteredData array to reflect the change
-        const index = filteredData.findIndex(item => item['SL No.'] == itemId);
-        if (index !== -1) {
-            filteredData[index][title] = cacheUpdateValue;
+        // On Top Start 
+    //   On to Percentaeg color
+        table.on("dataProcessed", function(){
+            let data = table.getData();
 
-            // If this is an SPRICE update, calculate and update Spft% in cache using new formula
-            if (title === 'SPRICE' && filteredData[index].raw_data) {
-                const item = filteredData[index];
-                const AMZ = parseFloat(item.AMZ) || 0;
-                const SHIP = parseFloat(item.raw_data.SHIP) || 0;
-                const LP = parseFloat(item.raw_data.LP) || 0;
-                const SPRICE = parseFloat(updatedValue) || 0;
-
-                // Calculate Spft% using new formula: (SPRICE * AMZ - SHIP - LP) / SPRICE
-                let Spft = 0;
-                if (SPRICE !== 0) {
-                    Spft = (SPRICE * 0.72 - SHIP - LP) / SPRICE;
-
-                }
-
-                // Update Spft% in cache and local data
-                amazonDataCache.updateField(itemId, 'Spft%', Spft);
-                filteredData[index]['Spft%'] = Spft;
-                filteredData[index].raw_data['Spft%'] = Spft;
-            }
-
-            // If this is an R&A update, ensure the raw_data is also updated
-            if (title === 'R&A' && filteredData[index].raw_data) {
-                filteredData[index].raw_data[title] = cacheUpdateValue;
-            }
-        }
-
-
-        function showL30Modal(icon) {
-            const data = JSON.parse(icon.getAttribute('data-l30'));
-            const inv = parseFloat(icon.getAttribute('data-inv')) || 0;
-
-            let modalContent = `
-
-            <table class="table table-bordered" id="l30DynamicTable">
-            <thead style="background-color:#eefcff">
-                <tr style="font-weight:20px">
-                    <th class="fw-bold">Site</th>
-                    <th>L30</th>
-                    <th>Price</th>
-                    <th>Pft %</th>
-                    <th>ROI %</th>
-                </tr>
-            </thead>
-            <tbody>
-        `;
-
-            let totalL30 = 0;
-            let totalWeightedProfit = 0;
-            let totalWeightedPrice = 0;
-            let totalROIBase = 0;
-
-            const rows = Object.entries(data).map(([site, values]) => {
-                const l30 = parseFloat(values.l30) || 0;
-                const pft = parseFloat(values.pft) || 0;
-                const roi = parseFloat(values.roi) || 0;
-                const price = parseFloat(values.price) || 0;
-
-                totalL30 += l30;
-                totalWeightedProfit += (pft * price * l30);
-                totalWeightedPrice += (price * l30);
-                totalROIBase += (inv * l30);
-
-                const pftPercent = (pft * 100).toFixed(2);
-                const roiPercent = (roi * 100).toFixed(2);
-
-                let pftBgColor = 'pink';
-                const pftValue = parseFloat(pftPercent);
-                if (pftValue < 10) pftBgColor = 'red';
-                else if (pftValue < 15) pftBgColor = 'orange';
-                else if (pftValue < 20) pftBgColor = 'blue';
-                else pftBgColor = 'green';
-
-                let roiBgColor = 'pink';
-                const roiValue = parseFloat(roiPercent);
-                if (roiValue < 50) roiBgColor = 'red';
-                else if (roiValue < 75) roiBgColor = 'orange';
-                else if (roiValue < 100) roiBgColor = 'green';
-
-                return {
-                    site,
-                    l30,
-                    price: price.toFixed(2),
-                    pftPercent,
-                    roiPercent,
-                    pftBgColor,
-                    roiBgColor,
-                };
-            });
-
-            // Sort by L30 descending
-            rows.sort((a, b) => b.l30 - a.l30);
-
-            // Render rows
-            rows.forEach((row, index) => {
-                modalContent += `
-        <tr>
-            <td>${row.site}</td>
-            <td>${row.l30}</td>
-            <td>$${row.price}</td>
-            <td style="color:${row.pftBgColor};">${row.pftPercent}%</td>
-            <td style="color:${row.roiBgColor};">${row.roiPercent}%</td>
-        </tr>`;
-            });
-
-            // Calculate avg profit & ROI %
-            const avgPftPercent = totalWeightedPrice > 0 ? (totalWeightedProfit / totalWeightedPrice * 100).toFixed(2) :
-                '0.00';
-            const avgRoiPercent = totalROIBase > 0 ? (totalWeightedProfit / totalROIBase * 100).toFixed(2) : '0.00';
-
-            modalContent += `
-    <tr style="font-weight:bold; background-color:#f0f0f0;">
-        <td>Total</td>
-        <td>${totalL30.toFixed(2)}</td>
-        <td>Avg</td>
-        <td>${avgPftPercent}%</td>
-        <td>${avgRoiPercent}%</td>
-    </tr>
-`;
-
-            modalContent += `
-    </tbody>
-    </table>`;
-
-
-
-
-            document.getElementById('l30ModalBody').innerHTML = modalContent;
-
-            // Apply !important styles dynamically via setProperty
-            rows.forEach((row, index) => {
-                const pftCell = document.getElementById(`pftCell${index}`);
-                const roiCell = document.getElementById(`roiCell${index}`);
-
-                if (pftCell) {
-                    pftCell.style.setProperty("background-color", row.pftBgColor, "important");
-                    pftCell.style.setProperty("color", "white", "important");
-                }
-                if (roiCell) {
-                    roiCell.style.setProperty("background-color", row.roiBgColor, "important");
-                    roiCell.style.setProperty("color", "white", "important");
+            // --- AVG PFT% calculation ---
+            let totalPft = 0, countPft = 0;
+            data.forEach(row => {
+                if (row.TotalAvgpftForTop) {
+                    totalPft += row.TotalAvgpftForTop;
+                    countPft++;
                 }
             });
+            let avgPft = countPft > 0 ? (totalPft / countPft) : 0;
 
-            const modal = new bootstrap.Modal(document.getElementById('l30Modal'));
-            modal.show();
-        }
-        if (!document.getElementById('pricingModal')) {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-            $('body').append(`
-        <div class="modal fade" id="pricingModal" tabindex="-1" aria-labelledby="pricingModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content p-3">
-                    <div class="modal-header">
-                        <h5 class="modal-title">SPRICE Calculator</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="pricingForm">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <input type="hidden" id="skuInput" name="sku">
-
-                            <div class="mb-2">
-                                <label>SPRICE ($)</label>
-                                <input type="number" step="0.01" class="form-control" id="sprPriceInput" name="sprice">
-                            </div>
-                            <div class="mb-2">
-                                <label>SPFT%</label>
-                                <input type="text" class="form-control" id="spftPercentInput" name="sprofit_percent" readonly>
-                            </div>
-                            <div class="mb-2">
-                                <label>SROI%</label>
-                                <input type="text" class="form-control" id="sroiPercentInput" name="sroi_percent" readonly>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </form>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    `);
-        }
+            let pftHeader = document.getElementById("avgPftHeader");
+            pftHeader.innerText = avgPft.toFixed(1) + "%";
 
 
-        function showProfitModal(icon) {
-            const data = JSON.parse(icon.getAttribute('data-profit'));
-
-            let modalContent = `
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Channel</th>
-                    <th>Price</th>
-                    <th>Profit (%)</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-            for (const [channel, details] of Object.entries(data)) {
-                modalContent += `
-            <tr>
-                <td>${channel}</td>
-                <td>${details.price ?? 0}</td>
-                <td>${details.profit ?? 0}%</td>
-            </tr>
-        `;
+            // Style for AVG PFT%
+            let bgColorPft, textColorPft;
+            if (avgPft < 11) {
+                bgColorPft = "#ffe5e5"; textColorPft = "#ff0000";
+            } else if (avgPft >= 10 && avgPft < 15) {
+                bgColorPft = "yellow"; textColorPft = "#000000";
+            } else if (avgPft >= 15 && avgPft < 20) {
+                bgColorPft = "#e6f0ff"; textColorPft = "#0d6efd";
+            } else if (avgPft >= 21 && avgPft < 50) {
+                bgColorPft = "#e6ffe6"; textColorPft = "#198754";
+            } else {
+                bgColorPft = "#f5e6f5"; textColorPft = "#800080";
             }
+            pftHeader.style.color = textColorPft;
+            pftHeader.style.backgroundColor = bgColorPft;
+            pftHeader.style.padding = "3px 6px";
+            pftHeader.style.borderRadius = "4px";
+            pftHeader.style.fontWeight = "600";
 
-            modalContent += `
-            </tbody>
-        </table>
-    `;
+            // --- AVG ROI% calculation ---
+            let totalRoi = 0, countRoi = 0;
+            data.forEach(row => {
+                if (row.TotalAvgRoiPer) {
+                    totalRoi += row.TotalAvgRoiPer;
+                    countRoi++;
+                }
+            });
+            let avgRoi = countRoi > 0 ? (totalRoi / countRoi) : 0;
 
-            document.getElementById('profitModalBody').innerHTML = modalContent;
-
-            const modal = new bootstrap.Modal(document.getElementById('profitModal'));
-            modal.show();
-        }
+            let roiHeader = document.getElementById("avgRoiHeader");
+            roiHeader.innerText = Math.round(avgRoi) + "%";
 
 
-
-
-
-        function showRoiModal(icon) {
-            const data = JSON.parse(icon.getAttribute('data-roi'));
-
-            let modalContent = `
-        <table class="table table-bordered ">
-            <thead>
-                <tr>
-                    <th>Channel</th>
-                    <th>Price</th>
-                    <th>ROI (%)</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-            for (const [channel, details] of Object.entries(data)) {
-                modalContent += `
-            <tr>
-                <td>${channel}</td>
-                <td>${details.price}</td>
-                <td>${details.roi}%</td>
-            </tr>
-        `;
+            // Style for AVG ROI%
+            let bgColorRoi, textColorRoi;
+            if (avgRoi < 11) {
+                bgColorRoi = "#ffe5e5"; textColorRoi = "#ff0000";
+            } else if (avgRoi >= 10 && avgRoi < 15) {
+                bgColorRoi = "yellow"; textColorRoi = "#000000";
+            } else if (avgRoi >= 15 && avgRoi < 20) {
+                bgColorRoi = "#e6f0ff"; textColorRoi = "#0d6efd";
+            } else if (avgRoi >= 21 && avgRoi < 50) {
+                bgColorRoi = "#e6ffe6"; textColorRoi = "#198754";
+            } else {
+                bgColorRoi = "#f5e6f5"; textColorRoi = "#800080";
             }
+            roiHeader.style.color = textColorRoi;
+            roiHeader.style.backgroundColor = bgColorRoi;
+            roiHeader.style.padding = "3px 6px";
+            roiHeader.style.borderRadius = "4px";
+            roiHeader.style.fontWeight = "600";
+        });
 
-            modalContent += `
-            </tbody>
-        </table>
-    `;
 
-            document.getElementById('roiModalBody').innerHTML = modalContent;
 
-            const modal = new bootstrap.Modal(document.getElementById('roiModal'));
-            modal.show();
+
+    
+
+        let currentParentFilter = null;
+
+        function setCombinedFilters() {
+            table.setFilter(function(row) {
+                return true; // Show all rows by default
+            });
         }
+
+        // Function to add trend indicators
+        function addTrendIndicators(row) {
+            const data = row.getData();
+            const cells = row.getCells();
+
+            cells.forEach(cell => {
+                const field = cell.getColumn().getField();
+                if (field.includes('l30') || field.includes('l60')) {
+                    const value = cell.getValue();
+                    const prevValue = data[field.replace('l30', 'l60')] || 0;
+
+                    if (value > prevValue) {
+                        cell.getElement().classList.add('trend-up');
+                    } else if (value < prevValue) {
+                        cell.getElement().classList.add('trend-down');
+                    }
+                }
+            });
+        }
+
+
+
+
+        // On TOp Caalculation
+
+        
+
     </script>
 
     <script>
-        $(document).on('submit', '#pricingForm', function(e) {
-            e.preventDefault();
+        // Helper: percent formatting
+        function fmtPct(v) {
+            if (v === null || v === undefined || v === "") return "-";
+            const num = parseFloat(v);
+            if (isNaN(num)) return "-";
 
-            const sku = $('#skuInput').val();
-            const sprice = $('#sprPriceInput').val();
-            const sprofit_percent = $('#spftPercentInput').val();
-            const sroi_percent = $('#sroiPercentInput').val();
-            const csrfToken = $('input[name="_token"]').val();
+            
+            return Math.round(num * 100) + "%";
+        }
+
+
+        // Helper: money formatting
+        function fmtMoney(v) {
+            if (v === null || v === undefined || v === "") return "-";
+            const num = parseFloat(v);
+            if (isNaN(num)) return "-";
+            return "$" + num.toFixed(2);
+        }
+
+        // Marketplace table generator
+        function buildOVL30Table(data) {
+          const rows = [
+                { label: "Amazon", prefix: "amz", logo: "{{ asset('uploads/amazon.png') }}" },
+                { label: "eBay", prefix: "ebay", logo:  "{{ asset('uploads/1.png') }}" },
+                { label: "Doba", prefix: "doba", logo: "{{ asset('uploads/doba.png') }}" },
+                { label: "Macy", prefix: "macy", logo: "{{ asset('uploads/macy.png') }}" },
+                { label: "Reverb", prefix: "reverb", logo: "{{ asset('uploads/reverb.png') }}" },
+                { label: "Temu", prefix: "temu", logo: "{{ asset('uploads/temu.jpeg') }}" },
+                { label: "Walmart", prefix: "walmart", logo: "{{ asset('uploads/walmart.png') }}" },
+                { label: "eBay2", prefix: "ebay2", logo: "{{ asset('uploads/2.png') }}" },
+                { label: "eBay3", prefix: "ebay3", logo: "{{ asset('uploads/3.png') }}" },
+                { label: "Shopify B2C", prefix: "shopifyb2c", logo: "{{ asset('uploads/shopify.png') }}" },
+                { label: "Shein", prefix: "shein", logo: "{{ asset('uploads/Shein.jpg') }}" }
+            ];
+
+
+
+            let html = `
+            <div class="table-responsive">
+            <div class="mb-2 text-muted small">
+                <i class="bi bi-info-circle"></i> Default sorting: L30 (Highest to Lowest)
+            </div>
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto; position: relative;">
+            <table class="table table-sm table-bordered align-middle sortable-table">
+                <thead class="table-light position-sticky" style="top: 0; z-index: 1000;">
+                <tr>
+                    <th data-sort="string">Channel <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">L60 <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number" class="default-sort">L30 <i class="bi bi-arrow-down"></i></th>
+                    <th data-sort="number">PRC <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">PFT % <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">ROI % <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">Views L30 <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">CVR <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">Req Views <i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">LMP <i class="bi bi-arrow-down-up"></i></th>
+                    <th>S Price</th>
+                    <th data-sort="number">S PFT<i class="bi bi-arrow-down-up"></i></th>
+                    <th data-sort="number">S ROI<i class="bi bi-arrow-down-up"></i></th>
+                </tr>
+                </thead>
+                <tbody>
+            `;
+            
+
+            rows.forEach(r => {
+                const price = data[`${r.prefix}_price`];
+                const l30 = r.prefix === 'shopifyb2c' ? data['shopify_l30'] : data[`${r.prefix}_l30`];
+                const l60 = data[`${r.prefix}_l60`];
+                const pft = data[`${r.prefix}_pft`];
+                const roi = data[`${r.prefix}_roi`];
+                const cvr = data[`${r.prefix}_cvr`];
+                const reqCvr = data[`${r.prefix}_req_view`];
+
+                const hasAny = price != null || l30 != null || l60 != null || pft != null || roi != null;
+                if (!hasAny) return;
+
+               const getColor = (value) => {
+                    // Convert to number and handle percentage values
+                    const val = typeof value === 'string' ? parseFloat(value.replace('%', '')) : Number(value);
+                    console.log('Color value:', value, 'Parsed:', val); // Debug log
+                    
+                    // Make sure value is a finite number
+                    if (!isFinite(val) || isNaN(val)) return '#000000'; // default black
+                    
+                    // Handle percentage ranges
+                    if (val >= 0 && val <= 10) return '#ff0000';        // red
+                    if (val > 10 && val <= 14) return '#fd7e14';       // orange
+                    if (val > 14 && val <= 19) return '#0d6efd';       // blue
+                    if (val > 19 && val <= 40) return '#198754';       // green
+                    if (val > 40) return '#800080';                    // purple
+                    
+                    return '#000000';                                  // default black
+                };
+
+                const pftClass = pft > 20 ? 'positive' : pft < 10 ? 'negative' : 'neutral';
+                const roiClass = roi > 30 ? 'positive' : roi < 15 ? 'negative' : 'neutral';
+                
+
+                html += `
+                 <tr>
+                    <td>
+                    <div class="d-flex flex-column align-items-center text-center">
+                        <div class="position-relative">
+                            <img src="${r.logo}" alt="${r.label}" 
+                                class="channel-logo mb-1" 
+                                style="width:30px; height:30px; object-fit:contain; cursor: pointer;"
+                                onmouseenter="showTooltip(this)"
+                                onmouseleave="hideTooltip(this)">
+                            
+                            <!-- Tooltip for links -->
+                            <div class="position-absolute bg-dark text-white p-2 rounded shadow-sm link-tooltip" 
+                                style="bottom: 0px; left: 70px; 
+                                       opacity: 0; visibility: hidden; transition: all 0.3s; 
+                                       white-space: nowrap; z-index: 1000; font-size: 11px;"
+                                onmouseenter="showTooltip(this.previousElementSibling)"
+                                onmouseleave="hideTooltip(this.previousElementSibling)">
+                                ${r.prefix === 'amz' ? `
+                                    ${data.amz_seller_link ? `<div><strong>SL:</strong> <a href="${data.amz_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.amz_buyer_link ? `<div><strong>BL:</strong> <a href="${data.amz_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'ebay' ? `
+                                    ${data.ebay_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.ebay_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'ebay2' ? `
+                                    ${data.ebay2_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay2_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.ebay2_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay2_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'ebay3' ? `
+                                    ${data.ebay3_seller_link ? `<div><strong>SL:</strong> <a href="${data.ebay3_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.ebay3_buyer_link ? `<div><strong>BL:</strong> <a href="${data.ebay3_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'macy' ? `
+                                    ${data.macy_seller_link ? `<div><strong>SL:</strong> <a href="${data.macy_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.macy_buyer_link ? `<div><strong>BL:</strong> <a href="${data.macy_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'reverb' ? `
+                                    ${data.reverb_seller_link ? `<div><strong>SL:</strong> <a href="${data.reverb_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.reverb_buyer_link ? `<div><strong>BL:</strong> <a href="${data.reverb_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'walmart' ? `
+                                    ${data.walmart_seller_link ? `<div><strong>SL:</strong> <a href="${data.walmart_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.walmart_buyer_link ? `<div><strong>BL:</strong> <a href="${data.walmart_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'doba' ? `
+                                    ${data.doba_seller_link ? `<div><strong>SL:</strong> <a href="${data.doba_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.doba_buyer_link ? `<div><strong>BL:</strong> <a href="${data.doba_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'temu' ? `
+                                    ${data.temu_seller_link ? `<div><strong>SL:</strong> <a href="${data.temu_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.temu_buyer_link ? `<div><strong>BL:</strong> <a href="${data.temu_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : r.prefix === 'shopifyb2c' ? `
+                                    ${data.shopifyb2c_seller_link ? `<div><strong>SL:</strong> <a href="${data.shopifyb2c_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.shopifyb2c_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shopifyb2c_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                 ` : r.prefix === 'shein' ? `
+                                    ${data.shein_seller_link ? `<div><strong>SL:</strong> <a href="${data.shein_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.shein_buyer_link ? `<div><strong>BL:</strong> <a href="${data.shein_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : ''}
+
+                            </div>
+                        </div>
+                        <span class="small fw-bold">${r.label}</span>
+                    </div>
+                    </td>
+
+                    <td>
+                        <div class="value-indicator">
+                            ${l60 ?? "-"}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="value-indicator">
+                            ${l30 ?? "-"}
+                        </div>
+                    </td>
+                
+                    <td>
+                        <div class="value-indicator">
+                            ${fmtMoney(price)}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="value-indicator ${pftClass}" style="color: ${getColor(pft * 100)};">
+                            ${fmtPct(pft)}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="value-indicator ${roiClass}" style="color: ${getColor(roi * 100)};">
+                            ${fmtPct(roi)}
+                        </div>
+                    </td>
+                
+                
+                    <td>
+                        <div class="value-indicator">
+                            ${r.prefix === 'amz' ? (data.sessions_l30 ?? "-") 
+                                : r.prefix === 'ebay' ? (data.ebay_views ?? "-") 
+                                : r.prefix === 'ebay2' ? (data.ebay2_views ?? "-") 
+                                : r.prefix === 'ebay3' ? (data.ebay3_views ?? "-") 
+                                : r.prefix === 'shein' ? (data.views_clicks ?? "-")
+                                : "-" }
+                        </div>
+                    </td>
+                    <td>
+                        <div class="value-indicator">
+                            ${(() => {
+                                if (r.prefix === 'amz' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                } else if (r.prefix === 'ebay' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                } else if (r.prefix === 'ebay3' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                }
+                                else if (r.prefix === 'shein' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                }
+
+                                return "N/A";
+                            })()} 
+                        </div>
+                    </td>
+                     <td>
+                        <div class="value-indicator">
+                        ${r.prefix === 'amz' ? Math.round(data.amz_req_view) ?? "-" : 
+                            r.prefix === 'ebay' ? Math.round(data.ebay_req_view) ?? "-" :
+                            r.prefix === 'ebay2' ? Math.round(data.ebay2_req_view) ?? "-" :
+                            r.prefix === 'ebay3' ? Math.round(data.ebay3_req_view) ?? "-" :
+                            r.prefix === 'shein' ? Math.round(data.shein_req_view) ?? "-" : "-"}
+                        </div>
+                    </td>
+
+
+                    <td>
+                        <div class="value-indicator">
+                            ${r.prefix === 'amz' ? fmtMoney(data.price_lmpa) 
+                                : r.prefix === 'ebay' ? fmtMoney(data.ebay_price_lmpa) 
+                                : r.prefix === 'shein' ? fmtMoney(data.lmp) 
+                                : '-'}
+                        </div>
+                    </td>
+
+
+                
+
+              <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" 
+                            class="form-control form-control-sm s-price" 
+                            value="${
+                                r.prefix === 'amz' ? (data.amz_sprice || '') 
+                                : r.prefix === 'ebay' ? (data.ebay_sprice || '') 
+                                : r.prefix === 'shopifyb2c' ? (data.shopifyb2c_sprice || '') 
+                                : r.prefix === 'ebay2' ? (data.ebay2_sprice || '') 
+                                : r.prefix === 'ebay3' ? (data.ebay3_sprice || '')
+                                : r.prefix === 'doba' ? (data.doba_sprice || '')
+                                : r.prefix === 'temu' ? (data.temu_sprice || '')
+                                : r.prefix === 'macy' ? (data.macy_sprice || '')
+                                : r.prefix === 'reverb' ? (data.reverb_sprice || '')
+                                : r.prefix === 'walmart' ? (data.walmart_sprice || '')
+                                : r.prefix === 'shein' ? (data.shein_sprice || '')
+                            
+                                : ''
+                            }"
+                            style="width: 65px;" 
+                            step="any"
+                            data-sku="${data.SKU}" 
+                            data-lp="${data.LP}" 
+                            data-ship="${
+                                r.prefix === 'temu' ? (data.temu_ship || '') : (data.SHIP || '')
+                            }"
+                            data-type="${r.prefix}">
+
+                        <!-- Push to Marketplace -->
+                        <button class="btn btn-success btn-sm d-flex align-items-center pushPriceBtn" 
+                            type="button"
+                            data-sku="${data.SKU}" 
+                            data-type="${r.prefix}">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </button>
+                    </div>
+                </td>
+
+
+                    <td class="spft-field">
+                        ${(() => {
+                            let value, textColor, bgColor;
+                            
+                            if (r.prefix === 'amz' && data.amz_spft) {
+                                value = Math.round(data.amz_spfst);
+                            } else if (r.prefix === 'ebay' && data.ebay_spft) {
+                                value = Math.round(data.ebay_spft);
+                            } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_spft) {
+                                value = Math.round(data.shopifyb2c_spft);
+                            } else if (r.prefix === 'ebay2' && data.ebay2_spft) {
+                                value = Math.round(data.ebay2_spft);
+                            } else if (r.prefix === 'ebay3' && data.ebay3_spft) {
+                                value = Math.round(data.ebay3_spft);
+                            } else if (r.prefix === 'doba' && data.doba_spft) {
+                                value = Math.round(data.doba_spft);
+                            } else if (r.prefix === 'temu' && data.temu_spft) {
+                                value = Math.round(data.temu_spft);
+                            } else if (r.prefix === 'macy' && data.macy_spft) {
+                                value = Math.round(data.macy_spft);
+                            } else if (r.prefix === 'reverb' && data.reverb_spft) {
+                                value = Math.round(data.reverb_spft);
+                            } else if (r.prefix === 'walmart' && data.walmart_spft) {
+                                value = Math.round(data.walmart_spft);
+                            }
+                            else if (r.prefix === 'shein' && data.shein_spft) {
+                                value = Math.round(data.shein_spft);
+                            }
+
+                            if (value !== undefined) {
+                                if (value < 11) {
+                                    textColor = '#ff0000';
+                                } else if (value >= 10 && value < 15) {
+                                    bgColor = 'yellow';
+                                    textColor = '#000000';
+                                } else if (value >= 15 && value < 20) {
+                                    textColor = '#0d6efd';
+                                } else if (value >= 21 && value < 50) {
+                                    textColor = '#198754';
+                                } else {
+                                    textColor = '#800080';
+                                }
+                                
+                                return `<span style="color: ${textColor}; ${bgColor ? `background-color: ${bgColor};` : ''}">${value}%</span>`;
+                            }
+                            
+                            return '-';
+                        })()}
+                    </td>
+
+                    <td class="sroi-field">
+                        ${(() => {
+                            let value, textColor, bgColor;
+                            
+                            if (r.prefix === 'amz' && data.amz_sroi) {
+                                value = Math.round(data.amz_sroi);
+                            } else if (r.prefix === 'ebay' && data.ebay_sroi) {
+                                value = Math.round(data.ebay_sroi);
+                            } else if (r.prefix === 'shopifyb2c' && data.shopifyb2c_sroi) {
+                                value = Math.round(data.shopifyb2c_sroi);
+                            } else if (r.prefix === 'ebay2' && data.ebay2_sroi) {
+                                value = Math.round(data.ebay2_sroi);
+                            } else if (r.prefix === 'ebay3' && data.ebay3_sroi) {
+                                value = Math.round(data.ebay3_sroi);
+                            }else if (r.prefix === 'doba' && data.doba_sroi) {
+                                value = Math.round(data.doba_sroi);
+                            } else if (r.prefix === 'temu' && data.temu_sroi) {
+                                value = Math.round(data.temu_sroi);
+                            } else if (r.prefix === 'macy' && data.macy_sroi) {
+                                value = Math.round(data.macy_sroi);
+                            } else if (r.prefix === 'reverb' && data.reverb_sroi) {
+                                value = Math.round(data.reverb_sroi);
+                            } else if (r.prefix === 'walmart' && data.walmart_sroi) {
+                                value = Math.round(data.walmart_sroi);
+                            } else if (r.prefix === 'shein' && data.shein_sroi) {
+                                value = Math.round(data.shein_sroi);
+                            }
+
+                            if (value !== undefined) {
+                                if (value < 11) {
+                                    textColor = '#ff0000';
+                                } else if (value >= 10 && value < 15) {
+                                    bgColor = 'yellow';
+                                    textColor = '#000000';
+                                } else if (value >= 15 && value < 20) {
+                                    textColor = '#0d6efd';
+                                } else if (value >= 21 && value < 50) {
+                                    textColor = '#198754';
+                                } else {
+                                    textColor = '#800080';
+                                }
+                                
+                                return `<span style="color: ${textColor}; ${bgColor ? `background-color: ${bgColor};` : ''}">${value}%</span>`;
+                            }
+                            
+                            return '-';
+                        })()}
+                    </td>
+                   
+
+                </tr>
+                `;
+            });
+
+            html += "</tbody></table></div>";
+          
+
+            return html;
+        }
+
+        // Modal open function
+        function showOVL30Modal(row) {
+            const data = row.getData();
+            
+            // Initialize top push button
+            const topPushPrice = document.getElementById('topPushPrice');
+            const topPushBtn = document.getElementById('topPushBtn');
+            const topSaveBtn = document.getElementById('topSaveBtn');
+            
+            topPushBtn.dataset.sku = data.SKU;
+            topSaveBtn.dataset.sku = data.SKU;
+            topSaveBtn.dataset.lp = data.LP || 0;
+            topSaveBtn.dataset.ship = data.SHIP || 0;
+            topSaveBtn.dataset.temuShip = data.temu_ship || 0;
+            topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
+            document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
+            document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
+            document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";    
+            document.getElementById('total_views').textContent = data.total_views ? `${data.total_views}` : "0";  
+            document.getElementById('avgCvr').textContent = data.avgCvr ? `${data.avgCvr}` : "0";        
+            const imgEl = document.getElementById('ovl30Img');
+
+            if (imgEl) {
+                if (data.shopifyb2c_image) {
+                    imgEl.src = data.shopifyb2c_image;
+                    imgEl.style.display = "block";   // show image
+                } else {
+                    imgEl.style.display = "none";    // hide if missing
+                }
+            }
+
+
+            document.getElementById('dilPercentage').textContent = data.dilPercentage ? `${data.dilPercentage}` : "0";
+            if (data.dilPercentage) {
+                const dilElement = document.getElementById('dilPercentage');
+                const rounded = data.dilPercentage;
+                
+                if (rounded >= 0 && rounded <= 10) {
+                    dilElement.style.color = "red";
+                } else if (rounded >= 11 && rounded <= 15) {
+                    dilElement.style.backgroundColor = "yellow";
+                    dilElement.style.color = "black"; 
+                    dilElement.style.padding = "2px 4px";
+                    dilElement.style.borderRadius = "4px";
+                } else if (rounded >= 16 && rounded <= 20) {
+                    dilElement.style.color = "blue";
+                } else if (rounded >= 21 && rounded <= 40) {
+                    dilElement.style.color = "green";
+                } else if (rounded >= 41) {
+                    dilElement.style.color = "purple";
+                }
+            }
+            document.getElementById('formattedAvgPrice').textContent = data.formattedAvgPrice ? `${data.formattedAvgPrice}` : " 0";
+            if (data.formattedAvgPrice) {
+                const avgPriceValue = parseFloat(data.formattedAvgPrice.replace(/[^0-9.-]+/g, ''));
+                let textColor;
+                if (!isNaN(avgPriceValue)) {
+                    if (avgPriceValue < 10) {
+                        textColor = '#dc3545'; // red
+                    } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
+                        textColor = '#fd7e14'; // orange
+                    } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
+                        textColor = '#0d6efd'; // blue
+                    } else if (avgPriceValue >= 20) {
+                        textColor = '#198754'; // green
+                    }
+                } else {
+                    textColor = '#6c757d'; // gray
+                }
+                document.getElementById('formattedAvgPrice').style.color = textColor;
+            }
+            document.getElementById('formattedProfitPercentage').textContent = data.avgPftPercent ? `${data.avgPftPercent}` : "0";
+            if (data.avgPftPercent) {
+                let bgColor, textColor;
+                const avgPftPercent = data.avgPftPercent;
+                
+                if (avgPftPercent < 11) {
+                    textColor = '#ff0000';
+                } else if (avgPftPercent >= 10 && avgPftPercent < 15) {
+                    bgColor = 'yellow';
+                    textColor = '#000000';
+                } else if (avgPftPercent >= 15 && avgPftPercent < 20) {
+                    textColor = '#0d6efd';
+                } else if (avgPftPercent >= 21 && avgPftPercent < 50) {
+                    textColor = '#198754';
+                } else {
+                    textColor = '#800080';
+                }
+                
+                const element = document.getElementById('formattedProfitPercentage');
+                element.style.color = textColor;
+                if (bgColor) {
+                    element.style.backgroundColor = bgColor;
+                }
+            }
+            document.getElementById('formattedRoiPercentage').textContent = data.avgRoi ? `${data.avgRoi}` : "0";
+            if (data.avgRoi) {
+                let bgColor, textColor;
+                const avgRoi = data.avgRoi;
+                
+                if (avgRoi < 11) {
+                    textColor = '#ff0000';
+                } else if (avgRoi >= 10 && avgRoi < 15) {
+                    bgColor = 'yellow';
+                    textColor = '#000000'; 
+                } else if (avgRoi >= 15 && avgRoi < 20) {
+                    textColor = '#0d6efd';
+                } else if (avgRoi >= 21 && avgRoi < 50) {
+                    textColor = '#198754';
+                } else {
+                    textColor = '#800080';
+                }
+                
+                const element = document.getElementById('formattedRoiPercentage');
+                element.style.color = textColor;
+                if (bgColor) {
+                    element.style.backgroundColor = bgColor;
+                }
+            }
+
+
+
+            document.getElementById('ovl30Content').innerHTML = buildOVL30Table(data);
+
+            const modalEl = document.getElementById('ovl30Modal');
+            const modal = new bootstrap.Modal(modalEl);
+
+            // Automatically sort by L30 (highest to lowest) when modal opens
+            setTimeout(() => {
+                const table = modalEl.querySelector('.sortable-table');
+                const l30Header = Array.from(table.querySelectorAll('th')).find(th => th.textContent.includes('L30'));
+                if (l30Header) {
+                    // Trigger two clicks if needed to get descending order (highest to lowest)
+                    if (!l30Header.classList.contains('sort-desc')) {
+                        l30Header.click();
+                        if (!l30Header.classList.contains('sort-desc')) {
+                            l30Header.click();
+                        }
+                    }
+                }
+            }, 100);
+
+            // Make modal draggable
+            const dialogEl = modalEl.querySelector('.modal-dialog');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            dialogEl.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                if (e.target.closest('.modal-header')) {
+                    isDragging = true;
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    dialogEl.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+
+            function dragEnd() {
+                isDragging = false;
+            }
+
+            // Reset position when modal is hidden
+            modalEl.addEventListener('hidden.bs.modal', function() {
+                dialogEl.style.transform = 'none';
+                xOffset = 0;
+                yOffset = 0;
+            });
+
+            // Initialize table sorting
+            initTableSorting(modalEl.querySelector('.sortable-table'));
+            modal.show();
+        }
+
+        
+
+        // Table sorting functionality
+        function initTableSorting(table) {
+            const headers = table.querySelectorAll('th[data-sort]');
+            headers.forEach(header => {
+                header.style.cursor = 'pointer';
+                header.addEventListener('click', () => {
+                    const sortType = header.getAttribute('data-sort');
+                    const columnIndex = Array.from(header.parentElement.children).indexOf(header);
+                    const rows = Array.from(table.querySelector('tbody').rows);
+                    const isAscending = header.classList.contains('sort-asc');
+
+                    // Remove sorting classes from all headers
+                    headers.forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                        h.querySelector('.bi').className = 'bi bi-arrow-down-up';
+                    });
+
+                    // Sort the rows
+                    rows.sort((a, b) => {
+                        let aVal = a.cells[columnIndex].textContent.trim();
+                        let bVal = b.cells[columnIndex].textContent.trim();
+
+                        if (sortType === 'number') {
+                            // Extract numbers from strings and convert to float
+                            aVal = parseFloat(aVal.replace(/[^0-9.-]+/g, '')) || 0;
+                            bVal = parseFloat(bVal.replace(/[^0-9.-]+/g, '')) || 0;
+                        }
+
+                        if (aVal === bVal) return 0;
+                        if (isAscending) {
+                            return sortType === 'string' ? 
+                                bVal.localeCompare(aVal) : 
+                                bVal - aVal;
+                        } else {
+                            return sortType === 'string' ? 
+                                aVal.localeCompare(bVal) : 
+                                aVal - bVal;
+                        }
+                    });
+
+                    // Update sorting indicators
+                    header.classList.add(isAscending ? 'sort-desc' : 'sort-asc');
+                    header.querySelector('.bi').className = `bi bi-arrow-${isAscending ? 'down' : 'up'}`;
+
+                    // Reorder the rows in the table
+                    const tbody = table.querySelector('tbody');
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.documentElement.setAttribute("data-sidenav-size", "condensed");
+            const table = Tabulator.findTable("#forecast-table")[0];
+
+            const parentKeys = () => Object.keys(groupedSkuData);
+            let currentIndex = 0;
+            let isPlaying = false;
+
+            function renderGroup(parentKey) {
+                if (!groupedSkuData[parentKey]) return;
+
+                currentParentFilter = parentKey;
+                setCombinedFilters();
+
+                // Filter table by Parent
+                table.setFilter("Parent", "=", parentKey);
+                console.log("Showing group:", parentKey);
+            }
+
+            // ▶️ Play (activate filter mode, start at first group)
+            document.getElementById('play-auto').addEventListener('click', () => {
+                isPlaying = true;
+                currentIndex = 0;
+                renderGroup(parentKeys()[currentIndex]);
+
+                document.getElementById('play-pause').style.display = 'inline-block';
+                document.getElementById('play-auto').style.display = 'none';
+            });
+
+            // ⏸ Pause (show all data again)
+            document.getElementById('play-pause').addEventListener('click', () => {
+                isPlaying = false;
+                currentParentFilter = null; 
+                setCombinedFilters();
+                table.clearFilter();
+
+                document.getElementById('play-pause').style.display = 'none';
+                document.getElementById('play-auto').style.display = 'inline-block';
+            });
+
+            // ⏩ Forward (manual step)
+            document.getElementById('play-forward').addEventListener('click', () => {
+                if (!isPlaying) return;
+                currentIndex = (currentIndex + 1) % parentKeys().length;
+                renderGroup(parentKeys()[currentIndex]);
+            });
+
+            // ⏪ Backward (manual step)
+            document.getElementById('play-backward').addEventListener('click', () => {
+                if (!isPlaying) return;
+                currentIndex = (currentIndex - 1 + parentKeys().length) % parentKeys().length;
+                renderGroup(parentKeys()[currentIndex]);
+            });
+        });
+
+        // Draggable Modal for Chart 
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.querySelector("#priceComparisonModal .modal-dialog");
+            const header = document.querySelector("#priceComparisonModal .modal-header");
+
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.style.cursor = "move";
+
+            header.addEventListener("mousedown", (e) => {
+                isDragging = true;
+                const rect = modal.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                modal.style.position = "absolute";
+                modal.style.margin = "0";
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (isDragging) {
+                    modal.style.left = e.clientX - offsetX + "px";
+                    modal.style.top = e.clientY - offsetY + "px";
+                }
+            });
+
+
+            document.addEventListener("mouseup", () => {
+                isDragging = false;
+            });
+
+            // Reset position when modal is closed
+            document.getElementById("priceComparisonModal").addEventListener("hidden.bs.modal", function () {
+                modal.style.position = "";
+                modal.style.left = "";
+                modal.style.top = "";
+                modal.style.margin = "";
+            });
+        });
+
+
+        // Push Price
+        $(document).on('blur', '.s-price', function() {
+            const $input = $(this);
+            const sprice = parseFloat($input.val()) || 0;
+            const sku = $input.data('sku');
+            const type = $input.data('type');
+            const LP = parseFloat($input.data('lp')) || 0;
+            const SHIP = parseFloat($input.data('ship')) || 0;
+            const temu_ship = parseFloat($input.data('temu_ship')) || 0;
+
+            if (!sku || !type) return;
+
+            console.log(sku, sprice);
+            
+            $.ajax({
+                url: '/pricing-master/save-sprice',
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    sku: sku,
+                    type: type,
+                    sprice: sprice,
+                    LP: LP,
+                    SHIP: SHIP,
+                    temu_ship: temu_ship
+                },
+                 beforeSend: function() {
+                        $('#savePricingBtn').html(
+                            '<i class="fa fa-spinner fa-spin"></i> Saving...');
+                    },
+                success: function(res) {
+                    if(res.status === 200) {
+                        const $row = $input.closest('tr');
+                        const spft = Math.round(res.data.SPFT);
+                        const sroi = Math.round(res.data.SROI);
+
+                        function getColoredSpan(value) {
+                            let textColor, bgColor;
+
+                            if (value < 11) {
+                                textColor = '#ff0000';
+                            } else if (value >= 10 && value < 15) {
+                                bgColor = 'yellow';
+                                textColor = '#000000';
+                            } else if (value >= 15 && value < 20) {
+                                textColor = '#0d6efd';
+                            } else if (value >= 21 && value < 50) {
+                                textColor = '#198754';
+                            } else {
+                                textColor = '#800080';
+                            }
+
+                            return `<span style="color:${textColor};${bgColor ? `background-color:${bgColor};` : ''}">${value}%</span>`;
+                        }
+
+                        // Update with styled spans
+                        $row.find('.spft-field').html(getColoredSpan(spft));
+                        $row.find('.sroi-field').html(getColoredSpan(sroi));
+                    } else {
+                        console.error('Error saving S Price:', res.message);
+                    }
+                },
+
+                error: function(err) {
+                    console.error('Error saving S Price:', err);
+                }
+            });
+        });
+
+
+        // Save top price button handler
+        $(document).on('click', '#topSaveBtn', function() {
+            const sku = $(this).data('sku');
+            const price = parseFloat($('#topPushPrice').val()) || 0;
+            const LP = parseFloat($(this).data('lp')) || 0;
+            const SHIP = parseFloat($(this).data('ship')) || 0;
+            const temu_ship = parseFloat($(this).data('temuShip')) || 0;
+
+            console.log('Saving for SKU:', sku, 'Price:', price);
+
+            if (!sku || price <= 0) {
+                alert('Please enter a valid price');
+                return;
+            }
 
             $.ajax({
-                url: '/pricing-master/save',
-                method: 'POST',
+                url: '/pricing-master/save-sprice',
+                type: 'POST',
                 data: {
-                    _token: csrfToken,
+                    _token: $('meta[name="csrf-token"]').attr('content'),
                     sku: sku,
-                    sprice: sprice,
-                    sprofit_percent: sprofit_percent,
-                    sroi_percent: sroi_percent
+                    type: 'top',
+                    sprice: price,
+                    LP: LP,
+                    SHIP: SHIP,
+                    temu_ship: temu_ship
                 },
-                success: function(response) {
-                    if (response.status === 200) {
-                        $('#pricingModal').modal('hide');
-                        showNotification('success', response.message); // show toast
-
-                        const {
-                            sku,
-                            sprice,
-                            sprofit_percent,
-                            sroi_percent
-                        } = response.data;
-
-                        // Update SPRICE cell
-                        if (sprice !== null && !isNaN(sprice)) {
-                            $(`#sprice-${sku}`).html(`
-                        <span class="badge bg-primary">$${parseFloat(sprice).toFixed(2)}</span>
-                        <i class="fa fa-edit text-primary ms-2" style="cursor:pointer;" 
-                            onclick='openPricingModal(${JSON.stringify({ LP: response.data.lp, SHIP: response.data.ship, SKU: sku })})'></i>
-                    `);
-                        }
-
-                        // Update SPFT cell
-                        if (sprofit_percent !== null && !isNaN(sprofit_percent)) {
-                            $(`#spft-${sku}`).html(`
-                        <span class="badge bg-success">${parseFloat(sprofit_percent).toFixed(2)}%</span>
-                    `);
-                        }
-
-                        // Update SROI cell
-                        if (sroi_percent !== null && !isNaN(sroi_percent)) {
-                            $(`#sroi-${sku}`).html(`
-                        <span class="badge bg-info">${parseFloat(sroi_percent).toFixed(2)}%</span>
-                    `);
-                        }
+                success: function(res) {
+                    if (res.status === 200) {
+                        alert('Price saved to all marketplaces successfully');
+                    } else {
+                        alert('Failed to save price');
                     }
+                },
+                error: function(err) {
+                    console.error('Error saving price:', err);
+                    alert('Error saving price');
                 }
-
             });
         });
 
-
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch('/pricing-analysis-data-view?page=1&per_page=100&dil_filter=all&data_type=all')
-                .then(response => response.json())
-                .then(data => {
-                    console.log("✅ Pricing Analysis Data:", data.data); // 👈 Shows processedData
-                    console.log("📦 Distinct Values:", data.distinct_values);
-                    console.log("📄 Pagination:", data.pagination);
-                })
-                .catch(error => {
-                    console.error("❌ Failed to fetch pricing data:", error);
+            $(document).on('click', '.pushPriceBtn, #topPushBtn', function() {
+            const $btn = $(this);
+            const sku = $btn.data('sku') || $('#topPushBtn').data('sku');
+            let price;
+            
+            if($btn.attr('id') === 'topPushBtn') {
+                price = parseFloat($('#topPushPrice').val()) || 0;
+                if(price <= 0) {
+                    alert('Please enter a valid price');
+                    return;
+                }
+                // Push to all marketplaces
+                $.ajax({
+                    url: '/push-shopify-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Shopify price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Shopify update failed:', error);
+                    }
                 });
-        });
-
-
-
-
-
-
-
-        function openSiteAnalysisModal(icon) {
-            const data = JSON.parse(icon.getAttribute('data-analysis') || '{}');
-
-            const sites = [];
-            const l30Values = [];
-            const roiValues = [];
-            const pftValues = [];
-            const priceValues = [];
-
-            let tableHtml = '';
-
-            for (const [site, values] of Object.entries(data)) {
-                const price = parseFloat(values.price) || 0;
-                const l30 = parseFloat(values.l30) || 0;
-                const roi = (parseFloat(values.roi) || 0) * 100;
-                const pft = (parseFloat(values.pft) || 0) * 100;
-
-
-                sites.push(site);
-                priceValues.push(price);
-                l30Values.push(l30);
-                roiValues.push(roi);
-                pftValues.push(pft);
-
-                tableHtml += `
-            <tr>
-                <td>${site}</td>
-                <td>$${price.toFixed(2)}</td>
-                <td>${l30}</td>
-                <td>${roi.toFixed(2)}%</td>
-                <td>${pft.toFixed(2)}%</td>
-            </tr>
-        `;
-            }
-
-            document.getElementById('siteSummaryTableBody').innerHTML = tableHtml;
-
-            // Destroy existing chart
-            if (window.siteAnalysisChartInstance) {
-                window.siteAnalysisChartInstance.destroy();
-            }
-
-            // Draw chart
-            const ctx = document.getElementById('siteAnalysisChart').getContext('2d');
-            window.siteAnalysisChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: sites,
-                    datasets: [{
-                            label: 'L30',
-                            data: l30Values,
-                            backgroundColor: '#e6194b', // Vibrant Red
-                            borderColor: '#b2163e',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ROI %',
-                            data: roiValues,
-                            backgroundColor: '#3cb44b', // Bright Green
-                            borderColor: '#2a8034',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'PFT %',
-                            data: pftValues,
-                            backgroundColor: '#ffe119', // Vivid Yellow
-                            borderColor: '#d4be17',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Price',
-                            data: priceValues,
-                            backgroundColor: '#4363d8', // Strong Blue
-                            borderColor: '#2e41a6',
-                            borderWidth: 1
-                        }
-                    ]
-
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
+                
+                $.ajax({
+                    url: '/push-ebay-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
                     },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
+                    success: function(response) {
+                        console.log('eBay price updated');
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Values'
-                            }
-                        }
+                    error: function(xhr, status, error) {
+                        console.error('eBay update failed:', error);
                     }
+                });
+                
+                $.ajax({
+                    url: '/update-amazon-price',
+                    type: 'POST',
+                    data: { 
+                        sku: sku, 
+                        price: price,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        console.log('Amazon price updated');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Amazon update failed:', error);
+                    }
+                });
+
+
+                 // ✅ Walmart
+                $.ajax({
+                    url: '/push-walmart-price',
+                    type: 'POST',
+                    data: { sku: sku, price: price, _token: '{{ csrf_token() }}' },
+                    success: function(response) {
+                        console.log('Walmart price update requested');
+                    },
+                    error: function(err) {
+                        console.error('Walmart update failed:', err);
+                    }
+                });
+
+                // ✅ Doba
+                $.ajax({
+                    url: '/update-doba-price',
+                    type: 'POST',
+                    data: { sku: sku, price: price, _token: '{{ csrf_token() }}' },
+                    success: function(response) {
+                        console.log('Doba price update requested');
+                    },
+                    error: function(err) {
+                        console.error('Doba update failed:', err);
+                    }
+                });
+                
+                alert('Price is being updated across all marketplaces');
+                return;
+            }
+            
+            const type = $btn.data('type');
+
+            if(!sku || !type) return;
+
+            // Fetch the latest SPrice from your input field in the modal/table
+            const $input = $btn.closest('tr').find('.s-price');
+            const sprice = parseFloat($input.val()) || 0;
+
+            if(sprice <= 0) {
+                alert('Please enter a valid SPrice before pushing.');
+                return;
+            }
+
+            $btn.html('<i class="fa fa-spinner fa-spin"></i> Pushing...');
+
+            // Example: Marketplace AJAX
+            if(type === 'amz') {
+                $.ajax({
+                    url: '/update-amazon-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                       alert('Amazon price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating Amazon price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace'); // reset button text
+                    }
+                });
+            }
+             else if(type === 'ebay') {
+                $.ajax({
+                    url: '/push-ebay-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            alert('eBay price updated successfully!');
+                        } else {
+                            alert('Error: ' + (res.error || 'Unknown error'));
+                        }
+                    },
+                    error: function(err) {
+                        const errorMsg = err.responseJSON && err.responseJSON.error ? 
+                            err.responseJSON.error : 'Error updating eBay price';
+                        alert(errorMsg);
+                    },
+                    complete: function() {
+                        $btn.html('<i class="bi bi-cloud-arrow-up"></i>');
+                    }
+                });
+            }
+
+              else if(type === 'ebay2') {
+                $.ajax({
+                    url: '/push-ebay2-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            alert('eBay2 price updated successfully!');
+                        } else {
+                            alert('Error: ' + (res.error || 'Unknown error'));
+                        }
+                    },
+                    error: function(err) {
+                        const errorMsg = err.responseJSON && err.responseJSON.error ? 
+                            err.responseJSON.error : 'Error updating eBay2 price';
+                        alert(errorMsg);
+                    },
+                    complete: function() {
+                        $btn.html('<i class="bi bi-cloud-arrow-up"></i>');
+                    }
+                });
+            }
+              else if(type === 'ebay3') {
+                $.ajax({
+                    url: '/push-ebay3-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            alert('eBay3 price updated successfully!');
+                        } else {
+                            alert('Error: ' + (res.error || 'Unknown error'));
+                        }
+                    },
+                    error: function(err) {
+                        const errorMsg = err.responseJSON && err.responseJSON.error ? 
+                            err.responseJSON.error : 'Error updating eBay3 price';
+                        alert(errorMsg);
+                    },
+                    complete: function() {
+                        $btn.html('<i class="bi bi-cloud-arrow-up"></i>');
+                    }
+                });
+            }
+
+            else if(type === 'shopifyb2c') {
+                $.ajax({
+                    url: '/push-shopify-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                        if (res.status === "success") {
+                            alert(res.message || 'Shopify price updated successfully!');
+                        } else {
+                            alert("Error: " + (res.message || "Something went wrong"));
+                        }
+                        console.log(res);
+                    },
+                    error: function(err) {
+                        let errorMsg = "Error updating Shopify price!";
+                        if (err.responseJSON && err.responseJSON.message) {
+                            errorMsg = err.responseJSON.message;
+                        }
+                        alert(errorMsg);
+                        console.error('Error updating Shopify price:', err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            }  else if(type === 'temu') {
+                $.ajax({
+                    url: '/update-temu-price',
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        sku: sku,
+                        price: sprice
+                    },
+                    success: function(res) {
+                     alert('Temu price updated successfully!');
+                    },
+                    error: function(err) {
+                        alert('Error updating Temu price: ' + err);
+                    },
+                    complete: function() {
+                        $btn.html('Push to Marketplace');
+                    }
+                });
+            } else if(type === 'macy') {
+                $.ajax({
+                    url: '/update-macy-price',
+                    type: 'POST',
+                    data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                        alert('Macy price updated successfully!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Macy price: ' + err);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
                 }
-            });
+                else if(type === 'reverb') {
+                    $.ajax({
+                        url: '/update-reverb-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                        alert('Reverb price updated successfully!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Reverb price: ' + err);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+                else if(type === 'walmart') {
+                    $.ajax({
+                        url: '/push-walmart-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                            alert('Walmart Price Change Requested, Will Be Completed after 10  Minutes!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Walmart price: ' + err.responseText);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
 
-            // Show modal
-            $('#siteAnalysisModal').modal('show');
+                else if(type === 'doba') {
+                    $.ajax({
+                        url: '/update-doba-price',
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content'),
+                            sku: sku,
+                            price: sprice
+                        },
+                        success: function(res) {
+                            alert('Doba Price Change Requested, Will Be Completed after 10  Minutes!');
+                        },
+                        error: function(err) {
+                            alert('Error updating Doba price: ' + err.responseText);
+                        },
+                        complete: function() {
+                            $btn.html('Push to Marketplace');
+                        }
+                    });
+                }
+          });
 
-
-
-        }
+       
     </script>
+
     <script>
-        function openPricingModal({
-            LP = 0,
-            SHIP = 0,
-            SKU = ''
-        }) {
-            $('#skuInput').val(SKU);
+function showTooltip(img) {
+    const tooltip = img.nextElementSibling;
+    if (tooltip && tooltip.classList.contains('link-tooltip')) {
+        tooltip.style.opacity = '1';
+        tooltip.style.visibility = 'visible';
+    }
+}
 
-            const $sprInput = $('#sprPriceInput');
-            const $spftInput = $('#spftPercentInput');
-            const $sroiInput = $('#sroiPercentInput');
-
-            // Reset values
-            $sprInput.val('');
-            $spftInput.val('');
-            $sroiInput.val('');
-
-            // Parse numbers
-            LP = parseFloat(LP) || 0;
-            SHIP = parseFloat(SHIP) || 0;
-
-            // Input calculation
-            $sprInput.off('input').on('input', function() {
-                const SPRICE = parseFloat(this.value) || 0;
-
-                if (SPRICE > 0) {
-                    const SPFT = ((SPRICE * 0.72) - LP - SHIP) / SPRICE;
-                    const SROI = ((SPRICE * 0.72) - LP - SHIP) / LP;
-
-                    $spftInput.val((SPFT * 100).toFixed(2)); // ✅ No %
-                    $sroiInput.val(isFinite(SROI) ? (SROI * 100).toFixed(2) : '∞'); // ✅ No %
-                } else {
-                    $spftInput.val('');
-                    $sroiInput.val('');
-                }
-            });
-
-            $('#pricingModal').modal('show');
-        }
-
-        function showNotification(type, message) {
-            $('#toastMessage').text(message);
-            $('#mainToast').removeClass('bg-success bg-danger').addClass(type === 'success' ? 'bg-success' : 'bg-danger');
-            const toast = new bootstrap.Toast(document.getElementById('mainToast'));
-            toast.show();
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+function hideTooltip(img) {
+    const tooltip = img.nextElementSibling;
+    if (tooltip && tooltip.classList.contains('link-tooltip')) {
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+    }
+}
+</script>
 @endsection
+
+
+
+

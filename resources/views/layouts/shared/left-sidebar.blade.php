@@ -130,6 +130,9 @@
                         <li>
                             <a href="{{ route('transit.container.details') }}">Transit Container INV</a>
                         </li>
+                        <li>
+                            <a href="{{ route('arrived.container') }}">Arrived Container</a>
+                        </li>
                         {{-- <li>
                             <a href="{{ route('transit.container.changes') }}">Transit Container Changes</a>
                         </li>
@@ -180,6 +183,11 @@
                            <li>
                             <a href="{{ url('inventory-by-sales-value') }}">Inv by Sales Value </a>
                         </li>
+
+                          <li>
+                            <a href="{{ url('ads-pricing-master') }}">Advertisment Master</a>
+                        </li>
+
                         <li>
                             <a href="https://listing-analysis.5coremanagement.com/public/login" target="_blank"
                                 rel="noopener noreferrer">Listing Analysis</a>
@@ -1295,7 +1303,7 @@
                                         </a>
                                         <div class="collapse" id="amazonBudget">
                                             <ul class="side-nav-fourth-level">
-                                                <li>
+                                                {{-- <li>
                                                     <a href="{{ url('campaign') }}">Utilization</a>
                                                 </li>
                                                 <li>
@@ -1303,7 +1311,7 @@
                                                 </li>
                                                 <li>
                                                     <a href=" {{ route('campaign.over') }} ">Over utilised</a>
-                                                </li>
+                                                </li> --}}
                                                 <li>
                                                     <a href=" {{ route('amazon-sp.amz-utilized-bgt-kw') }} ">AMZ >
                                                         UTILIZED BGT KW</a>

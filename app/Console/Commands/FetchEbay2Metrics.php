@@ -16,7 +16,7 @@ class FetchEbay2Metrics extends Command
      *
      * @var string
      */
-    protected $signature = 'app:fetch-ebay2-metrics';
+    protected $signature = 'app:fetch-ebay-two-metrics';
 
     /**
      * The console command description.
@@ -34,6 +34,14 @@ class FetchEbay2Metrics extends Command
 
         if (!$token) {
             $this->error('Failed to generate token.');
+            return;
+        }
+
+        $rateLimit = $this->getRateLimit();
+        if ($rateLimit) {
+            $this->info('Rate limit data: ' . json_encode($rateLimit));
+        } else {
+            $this->error('Failed to get rate limit data.');
             return;
         }
 
@@ -55,7 +63,7 @@ class FetchEbay2Metrics extends Command
             $itemIds = array_keys($itemIdToSku);
             $itemIdChunks = array_chunk($itemIds, 20); // eBay API may have limits
             $viewsByItemId = [];
-            foreach ($itemIdChunks as $chunk) {
+           foreach ($itemIdChunks as $chunk) {
                 $ids = implode('|', $chunk);
                 $dateRange = now()->subDays(30)->format('Ymd') . '..' . now()->format('Ymd');
                 $url = "https://api.ebay.com/sell/analytics/v1/traffic_report?dimension=LISTING&filter=listing_ids:%7B{$ids}%7D,date_range:[{$dateRange}]&metric=LISTING_VIEWS_TOTAL&sort=LISTING_VIEWS_TOTAL";
@@ -72,38 +80,39 @@ class FetchEbay2Metrics extends Command
                 }
             }
 
-            // 3. Store views in EbayMetric table for each SKU
-            foreach ($viewsByItemId as $itemId => $views) {
-                $sku = $itemIdToSku[$itemId] ?? null;
-                if ($sku) {
-                    Ebay2Metric::where('item_id', $itemId)->update(['views' => $views]);
-                }
-            }
         }
-        
+
         foreach ($listingData as $row) {
             $itemId = $row['item_id'] ?? null;
             if (!$itemId) continue;
         
-            $updateData = [
-                'sku' => $row['sku'] ?? '',                
-                'ebay_price' => $row['price'] ?? null,        
-                'report_range' => now()->toDateString(),
-            ];
-        
-            Ebay2Metric::updateOrCreate(['item_id' => $itemId], $updateData);
+            Ebay2Metric::updateOrCreate(
+                ['item_id' => $itemId, 'sku' => $row['sku'] ?? ''],
+                [
+                    'ebay_price' => $row['price'] ?? null,
+                    'report_range' => now()->toDateString(),
+                ]
+            );
         }
 
-        $existingItemIds = Ebay2Metric::pluck('item_id')->filter()->toArray();
-        $l30Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l30']['start'], $dateRanges['l30']['end'], $existingItemIds);
-        $l60Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l60']['start'], $dateRanges['l60']['end'], $existingItemIds);
+        // 3. Store views in Ebay2Metric table for each item_id
+        if (!empty($viewsByItemId)) {
+            foreach ($viewsByItemId as $itemId => $views) {
+                Ebay2Metric::where('item_id', $itemId)->update(['views' => $views]);
+            }
+            logger()->info('Views updated for items', ['count' => count($viewsByItemId)]);
+        }
+
+        $existingSkus = Ebay2Metric::pluck('sku')->filter()->toArray();
+        $l30Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l30']['start'], $dateRanges['l30']['end'], $existingSkus);
+        $l60Qty = $this->getQuantityBySkuFromOrders($token, $dateRanges['l60']['start'], $dateRanges['l60']['end'], $existingSkus);
         
-        foreach ($existingItemIds as $item_id) {
-            $record = Ebay2Metric::where('item_id', $item_id)->first();
+        foreach ($existingSkus as $sku) {
+            $record = Ebay2Metric::where('sku', $sku)->first();
             if (!$record) continue;
             
-            $record->ebay_l30 = $l30Qty[$item_id] ?? 0;
-            $record->ebay_l60 = $l60Qty[$item_id] ?? 0;
+            $record->ebay_l30 = $l30Qty[$sku] ?? 0;
+            $record->ebay_l60 = $l60Qty[$sku] ?? 0;
             $record->save();
         }
         $this->info('eBay2 metrics fetched and stored successfully.');
@@ -322,7 +331,10 @@ class FetchEbay2Metrics extends Command
         }
     }
 
-    private function getQuantityBySkuFromOrders($token, Carbon $from, Carbon $to, array $onlyTheseItemIds = [])
+    
+
+
+    private function getQuantityBySkuFromOrders($token, Carbon $from, Carbon $to, array $onlyTheseSkus = [])
     {
         $allQuantities = [];
 
@@ -341,11 +353,11 @@ class FetchEbay2Metrics extends Command
                 
                 foreach ($order['lineItems'] ?? [] as $line) {
                     
-                    $item_id = $line['legacyItemId'] ?? null;
+                    $sku = $line['sku'] ?? null;
                     $qty = (int) ($line['quantity'] ?? 0);
-                    if (!$item_id || !in_array($item_id, $onlyTheseItemIds)) continue;
+                    if (!$sku || !in_array($sku, $onlyTheseSkus)) continue;
     
-                    $allQuantities[$item_id] = ($allQuantities[$item_id] ?? 0) + $qty;
+                    $allQuantities[$sku] = ($allQuantities[$sku] ?? 0) + $qty;
                 }
             }
     
@@ -400,4 +412,27 @@ class FetchEbay2Metrics extends Command
 
         return null;
     }
+
+
+    public function getRateLimit()
+    {
+        $token = $this->generateEbayToken();
+        if (!$token) {
+            return null;
+        }
+
+        try {
+            $response = Http::withToken($token)->get('https://api.ebay.com/developer/analytics/v1_beta/rate_limit/');
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Exception $e) {
+            Log::error('eBay2 getRateLimit exception: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+
+
 }

@@ -535,30 +535,42 @@
                             </ul>
                         </div>
 
-                        <!-- Filter by Inventory -->
-                        <div class="btn-group" id="inv-filter" role="group" aria-label="Inventory Filter">
-                            <input type="radio" class="btn-check" name="invFilter" id="filterAll" value="all" checked>
-                            <label class="btn btn-outline-secondary" for="filterAll">All</label>
+                    <div class="btn-group" id="inv-filter" role="group" aria-label="Inventory Filter">
+                        <input type="radio" class="btn-check" name="invFilter" id="filterAll" value="all" checked>
+                        <label class="btn btn-outline-secondary" for="filterAll">All</label>
+                        <input type="radio" class="btn-check" name="invFilter" id="filterZero" value="zero">
+                        <label class="btn btn-outline-danger" for="filterZero">0</label>
+                        <input type="radio" class="btn-check" name="invFilter" id="filterOther" value="other">
+                        <label class="btn btn-outline-success" for="filterOther">Other</label>
+                    </div>
 
-                            <input type="radio" class="btn-check" name="invFilter" id="filterZero" value="zero">
-                            <label class="btn btn-outline-danger" for="filterZero">0</label>
+                    <div class="btn-group" id="dil-filter" role="group" aria-label="Dilution Filter">
+                        <input type="radio" class="btn-check" name="dilFilter" id="dilFilter10" value="10">
+                        <label class="btn btn-outline-danger" for="dilFilter10">Dil ≤ 10%</label>
+                        <input type="radio" class="btn-check" name="dilFilter" id="dilFilterClear" value="clear" checked>
+                        <label class="btn btn-outline-secondary" for="dilFilterClear">Clear</label>
+                    </div>
 
-                            <input type="radio" class="btn-check" name="invFilter" id="filterOther" value="other">
-                            <label class="btn btn-outline-success" for="filterOther">Other</label>
-                        </div>
-                        <div class="btn-group" id="dil-filter" role="group" aria-label="Dilution Filter">
-                            <input type="radio" class="btn-check" name="dilFilter" id="dilFilter10" value="10">
-                            <label class="btn btn-outline-danger" for="dilFilter10">Dil ≤ 10%</label>
-                            <input type="radio" class="btn-check" name="dilFilter" id="dilFilterClear" value="clear" checked>
-                            <label class="btn btn-outline-secondary" for="dilFilterClear">Clear</label>
-                        </div>
+                    <div class="btn-group" id="cvr-filter" role="group" aria-label="CVR Filter">
+                        <input type="radio" class="btn-check" name="cvrFilter" id="cvrFilterLow" value="low">
+                        <label class="btn btn-outline-warning" for="cvrFilterLow">Low CVR (&lt; 5%)</label>
+                        <input type="radio" class="btn-check" name="cvrFilter" id="cvrFilterClear" value="clear" checked>
+                        <label class="btn btn-outline-secondary" for="cvrFilterClear">Clear</label>
+                    </div>
 
-                <div class="btn-group" id="view-filter" role="group" aria-label="View Filter">
-                    <input type="radio" class="btn-check" name="viewFilter" id="parentFilter" value="parent" checked>
-                    <label class="btn btn-primary" for="parentFilter">Parent View</label>
-                    <input type="radio" class="btn-check" name="viewFilter" id="skuFilter" value="sku">
-                    <label class="btn btn-primary" for="skuFilter">SKU View</label>
-                </div>
+                    <div class="btn-group" id="margin-filter" role="group" aria-label="Margin Filter">
+                        <input type="radio" class="btn-check" name="marginFilter" id="marginFilterHigh" value="high">
+                        <label class="btn btn-outline-success" for="marginFilterHigh">High Margin (&gt; 20%)</label>
+                        <input type="radio" class="btn-check" name="marginFilter" id="marginFilterClear" value="clear" checked>
+                        <label class="btn btn-outline-secondary" for="marginFilterClear">Clear</label>
+                    </div>
+
+                    <div class="btn-group" id="view-filter" role="group" aria-label="View Filter">
+                        <input type="radio" class="btn-check" name="viewFilter" id="parentFilter" value="parent" checked>
+                        <label class="btn btn-primary" for="parentFilter">Parent View</label>
+                        <input type="radio" class="btn-check" name="viewFilter" id="skuFilter" value="sku">
+                        <label class="btn btn-primary" for="skuFilter">SKU View</label>
+                    </div>
                     </div>
 
                     </div>
@@ -963,56 +975,37 @@
 // Inventory Filter Listener
 document.querySelectorAll("input[name='invFilter']").forEach(input => {
     input.addEventListener("change", function() {
-        let value = this.value;
-        if (value === "all") {
-            table.clearFilter();
-        } else if (value === "zero") {
-            table.setFilter("inv", "=", 0);
-        } else if (value === "other") {
-            table.setFilter("inv", ">", 0);
-        }
+        setCombinedFilters();
     });
 });
 
 // Dilution Filter Listener
 document.querySelectorAll("input[name='dilFilter']").forEach(input => {
     input.addEventListener("change", function() {
-        const value = this.value;
-        if (value === "10") {
-            table.setFilter([
-                { field: "Dil%", type: "<=", value: 10 },
-                function(row) {
-                    // Exclude -1 Dil%
-                    return parseFloat(row.getData()["Dil%"]) !== -1;
-                }
-            ]);
-        } else if (value === "clear") {
-            table.clearFilter(true); 
-        }
+        setCombinedFilters();
+    });
+});
+
+// CVR Filter Listener
+document.querySelectorAll("input[name='cvrFilter']").forEach(input => {
+    input.addEventListener("change", function() {
+        setCombinedFilters();
+    });
+});
+
+// Margin Filter Listener
+document.querySelectorAll("input[name='marginFilter']").forEach(input => {
+    input.addEventListener("change", function() {
+        setCombinedFilters();
     });
 });
 
 // View Filter Listener
 document.querySelectorAll("input[name='viewFilter']").forEach(input => {
     input.addEventListener("change", function() {
-        const value = this.value;
-        currentViewFilter = value; // Update the current view filter
-
-        if (value === "parent") {
-            // Parent View: Show Parent column, hide SKU column, filter parent rows
-            table.getColumn("Parent").show();
-            // table.getColumn("SKU").hide();
-            table.setFilter("is_parent", "=", 1); // Show only parent rows
-            table.setSort([{ column: "inv_value", dir: "desc" }]);
-        } else if (value === "sku") {
-            // SKU View: Show SKU column, hide Parent column, clear filters
-            table.getColumn("SKU").show();
-            // table.getColumn("Parent").hide();
-            table.clearFilter(); // Show all rows
-            table.setSort([{ column: "SKU", dir: "asc" }]);
-        }
-
-        setCombinedFilters(); // Apply combined filters
+        currentViewFilter = this.value;
+        currentParentFilter = null; // Reset parent filter when view changes
+        setCombinedFilters();
     });
 });
 
@@ -1676,141 +1669,165 @@ const table = new Tabulator("#forecast-table", {
         },
      
     ],
-       ajaxResponse: function(url, params, response) {
-    groupedSkuData = {}; // clear previous
+      ajaxResponse: function(url, params, response) {
+        groupedSkuData = {}; // Clear previous
 
-    // Add calculated fields + mark parent rows
-    response.data = response.data.map((item, index) => {
-        const sku = item.SKU || "";
-        const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
+        // Add calculated fields + mark parent rows
+        response.data = response.data.map((item, index) => {
+            const sku = item.SKU || "";
+            const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
 
-        // Ensure inv_value is numeric
-        if (!item.inv_value) {
-            const inv = item.INV || 0;
-            const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
-            item.inv_value = (inv * shopifyPrice).toFixed(2);
-        }
+            // Ensure inv_value is numeric
+            if (!item.inv_value) {
+                const inv = item.INV || 0;
+                const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
+                item.inv_value = (inv * shopifyPrice).toFixed(2);
+            }
 
-        // Ensure COGS is numeric
-        if (!item.COGS) {
-            const lp = parseFloat(item.LP) || 0;
-            const inv = item.INV || 0;
-            item.COGS = (lp * inv).toFixed(2);
-        }
+            // Ensure COGS is numeric
+            if (!item.COGS) {
+                const lp = parseFloat(item.LP) || 0;
+                const inv = item.INV || 0;
+                item.COGS = (lp * inv).toFixed(2);
+            }
 
-        return {
-            ...item,
-            calculatedRoi: calculateROI(item),
-            calculatedProfit: calculateAvgProfit(item),
-            sl_no: index + 1,
-            is_parent: isParent ? 1 : 0,
-            isParent: isParent,
-            raw_data: item || {}
-        };
-    });
-
-    // Group by Parent
-    let grouped = {};
-    response.data.forEach(item => {
-        const parentKey = item.Parent || "";
-        if (!grouped[parentKey]) grouped[parentKey] = [];
-        grouped[parentKey].push(item);
-
-        // Group for play button use
-        if (!groupedSkuData[parentKey]) {
-            groupedSkuData[parentKey] = [];
-        }
-        groupedSkuData[parentKey].push(item);
-    });
-
-    // Aggregate for parent rows
-    Object.keys(grouped).forEach(parentKey => {
-        const rows = grouped[parentKey];
-        const children = rows.filter(item => !item.is_parent);
-        const parent = rows.find(item => item.is_parent);
-
-        if (!parent || children.length === 0) return;
-
-        // Additive fields to sum
-        const additiveFields = ['INV', 'total_views', 'total_req_view', 'inv_value', 'COGS']; // Added COGS
-        additiveFields.forEach(field => {
-            parent[field] = children.reduce((sum, c) => sum + (parseFloat(c[field]) || 0), 0).toFixed(2);
+            return {
+                ...item,
+                calculatedRoi: calculateROI(item),
+                calculatedProfit: calculateAvgProfit(item),
+                sl_no: index + 1,
+                is_parent: isParent ? 1 : 0,
+                isParent: isParent,
+                raw_data: item || {}
+            };
         });
 
-        // Rate fields to average
-        const rateFields = ['Dil%', 'avgCvr', 'MSRP', 'MAP', 'LP', 'SHIP', 'temu_ship'];
-        rateFields.forEach(field => {
-            const values = children.map(c => parseFloat(c[field]) || 0);
-            const valid = values.filter(v => !isNaN(v) && v !== 0); // Exclude 0 to avoid skew if defaults
-            parent[field] = valid.length > 0 ? valid.reduce((sum, v) => sum + v, 0) / valid.length : 
-                (values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0);
+        // Group by Parent
+        let grouped = {};
+        response.data.forEach(item => {
+            const parentKey = item.Parent || "";
+            if (!grouped[parentKey]) grouped[parentKey] = [];
+            grouped[parentKey].push(item);
+
+            // Group for play button use
+            if (!groupedSkuData[parentKey]) {
+                groupedSkuData[parentKey] = [];
+            }
+            groupedSkuData[parentKey].push(item);
         });
 
-        // Marketplaces for l30 sum and price weighted average
-        const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c'];
-        mps.forEach(mp => {
-            const l30Field = (mp === 'shopifyb2c' ? 'shopifyb2c_l30' : `${mp}_l30`);
-            const priceField = (mp === 'shopifyb2c' ? 'shopifyb2c_price' : `${mp}_price`);
+        // Aggregate for parent rows
+        Object.keys(grouped).forEach(parentKey => {
+            const rows = grouped[parentKey];
+            const children = rows.filter(item => !item.is_parent);
+            const parent = rows.find(item => item.is_parent);
 
-            // Sum l30
-            parent[l30Field] = children.reduce((sum, c) => sum + (parseFloat(c[l30Field]) || 0), 0);
+            if (!parent || children.length === 0) return;
 
-            // Weighted average price by l30
-            let totalWeighted = 0;
-            let totalWeight = 0;
-            children.forEach(c => {
-                const price = parseFloat(c[priceField]) || 0;
-                const weight = parseFloat(c[l30Field]) || 0;
-                totalWeighted += price * weight;
-                totalWeight += weight;
+            // Additive fields to sum
+            const additiveFields = ['INV', 'total_views', 'total_req_view', 'inv_value', 'COGS'];
+            additiveFields.forEach(field => {
+                parent[field] = children.reduce((sum, c) => sum + (parseFloat(c[field]) || 0), 0).toFixed(2);
             });
 
-            parent[priceField] = totalWeight > 0 ? totalWeighted / totalWeight : 
-                (children.reduce((sum, c) => sum + (parseFloat(c[priceField]) || 0), 0) / children.length);
-        });
+            // Rate fields to average
+            const rateFields = ['Dil%', 'avgCvr', 'MSRP', 'MAP', 'LP', 'SHIP', 'temu_ship', 'avgPftPercent'];
+            rateFields.forEach(field => {
+                const values = children.map(c => parseFloat(c[field]) || 0);
+                const valid = values.filter(v => !isNaN(v) && v !== 0); // Exclude 0 to avoid skew
+                parent[field] = valid.length > 0 ? (valid.reduce((sum, v) => sum + v, 0) / valid.length).toFixed(2) :
+                    (values.length > 0 ? (values.reduce((sum, v) => sum + v, 0) / values.length).toFixed(2) : 0);
+            });
 
-        // Recalculate inv_value for parent based on aggregated INV and shopifyb2c_price
-        const inv = parent.INV || 0;
-        const shopifyPrice = parent.shopifyb2c_price || 0;
-        parent.inv_value = (inv * shopifyPrice).toFixed(2);
+            // Marketplaces for l30 sum and price weighted average
+            const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c'];
+            mps.forEach(mp => {
+                const l30Field = (mp === 'shopifyb2c' ? 'shopifyb2c_l30' : `${mp}_l30`);
+                const priceField = (mp === 'shopifyb2c' ? 'shopifyb2c_price' : `${mp}_price`);
 
-        // Recalculate COGS for parent based on aggregated LP and INV
-        const lp = parseFloat(parent.LP) || 0;
-        parent.COGS = (lp * inv).toFixed(2); // Ensure COGS is recalculated
+                // Sum l30
+                parent[l30Field] = children.reduce((sum, c) => sum + (parseFloat(c[l30Field]) || 0), 0);
 
-        // Set image from first child if missing
-        if (!parent.shopifyb2c_image && children[0]) {
-            parent.shopifyb2c_image = children[0].shopifyb2c_image;
-        }
+                // Weighted average price by l30
+                let totalWeighted = 0;
+                let totalWeight = 0;
+                children.forEach(c => {
+                    const price = parseFloat(c[priceField]) || 0;
+                    const weight = parseFloat(c[l30Field]) || 0;
+                    totalWeighted += price * weight;
+                    totalWeight += weight;
+                });
 
-        // Set ovl30 if needed (assuming it's shopifyb2c_l30)
-        parent.ovl30 = parent.shopifyb2c_l30;
-    });
+                parent[priceField] = totalWeight > 0 ? (totalWeighted / totalWeight).toFixed(2) :
+                    (children.reduce((sum, c) => sum + (parseFloat(c[priceField]) || 0), 0) / children.length).toFixed(2);
+            });
 
-    // Sort inside each group: child rows first, parent bottom
-    let finalData = [];
-    Object.values(grouped).forEach(rows => {
-        rows.sort((a, b) => {
-            if (a.is_parent !== b.is_parent) {
-                return a.is_parent - b.is_parent; // parent last
+            // Recalculate inv_value for parent
+            const inv = parseFloat(parent.INV) || 0;
+            const shopifyPrice = parseFloat(parent.shopifyb2c_price) || 0;
+            parent.inv_value = (inv * shopifyPrice).toFixed(2);
+
+            // Recalculate COGS for parent
+            const lp = parseFloat(parent.LP) || 0;
+            parent.COGS = (lp * inv).toFixed(2);
+
+            // Recalculate avgPftPercent for parent
+            const marketplaces = [
+                { price: parent.amz_price, l30: parent.amz_l30, factor: 0.70 },
+                { price: parent.ebay_price, l30: parent.ebay_l30, factor: 0.72 },
+                { price: parent.shopifyb2c_price, l30: parent.shopifyb2c_l30, factor: 0.75 },
+                { price: parent.macy_price, l30: parent.macy_l30, factor: 0.76 },
+                { price: parent.reverb_price, l30: parent.reverb_l30, factor: 0.84 },
+                { price: parent.doba_price, l30: parent.doba_l30, factor: 0.95 },
+                { price: parent.temu_price, l30: parent.temu_l30, factor: 0.87, ship: parent.temu_ship },
+                { price: parent.ebay3_price, l30: parent.ebay3_l30, factor: 0.71 },
+                { price: parent.ebay2_price, l30: parent.ebay2_l30, factor: 0.80 },
+                { price: parent.walmart_price, l30: parent.walmart_l30, factor: 0.80 },
+                { price: parent.shein_price, l30: parent.shein_l30, factor: 0.89 }
+            ];
+
+            let totalProfit = 0;
+            let totalRevenue = 0;
+            marketplaces.forEach(mp => {
+                const price = parseFloat(mp.price) || 0;
+                const l30 = parseFloat(mp.l30) || 0;
+                const ship = parseFloat(mp.ship || parent.SHIP) || 0;
+                const profit = ((price * mp.factor) - lp - ship) * l30;
+                totalProfit += profit;
+                totalRevenue += price * l30;
+            });
+
+            parent.avgPftPercent = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0;
+
+            // Set image from first child if missing
+            if (!parent.shopifyb2c_image && children[0]) {
+                parent.shopifyb2c_image = children[0].shopifyb2c_image;
             }
-            return (a.SKU || "").localeCompare(b.SKU || "");
+
+            // Set ovl30 if needed
+            parent.ovl30 = parent.shopifyb2c_l30;
         });
-        finalData = finalData.concat(rows);
-    });
 
-    setTimeout(() => {
-        setCombinedFilters();
-    }, 0);
+        // Sort inside each group: child rows first, parent bottom
+        let finalData = [];
+        Object.values(grouped).forEach(rows => {
+            rows.sort((a, b) => {
+                if (a.is_parent !== b.is_parent) {
+                    return a.is_parent - b.is_parent; // Parent last
+                }
+                return (a.SKU || "").localeCompare(b.SKU || "");
+            });
+            finalData = finalData.concat(rows);
+        });
 
-    console.log("Processed Response:", finalData);
-    return finalData;
-},
+        setTimeout(() => {
+            setCombinedFilters();
+        }, 0);
 
+        console.log("Processed Response:", finalData);
+        return finalData;
+    },
 });
-
-
-
 
 // On Top Start 
 //   On to Percentaeg color
@@ -1890,7 +1907,8 @@ const table = new Tabulator("#forecast-table", {
 let currentViewFilter = null;
 let currentParentFilter = null;
 
- function setCombinedFilters() {
+// Function to apply combined filters
+function setCombinedFilters() {
     const filters = [];
 
     // Apply inventory filter
@@ -1907,26 +1925,50 @@ let currentParentFilter = null;
     // Apply dilution filter if active
     const dilFilter = document.querySelector("input[name='dilFilter']:checked")?.value;
     if (dilFilter === "10") {
-        filters.push({ field: "Dil%", type: "<=", value: 10 });
+        filters.push([
+            { field: "Dil%", type: "<=", value: 10 },
+            function(row) {
+                // Exclude -1 Dil%
+                return parseFloat(row.getData()["Dil%"]) !== -1;
+            }
+        ]);
     }
 
-    console.log("Current View Filter:", currentViewFilter);
-    console.log("Current Parent Filter:", currentParentFilter);
+    // Apply CVR filter if active
+    const cvrFilter = document.querySelector("input[name='cvrFilter']:checked")?.value;
+    if (cvrFilter === "low") {
+        filters.push({ field: "avgCvr", type: "<", value: 5 });
+    }
+
+    // Apply margin filter if active
+    const marginFilter = document.querySelector("input[name='marginFilter']:checked")?.value;
+    if (marginFilter === "high") {
+        filters.push({ field: "avgPftPercent", type: ">", value: 20 });
+    }
 
     // Apply parent or view filter
     if (currentViewFilter === "parent") {
         filters.push({ field: "is_parent", type: "=", value: 1 });
+        table.getColumn("Parent").show();
+        // table.getColumn("SKU").hide();
+        table.setSort([{ column: "inv_value", dir: "desc" }]);
     } else if (currentViewFilter === "sku") {
-        filters.push({ field: "is_parent", type: "=", value: 0 }); 
+        filters.push({ field: "is_parent", type: "=", value: 0 });
+        table.getColumn("SKU").show();
+        // table.getColumn("Parent").hide();
+        table.setSort([{ column: "SKU", dir: "asc" }]);
     } else if (currentParentFilter) {
-        filters.push({ field: "Parent", type: "=", value: currentParentFilter }); // Specific parent filter
+        filters.push({ field: "Parent", type: "=", value: currentParentFilter });
+        table.getColumn("SKU").show();
+        // table.getColumn("Parent").hide();
+        table.setSort([{ column: "SKU", dir: "asc" }]);
     }
 
     // Apply all filters
     if (filters.length > 0) {
         table.setFilter(filters);
     } else {
-        table.clearFilter(); // Clear filters if none are active
+        table.clearFilter();
     }
 }
 
