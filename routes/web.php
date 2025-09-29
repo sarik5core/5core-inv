@@ -158,6 +158,7 @@ use App\Http\Controllers\AdvertisementMaster\Promoted_Advt\PromotedEbayControlle
 use App\Http\Controllers\AdvertisementMaster\Shopping_Advt\GoogleShoppingController;
 use App\Http\Controllers\AdvertisementMaster\Demand_Gen_parent\GoogleNetworksController;
 use App\Http\Controllers\AdvertisementMaster\MetaParent\ProductWiseMetaParentController;
+use App\Http\Controllers\ArrivedContainerController;
 use App\Http\Controllers\Campaigns\AmazonAdRunningController;
 use App\Http\Controllers\Campaigns\AmazonCampaignReportsController;
 use App\Http\Controllers\Campaigns\AmazonPinkDilAdController;
@@ -225,6 +226,7 @@ use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
 use App\Http\Controllers\MarketingMaster\MovementPricingMaster;
 use App\Http\Controllers\NewPermissionController;
 use App\Http\Controllers\MarketingMaster\OverallCvrLqsController;
+use App\Models\ArrivedContainer;
 
 /*  
 |--------------------------------------------------------------------------
@@ -1057,6 +1059,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/inventory-warehouse/push', [InventoryWarehouseController::class, 'pushInventory'])->name('inventory.push');
     Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');
 
+
+    Route::controller(ArrivedContainerController::class)->group(function(){
+        Route::get('/arrived/container', 'index')->name('arrived.container');
+        Route::post('/arrived/container/push', 'pushArrivedContainer');
+    });
 
 
     Route::controller(QualityEnhanceController::class)->group(function () {

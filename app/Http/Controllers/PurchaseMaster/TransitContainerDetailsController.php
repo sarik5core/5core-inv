@@ -14,9 +14,14 @@ class TransitContainerDetailsController extends Controller
 {
     public function index()
     {
-        $allRecords = TransitContainerDetail::all();
+        $allRecords = TransitContainerDetail::where(function($q){
+            $q->whereNull('status')->orWhereRaw("TRIM(status) = ''");
+        })->get();
 
-        $tabs = TransitContainerDetail::select('tab_name')->distinct()->pluck('tab_name')->toArray();
+        $tabs = TransitContainerDetail::where(function($q){
+            $q->whereNull('status')->orWhereRaw("TRIM(status) = ''");
+        })->distinct()->pluck('tab_name')->toArray();
+
         if (empty($tabs)) {
             $tabs = ['Container 1'];
         }
@@ -190,9 +195,15 @@ class TransitContainerDetailsController extends Controller
     public function deleteTransitItem(Request $request)
     {
         $ids = $request->ids;
-        TransitContainerDetail::whereIn('id', $ids)->delete();
 
-        return response()->json(['success' => true, 'message' => 'Deleted successfully.']);
+        TransitContainerDetail::whereIn('id', $ids)->update([
+            'status' => 'inactive'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Rows marked as inactive successfully.'
+        ]);
     }
 
     //transit container changes

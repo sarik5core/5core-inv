@@ -11,9 +11,11 @@ class PurchaseOrder extends Model
 
     protected $fillable = [ 
         'po_number',
+        'total_amount',
         'po_date',            
         'supplier_id', 
         'items',
+        'advance_amount'
     ];
 
     public function supplier()

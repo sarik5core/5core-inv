@@ -268,7 +268,7 @@
                                         </div>
                                     </div>
                                     <!-- Arrow button -->
-                                    <button id="toggleChartBtn" class="btn btn-sm btn-light ms-2">
+                                    <button id="toggleChartBtn" class="btn btn-sm btn-info ms-2">
                                         <i id="chartArrow" class="fa-solid fa-chevron-down"></i>
                                     </button>
                                 </div>
@@ -385,11 +385,10 @@
                 index: "Sku",
                 ajaxURL: "/amazon/kw/ads/data",
                 layout: "fitData",
-                height: 700,
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = (data.sku || "").toLowerCase().trim();
@@ -1140,14 +1139,28 @@
                         hozAlign: "center",
                         formatter: function(cell){
                             let value = parseFloat(cell.getValue()) || 0;
+                            let percent = value.toFixed(0);
+                            let color = "";
+
+                            if (value < 10) {
+                                color = "red";
+                            } else if (value >= 10 && value < 15) {
+                                color = "#ffc107";
+                            } else if (value >= 15 && value < 20) {
+                                color = "blue";
+                            } else if (value >= 20 && value <= 40) {
+                                color = "green";
+                            } else if (value > 40) {
+                                color = "#e83e8c";
+                            }
+
                             return `
-                                <span style="font-weight:600;">
-                                    ${value.toFixed(0)}%
+                                <span style="font-weight:600; color:${color};">
+                                    ${percent}%
                                 </span>
                             `;
                         }
                     }
-
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;

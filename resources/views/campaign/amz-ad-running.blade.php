@@ -230,10 +230,10 @@
                 index: "sku",
                 ajaxURL: "/amazon/ad-running/data",
                 layout: "fitDataFill",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = (data.sku || "").toLowerCase().trim();

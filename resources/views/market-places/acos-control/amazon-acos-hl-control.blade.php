@@ -263,10 +263,10 @@
                 index: "Sku",
                 ajaxURL: "/amazon-acos-hl-control-data",
                 layout: "fitDataFill",
-                pagination: "local",
-                paginationSize: 25,
                 movableColumns: true,
                 resizableColumns: true,
+                height: "700px",             
+                virtualDom: true,
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
@@ -486,33 +486,51 @@
                         formatter: function(cell) {
                             var row = cell.getRow().getData();
                             var acos = parseFloat(row.acos_L30) || 0;
-                            var value;
+                            const tpft = parseFloat(row.TPFT) || 0;
+                            var tpftInt = Math.floor(tpft);
+                            var sbgt;
                             
                             if(acos >= 100){
-                                value = 1;
+                                sbgt = 1;
                             }else if(acos >= 50 && acos <= 100){
-                                value = 2;
+                                sbgt = 2;
                             }else if(acos >= 40 && acos <= 50){
-                                value = 3;
+                                sbgt = 3;
                             }else if(acos >= 35 && acos <= 40){
-                                value = 4;
+                                sbgt = 4;
                             }else if(acos >= 30 && acos <= 35){
-                                value = 5;
+                                sbgt = 5;
                             }else if(acos >= 25 && acos <= 30){
-                                value = 6;
+                                sbgt = 6;
                             }else if(acos >= 20 && acos <= 25){
-                                value = 7;
+                                sbgt = 7;
                             }else if(acos >= 15 && acos <= 20){
-                                value = 8;
+                                sbgt = 8;
                             }else if(acos >= 10 && acos <= 15){
-                                value = 9;
+                                sbgt = 9;
                             }else if(acos < 10 && acos > 0){
-                                value = 10;
+                                sbgt = 10;
                             }else{
-                                value = 3;
+                                sbgt = 3;
                             }
+
+                            const l30 = parseFloat(row.L30);
+                            const inv = parseFloat(row.INV);
+                            let dilColor = "";
+                            if (!isNaN(l30) && !isNaN(inv) && inv !== 0) {
+                                const dilDecimal = l30 / inv;
+                                dilColor = getDilColor(dilDecimal);
+                            }
+
+                            if ((dilColor === "red" && tpftInt > 18) ||
+                                (dilColor === "yellow" && tpftInt > 22) ||
+                                (dilColor === "green" && tpftInt > 26) ||
+                                (dilColor === "pink" && tpftInt > 30)) {
+                                sbgt = sbgt * 2;
+                            }
+
                             return `
-                                <input type="number" class="form-control form-control-sm text-center sbgt-input"  value="${value}" min="1" max="10"  data-campaign-id="${row.campaign_id}">
+                                <input type="number" class="form-control form-control-sm text-center sbgt-input"  value="${sbgt}" min="1" max="10"  data-campaign-id="${row.campaign_id}">
                             `;
                         },
                     },
@@ -550,9 +568,24 @@
                         hozAlign: "center",
                         formatter: function(cell){
                             let value = parseFloat(cell.getValue()) || 0;
+                            let percent = value.toFixed(0);
+                            let color = "";
+
+                            if (value < 10) {
+                                color = "red";
+                            } else if (value >= 10 && value < 15) {
+                                color = "#ffc107";
+                            } else if (value >= 15 && value < 20) {
+                                color = "blue";
+                            } else if (value >= 20 && value <= 40) {
+                                color = "green";
+                            } else if (value > 40) {
+                                color = "#e83e8c";
+                            }
+
                             return `
-                                <span style="font-weight:600;">
-                                    ${value.toFixed(0)}%
+                                <span style="font-weight:600; color:${color};">
+                                    ${percent}%
                                 </span>
                             `;
                         }
