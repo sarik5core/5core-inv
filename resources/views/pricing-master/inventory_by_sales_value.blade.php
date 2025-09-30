@@ -487,7 +487,7 @@
     <!-- Image Preview -->
     <div id="image-hover-preview" style="display: none; position: fixed; z-index: 1000; pointer-events: none;">
         <img id="preview-image"
-            style="max-width: 300px; max-height: 300px; border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            style="max-width: 200px; max-height: 200px; border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
     </div>
 
     <div class="row">
@@ -1116,7 +1116,7 @@ const table = new Tabulator("#forecast-table", {
 
                 // Determine button color based on L30 value
 
-                return `<button class="btn btn-outline-primary  rounded-pill px-3 text-primary" style="cursor:default !important; background-color: #fff !important">
+             return `<button class="btn px-3" style="cursor:default !important;">
                     <i class="bi bi-eye me-1"></i>${l30}
                 </button>`;
             },
@@ -2248,7 +2248,7 @@ function setCombinedFilters() {
                             
                                 : ''
                             }"
-                            style="width: 65px;" 
+                            style="width: 85px;" 
                             step="any"
                             data-sku="${data.SKU}" 
                             data-lp="${data.LP}" 
