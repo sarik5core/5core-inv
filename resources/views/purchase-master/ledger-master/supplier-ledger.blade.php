@@ -292,9 +292,20 @@
                         }
                     },
                     {
-                        title: "Purchase Link",
+                        title: 'Purchase <i class="fa-solid fa-link"></i>',
                         field: "purchase_link",
-                        editor: "input"
+                        editor: "input",
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            const url = cell.getValue();
+                            if (!url) return "";
+
+                            return `
+                                <a href="${url}" class="btn btn-sm btn-primary" target="_blank" title="Open Packing List">
+                                    <i class="fa fa-link"></i> Open
+                                </a>
+                            `;
+                        }
                     },
                     {
                         title: "Dr",
