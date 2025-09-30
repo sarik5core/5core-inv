@@ -43,17 +43,23 @@ use App\Models\SheinListingStatus;
 use App\Models\BestbuyUsaProduct;
 use App\Models\BestbuyUSADataView;
 use App\Models\BestbuyUSAListingStatus;
+use App\Models\CvrLqs;
 use App\Models\TemuMetric;
 use App\Models\TiendamiaProduct;
 use App\Models\TiendamiaDataView;
 use App\Models\TiendamiaListingStatus;
+use App\Models\TiktokShopDataView;
+use App\Models\TiktokShopListingStatus;
+use App\Models\TiktokSheet;
 use App\Services\AmazonSpApiService;
 use App\Services\DobaApiService;
 use App\Services\EbayApiService;
 use App\Services\WalmartService;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Jasara\AmznSPA\AmznSPA;
 
 class PricingMasterViewsController extends Controller
 {
@@ -70,7 +76,7 @@ class PricingMasterViewsController extends Controller
         $this->ebay = new EbayApiService();
     }
 
-    
+
     public function pricingMaster(Request $request)
     {
         $mode = $request->query('mode');
@@ -98,6 +104,26 @@ class PricingMasterViewsController extends Controller
             'records' => $processedData, // processed data table ke liye
         ]);
     }
+
+
+        public function calculateCVRMasters(Request $request)
+    {
+        $mode = $request->query('mode');
+        $demo = $request->query('demo');
+
+        $processedData = $this->processPricingData();
+
+        return view('pricing-master.cvr_master', [
+            'mode' => $mode,
+            'demo' => $demo,
+           
+            'records' => $processedData, // processed data table ke liye
+        ]);
+    }
+
+
+
+    
 
 
     protected function processPricingData($searchTerm = '')
@@ -135,6 +161,7 @@ class PricingMasterViewsController extends Controller
         $bestbuyUsaListingData = BestbuyUSAListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $dobaListingData = DobaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiendamiaListingData = TiendamiaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $tiktokListingData = TiktokShopListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
 
 
 
@@ -142,7 +169,8 @@ class PricingMasterViewsController extends Controller
         $pricingData = PricingMaster::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyData    = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbData  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
-        $temuLookup  = TemuProductSheet::whereIn('sku', $skus)->get()->keyBy('sku');
+        $tiktokshopLookup = TiktokShopDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $tiktokLookup = TiktokSheet::whereIn('sku', $skus)->get()->keyBy('sku');
         $walmartLookup = DB::connection('apicentral')
             ->table('walmart_api_data as api')
             ->select(
@@ -255,7 +283,6 @@ class PricingMasterViewsController extends Controller
             $pricing = $pricingData[$sku] ?? null;
             $macy    = $macyData[$sku] ?? null;
             $reverb  = $reverbData[$sku] ?? null;
-            $temu    = $temuLookup[$sku] ?? null;
             $temuMetric = $temuMetricLookup[$sku] ?? null;
             $walmart = $walmartLookup[$sku] ?? null;
             $ebay2   = $ebay2Lookup[$sku] ?? null;
@@ -265,6 +292,7 @@ class PricingMasterViewsController extends Controller
             $shein   = $sheinData[$sku] ?? null;
             $bestbuyUsa = $bestbuyUsaLookup[$sku] ?? null;
             $tiendamia = $tiendamiaLookup[$sku] ?? null;
+            $tiktok = $tiktokLookup[$sku] ?? null;
 
             // Get Shopify data for L30 and INV
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
@@ -272,23 +300,145 @@ class PricingMasterViewsController extends Controller
             $l30 = $shopifyItem ? ($shopifyItem->quantity ?? 0) : 0;
             $shopify_l30 = $shopifyItem ? ($shopifyItem->shopify_l30 ?? 0) : 0;
 
-            $total_views = ($amazon ? ($amazon->sessions_l30 ?? 0) : 0) +
+            $total_views = ($amazon ? ($amazon->sessions_l30 ?? 0 ) : 0) +
                 ($ebay ? ($ebay->views ?? 0) : 0) +
                 ($ebay2 ? ($ebay2->views ?? 0) : 0) +
                 ($ebay3 ? ($ebay3->views ?? 0) : 0) +
                 ($shein ? ($shein->views_clicks ?? 0) : 0) +
                 ($reverb ? ($reverb->views ?? 0) : 0) +
-                ($temuMetric ? (($temuMetric->product_impressions_l30 ?? 0) + ($temuMetric->product_clicks_l30 ?? 0)) : 0);
+                ($temuMetric ? (($temuMetric->product_impressions_l30 ?? 0) + ($temuMetric->product_clicks_l30 ?? 0)) : 0)+
+                ($tiktok ? ($tiktok->views ?? 0) : 0);
+
+            // Calculate total L30 and L60 counts
+            $total_l30_count = ($tiktok ? ($tiktok->l30 ?? 0) : 0) +
+                ($shein ? ($shein->shopify_sheinl30 ?? 0) : 0) +
+                ($amazon ? ($amazon->units_ordered_l30 ?? 0) : 0) +
+                ($ebay ? ($ebay->ebay_l30 ?? 0) : 0) +
+                ($ebay2 ? ($ebay2->ebay_l30 ?? 0) : 0) +
+                ($ebay3 ? ($ebay3->ebay_l30 ?? 0) : 0) +
+                ($temuMetric ? ($temuMetric->quantity_purchased_l30 ?? 0) : 0) +
+                ($reverb ? ($reverb->r_l30 ?? 0) : 0) +
+                ($walmart ? ($walmart->l30 ?? 0) : 0) +
+                ($macy ? ($macy->m_l30 ?? 0) : 0) +
+                ($bestbuyUsa ? ($bestbuyUsa->m_l30 ?? 0) : 0) +
+                ($tiendamia ? ($tiendamia->m_l30 ?? 0) : 0) +
+                ($doba ? ($doba->l30 ?? 0) : 0);
 
 
-            $avgCvr = $total_views > 0
-                ? round(($l30 / $total_views) * 100) . ' %'
-                : '0 %';
+            
+
+            $total_l60_count = ($tiktok ? ($tiktok->l60 ?? 0) : 0) +
+                ($shein ? ($shein->shopify_sheinl60 ?? 0) : 0) +
+                ($amazon ? ($amazon->units_ordered_l60 ?? 0) : 0) +
+                ($ebay ? ($ebay->ebay_l60 ?? 0) : 0) +
+                ($ebay2 ? ($ebay2->ebay_l60 ?? 0) : 0) +
+                ($ebay3 ? ($ebay3->ebay_l60 ?? 0) : 0) +
+                ($temuMetric ? ($temuMetric->quantity_purchased_l60 ?? 0) : 0) +
+                ($reverb ? ($reverb->r_l60 ?? 0) : 0) +
+                ($walmart ? ($walmart->l60 ?? 0) : 0) +
+                ($macy ? ($macy->m_l60 ?? 0) : 0) +
+                ($bestbuyUsa ? ($bestbuyUsa->m_l60 ?? 0) : 0) +
+                ($tiendamia ? ($tiendamia->m_l60 ?? 0) : 0) +
+                ($doba ? ($doba->l60 ?? 0) : 0);
+            
+            // Calculate avg CVR only for channels where L30 > 0 and views > 0 
+            $filtered_l30_sum = 0;
+            $filtered_views_sum = 0;
+       
+            
+            // Amazon
+            if ($amazon && ($amazon->units_ordered_l30 ?? 0  && $amazon->sessions_l30 ?? 0) > 0) {
+                $filtered_l30_sum += $amazon->units_ordered_l30;
+                $filtered_views_sum += $amazon->sessions_l30 ?? 0;
+            }
+            
+            // eBay
+            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0 && ($ebay->views ?? 0) > 0) {
+                $filtered_l30_sum += $ebay->ebay_l30;
+                $filtered_views_sum += $ebay->views ?? 0;
+            }
+            
+            // eBay2
+            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0 && ($ebay2->views ?? 0) > 0   ) {
+                $filtered_l30_sum += $ebay2->ebay_l30;
+                $filtered_views_sum += $ebay2->views ?? 0;
+            }
+            
+            // eBay3
+            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0 && ($ebay3->views ?? 0) > 0) {
+                $filtered_l30_sum += $ebay3->ebay_l30;
+                $filtered_views_sum += $ebay3->views ?? 0;
+            }
+            
+            // Temu
+            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0 && ($temuMetric->{'product_clicks_l30'} ?? 0) > 0) {
+                $filtered_l30_sum += $temuMetric->{'quantity_purchased_l30'};
+                $filtered_views_sum += $temuMetric->{'product_clicks_l30'} ?? 0;
+            }
+            
+            // Reverb
+            if ($reverb && ($reverb->r_l30 ?? 0) > 0 && ($reverb->views ?? 0) > 0) {
+                $filtered_l30_sum += $reverb->r_l30;
+                $filtered_views_sum += $reverb->views ?? 0;
+            }
+            
+            // Walmart
+            if ($walmart && ($walmart->l30 ?? 0) > 0 && ($walmart->views ?? 0) > 0) {
+                $filtered_l30_sum += $walmart->l30;
+                $filtered_views_sum += $walmart->views ?? 0;
+            }
+            
+            // TikTok
+            if ($tiktok && ($tiktok->l30 ?? 0) > 0 && ($tiktok->views ?? 0) > 0) {
+                $filtered_l30_sum += $tiktok->l30;
+                $filtered_views_sum += $tiktok->views ?? 0;
+            }
+            
+            // Shein
+            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0 && ($shein->views_clicks ?? 0) > 0) {
+                $filtered_l30_sum += $shein->shopify_sheinl30;
+                $filtered_views_sum += $shein->views_clicks ?? 0;
+            }
+            
+                $avgCvr = $filtered_views_sum > 0
+                ? number_format(($filtered_l30_sum / $filtered_views_sum) * 100, 1) . ' %'
+                : '0.0 %'; 
+
+
+ $total_l30_count_data = 0;
+            
+            // Count channels where both L30 > 0 and views > 0
+            if ($amazon && ($amazon->units_ordered_l30 ?? 0) > 0 && ($amazon->sessions_l30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0 && ($ebay->views ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0 && ($ebay2->views ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0 && ($ebay3->views ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0 && ($temuMetric->{'product_clicks_l30'} ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($reverb && ($reverb->r_l30 ?? 0) > 0 && ($reverb->views ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            // Note: Walmart excluded as it doesn't have views data
+            if ($tiktok && ($tiktok->l30 ?? 0) > 0 && ($tiktok->views ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0 && ($shein->views_clicks ?? 0) > 0) {
+                $total_l30_count_data++;
+            }          
+            
+
+
 
 
             $item = (object) [
-
-
                 'SKU'     => $sku,
                 'Parent'  => $product->parent,
                 'L30'     => $l30,
@@ -307,6 +457,9 @@ class PricingMasterViewsController extends Controller
                 'is_parent' => $isParent,
                 'inv' => $shopifyData[trim(strtoupper($sku))]->inv ?? 0,
                 'avgCvr' => $avgCvr,
+                'total_l30_count' => $total_l30_count,
+                'total_l30_count_data' => $total_l30_count_data,
+                'total_l60_count' => $total_l60_count,
 
                 'initial_cogs' => $lp != 0 ? $initialQuantity * $lp : 0,
                 'current_cogs' => $lp != 0 ? $inv * $lp : 0,
@@ -471,17 +624,33 @@ class PricingMasterViewsController extends Controller
                 'tiendamia_price' => $tiendamia ? ($tiendamia->price ?? 0) : 0,
                 'tiendamia_l30'   => $tiendamia ? ($tiendamia->m_l30 ?? 0) : 0,
                 'tiendamia_l60'   => $tiendamia ? ($tiendamia->m_l60 ?? 0) : 0,
-                'tiendamia_pft'   => $tiendamia && ($tiendamia->price ?? 0) > 0 ? (($tiendamia->price * 0.80 - $lp - $ship) / $tiendamia->price) : 0,
-                'tiendamia_roi'   => $tiendamia && $lp > 0 && ($tiendamia->price ?? 0) > 0 ? (($tiendamia->price * 0.80 - $lp - $ship) / $lp) : 0,
+                'tiendamia_pft'   => $tiendamia && ($tiendamia->price ?? 0) > 0 ? (($tiendamia->price * 0.83 - $lp - $ship) / $tiendamia->price) : 0,
+                'tiendamia_roi'   => $tiendamia && $lp > 0 && ($tiendamia->price ?? 0) > 0 ? (($tiendamia->price * 0.83 - $lp - $ship) / $lp) : 0,
                 'tiendamia_req_view' => 0, // No views data
                 'tiendamia_cvr' => null, // No views data
                 'tiendamia_buyer_link' => isset($tiendamiaListingData[$sku]) ? ($tiendamiaListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'tiendamia_seller_link' => isset($tiendamiaListingData[$sku]) ? ($tiendamiaListingData[$sku]->value['seller_link'] ?? null) : null,
 
+                // TikTok
+                'tiktok_price' => $tiktok ? ($tiktok->price ?? 0) : 0,
+                'tiktok_l30'   => $tiktok ? ($tiktok->l30 ?? 0) : 0,
+                'tiktok_l60'   => $tiktok ? ($tiktok->l60 ?? 0) : 0,
+                'tiktok_views' => $tiktok ? ($tiktok->views ?? 0) : 0,
+                'tiktok_pft'   => $tiktok && ($tiktok->price ?? 0) > 0 ? (($tiktok->price * 0.64 - $lp - $ship) / $tiktok->price) : 0,
+                'tiktok_roi'   => $tiktok && $lp > 0 && ($tiktok->price ?? 0) > 0 ? (($tiktok->price * 0.64 - $lp - $ship) / $lp) : 0,
+
+                'tiktok_req_view' => $tiktok && $tiktok->views > 0 && $tiktok->l30
+                    ? (($inv / 90) * 30) / (($tiktok->l30 / $tiktok->views))
+                    : 0,
+                'tiktok_cvr'   => $tiktok ? $this->calculateCVR($tiktok->l30 ?? 0, $tiktok->views ?? 0) : null,
+                'tiktok_buyer_link' => isset($tiktokListingData[$sku]) ? ($tiktokListingData[$sku]->value['buyer_link'] ?? null) : null,
+                'tiktok_seller_link' => isset($tiktokListingData[$sku]) ? ($tiktokListingData[$sku]->value['seller_link'] ?? null) : null,
+
                 // Direct assignments for blade template
                 'views_clicks' => $shein ? ($shein->views_clicks ?? 0) : 0,
                 'lmp' => $shein ? ($shein->lmp ?? 0) : 0,
                 'shopify_sheinl30' => $shein ? ($shein->shopify_sheinl30 ?? 0) : 0,
+
 
                 // Total required views from all channels
                 // 'total_req_view' => (
@@ -492,14 +661,16 @@ class PricingMasterViewsController extends Controller
                 // ),
 
                 'total_req_view' => (
-                    ($ebay && $ebay->views && $ebay->ebay_l30 ? (($inv * 20)) : 0) +
-                    ($ebay2 && $ebay2->views && $ebay2->ebay_l30 ? (($inv * 20)) : 0) +
-                    ($ebay3 && $ebay3->views && $ebay3->ebay_l30 ? (($inv * 20)) : 0) +
-                    ($amazon && $amazon->sessions_l30 && $amazon->units_ordered_l30 ? (($inv * 20)) : 0) +
-                    ($shein && $shein->views_clicks && $shein->shopify_sheinl30 ? (($inv * 20)) : 0) +
-                    ($reverb && $reverb->views && $reverb->r_l30 ? (($inv * 20)) : 0) +
-                    ($temuMetric && (($temuMetric->{'product_impressions_l30'} ?? 0) + ($temuMetric->{'product_clicks_l30'} ?? 0)) && ($temuMetric->{'quantity_purchased_l30'} ?? 0) ? (($inv * 20)) : 0)
+                    ($ebay && $ebay->views && $ebay->ebay_l30 ? ($inv * 20) : 0) +
+                    ($ebay2 && $ebay2->views && $ebay2->ebay_l30 ? ($inv * 20) : 0) +
+                    ($ebay3 && $ebay3->views && $ebay3->ebay_l30 ? ($inv * 20) : 0) +
+                    ($amazon && $amazon->sessions_l30 && $amazon->units_ordered_l30 ? ($inv * 20) : 0) +
+                    ($shein && $shein->views_clicks && $shein->shopify_sheinl30 ? ($inv * 20) : 0) +
+                    ($reverb && $reverb->views && $reverb->r_l30 ? ($inv * 20) : 0) +
+                    ($temuMetric && ($temuMetric->{'product_clicks_l30'} ?? 0) && ($temuMetric->{'quantity_purchased_l30'} ?? 0) ? ($inv * 20) : 0)
                 ),
+
+                
                 //  100 / cvr * inv not cvr percentage 
 
 
@@ -622,6 +793,19 @@ class PricingMasterViewsController extends Controller
                 'tiendamia_sroi' => isset($tiendamiaDataView[$sku]) ?
                     (is_array($tiendamiaDataView[$sku]->value) ?
                         ($tiendamiaDataView[$sku]->value['SROI'] ?? null) : (json_decode($tiendamiaDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+
+
+
+                'tiktok_sprice' => isset($tiktokDataView[$sku]) ?
+                    (is_array($tiktokDataView[$sku]->value) ?
+                        ($tiktokDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($tiktokDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'tiktok_spft' => isset($tiktokDataView[$sku]) ? (is_array($tiktokDataView[$sku]->value) ?
+                    ($tiktokDataView[$sku]->value['SPFT'] ?? null) : (json_decode($tiktokDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'tiktok_sroi' => isset($tiktokDataView[$sku]) ?
+                    (is_array($tiktokDataView[$sku]->value) ?
+                        ($tiktokDataView[$sku]->value['SROI'] ?? null) : (json_decode($tiktokDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
 
 
             ];
@@ -1050,7 +1234,8 @@ class PricingMasterViewsController extends Controller
                     'temu' => 0.87,
                     'reverb' => 0.84,
                     'macy' => 0.76,
-                    'walmart' => 0.80
+                    'walmart' => 0.80,
+                    'tiktok' => 0.64
                 ];
 
                 foreach ($marketplaces as $mp => $percent) {
@@ -1104,6 +1289,12 @@ class PricingMasterViewsController extends Controller
                             $dataView = WalmartDataView::firstOrNew(['sku' => $sku]);
                             $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
                             break;
+                        case 'tiktok':
+                            // For TikTok, update TiktokSheet directly
+                            $tiktokSheet = TiktokSheet::firstOrNew(['sku' => $sku]);
+                            $tiktokSheet->price = $sprice;
+                            $tiktokSheet->save();
+                            continue 2; // Skip the rest of the processing for TikTok
                     }
 
                     $existing['SPRICE'] = number_format($sprice, 2, '.', '');
@@ -1437,6 +1628,12 @@ class PricingMasterViewsController extends Controller
             ], 500);
         }
     }
+
+
+
+
+
+
 
     public function pricingMasterCopy(Request $request)
     {

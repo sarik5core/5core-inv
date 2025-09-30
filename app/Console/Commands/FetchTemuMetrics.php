@@ -467,9 +467,9 @@ class FetchTemuMetrics extends Command
         $sign = strtoupper(md5($signStr));
         $params['sign'] = $sign;
 
+        
         // Log the request
         $this->info("Generated Sign: $sign");
-
         return array_merge($params, $requestBody);
     }
 }
