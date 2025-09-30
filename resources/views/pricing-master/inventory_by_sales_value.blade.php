@@ -2415,7 +2415,7 @@ function setCombinedFilters() {
         dilPercentage = (l30 / inv) * 100;
     }
     const dilElement = document.getElementById('dilPercentage');
-    dilElement.textContent = dilPercentage ? `${Math.round(dilPercentage)}%` : "0%";
+    dilElement.textContent = dilPercentage ? `${Math.round(dilPercentage)}` : "0%";
     // Apply color based on dilPercentage ranges
     if (dilPercentage) {
         const rounded = dilPercentage;
