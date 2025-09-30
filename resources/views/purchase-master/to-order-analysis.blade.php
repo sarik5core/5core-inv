@@ -229,6 +229,8 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            document.body.style.zoom = "75%";
+
             document.documentElement.setAttribute("data-sidenav-size", "condensed");
 
             const globalPreview = Object.assign(document.createElement("div"), {
@@ -259,7 +261,7 @@
                 resizableColumns: true,
                 columns: [
                     {
-                        title: "Image",
+                        title: "#",
                         field: "Image",
                         headerSort: false,
                         formatter: (cell) => {
@@ -302,7 +304,7 @@
                         field: "SKU"
                     },
                     {
-                        title: "Appr. QTY",
+                        title: "App. QTY",
                         field: "approved_qty",
                         hozAlign: "center",
                         formatter: function (cell) {
@@ -356,10 +358,7 @@
 
                             const html = `
                                 <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                                    <input type="date" class="form-control form-control-sm doa-input"
-                                        value="${value}" 
-                                        style="width:82px; ${bgColor}">
-                                    ${daysDiff !== null ? `<small style="font-size: 12px; color: rgb(72, 69, 69);">${daysDiff} days ago</small>` : ""}
+                                    <input type="date" class="form-control form-control-sm doa-input" value="${value}" style="width:82px; ${bgColor}">
                                 </div>
                             `;
 
@@ -427,17 +426,15 @@
                         },
                     },
                     {
-                        title: "NRL",
+                        title: "NRP",
                         field: "nrl",
                         formatter: function (cell) {
                             const row = cell.getRow();
                             const sku = row.getData().Sku;
                             return `
-                                <select class="form-select form-select-sm editable-select" 
-                                        data-row-id="${sku}" 
-                                        data-type="NR"
-                                    style="width: 90px;">
-                                    <option value="REQ" ${cell.getValue() === 'REQ' ? 'selected' : ''}>REQ</option>
+                                <select class="form-select form-select-sm editable-select" data-row-id="${sku}" data-type="NR"
+                                    style="width: 75px;">
+                                    <option value="REQ" ${cell.getValue() === 'REQ' ? 'selected' : ''}>RE</option>
                                     <option value="NR" ${cell.getValue() === 'NR' ? 'selected' : ''}>NR</option>
                                 </select>
                             `;
@@ -456,7 +453,7 @@
                                 <select class="form-select form-select-sm stage-select"
                                     data-type="stage"
                                     data-sku='${rowData["SKU"]}'
-                                    style="width: 120px;>
+                                    style="width: 100px;>
                                     <option value="RFQ Sent" ${value === "RFQ Sent" ? "selected" : ""}>RFQ Sent</option>
                                     <option value="Analytics" ${value === "Analytics" ? "selected" : ""}>Analytics</option>
                                     <option value="To Approve" ${value === "To Approve" ? "selected" : ""}>To Approve</option>
@@ -563,8 +560,6 @@
             globalPreview.addEventListener("mouseleave", () => {
                 globalPreview.style.display = "none";
             });
-
-            document.body.style.zoom = "80%";
         });
     </script>
 @endsection

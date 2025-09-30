@@ -279,7 +279,7 @@
                                         <span class="sku-short" style="cursor:pointer;">
                                             {{ \Illuminate\Support\Str::limit($item->sku ?? '', 10) }}
                                         </span>
-                                        <span class="sku-full d-none">{{ $item->sku ?? '' }}</span>
+                                        <span class="sku-full d-none" id="sku-full">{{ $item->sku ?? '' }}</span>
                                     </td>
                                     <td data-column="4" data-qty="{{ $item->qty ?? 0 }}" style="text-align: end;">{{ $item->qty ?? '' }}</td>
                                     <td data-column="5">
@@ -755,19 +755,19 @@
 
                     if (!sku || !column) return;
                     
-                    if (column === 'ready_to_ship' && value === 'Yes') {
-                        const photoPacking = row.querySelector('td[data-column="15"] a')?.href?.trim() || '';
-                        const photoIntSale = row.querySelector('td[data-column="16"] a')?.href?.trim() || '';
-                        const barcodeSku = row.querySelector('td[data-column="19"] a')?.href?.trim() || '';
-                        const artwork = row.querySelector('td[data-column="20"] input')?.value?.trim() || '';
-                        const notes = row.querySelector('td[data-column="21"] input')?.value?.trim() || '';
+                    // if (column === 'ready_to_ship' && value === 'Yes') {
+                    //     const photoPacking = row.querySelector('td[data-column="15"] a')?.href?.trim() || '';
+                    //     const photoIntSale = row.querySelector('td[data-column="16"] a')?.href?.trim() || '';
+                    //     const barcodeSku = row.querySelector('td[data-column="19"] a')?.href?.trim() || '';
+                    //     const artwork = row.querySelector('td[data-column="20"] input')?.value?.trim() || '';
+                    //     const notes = row.querySelector('td[data-column="21"] input')?.value?.trim() || '';
 
-                        if (!photoPacking || !photoIntSale || !barcodeSku || !artwork || !notes) {
-                            alert("❌ Please fill all fields before marking 'Ready to Ship':\n- Photo Packing\n- Photo Internal Sale\n- Barcode SKU\n- Artwork Manual Book\n- Notes");
-                            this.value = 'No';
-                            return;
-                        }
-                    }
+                    //     if (!photoPacking || !photoIntSale || !barcodeSku || !artwork || !notes) {
+                    //         alert("❌ Please fill all fields before marking 'Ready to Ship':\n- Photo Packing\n- Photo Internal Sale\n- Barcode SKU\n- Artwork Manual Book\n- Notes");
+                    //         this.value = 'No';
+                    //         return;
+                    //     }
+                    // }
 
                     // ✅ Save via AJAX
                     fetch('/mfrg-progresses/inline-update-by-sku', {
@@ -809,7 +809,7 @@
                             // ✅ Insert into Ready to Ship table
                             if (column === 'ready_to_ship' && value === 'Yes') {
                                 const parent = row.querySelector('td:nth-child(2)')?.innerText?.trim() || '';
-                                const skuVal = row.querySelector('td:nth-child(3)')?.innerText?.trim() || '';
+                                const skuVal = row.querySelector('#sku-full')?.innerText?.trim() || '';
                                 const supplier = row.querySelector('td:nth-child(6)')?.innerText?.trim() || '';
                                 const totalCbm = row.querySelector('td[data-column="16"] input')?.value?.trim() || '';
 

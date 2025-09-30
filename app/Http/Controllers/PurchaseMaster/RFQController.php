@@ -34,6 +34,10 @@ class RFQController extends Controller
         if($request->hasFile('main_image')){
             $imagePath = $request->file('main_image')->store('rfq_forms', 'public');
         }
+        $fields = collect($request->fields)->map(function($field, $index) {
+            $field['order'] = $field['order'] ?? ($index + 1);
+            return $field;
+        })->toArray();
 
         RfqForm::create([
             'name' => $request->rfq_form_name,
@@ -41,7 +45,10 @@ class RFQController extends Controller
             'slug' => $slug,
             'main_image' => $imagePath,
             'subtitle' => $request->subtitle,
-            'fields' => $request->fields,
+            'fields' => $fields,
+            'dimension_inner' => $request->dimension_inner,
+            'product_dimension' => $request->product_dimension,
+            'package_dimension' => $request->package_dimension,
         ]);
 
         return response()->json([
