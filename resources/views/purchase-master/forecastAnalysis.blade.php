@@ -5,6 +5,33 @@
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
     <style>
+        .tabulator .tabulator-footer {
+            background: #f4f7fa;
+            border-top: 1px solid #262626;
+            font-size: 1rem;
+            color: #4b5563;
+            padding: 5px;
+            height: 70px;
+        }
+        /* Pagination styling */
+        .tabulator .tabulator-footer .tabulator-paginator .tabulator-page {
+            padding: 8px 16px;
+            margin: 0 4px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tabulator .tabulator-footer .tabulator-paginator .tabulator-page:hover {
+            background: #e0eaff;
+            color: #2563eb;
+        }
+
+        .tabulator .tabulator-footer .tabulator-paginator .tabulator-page.active {
+            background: #2563eb;
+            color: white;
+        }
         #image-hover-preview {
             transition: opacity 0.2s ease;
         }
@@ -265,7 +292,7 @@
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
-            paginationSize: 50,
+            paginationSize: 100,
             movableColumns: false,
             resizableColumns: true,
             height: "650px",
@@ -500,7 +527,7 @@
                     }
                 },
                 {
-                    title: "Approved QTY",
+                    title: "Appr. QTY",
                     field: "Approved QTY",
                     accessor: row => row?.["Approved QTY"] ?? null,
                     headerSort: false,
@@ -523,9 +550,8 @@
                     </div>`;
                     }
                 },
-
                 {
-                    title: "Supplier Tag",
+                    title: "Supplier",
                     field: "Supplier Tag",
                     accessor: row => row["Supplier Tag"]
                 },
@@ -680,10 +706,8 @@
                     (currentColorFilter === 'red' ?
                         child.to_order < 0 :
                         currentColorFilter === 'yellow' ?
-                        child.to_order >= 0 && (!child["Approved QTY"] || child["Approved QTY"].toString()
-                        .trim() === '') :
-                        true) &&
-                    !(child["Approved QTY"] && child["Approved QTY"].toString().trim() !== '')
+                        child.to_order >= 0 :
+                        true)
                 );
 
                 if (matchingChildren.length > 0) {
@@ -696,30 +720,27 @@
 
                 const isChild = !data.is_parent;
                 const isParent = data.is_parent;
-                const approvedQty = data["Approved QTY"];
 
                 const matchesColor =
                     currentColorFilter === 'red' ?
                     data.to_order < 0 :
                     currentColorFilter === 'yellow' ?
-                    data.to_order >= 0 && (!approvedQty || approvedQty.toString().trim() === '') :
+                    data.to_order >= 0 :
                     true;
 
                 const matchesNR = hideNRYes ? data.nr !== 'NR' : true;
-                const matchesApprovedQty = isParent ? true : !(approvedQty && approvedQty.toString().trim() !== '');
 
                 // 🎯 Force filter to one parent group if play mode is active
                 if (currentParentFilter) {
                     if (isParent) {
                         return data.Parent === currentParentFilter;
                     } else {
-                        return data.Parent === currentParentFilter && matchesColor && matchesNR &&
-                            matchesApprovedQty;
+                        return data.Parent === currentParentFilter && matchesColor && matchesNR;
                     }
                 }
 
                 if (isChild) {
-                    const showChild = matchesColor && matchesNR && matchesApprovedQty;
+                    const showChild = matchesColor && matchesNR;
                     if (currentRowTypeFilter === 'parent') return false;
                     if (currentRowTypeFilter === 'sku') return showChild;
                     return showChild;
@@ -744,8 +765,7 @@
             const yellowCount = visibleRows.filter(r =>
                 r.to_order >= 0 &&
                 !r.is_parent &&
-                r.nr !== 'NR' &&
-                (!r["Approved QTY"] || r["Approved QTY"].toString().trim() === '')
+                r.nr !== 'NR'
             ).length;
 
             document.getElementById('yellow-count-box').textContent = `Approval Pending: ${yellowCount}`;
@@ -1254,7 +1274,7 @@
             countContainer.classList.add('d-none');
 
             // Set yellow filter as default
-            currentColorFilter = 'yellow';
+            currentColorFilter = '';
             document.getElementById('yellow-count-container').classList.remove('d-none');
             document.getElementById('order-color-filter-dropdown').innerHTML =
                 '<i class="bi bi-funnel-fill"></i> Yellow Filter';
