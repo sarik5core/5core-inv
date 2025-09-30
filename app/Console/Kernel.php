@@ -174,6 +174,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('sync:amazon-prices')->everyMinute();
         $schedule->command('sync:sync-temu-sip')->everyMinute();
         $schedule->command('sync:walmart-metrics-data')->everyMinute();
+        $schedule->command('sync:tiktok-sheet-data')->everyMinute();
     }
 
     /**

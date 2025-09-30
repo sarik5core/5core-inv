@@ -1257,6 +1257,8 @@
                 title: "Avg CVR",
                 field: "avgCvr",
                 hozAlign: "center",
+                headerSort: true,
+                
               
                 formatterParams: {
                     decimal: 2,
