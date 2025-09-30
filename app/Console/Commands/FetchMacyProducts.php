@@ -314,6 +314,7 @@ class FetchMacyProducts extends Command
 
         $pageToken = null;
         $page = 1;
+        $allProducts = [];
 
          do {
             $this->info("Fetching product page $page...");
@@ -332,11 +333,15 @@ class FetchMacyProducts extends Command
             $json = $response->json();
             $products = $json['data'] ?? [];
             $pageToken = $json['next_page_token'] ?? null;
+            $allProducts = array_merge($allProducts, $products);
 
             foreach ($products as $product) {
                 $sku = $product['id'] ?? null;
                 $price = $product['discount_prices'][0]['price']['amount'] ?? null;
                 if (!$sku || $price === null) continue;
+
+                $originalSku = $sku;
+                $sku = strtolower($sku);
 
                 // Loop through all channels that reported this SKU
                 foreach ($skuSales as $channel => $skuMap) {
@@ -348,36 +353,57 @@ class FetchMacyProducts extends Command
                     switch ($channel) {
                         case "Macy's, Inc.":
                             MacyProduct::updateOrCreate(
-                                ['sku' => $sku],
+                                ['sku' => $originalSku],
                                 ['price' => $price, 'm_l30' => $l30, 'm_l60' => $l60]
                             );
                             break;
 
                         case "Tiendamia":
                             TiendamiaProduct::updateOrCreate(
-                                ['sku' => $sku],
+                                ['sku' => $originalSku],
                                 ['price' => $price, 'm_l30' => $l30, 'm_l60' => $l60]
                             );
                             break;
 
                         case "Best Buy USA":
-                            BestbuyUsaProduct::updateOrCreate(
-                                ['sku' => $sku],
-                                ['price' => $price, 'm_l30' => $l30, 'm_l60' => $l60]
-                            );
+                            // Removed to store all products separately
                             break;
 
                         default:
-                            Log::warning("Unknown channel: {$channel} for SKU {$sku}");
+                            Log::warning("Unknown channel: {$channel} for SKU {$originalSku}");
                             break;
                     }
 
-                    Log::info("Stored {$channel} | SKU: {$sku}, Price: {$price}, L30: {$l30}, L60: {$l60}");
+                    Log::info("Stored {$channel} | SKU: {$originalSku}, Price: {$price}, L30: {$l30}, L60: {$l60}");
                 }
             }
 
             $page++;
         } while ($pageToken);
+
+        // Store all products in Best Buy table
+        foreach ($allProducts as $product) {
+            $sku = $product['id'] ?? null;
+            $price = $product['discount_prices'][0]['price']['amount'] ?? null;
+            if (!$sku || $price === null) continue;
+
+            $originalSku = $sku;
+            $sku = strtolower($sku);
+
+            if ($originalSku === 'CDKC13 1pc') {
+                Log::info("Storing CDKC13 1pc in Best Buy");
+            }
+
+            $l30 = $skuSales['Best Buy USA'][$sku]['l30'] ?? 0;
+            $l60 = $skuSales['Best Buy USA'][$sku]['l60'] ?? 0;
+
+            BestbuyUsaProduct::updateOrCreate(
+                ['sku' => $originalSku],
+                ['price' => $price, 'm_l30' => $l30, 'm_l60' => $l60]
+            );
+
+            Log::info("Stored Best Buy | SKU: {$originalSku}, Price: {$price}, L30: {$l30}, L60: {$l60}");
+        }
 
         $this->info("All Macy, Tiendamia, BestbuyUSA products stored successfully.");
     }
@@ -439,6 +465,12 @@ class FetchMacyProducts extends Command
                     $qty = $line['quantity'] ?? 0;
                     if (!$sku) continue;
 
+                    $sku = strtolower($sku);
+
+                    if (str_contains($sku, 'cdkc13') && $channel === "Best Buy USA") {
+                        Log::info("Found SKU containing cdkc13 in Best Buy order: {$sku}, qty {$qty}, created_at {$order['created_at']}");
+                    }
+
                     if (!isset($sales[$channel][$sku])) {
                         $sales[$channel][$sku] = ['l30' => 0, 'l60' => 0];
                     }
@@ -457,6 +489,12 @@ class FetchMacyProducts extends Command
         // foreach ($sales as $channel => $skuMap) {
         //     $this->info("Channel {$channel} has " . count($skuMap) . " SKUs with orders.");
         // }
+
+        if (isset($sales['Best Buy USA'])) {
+            foreach ($sales['Best Buy USA'] as $sku => $data) {
+                Log::info("Best Buy SKU: {$sku}, L30: {$data['l30']}, L60: {$data['l60']}");
+            }
+        }
 
         return $sales;
     }
