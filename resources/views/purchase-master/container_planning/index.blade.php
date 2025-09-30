@@ -154,28 +154,33 @@
                                 <input type="url" name="packing_list_link" class="form-control">
                             </div>
 
-                            <!-- Invoice Value -->
                             <div class="col-md-4">
+                                <label class="form-label fw-semibold">Currency</label>
+                                <select name="currency" id="currency" class="form-select" required>
+                                    <option value="">Select currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="CNY">RMB</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Invoice Value</label>
-                                <input type="number" step="0.01" name="invoice_value" class="form-control"
-                                    step="any">
+                                <input type="number" step="0.01" name="invoice_value" id="invoice_value" class="form-control">
                             </div>
 
-                            <!-- Paid -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Paid</label>
-                                <input type="number" step="0.01" name="paid" class="form-control"
-                                    step="any">
+                                <input type="number" step="0.01" name="paid" id="paid" class="form-control">
                             </div>
 
-                            <!-- Balance -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Balance</label>
-                                <input type="number" step="0.01" name="balance" class="form-control" readonly>
+                                <input type="number" step="0.01" name="balance" id="balance" class="form-control" readonly>
                             </div>
+
 
                             <!-- Pay Term -->
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Pay Term</label>
                                 <select name="pay_term" class="form-select">
                                     <option value="">Select Term</option>
@@ -312,9 +317,7 @@
                 }
             });
 
-            table.on("dataLoaded", updateBalances);
-            table.on("dataFiltered", updateBalances);
-
+            // Update balances function
             function updateBalances() {
                 const allData = table.getData();
                 const filteredData = table.getData("active");
@@ -345,46 +348,69 @@
                 }
             }
 
+            // Apply filters
+            function applyFilters() {
+                const container = document.getElementById("filter-container").value;
+                const supplier = document.getElementById("filter-supplier").value;
+                const keyword = document.getElementById("container-planning-search").value.toLowerCase();
 
-            document.getElementById("container-planning-search").addEventListener("input", function(e) {
-                const keyword = e.target.value.toLowerCase();
+                const filters = [];
 
-                table.setFilter([
-                    [{
-                            field: "container_number",
-                            type: "like",
-                            value: keyword
-                        },
-                        {
-                            field: "po_number",
-                            type: "like",
-                            value: keyword
-                        },
-                    ],
+                if (container) {
+                    filters.push({ field: "container_number", type: "=", value: container });
+                }
 
-                ]);
+                if (supplier) {
+                    filters.push({ field: "supplier_id", type: "=", value: supplier });
+                }
+
+                if (keyword) {
+                    filters.push([
+                        { field: "container_number", type: "like", value: keyword },
+                        { field: "po_number", type: "like", value: keyword },
+                    ]);
+                }
+
+                table.setFilter(filters);
                 updateBalances();
-            });
+            }
 
+            // Container filter: update supplier dropdown dynamically
             document.getElementById("filter-container").addEventListener("change", function() {
                 const container = this.value;
-                table.setFilter("container_number", container ? "=" : "like", container);
-                updateBalances();
+                const supplierSelect = document.getElementById("filter-supplier");
 
-                const rows = table.searchRows("container_number", "=", container);
-                if (rows.length > 0) {
-                    const supplierId = rows[0].getData().supplier_id;
-                    document.getElementById("filter-supplier").value = supplierId;
-                    table.setFilter("supplier_id", "=", supplierId);
-                    updateBalances();
+                // Reset supplier dropdown
+                supplierSelect.innerHTML = '<option value="">Select Supplier</option>';
+
+                if (container) {
+                    // Get all suppliers in this container
+                    const containerRows = table.getData().filter(row => row.container_number === container);
+                    const uniqueSuppliers = [...new Set(containerRows.map(r => r.supplier_id))];
+
+                    uniqueSuppliers.forEach(supplierId => {
+                        const supplierName = containerRows.find(r => r.supplier_id == supplierId).supplier_name;
+                        const option = document.createElement("option");
+                        option.value = supplierId;
+                        option.text = supplierName;
+                        supplierSelect.appendChild(option);
+                    });
                 }
+
+                // Apply container filter (without forcing supplier)
+                applyFilters();
             });
 
-            document.getElementById("filter-supplier").addEventListener("change", function() {
-                const supplierId = this.value;
-                table.setFilter("supplier_id", supplierId ? "=" : "like", supplierId);
-                updateBalances();
-            });
+            // Supplier filter
+            document.getElementById("filter-supplier").addEventListener("change", applyFilters);
+
+            // Search input
+            document.getElementById("container-planning-search").addEventListener("input", applyFilters);
+
+            // Update balances on table events
+            table.on("dataLoaded", updateBalances);
+            table.on("dataFiltered", updateBalances);
+
 
             table.on("rowSelectionChanged", function(data, rows) {
                 if (data.length > 0) {
@@ -472,7 +498,55 @@
                 let modal = new bootstrap.Modal(document.getElementById("createContainerPlanning"));
                 modal.show();
             }
+            
 
         });
     </script>
+    <script>
+        async function updateBalance() {
+            let invoice = parseFloat(document.getElementById('invoice_value').value) || 0;
+            let paid = parseFloat(document.getElementById('paid').value) || 0;
+            let currency = document.getElementById('currency').value;
+
+            if (!invoice && !paid) {
+                document.getElementById('balance').value = 0;
+                return;
+            }
+
+            if (currency === "CNY") {
+                try {
+                    // Convert invoice
+                    let resInvoice = await fetch(`/convert-currency?amount=${invoice}&from=CNY&to=USD`);
+                    let dataInvoice = await resInvoice.json();
+
+                    if (dataInvoice?.rates?.USD) {
+                        invoice = dataInvoice.rates.USD;
+                        document.getElementById('invoice_value').value = invoice.toFixed(2);
+                    }
+
+                    // Convert paid
+                    let resPaid = await fetch(`/convert-currency?amount=${paid}&from=CNY&to=USD`);
+                    let dataPaid = await resPaid.json();
+
+                    if (dataPaid?.rates?.USD) {
+                        paid = dataPaid.rates.USD;
+                        document.getElementById('paid').value = paid.toFixed(2);
+                    }
+                } catch (e) {
+                    alert("❌ Conversion API failed");
+                    return;
+                }
+            }
+
+            // Always calculate in USD
+            let balance = invoice - paid;
+            document.getElementById('balance').value = balance.toFixed(2);
+        }
+
+        document.getElementById('invoice_value').addEventListener('blur', updateBalance);
+        document.getElementById('paid').addEventListener('blur', updateBalance);
+        document.getElementById('currency').addEventListener('change', updateBalance);
+    </script>
+
+
 @endsection

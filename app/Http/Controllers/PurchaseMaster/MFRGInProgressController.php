@@ -72,9 +72,14 @@ class MFRGInProgressController extends Controller
                 $supplierNames = $supplierMapByParent[$parent];
             }
 
+            if (!empty($row->supplier)) {
+                $row->supplier = $row->supplier; // keep manual value
+            } else {
+                $row->supplier = implode(', ', $supplierNames); // mapping value
+            }
+
             $row->Image = $image;
             $row->CBM = $cbm;
-            $row->supplier = implode(', ', $supplierNames);
         }
 
 
@@ -115,7 +120,7 @@ class MFRGInProgressController extends Controller
         $validColumns = [
             'advance_amt', 'pay_conf_date', 'o_links', 'adv_date', 'del_date', 'total_cbm',
             'barcode_sku', 'artwork_manual_book', 'notes', 'ready_to_ship', 'rate', 'rate_currency',
-            'photo_packing', 'photo_int_sale'
+            'photo_packing', 'photo_int_sale','supplier'
         ];
 
         if (!in_array($column, $validColumns)) {

@@ -1295,7 +1295,7 @@
             },
             
 
-        {
+            {
                     title: "Total Views",
                     field: "total_views",
                     hozAlign: "center",

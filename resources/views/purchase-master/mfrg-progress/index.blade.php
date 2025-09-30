@@ -50,30 +50,17 @@
         background: #e0e6ed;
         border-radius: 6px;
     }
-    .image-hover-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-    .image-hover-preview {
+    .preview-popup {
+        position: fixed;
         display: none;
-        position: absolute;
-        top: -10px;
-        left: 70px;
         z-index: 9999;
-        background: #fff;
-        padding: 6px;
-        border: 1px solid #ccc;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }
-
-    .image-hover-preview img {
+        pointer-events: none;
         width: 350px;
-        height: auto;
-        object-fit: contain;
-        border-radius: 4px;
-    }
-    .image-hover-wrapper:hover .image-hover-preview {
-        display: block;
+        height: 350px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
     }
     td {
         overflow: visible !important;
@@ -239,17 +226,17 @@
                                 {{-- <th data-column="9">pay term<div class="resizer"></div></th> --}}
                                 <th data-column="10" class="text-center">Order<br/>Date<div class="resizer"></div></th>
                                 <th data-column="11">Del<br/>Date<div class="resizer"></div></th>
-                                <th data-column="12">O Links<div class="resizer"></div></th>
-                                <th data-column="13" hidden>value<div class="resizer"></div></th>
-                                <th data-column="14">Payment<br/>Pending<div class="resizer"></div></th>
-                                <th data-column="15">photo<br/>packing<div class="resizer"></div></th>
-                                <th data-column="16">photo int.<br/>sale<div class="resizer"></div></th>
-                                <th data-column="17">CBM<div class="resizer"></div></th>
-                                <th data-column="18" hidden>total<br/>cbm<div class="resizer"></div></th>
-                                <th data-column="19" class="text-center">BARCODE<br/>&<br/>SKU<div class="resizer"></div></th>
-                                <th data-column="20">artwork<br/>&<br/>maual<br/>book<div class="resizer"></div></th>
-                                <th data-column="21">notes<div class="resizer"></div></th>
-                                <th data-column="22">Ready to<br/>ship<div class="resizer"></div></th>
+                                {{-- <th data-column="12">O Links<div class="resizer"></div></th> --}}
+                                <th data-column="12" hidden>value<div class="resizer"></div></th>
+                                <th data-column="13">Payment<br/>Pending<div class="resizer"></div></th>
+                                {{-- <th data-column="15">photo<br/>packing<div class="resizer"></div></th> --}}
+                                {{-- <th data-column="16">photo int.<br/>sale<div class="resizer"></div></th> --}}
+                                <th data-column="14">CBM<div class="resizer"></div></th>
+                                <th data-column="15" hidden>total<br/>cbm<div class="resizer"></div></th>
+                                {{-- <th data-column="19" class="text-center">BARCODE<br/>&<br/>SKU<div class="resizer"></div></th> --}}
+                                {{-- <th data-column="20">artwork<br/>&<br/>maual<br/>book<div class="resizer"></div></th> --}}
+                                {{-- <th data-column="21">notes<div class="resizer"></div></th> --}}
+                                <th data-column="16">Ready to<br/>ship<div class="resizer"></div></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -259,17 +246,11 @@
                                 @endphp
                                 @continue($readyToShip === 'Yes')
                                 <tr>
-                                    <td style="position: relative;" data-column="1">
+                                    <td data-column="1">
                                         @if(!empty($item->Image))
-                                            <div class="image-hover-wrapper">
-                                                <img src="{{ asset($item->Image) }}" alt="Product Image"
-                                                    style="width: 30px; height: 30px; object-fit: contain; border-radius: 4px; border: 1px solid #ddd; cursor: zoom-in;">
-                                                <div class="image-hover-preview">
-                                                    <img src="{{ asset($item->Image) }}" alt="Preview Image">
-                                                </div>
-                                            </div>
+                                            <img src="{{ $item->Image }}" class="hover-img" data-src="{{ $item->Image }}" alt="Image" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
                                         @else
-                                            <span class="text-muted">No Image</span>
+                                            <span class="text-muted">No</span>
                                         @endif
                                     </td>
                                     <td data-column="2" class="text-center">
@@ -295,7 +276,9 @@
                                         </div>
                                     </td>
 
-                                    <td data-column="6" class="text-center">{{ $item->supplier ?? '' }}</td>
+                                    <td data-column="6" class="text-center">
+                                        <input type="text" class="form-control form-control-sm auto-save" data-sku="{{ $item->sku }}" data-column="supplier" value="{{ $item->supplier ?? '' }}" placeholder="supplier">
+                                    </td>
                                     <td data-column="7" hidden>
                                         @php
                                             $supplier = $item->supplier ?? '';
@@ -365,7 +348,7 @@
                                             value="{{ !empty($item->del_date) ? \Carbon\Carbon::parse($item->del_date)->format('Y-m-d') : '' }}" 
                                         class="form-control form-control-sm auto-save" style="width: 80px; font-size: 13px;">
                                     </td>
-                                    <td data-column="12">
+                                    {{-- <td data-column="12">
                                         <div class="input-group input-group-sm align-items-center" style="gap: 4px;">
                                             <span class="input-group-text open-link-icon border-0 p-0 bg-transparent" style="{{ empty($item->o_links) ? 'display:none;' : '' }}; background: none !important;">
                                                 <a href="{{ $item->o_links ?? '#' }}" target="_blank" title="Open Link" style="color: #3bc0c3; font-size: 20px; display: flex; align-items: center; background: none;">
@@ -381,12 +364,12 @@
                                             </span>
                                             <input type="text" class="form-control form-control-sm o-links-input d-none auto-save" value="{{ $item->o_links ?? '' }}" data-sku="{{ $item->sku }}" data-column="o_links" placeholder="Paste or type link here..." style="font-size: 13px; min-width: 180px; border-radius: 20px; box-shadow: 0 1px 4px rgba(60,192,195,0.08); border: 1px solid #e3e3e3; padding-left: 14px; background: #f8fafd;">
                                         </div>
-                                    </td>
+                                    </td> --}}
 
-                                    <td class="total-value d-none" data-column="13">
+                                    <td class="total-value d-none" data-column="12">
                                         {{ is_numeric($item->qty ?? null) && is_numeric($item->rate ?? null) ? ($item->qty * $item->rate) : '' }}
                                     </td>
-                                    <td data-column="14">
+                                    <td data-column="13">
                                         @php
                                             $supplier = $item->supplier ?? '';
                                             $grouped = collect($data)->where('supplier', $supplier);
@@ -405,7 +388,7 @@
                                         {{ number_format($pending, 0) }}
                                     </td>
 
-                                    <td data-column="15">
+                                    {{-- <td data-column="15">
                                         <div class="image-upload-field d-flex align-items-center gap-2">
                                             @if(!empty($item->photo_packing))
                                                 <a href="{{ $item->photo_packing }}" target="_blank" class="me-1" title="View Photo" style="width:50px;">
@@ -419,9 +402,9 @@
                                                 <input type="file" class="d-none auto-upload" data-column="photo_packing" data-sku="{{ $item->sku }}">
                                             </label>
                                         </div>
-                                    </td>
+                                    </td> --}}
 
-                                    <td data-column="16">
+                                    {{-- <td data-column="16">
                                         <div class="image-upload-field d-flex align-items-center gap-2">
                                             @if(!empty($item->photo_int_sale))
                                                 <a href="{{ $item->photo_int_sale }}" target="_blank" class="me-1" title="View Photo" style="width:50px;">
@@ -435,13 +418,13 @@
                                                 <input type="file" class="d-none auto-upload" data-column="photo_int_sale" data-sku="{{ $item->sku }}">
                                             </label>
                                         </div>
-                                    </td>
+                                    </td> --}}
 
-                                    <td data-column="17">
+                                    <td data-column="14">
                                         {{ isset($item->CBM) ? number_format($item->CBM, 4) : 'N/A' }}
                                     </td>
 
-                                    <td data-column="18" hidden>
+                                    <td data-column="15" hidden>
                                         <input type="number"
                                             data-sku="{{ $item->sku }}"
                                             data-column="total_cbm"
@@ -453,7 +436,7 @@
                                             readonly>
                                     </td>
 
-                                    <td data-column="19">
+                                    {{-- <td data-column="19">
                                         <div class="image-upload-field d-flex align-items-center gap-2">
                                             @if(!empty($item->barcode_sku))
                                                 <a href="{{ $item->barcode_sku }}" target="_blank" class="me-1" title="View Photo" style="width:50px;">
@@ -475,9 +458,9 @@
 
                                     <td data-column="21">
                                         <input type="text" class="form-control form-control-sm auto-save" data-sku="{{ $item->sku }}" data-column="notes" value="{{ $item->notes ?? '' }}" style="font-size: 13px;" placeholder="Notes">
-                                    </td>
+                                    </td> --}}
 
-                                    <td data-column="22">
+                                    <td data-column="16">
                                         <select class="form-select form-select-sm auto-save" data-sku="{{ $item->sku }}" data-column="ready_to_ship" style="width: 75px;">
                                             <option value="No" {{ $item->ready_to_ship == 'No' ? 'selected' : '' }}>No</option>
                                             <option value="Yes" {{ $item->ready_to_ship == 'Yes' ? 'selected' : '' }}>Yes</option>
@@ -495,6 +478,24 @@
 
 <script>
     document.body.style.zoom = '85%';
+
+    const popup = document.createElement('img');
+    popup.className = 'preview-popup';
+    document.body.appendChild(popup);
+
+    document.querySelectorAll('.hover-img').forEach(img => {
+        img.addEventListener('mouseenter', e => {
+            popup.src = img.dataset.src;
+            popup.style.display = 'block';
+        });
+        img.addEventListener('mousemove', e => {
+            popup.style.top = (e.clientY + 20) + 'px';
+            popup.style.left = (e.clientX + 20) + 'px';
+        });
+        img.addEventListener('mouseleave', e => {
+            popup.style.display = 'none';
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
         document.documentElement.setAttribute("data-sidenav-size", "condensed");
@@ -811,7 +812,7 @@
                                 const parent = row.querySelector('td:nth-child(2)')?.innerText?.trim() || '';
                                 const skuVal = row.querySelector('#sku-full')?.innerText?.trim() || '';
                                 const supplier = row.querySelector('td:nth-child(6)')?.innerText?.trim() || '';
-                                const totalCbm = row.querySelector('td[data-column="16"] input')?.value?.trim() || '';
+                                const totalCbm = row.querySelector('td[data-column="15"] input')?.value?.trim() || '';
 
                                 fetch('/ready-to-ship/insert', {
                                     method: 'POST',
