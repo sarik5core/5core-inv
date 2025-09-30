@@ -44,7 +44,7 @@
 }
 
 .table-container {
-    max-height: 600px;
+    max-height: 800px;
     overflow: auto;
     scrollbar-width: thin;
     border-radius: 8px;
