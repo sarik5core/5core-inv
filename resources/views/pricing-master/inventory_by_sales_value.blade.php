@@ -547,6 +547,8 @@
                     <div class="btn-group" id="dil-filter" role="group" aria-label="Dilution Filter">
                         <input type="radio" class="btn-check" name="dilFilter" id="dilFilter10" value="10">
                         <label class="btn btn-outline-danger" for="dilFilter10">Dil ≤ 10%</label>
+                        <input type="radio" class="btn-check" name="dilFilter" id="dilFilter50" value="50">
+                        <label class="btn btn-outline-info" for="dilFilter50">Dil > 50%</label>
                         <input type="radio" class="btn-check" name="dilFilter" id="dilFilterClear" value="clear" checked>
                         <label class="btn btn-outline-secondary" for="dilFilterClear">Clear</label>
                     </div>
@@ -1932,6 +1934,8 @@ function setCombinedFilters() {
                 return parseFloat(row.getData()["Dil%"]) !== -1;
             }
         ]);
+    } else if (dilFilter === "50") {
+        filters.push({ field: "Dil%", type: ">", value: 50 }); 
     }
 
     // Apply CVR filter if active
