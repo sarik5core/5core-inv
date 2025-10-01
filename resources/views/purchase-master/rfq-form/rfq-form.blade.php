@@ -111,7 +111,7 @@
 
         .form-group {
             flex: 1;
-            min-width: calc(50% - 20px);
+            min-width: calc(33.33% - 20px);
         }
 
         label {
@@ -383,30 +383,17 @@
 
                 <!-- Product Details Section -->
                 <div class="section-title">Product Specifications(产品规格)</div>
-
                 <div class="form-row row">
-                    {{-- Pehle non-select fields --}}
-                    @foreach($rfqForm->fields as $field)
-                        @if($field['type'] !== 'select')
-                            <div class="form-group">
-                                <label class="form-label @if(!empty($field['required'])) required @endif">
-                                    {{ $field['label'] }}
-                                </label>
-                                <input type="{{ $field['type'] }}" 
-                                    name="{{ $field['name'] }}" 
-                                    class="form-control"
-                                    @if(!empty($field['required'])) required @endif>
-                            </div>
-                        @endif
-                    @endforeach
+                    @php
+                        $fields = collect($rfqForm->fields)->sortBy('order')->values();
+                    @endphp
+                    @foreach($fields as $field)
+                        <div class="form-group">
+                            <label class="form-label @if(!empty($field['required'])) required @endif">
+                                {{ $field['label'] }}
+                            </label>
 
-                    {{-- Ab select fields --}}
-                    @foreach($rfqForm->fields as $field)
-                        @if($field['type'] === 'select')
-                            <div class="form-group">
-                                <label class="form-label @if(!empty($field['required'])) required @endif">
-                                    {{ $field['label'] }}
-                                </label>
+                            @if($field['type'] === 'select')
                                 <select name="{{ $field['name'] }}" class="form-select" @if(!empty($field['required'])) required @endif>
                                     <option value="">Select</option>
                                     @if(!empty($field['options']))
@@ -415,150 +402,94 @@
                                         @endforeach
                                     @endif
                                 </select>
-                            </div>
-                        @endif
+                            @else
+                                <input type="{{ $field['type'] }}" 
+                                    name="{{ $field['name'] }}" 
+                                    class="form-control"
+                                    @if(!empty($field['required'])) required @endif>
+                            @endif
+                        </div>
                     @endforeach
                 </div>
 
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="NW" class="required">NW(KG)</label>
-                        <input type="number" id="NW" name="NW" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="GW_KG" class="required">GW(KG)</label>
-                        <input type="number" id="GW_KG" name="GW_KG" step="0.01" min="0" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="Load_Capacity" class="required">Load Capacity</label>
-                        <input type="text" id="Load_Capacity" name="Load_Capacity" required>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="range-inputs">
-                            <div>
-                                <label for="heightMin" class="required">Height Min (cm)</label>
-                                <input type="number" id="heightMin" name="heightMin" step="0.01" min="0"
-                                    placeholder="Min" required>
-                            </div>
-                            <div>
-                                <label for="heightMax" class="required">Height Max (cm)</label>
-                                <input type="number" id="heightMax" name="heightMax" step="0.01" min="0"
-                                    placeholder="Max" required>
+                {{-- Dimension Inner Box --}}
+                @if($rfqForm->dimension_inner === 'true')
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="range-inputs">
+                                <span class="dimension-label">Dimension Inner Box - </span>
+                                <div>
+                                    <label for="Length" class="required">Length (cm)</label>
+                                    <input type="number" id="Length" name="Length" step="0.01" min="0"
+                                        placeholder="Length" required>
+                                </div>
+                                <div>
+                                    <label for="Width" class="required">Width (cm)</label>
+                                    <input type="number" id="Width" name="Width" step="0.01" min="0"
+                                        placeholder="Width" required>
+                                </div>
+                                <div>
+                                    <label for="Height" class="required">Height (cm)</label>
+                                    <input type="number" id="Height" name="Height" step="0.01" min="0"
+                                        placeholder="Height" required>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="lockingMechanism" class="required">Locking Mechanism</label>
-                        <input type="text" id="lockingMechanism" name="lockingMechanism" required>
-                        <label for="lockingMechanismImage" class="required">Add Image</label>
-                        <input type="file" id="lockingMechanismImage" name="lockingMechanismImage" accept="image/*" class="file-input" required>
-                        <img class="file-preview" src="#" alt="Preview">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="colorOption" class="required">Color Option Available?</label>
-                        <select id="colorOption" name="colorOption" required>
-                            <option value="">Select</option>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="packingType" class="required">Packing Inner</label>
-                        <select id="packingType" name="packingType" required>
-                            <option value="">Select</option>
-                            <option value="Gift Box">Gift Box</option>
-                            <option value="Brown Box">Brown Box</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="Packing_GSM" class="required">Packing GSM</label>
-                        <input type="number" id="Packing_GSM" name="Packing_GSM" step="0" min="0"
-                            placeholder="0" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <div class="range-inputs">
-                            <span class="dimension-label">Dimension Inner Box - </span>
-                            <div>
-                                <label for="Length" class="required">Length (cm)</label>
-                                <input type="number" id="Length" name="Length" step="0.01" min="0"
-                                    placeholder="Length" required>
-                            </div>
-                            <div>
-                                <label for="Width" class="required">Width (cm)</label>
-                                <input type="number" id="Width" name="Width" step="0.01" min="0"
-                                    placeholder="Width" required>
-                            </div>
-                            <div>
-                                <label for="Height" class="required">Height (cm)</label>
-                                <input type="number" id="Height" name="Height" step="0.01" min="0"
-                                    placeholder="Height" required>
+                {{-- Product Dimension --}}
+                @if($rfqForm->product_dimension === 'true')
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="range-inputs">
+                                <span class="dimension-label">Product Dimension - </span>
+                                <div>
+                                    <label for="productWidth" class="required">Width (W)</label>
+                                    <input type="number" id="productWidth" name="productWidth" step="0.01"
+                                        min="0" placeholder="Width (cm)" required>
+                                </div>
+                                <div>
+                                    <label for="productDepth" class="required">Depth (D)</label>
+                                    <input type="number" id="productDepth" name="productDepth" step="0.01"
+                                        min="0" placeholder="Depth (cm)" required>
+                                </div>
+                                <div>
+                                    <label for="productHeight" class="required">Height (H)</label>
+                                    <input type="number" id="productHeight" name="productHeight" step="0.01"
+                                        min="0" placeholder="Height (cm)" required>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
-                <!-- Product Dimension -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <div class="range-inputs">
-                            <span class="dimension-label">Product Dimension - </span>
-                            <div>
-                                <label for="productWidth" class="required">Width (W)</label>
-                                <input type="number" id="productWidth" name="productWidth" step="0.01"
-                                    min="0" placeholder="Width (cm)" required>
-                            </div>
-                            <div>
-                                <label for="productDepth" class="required">Depth (D)</label>
-                                <input type="number" id="productDepth" name="productDepth" step="0.01"
-                                    min="0" placeholder="Depth (cm)" required>
-                            </div>
-                            <div>
-                                <label for="productHeight" class="required">Height (H)</label>
-                                <input type="number" id="productHeight" name="productHeight" step="0.01"
-                                    min="0" placeholder="Height (cm)" required>
+                {{-- Package Dimension --}}
+                @if($rfqForm->package_dimension === 'true')
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="range-inputs">
+                                <span class="dimension-label">Package Dimension - </span>
+                                <div>
+                                    <label for="packageWidth" class="required">Width (W)</label>
+                                    <input type="number" id="packageWidth" name="packageWidth" step="0.01"
+                                        min="0" placeholder="Width (cm)" required>
+                                </div>
+                                <div>
+                                    <label for="packageDepth" class="required">Depth (D)</label>
+                                    <input type="number" id="packageDepth" name="packageDepth" step="0.01"
+                                        min="0" placeholder="Depth (cm)" required>
+                                </div>
+                                <div>
+                                    <label for="packageHeight" class="required">Height (H)</label>
+                                    <input type="number" id="packageHeight" name="packageHeight" step="0.01"
+                                        min="0" placeholder="Height (cm)" required>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
 
-                <!-- Package Dimension -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <div class="range-inputs">
-                            <span class="dimension-label">Package Dimension - </span>
-                            <div>
-                                <label for="packageWidth" class="required">Width (W)</label>
-                                <input type="number" id="packageWidth" name="packageWidth" step="0.01"
-                                    min="0" placeholder="Width (cm)" required>
-                            </div>
-                            <div>
-                                <label for="packageDepth" class="required">Depth (D)</label>
-                                <input type="number" id="packageDepth" name="packageDepth" step="0.01"
-                                    min="0" placeholder="Depth (cm)" required>
-                            </div>
-                            <div>
-                                <label for="packageHeight" class="required">Height (H)</label>
-                                <input type="number" id="packageHeight" name="packageHeight" step="0.01"
-                                    min="0" placeholder="Height (cm)" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Pricing Section -->
                 <div class="section-title">Pricing & MOQ (价格和起订量)</div>

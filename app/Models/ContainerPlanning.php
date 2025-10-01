@@ -17,6 +17,7 @@ class ContainerPlanning extends Model
         'supplier_id',
         'area',
         'packing_list_link',
+        'currency',
         'invoice_value',
         'paid',
         'balance',

@@ -92,9 +92,29 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label for="subtitle" class="form-label">Form Subtitle / Description</label>
                                 <textarea name="subtitle" id="subtitle" class="form-control" rows="3" placeholder="Enter form description"></textarea>
+                            </div>
+                            <div class="col-md-2 d-flex flex-column align-item-center justify-content-center">
+                                <div class="form-check mb-2">
+                                    <input type="hidden" name="dimension_inner" value="false">
+                                    <input class="form-check-input" type="checkbox" value="true" id="checkbox1" name="dimension_inner">
+                                    <label class="form-check-label" for="checkbox1">Dimension Inner Box</label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input type="hidden" name="product_dimension" value="false">
+                                    <input class="form-check-input" type="checkbox" value="true" id="checkbox2" name="product_dimension">
+                                    <label class="form-check-label" for="checkbox2">Product Dimension</label>
+                                </div>
+
+                                <div class="form-check mb-2">
+                                    <input type="hidden" name="package_dimension" value="false">
+                                    <input class="form-check-input" type="checkbox" value="true" id="checkbox3" name="package_dimension">
+                                    <label class="form-check-label" for="checkbox3">Package Dimension</label>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -155,76 +175,77 @@
 
         let fieldCount = 1;
 
-function slugify(text){
-    return text.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-}
-
-function createFieldRow(index){
-    return `
-    <div class="row g-3 mb-2 field-item">
-        <div class="col-md-3">
-            <input type="text" name="fields[${index}][label]" class="form-control field-label" placeholder="Field Label" required>
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="fields[${index}][name]" class="form-control field-name" placeholder="Field Name (auto)" readonly>
-        </div>
-        <div class="col-md-2">
-            <select name="fields[${index}][type]" class="form-select field-type">
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="select">Select</option>
-            </select>
-        </div>
-        <div class="col-md-3 select-options-wrapper" style="display:none;">
-            <input type="text" name="fields[${index}][options]" class="form-control" placeholder="Options (comma separated)">
-        </div>
-        <div class="col-md-1">
-            <input type="checkbox" name="fields[${index}][required]" class="form-check-input mt-2" value="1"> Required
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-danger btn-sm remove-field">X</button>
-        </div>
-    </div>
-    `;
-}
-
-// Add new field
-document.getElementById('addFieldBtn').addEventListener('click', function(){
-    let wrapper = document.getElementById('dynamicFieldsWrapper');
-    wrapper.insertAdjacentHTML('beforeend', createFieldRow(fieldCount));
-    fieldCount++;
-});
-
-// Remove field
-document.addEventListener('click', function(e){
-    if(e.target && e.target.classList.contains('remove-field')){
-        e.target.closest('.field-item').remove();
-    }
-});
-
-// Show/hide options input if type is select
-document.addEventListener('change', function(e){
-    if(e.target && e.target.classList.contains('field-type')){
-        let optionsWrapper = e.target.closest('.field-item').querySelector('.select-options-wrapper');
-        if(e.target.value === 'select'){
-            optionsWrapper.style.display = 'block';
-        } else {
-            optionsWrapper.style.display = 'none';
+        function slugify(text){
+            return text.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
         }
-    }
-});
 
-// Auto-fill field name from label
-document.addEventListener('input', function(e){
-    if(e.target && e.target.classList.contains('field-label')){
-        let nameInput = e.target.closest('.field-item').querySelector('.field-name');
-        nameInput.value = slugify(e.target.value);
-    }
-});
+        function createFieldRow(index){
+            return `
+            <div class="row g-3 mb-2 field-item">
+                <div class="col-md-3">
+                    <input type="text" name="fields[${index}][label]" class="form-control field-label" placeholder="Field Label" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="fields[${index}][name]" class="form-control field-name" placeholder="Field Name (auto)" readonly>
+                </div>
+                <div class="col-md-2">
+                    <select name="fields[${index}][type]" class="form-select field-type">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="select">Select</option>
+                    </select>
+                </div>
+                <div class="col-md-3 select-options-wrapper" style="display:none;">
+                    <input type="text" name="fields[${index}][options]" class="form-control" placeholder="Options (comma separated)">
+                </div>
+                <div class="col-md-1">
+                    <input type="checkbox" name="fields[${index}][required]" class="form-check-input mt-2" value="1"> Required
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger btn-sm remove-field">X</button>
+                </div>
+            </div>
+            `;
+        }
+
+        // Add new field
+        document.getElementById('addFieldBtn').addEventListener('click', function(){
+            let wrapper = document.getElementById('dynamicFieldsWrapper');
+            wrapper.insertAdjacentHTML('beforeend', createFieldRow(fieldCount));
+            fieldCount++;
+        });
+
+        // Remove field
+        document.addEventListener('click', function(e){
+            if(e.target && e.target.classList.contains('remove-field')){
+                e.target.closest('.field-item').remove();
+            }
+        });
+
+        // Show/hide options input if type is select
+        document.addEventListener('change', function(e){
+            if(e.target && e.target.classList.contains('field-type')){
+                let optionsWrapper = e.target.closest('.field-item').querySelector('.select-options-wrapper');
+                if(e.target.value === 'select'){
+                    optionsWrapper.style.display = 'block';
+                } else {
+                    optionsWrapper.style.display = 'none';
+                }
+            }
+        });
+
+        // Auto-fill field name from label
+        document.addEventListener('input', function(e){
+            if(e.target && e.target.classList.contains('field-label')){
+                let nameInput = e.target.closest('.field-item').querySelector('.field-name');
+                nameInput.value = slugify(e.target.value);
+            }
+        });
 
 
 
 
     });
 </script>
+
 @endsection

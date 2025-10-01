@@ -341,71 +341,43 @@ class PricingMasterViewsController extends Controller
                 ($tiendamia ? ($tiendamia->m_l60 ?? 0) : 0) +
                 ($doba ? ($doba->l60 ?? 0) : 0);
             
-            // Calculate avg CVR only for channels where L30 > 0 and views > 0 
-            $filtered_l30_sum = 0;
-            $filtered_views_sum = 0;
-       
-            
-            // Amazon
-            if ($amazon && ($amazon->units_ordered_l30 ?? 0  && $amazon->sessions_l30 ?? 0) > 0) {
-                $filtered_l30_sum += $amazon->units_ordered_l30;
-                $filtered_views_sum += $amazon->sessions_l30 ?? 0;
-            }
-            
-            // eBay
-            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0 && ($ebay->views ?? 0) > 0) {
-                $filtered_l30_sum += $ebay->ebay_l30;
-                $filtered_views_sum += $ebay->views ?? 0;
-            }
-            
-            // eBay2
-            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0 && ($ebay2->views ?? 0) > 0   ) {
-                $filtered_l30_sum += $ebay2->ebay_l30;
-                $filtered_views_sum += $ebay2->views ?? 0;
-            }
-            
-            // eBay3
-            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0 && ($ebay3->views ?? 0) > 0) {
-                $filtered_l30_sum += $ebay3->ebay_l30;
-                $filtered_views_sum += $ebay3->views ?? 0;
-            }
-            
-            // Temu
-            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0 && ($temuMetric->{'product_clicks_l30'} ?? 0) > 0) {
-                $filtered_l30_sum += $temuMetric->{'quantity_purchased_l30'};
-                $filtered_views_sum += $temuMetric->{'product_clicks_l30'} ?? 0;
-            }
-            
-            // Reverb
-            if ($reverb && ($reverb->r_l30 ?? 0) > 0 && ($reverb->views ?? 0) > 0) {
-                $filtered_l30_sum += $reverb->r_l30;
-                $filtered_views_sum += $reverb->views ?? 0;
-            }
-            
-            // Walmart
-            if ($walmart && ($walmart->l30 ?? 0) > 0 && ($walmart->views ?? 0) > 0) {
-                $filtered_l30_sum += $walmart->l30;
-                $filtered_views_sum += $walmart->views ?? 0;
-            }
-            
-            // TikTok
-            if ($tiktok && ($tiktok->l30 ?? 0) > 0 && ($tiktok->views ?? 0) > 0) {
-                $filtered_l30_sum += $tiktok->l30;
-                $filtered_views_sum += $tiktok->views ?? 0;
-            }
-            
-            // Shein
-            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0 && ($shein->views_clicks ?? 0) > 0) {
-                $filtered_l30_sum += $shein->shopify_sheinl30;
-                $filtered_views_sum += $shein->views_clicks ?? 0;
-            }
-            
-                $avgCvr = $filtered_views_sum > 0
-                ? number_format(($filtered_l30_sum / $filtered_views_sum) * 100, 1) . ' %'
-                : '0.0 %'; 
 
 
- $total_l30_count_data = 0;
+            // Calculate avg CVR only for channels where L30 > 0 and views > 0
+          $channels = [
+            ['data' => $amazon,     'l30' => 'units_ordered_l30',      'views' => 'sessions_l30'],
+            ['data' => $ebay,       'l30' => 'ebay_l30',               'views' => 'views'],
+            ['data' => $ebay2,      'l30' => 'ebay_l30',               'views' => 'views'],
+            ['data' => $ebay3,      'l30' => 'ebay_l30',               'views' => 'views'],
+            ['data' => $temuMetric, 'l30' => 'quantity_purchased_l30', 'views' => 'product_clicks_l30'],
+            ['data' => $reverb,     'l30' => 'r_l30',                  'views' => 'views'],
+            ['data' => $walmart,    'l30' => 'l30',                    'views' => 'views'],
+            ['data' => $tiktok,     'l30' => 'l30',                    'views' => 'views'],
+            ['data' => $shein,      'l30' => 'shopify_sheinl30',       'views' => 'views_clicks'],
+        ];
+
+        $l30_count = 0;        // Count of channels where L30 > 0 and views > 0
+        $views_sum = 0;        // Sum of views for those channels
+
+        foreach ($channels as $channel) {
+            $obj = $channel['data'];
+            if ($obj && is_object($obj)) {
+                $l30 = $obj->{$channel['l30']} ?? 0;
+                $views = $obj->{$channel['views']} ?? 0;
+
+                if ($l30 > 0 && $views > 0) {
+                    $l30_count++;           // count channels
+                    $views_sum += $views;   // sum views
+                }
+            }
+        }
+
+        $avgCvr = $views_sum > 0
+            ? number_format(($l30_count / $views_sum) * 100, 1) . ' %'
+            : '0.0 %';
+
+
+            $total_l30_count_data = 0;
             
             // Count channels where both L30 > 0 and views > 0
             if ($amazon && ($amazon->units_ordered_l30 ?? 0) > 0 && ($amazon->sessions_l30 ?? 0) > 0) {
