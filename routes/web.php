@@ -1783,7 +1783,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //FaceBook Adds Manager 
     Route::controller(FacebookAddsManagerController::class)->group(function () {
         Route::get('/facebook-ads-control/data', 'index')->name('facebook.ads.index');
-        // Route::get('/facebook-ads-data', 'getFacebookAdsData');
+        Route::get('/facebook-web-to-video', 'facebookWebToVideo')->name('facebook.web.to.video');
+        Route::get('/facebook-web-to-video-data', 'facebookWebToVideoData')->name('facebook.web.to.video.data');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {

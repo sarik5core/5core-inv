@@ -948,6 +948,27 @@
                             </div>
                         </li>
 
+                            <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#facebook-web-ads" aria-expanded="false"
+                                aria-controls="facebook-web-ads" class="side-nav-link">
+                                <span>Facebook Web Ads</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="facebook-web-ads">
+                                <ul class="side-nav-second-level">
+                                    <li>
+                                        <a href="{{ route('facebook.web.to.video') }}">FB Video to Web</a>
+                                    </li>
+                                    {{-- <li>
+                                        <a href="#">Image Carousel Ad Running</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Image Carousel Ad Running</a>
+                                    </li> --}}
+                                </ul>
+                            </div>
+                        </li>
+
 
                         <li>
                             <a data-bs-toggle="collapse" href="#lqsSubmenu" aria-expanded="false"
