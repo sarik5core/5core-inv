@@ -13,7 +13,10 @@ class RfqForm extends Model
         'slug',
         'main_image',
         'subtitle',
-        'fields'
+        'fields',
+        'dimension_inner',
+        'product_dimension',
+        'package_dimension',
     ];
 
     protected $casts = [
