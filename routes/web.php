@@ -547,8 +547,18 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //RFQ Form
     Route::controller(RFQController::class)->group(function () {
         Route::get('/rfq-form/list', 'index')->name('rfq-form.index');
+        Route::get('rfq-form/data', 'getRfqFormsData');
         Route::get('/rfq-form/{slug}', 'showRfqForm')->name('rfq-form.show');
         Route::post('/rfq-form/store', 'storeRFQForm')->name('rfq-form.store');
+        Route::post('/rfq-form/{slug}', 'submitRfqForm')->name('rfq-form.submit');
+        Route::get('/rfq-form/edit/{id}', 'edit')->name('rfq-form.edit');
+        Route::post('/rfq-form/update/{id}', 'update')->name('rfq-form.update');
+        Route::delete('/rfq-form/delete/{id}', 'destroy')->name('rfq-form.destroy');
+
+        //form reports
+        Route::get('/rfq-form/reports/{id}', 'rfqReports')->name('rfq-form.reports');
+        Route::get('/rfq-form/reports-data/{id}', 'getRfqReportsData')->name('rfq-form.reports.data');
+
     });
 
     //Sourcingƒvies
