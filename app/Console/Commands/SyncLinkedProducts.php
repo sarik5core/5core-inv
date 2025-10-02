@@ -29,13 +29,13 @@ class SyncLinkedProducts extends Command
     private $shopifyApiKey;
     private $shopifyPassword;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->shopifyDomain  = env('SHOPIFY_5CORE_DOMAIN');
-        $this->shopifyApiKey  = env('SHOPIFY_5CORE_API_KEY');
-        $this->shopifyPassword = env('SHOPIFY_5CORE_PASSWORD');
-    }
+    // public function __construct()
+    // {
+    //     parent::__construct();
+    //     $this->shopifyDomain  = env('SHOPIFY_5CORE_DOMAIN');
+    //     $this->shopifyApiKey  = env('SHOPIFY_5CORE_API_KEY');
+    //     $this->shopifyPassword = env('SHOPIFY_5CORE_PASSWORD');
+    // }
 
 
     /**
@@ -91,7 +91,7 @@ class SyncLinkedProducts extends Command
 
                 $totalPieces += $availableQty * $packSize;
                 $totalL30 += $l30;
-            }
+            }   
 
             if ($totalPieces == 0) {
                 $this->warn("Group {$groupId} has no stock, skipping.");

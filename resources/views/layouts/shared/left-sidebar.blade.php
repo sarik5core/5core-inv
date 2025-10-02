@@ -81,6 +81,9 @@
                             <a href="{{ route('supplier.list') }}">Suppliers</a>
                         </li>
                         <li>
+                            <a href="{{ route('rfq-form.index') }}">RFQ Form</a>
+                        </li>
+                        <li>
                             <a href="{{ route('claim.reimbursement') }}">Claims & Reimbursements</a>
                         </li>
                         <li>

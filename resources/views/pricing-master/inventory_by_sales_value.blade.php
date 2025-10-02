@@ -487,7 +487,7 @@
     <!-- Image Preview -->
     <div id="image-hover-preview" style="display: none; position: fixed; z-index: 1000; pointer-events: none;">
         <img id="preview-image"
-            style="max-width: 300px; max-height: 300px; border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            style="max-width: 200px; max-height: 200px; border: 2px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
     </div>
 
     <div class="row">
@@ -547,6 +547,8 @@
                     <div class="btn-group" id="dil-filter" role="group" aria-label="Dilution Filter">
                         <input type="radio" class="btn-check" name="dilFilter" id="dilFilter10" value="10">
                         <label class="btn btn-outline-danger" for="dilFilter10">Dil ≤ 10%</label>
+                        <input type="radio" class="btn-check" name="dilFilter" id="dilFilter50" value="50">
+                        <label class="btn btn-outline-info" for="dilFilter50">Dil > 50%</label>
                         <input type="radio" class="btn-check" name="dilFilter" id="dilFilterClear" value="clear" checked>
                         <label class="btn btn-outline-secondary" for="dilFilterClear">Clear</label>
                     </div>
@@ -738,15 +740,15 @@
                             tension: 0.1,
                             yAxisID: 'y1'
                         },
-                        {
-                            label: 'L60', 
-                            data: labels.map(label => data[`${label.toLowerCase()}_l60`] || 0),
-                            borderColor: '#2a0032',
-                            backgroundColor: 'rgba(42, 0, 50, 0.2)',
-                            fill: true,
-                            tension: 0.1,
-                            yAxisID: 'y1'
-                        },
+                        // {
+                        //     label: 'L60', 
+                        //     data: labels.map(label => data[`${label.toLowerCase()}_l60`] || 0),
+                        //     borderColor: '#2a0032',
+                        //     backgroundColor: 'rgba(42, 0, 50, 0.2)',
+                        //     fill: true,
+                        //     tension: 0.1,
+                        //     yAxisID: 'y1'
+                        // },
                       
                     ]
                 },
@@ -1116,7 +1118,7 @@ const table = new Tabulator("#forecast-table", {
 
                 // Determine button color based on L30 value
 
-                return `<button class="btn btn-outline-primary  rounded-pill px-3 text-primary" style="cursor:default !important; background-color: #fff !important">
+             return `<button class="btn px-3" style="cursor:default !important;">
                     <i class="bi bi-eye me-1"></i>${l30}
                 </button>`;
             },
@@ -1124,40 +1126,39 @@ const table = new Tabulator("#forecast-table", {
                 showOVL30Modal(cell.getRow());
             }
         },
-     
-
-
-            {
-                title: "DIL%",
-                field: "Dil%",
-                hozAlign: "right",
-                formatter: function (cell) {
-                    const data = cell.getRow().getData();
-                    const value = cell.getValue() || 0;
-                    const element = document.createElement("div");
-                
-                    const rounded = Math.round(value);
-                    element.textContent = rounded + "%";
-                    if (rounded >= 0 && rounded <= 10) {
-                        element.style.color = "red"; // red text
-                    } else if (rounded >= 11 && rounded <= 15) {
-                        element.style.backgroundColor = "yellow"; // yellow background
-                        element.style.color = "black";
-                        element.style.padding = "2px 4px";
-                        element.style.borderRadius = "4px";
-                    } else if (rounded >= 16 && rounded <= 20) {
-                        element.style.color = "blue"; // blue text
-                    } else if (rounded >= 21 && rounded <= 40) {
-                        element.style.color = "green"; // green text
-                    } else if (rounded >= 41) {
-                        element.style.color = "purple"; // purple text (41 and above)
-                    }
-
-                    data.dilPercentage = rounded;
-                   
-                    return element;
-                },
-            },
+     {
+            title: "DIL%",
+            field: "Dil%",
+            hozAlign: "right",
+            formatter: function(cell) {
+                const data = cell.getRow().getData();
+                let value = 0;
+                const l30 = parseFloat(data.ovl30) || 0; // Use ovl30
+                const inv = parseFloat(data.INV) || 0;
+                if (inv !== 0) {
+                    value = (l30 / inv) * 100; // Calculate DIL%
+                }
+                const element = document.createElement("div");
+                const rounded = parseFloat(value.toFixed(2));
+                element.textContent = rounded + "%";
+                if (rounded >= 0 && rounded <= 10) {
+                    element.style.color = "red";
+                } else if (rounded > 10 && rounded <= 15) {
+                    element.style.backgroundColor = "yellow";
+                    element.style.color = "black";
+                    element.style.padding = "2px 4px";
+                    element.style.borderRadius = "4px";
+                } else if (rounded > 15 && rounded <= 20) {
+                    element.style.color = "blue";
+                } else if (rounded > 20 && rounded <= 40) {
+                    element.style.color = "green";
+                } else if (rounded > 40) {
+                    element.style.color = "purple";
+                }
+                data.dilPercentage = rounded; // Store for modal
+                return element;
+            }
+        },
 
             {
                 title: "Inv Value",
@@ -1226,22 +1227,42 @@ const table = new Tabulator("#forecast-table", {
             
         },
 
-        {
-            title: "Avg CVR",
-            field: "avgCvr",
-            hozAlign: "center",
-            headerSort: false,
-            formatter: function(cell) {
-                let value = cell.getValue() || 0;
-                // Remove % if present and parse as float
-                if (typeof value === "string" && value.includes("%")) {
-                    value = value.replace("%", "");
-                }
-                value = parseFloat(value);
-                if (isNaN(value)) value = 0;
-                return `<span class="text-primary">${Math.round(value)}</span>`;
+    {
+        title: "Avg CVR",
+        field: "avgCvr",
+        hozAlign: "center",
+        headerSort: false,
+        formatter: function(cell) {
+            let value = cell.getValue() || 0;
+            // Remove % if present and parse as float
+            if (typeof value === "string" && value.includes("%")) {
+                value = value.replace("%", "");
             }
-        },
+            value = parseFloat(value);
+            if (isNaN(value)) value = 0;
+
+            // Determine text color based on value ranges
+            let textColor;
+            if (!isNaN(value)) {
+                if (value >= 0 && value < 3) {
+                    textColor = '#dc3545'; // Red
+                } else if (value >= 3 && value < 6) {
+                    textColor = '#ffc107'; // Yellow
+                } else if (value >= 6 && value < 9) {
+                    textColor = '#0d6efd'; // Blue
+                } else if (value >= 9 && value <= 13) {
+                    textColor = '#198754'; // Green
+                } else {
+                    textColor = '#6c757d'; // Gray for values outside 0-13
+                }
+            } else {
+                textColor = '#6c757d'; // Gray for invalid values
+            }
+
+            // Return formatted value with color, keeping decimal points
+            return `<span style="color: ${textColor}">${value.toFixed(2)}</span>`;
+        }
+    },
 
 
       
@@ -1669,28 +1690,29 @@ const table = new Tabulator("#forecast-table", {
         },
      
     ],
-      ajaxResponse: function(url, params, response) {
+     ajaxResponse: function(url, params, response) {
         groupedSkuData = {}; // Clear previous
-
         // Add calculated fields + mark parent rows
         response.data = response.data.map((item, index) => {
             const sku = item.SKU || "";
             const isParent = item.is_parent || sku.toUpperCase().includes("PARENT");
-
+            // Ensure ovl30 is set for all rows
+            item.ovl30 = parseFloat(item.shopifyb2c_l30) || 0;
+            // Calculate DIL% for the item
+            const inv = parseFloat(item.INV) || 0;
+            item["Dil%"] = inv !== 0 ? ((item.ovl30 / inv) * 100).toFixed(2) : "0";
             // Ensure inv_value is numeric
             if (!item.inv_value) {
                 const inv = item.INV || 0;
                 const shopifyPrice = parseFloat(item.shopifyb2c_price) || 0;
                 item.inv_value = (inv * shopifyPrice).toFixed(2);
             }
-
             // Ensure COGS is numeric
             if (!item.COGS) {
                 const lp = parseFloat(item.LP) || 0;
                 const inv = item.INV || 0;
                 item.COGS = (lp * inv).toFixed(2);
             }
-
             return {
                 ...item,
                 calculatedRoi: calculateROI(item),
@@ -1701,54 +1723,46 @@ const table = new Tabulator("#forecast-table", {
                 raw_data: item || {}
             };
         });
-
         // Group by Parent
         let grouped = {};
         response.data.forEach(item => {
             const parentKey = item.Parent || "";
             if (!grouped[parentKey]) grouped[parentKey] = [];
             grouped[parentKey].push(item);
-
-            // Group for play button use
             if (!groupedSkuData[parentKey]) {
                 groupedSkuData[parentKey] = [];
             }
             groupedSkuData[parentKey].push(item);
         });
-
         // Aggregate for parent rows
         Object.keys(grouped).forEach(parentKey => {
             const rows = grouped[parentKey];
             const children = rows.filter(item => !item.is_parent);
             const parent = rows.find(item => item.is_parent);
-
             if (!parent || children.length === 0) return;
-
             // Additive fields to sum
-            const additiveFields = ['INV', 'total_views', 'total_req_view', 'inv_value', 'COGS'];
+            const additiveFields = ['INV', 'total_views', 'total_req_view', 'inv_value', 'COGS', 'ovl30'];
             additiveFields.forEach(field => {
                 parent[field] = children.reduce((sum, c) => sum + (parseFloat(c[field]) || 0), 0).toFixed(2);
             });
-
+            // Recalculate DIL% for parent
+            const parentL30 = parseFloat(parent.ovl30) || 0;
+            const parentInv = parseFloat(parent.INV) || 0;
+            parent["Dil%"] = parentInv !== 0 ? ((parentL30 / parentInv) * 100).toFixed(2) : "0";
             // Rate fields to average
-            const rateFields = ['Dil%', 'avgCvr', 'MSRP', 'MAP', 'LP', 'SHIP', 'temu_ship', 'avgPftPercent'];
+            const rateFields = ['avgCvr', 'MSRP', 'MAP', 'LP', 'SHIP', 'temu_ship', 'avgPftPercent'];
             rateFields.forEach(field => {
                 const values = children.map(c => parseFloat(c[field]) || 0);
-                const valid = values.filter(v => !isNaN(v) && v !== 0); // Exclude 0 to avoid skew
+                const valid = values.filter(v => !isNaN(v) && v !== 0);
                 parent[field] = valid.length > 0 ? (valid.reduce((sum, v) => sum + v, 0) / valid.length).toFixed(2) :
                     (values.length > 0 ? (values.reduce((sum, v) => sum + v, 0) / values.length).toFixed(2) : 0);
             });
-
             // Marketplaces for l30 sum and price weighted average
             const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c'];
             mps.forEach(mp => {
                 const l30Field = (mp === 'shopifyb2c' ? 'shopifyb2c_l30' : `${mp}_l30`);
                 const priceField = (mp === 'shopifyb2c' ? 'shopifyb2c_price' : `${mp}_price`);
-
-                // Sum l30
                 parent[l30Field] = children.reduce((sum, c) => sum + (parseFloat(c[l30Field]) || 0), 0);
-
-                // Weighted average price by l30
                 let totalWeighted = 0;
                 let totalWeight = 0;
                 children.forEach(c => {
@@ -1757,20 +1771,16 @@ const table = new Tabulator("#forecast-table", {
                     totalWeighted += price * weight;
                     totalWeight += weight;
                 });
-
                 parent[priceField] = totalWeight > 0 ? (totalWeighted / totalWeight).toFixed(2) :
                     (children.reduce((sum, c) => sum + (parseFloat(c[priceField]) || 0), 0) / children.length).toFixed(2);
             });
-
             // Recalculate inv_value for parent
             const inv = parseFloat(parent.INV) || 0;
             const shopifyPrice = parseFloat(parent.shopifyb2c_price) || 0;
             parent.inv_value = (inv * shopifyPrice).toFixed(2);
-
             // Recalculate COGS for parent
             const lp = parseFloat(parent.LP) || 0;
             parent.COGS = (lp * inv).toFixed(2);
-
             // Recalculate avgPftPercent for parent
             const marketplaces = [
                 { price: parent.amz_price, l30: parent.amz_l30, factor: 0.70 },
@@ -1785,7 +1795,6 @@ const table = new Tabulator("#forecast-table", {
                 { price: parent.walmart_price, l30: parent.walmart_l30, factor: 0.80 },
                 { price: parent.shein_price, l30: parent.shein_l30, factor: 0.89 }
             ];
-
             let totalProfit = 0;
             let totalRevenue = 0;
             marketplaces.forEach(mp => {
@@ -1796,18 +1805,14 @@ const table = new Tabulator("#forecast-table", {
                 totalProfit += profit;
                 totalRevenue += price * l30;
             });
-
             parent.avgPftPercent = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(2) : 0;
-
             // Set image from first child if missing
             if (!parent.shopifyb2c_image && children[0]) {
                 parent.shopifyb2c_image = children[0].shopifyb2c_image;
             }
-
-            // Set ovl30 if needed
-            parent.ovl30 = parent.shopifyb2c_l30;
+            // Ensure ovl30 is set for parent
+            parent.ovl30 = parseFloat(parent.shopifyb2c_l30) || 0;
         });
-
         // Sort inside each group: child rows first, parent bottom
         let finalData = [];
         Object.values(grouped).forEach(rows => {
@@ -1819,17 +1824,14 @@ const table = new Tabulator("#forecast-table", {
             });
             finalData = finalData.concat(rows);
         });
-
         setTimeout(() => {
             setCombinedFilters();
         }, 0);
-
         console.log("Processed Response:", finalData);
         return finalData;
     },
 });
 
-// On Top Start 
 //   On to Percentaeg color
     table.on("dataProcessed", function(){
         let data = table.getData();
@@ -1932,6 +1934,8 @@ function setCombinedFilters() {
                 return parseFloat(row.getData()["Dil%"]) !== -1;
             }
         ]);
+    } else if (dilFilter === "50") {
+        filters.push({ field: "Dil%", type: ">", value: 50 }); 
     }
 
     // Apply CVR filter if active
@@ -2046,7 +2050,6 @@ function setCombinedFilters() {
                 <thead class="table-light position-sticky" style="top: 0; z-index: 1000;">
                 <tr>
                     <th data-sort="string">Channel <i class="bi bi-arrow-down-up"></i></th>
-                    <th data-sort="number">L60 <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number" class="default-sort">L30 <i class="bi bi-arrow-down"></i></th>
                     <th data-sort="number">PRC <i class="bi bi-arrow-down-up"></i></th>
                     <th data-sort="number">PFT % <i class="bi bi-arrow-down-up"></i></th>
@@ -2079,8 +2082,6 @@ function setCombinedFilters() {
                const getColor = (value) => {
                     // Convert to number and handle percentage values
                     const val = typeof value === 'string' ? parseFloat(value.replace('%', '')) : Number(value);
-                    console.log('Color value:', value, 'Parsed:', val); // Debug log
-                    
                     // Make sure value is a finite number
                     if (!isFinite(val) || isNaN(val)) return '#000000'; // default black
                     
@@ -2157,11 +2158,7 @@ function setCombinedFilters() {
                     </div>
                     </td>
 
-                    <td>
-                        <div class="value-indicator">
-                            ${l60 ?? "-"}
-                        </div>
-                    </td>
+
                     <td>
                         <div class="value-indicator">
                             ${l30 ?? "-"}
@@ -2255,7 +2252,7 @@ function setCombinedFilters() {
                             
                                 : ''
                             }"
-                            style="width: 65px;" 
+                            style="width: 85px;" 
                             step="any"
                             data-sku="${data.SKU}" 
                             data-lp="${data.LP}" 
@@ -2575,9 +2572,169 @@ function setCombinedFilters() {
             initTableSorting(modalEl.querySelector('.sortable-table'));
             modal.show();
         }
-
-        
-
+    }
+    // Calculate dilPercentage using the formula: L30 / INV
+    let dilPercentage = 0;
+    const l30 = ovl30Value; // Use the same ovl30Value for consistency
+    const inv = parseFloat(data.INV) || 0;
+    if (inv !== 0) {
+        dilPercentage = (l30 / inv) * 100;
+    }
+    const dilElement = document.getElementById('dilPercentage');
+    dilElement.textContent = dilPercentage ? `${Math.round(dilPercentage)}` : "0%";
+    // Apply color based on dilPercentage ranges
+    if (dilPercentage) {
+        const rounded = dilPercentage;
+        if (rounded >= 0 && rounded <= 10) {
+            dilElement.style.color = "red";
+            dilElement.style.backgroundColor = "";
+            dilElement.style.padding = "";
+            dilElement.style.borderRadius = "";
+        } else if (rounded > 10 && rounded <= 15) {
+            dilElement.style.color = "black";
+            dilElement.style.backgroundColor = "yellow";
+            dilElement.style.padding = "2px 4px";
+            dilElement.style.borderRadius = "4px";
+        } else if (rounded > 15 && rounded <= 20) {
+            dilElement.style.color = "blue";
+            dilElement.style.backgroundColor = "";
+            dilElement.style.padding = "";
+            dilElement.style.borderRadius = "";
+        } else if (rounded > 20 && rounded <= 40) {
+            dilElement.style.color = "green";
+            dilElement.style.backgroundColor = "";
+            dilElement.style.padding = "";
+            dilElement.style.borderRadius = "";
+        } else if (rounded > 40) {
+            dilElement.style.color = "purple";
+            dilElement.style.backgroundColor = "";
+            dilElement.style.padding = "";
+            dilElement.style.borderRadius = "";
+        }
+    } else {
+        dilElement.style.color = "#6c757d";
+        dilElement.style.backgroundColor = "";
+        dilElement.style.padding = "";
+        dilElement.style.borderRadius = "";
+    }
+    // Rest of the modal fields
+    document.getElementById('formattedAvgPrice').textContent = data.formattedAvgPrice ? `${data.formattedAvgPrice}` : "0";
+    if (data.formattedAvgPrice) {
+        const avgPriceValue = parseFloat(data.formattedAvgPrice.replace(/[^0-9.-]+/g, ''));
+        let textColor;
+        if (!isNaN(avgPriceValue)) {
+            if (avgPriceValue < 10) {
+                textColor = '#dc3545';
+            } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
+                textColor = '#fd7e14';
+            } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
+                textColor = '#0d6efd';
+            } else if (avgPriceValue >= 20) {
+                textColor = '#198754';
+            }
+        } else {
+            textColor = '#6c757d';
+        }
+        document.getElementById('formattedAvgPrice').style.color = textColor;
+    }
+    document.getElementById('formattedProfitPercentage').textContent = data.avgPftPercent ? `${data.avgPftPercent}` : "0";
+    if (data.avgPftPercent) {
+        let bgColor, textColor;
+        const avgPftPercent = data.avgPftPercent;
+        if (avgPftPercent < 11) {
+            textColor = '#ff0000';
+        } else if (avgPftPercent >= 10 && avgPftPercent < 15) {
+            bgColor = 'yellow';
+            textColor = '#000000';
+        } else if (avgPftPercent >= 15 && avgPftPercent < 20) {
+            textColor = '#0d6efd';
+        } else if (avgPftPercent >= 21 && avgPftPercent < 50) {
+            textColor = '#198754';
+        } else {
+            textColor = '#800080';
+        }
+        const element = document.getElementById('formattedProfitPercentage');
+        element.style.color = textColor;
+        if (bgColor) {
+            element.style.backgroundColor = bgColor;
+        }
+    }
+    document.getElementById('formattedRoiPercentage').textContent = data.avgRoi ? `${data.avgRoi}` : "0";
+    if (data.avgRoi) {
+        let bgColor, textColor;
+        const avgRoi = data.avgRoi;
+        if (avgRoi < 11) {
+            textColor = '#ff0000';
+        } else if (avgRoi >= 10 && avgRoi < 15) {
+            bgColor = 'yellow';
+            textColor = '#000000';
+        } else if (avgRoi >= 15 && avgRoi < 20) {
+            textColor = '#0d6efd';
+        } else if (avgRoi >= 21 && avgRoi < 50) {
+            textColor = '#198754';
+        } else {
+            textColor = '#800080';
+        }
+        const element = document.getElementById('formattedRoiPercentage');
+        element.style.color = textColor;
+        if (bgColor) {
+            element.style.backgroundColor = bgColor;
+        }
+    }
+    document.getElementById('ovl30Content').innerHTML = buildOVL30Table(data);
+    const modalEl = document.getElementById('ovl30Modal');
+    const modal = new bootstrap.Modal(modalEl);
+    setTimeout(() => {
+        const table = modalEl.querySelector('.sortable-table');
+        const l30Header = Array.from(table.querySelectorAll('th')).find(th => th.textContent.includes('L30'));
+        if (l30Header) {
+            if (!l30Header.classList.contains('sort-desc')) {
+                l30Header.click();
+                if (!l30Header.classList.contains('sort-desc')) {
+                    l30Header.click();
+                }
+            }
+        }
+    }, 100);
+    const dialogEl = modalEl.querySelector('.modal-dialog');
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    dialogEl.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+    function dragStart(e) {
+        if (e.target.closest('.modal-header')) {
+            isDragging = true;
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+        }
+    }
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            xOffset = currentX;
+            yOffset = currentY;
+            dialogEl.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        }
+    }
+    function dragEnd() {
+        isDragging = false;
+    }
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        dialogEl.style.transform = 'none';
+        xOffset = 0;
+        yOffset = 0;
+    });
+    initTableSorting(modalEl.querySelector('.sortable-table'));
+    modal.show();
+}
         // Table sorting functionality
         function initTableSorting(table) {
             const headers = table.querySelectorAll('th[data-sort]');

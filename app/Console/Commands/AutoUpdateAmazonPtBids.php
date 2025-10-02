@@ -114,7 +114,7 @@ class AutoUpdateAmazonPtBids extends Command
             if ($l1_cpc > $l7_cpc) {
                 $row['sbid'] = round($l1_cpc * 0.95, 2);
             } else {
-                $row['sbid'] = round($l7_cpc * 0.95, 2);
+                $row['sbid'] = round($l1_cpc * 0.95, 2);
             }
 
             $budget = floatval($row['campaignBudgetAmount']);
