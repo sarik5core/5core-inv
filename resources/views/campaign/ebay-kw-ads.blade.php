@@ -195,7 +195,7 @@
                                     <input type="text" id="global-search" class="form-control form-control-md" placeholder="Search campaign...">
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
-                                        <option value="ENABLED">Enabled</option>
+                                        <option value="RUNNING">Running</option>
                                         <option value="PAUSED">Paused</option>
                                         <option value="ARCHIVED">Archived</option>
                                     </select>
@@ -337,6 +337,10 @@
                     {
                         title: "CAMPAIGN",
                         field: "campaignName"
+                    },
+                    {
+                        title: "Status",
+                        field: "campaignStatus",
                     },
                     {
                         title: "7 UB%",

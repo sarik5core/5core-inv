@@ -186,7 +186,7 @@
                                     </div>
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
-                                        <option value="ENABLED">Enabled</option>
+                                        <option value="RUNNING">Running</option>
                                         <option value="PAUSED">Paused</option>
                                         <option value="ARCHIVED">Archived</option>
                                     </select>
@@ -419,6 +419,10 @@
                             var sbid = parseFloat(row.sbid) || 0;
                             return sbid.toFixed(2);
                         }
+                    },
+                    {
+                        title: "Status",
+                        field: "campaignStatus",
                     }
                 ],
                 ajaxResponse: function(url, params, response) {
