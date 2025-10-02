@@ -2402,7 +2402,7 @@ function setCombinedFilters() {
             topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
             document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
             document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
-            document.getElementById('ovl30').textContent = data.L30 ? `${data.L30}` : "0";    
+            document.getElementById('ovl30').textContent = data.shopifyb2c_l30 ? `${data.shopifyb2c_l30}` : "0";    
             document.getElementById('total_views').textContent = data.total_views ? `${data.total_views}` : "0";  
             document.getElementById('avgCvr').textContent = data.avgCvr ? `${data.avgCvr}` : "0";        
             const imgEl = document.getElementById('ovl30Img');

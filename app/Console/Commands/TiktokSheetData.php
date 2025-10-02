@@ -54,7 +54,7 @@ class TiktokSheetData extends Command
                 ['sku' => $sku],
                 [
                     'price'     => $this->toDecimalOrNull($row['live price '] ?? null),
-                    'l30'       => $this->toIntOrNull($row['L30'] ?? null),
+                    'l30'       => $this->toIntOrNull($row['TL30'] ?? null),
                     'l60'       => $this->toIntOrNull($row['TL60'] ?? null),
                     'views'       => $this->toDecimalOrNull($row['P Views'] ?? null),
                    

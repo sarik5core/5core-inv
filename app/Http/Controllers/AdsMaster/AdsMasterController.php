@@ -162,7 +162,13 @@ class AdsMasterController extends Controller
             ->keyBy('sku');
 
 
-        $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+         $ebay2Lookup = DB::connection('apicentral')
+            ->table('ebay2_metrics')
+            ->select('sku', 'ebay_price', 'ebay_l30', 'ebay_l60', 'views')
+            ->whereIn('sku', $skus)
+            ->get()
+            ->keyBy('sku');
+
         $ebay3Lookup = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
         $temuMetricLookup = TemuMetric::whereIn('sku', $skus)->get()->keyBy('sku');
         $amazonDataView = AmazonDataView::whereIn('sku', $skus)->get()->keyBy('sku');
