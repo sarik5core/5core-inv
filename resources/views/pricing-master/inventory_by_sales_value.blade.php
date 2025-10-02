@@ -2383,32 +2383,194 @@ function setCombinedFilters() {
         }
 
         // Modal open function
-     function showOVL30Modal(row) {
-    const data = row.getData();
-    // Initialize top push button
-    const topPushPrice = document.getElementById('topPushPrice');
-    const topPushBtn = document.getElementById('topPushBtn');
-    const topSaveBtn = document.getElementById('topSaveBtn');
-    topPushBtn.dataset.sku = data.SKU;
-    topSaveBtn.dataset.sku = data.SKU;
-    topSaveBtn.dataset.lp = data.LP || 0;
-    topSaveBtn.dataset.ship = data.SHIP || 0;
-    topSaveBtn.dataset.temuShip = data.temu_ship || 0;
-    topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
-    document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";
-    document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0";
-    // Use shopifyb2c_l30 as fallback if ovl30 is not set
-    const ovl30Value = parseFloat(data.ovl30) || parseFloat(data.shopifyb2c_l30) || 0;
-    document.getElementById('ovl30').textContent = ovl30Value ? `${ovl30Value}` : "0";
-    document.getElementById('total_views').textContent = data.total_views ? `${data.total_views}` : "0";
-    document.getElementById('avgCvr').textContent = data.avgCvr ? `${data.avgCvr}` : "0";
-    const imgEl = document.getElementById('ovl30Img');
-    if (imgEl) {
-        if (data.shopifyb2c_image) {
-            imgEl.src = data.shopifyb2c_image;
-            imgEl.style.display = "block";
-        } else {
-            imgEl.style.display = "none";
+        function showOVL30Modal(row) {
+            const data = row.getData();
+            
+            // Initialize top push button
+            const topPushPrice = document.getElementById('topPushPrice');
+            const topPushBtn = document.getElementById('topPushBtn');
+            const topSaveBtn = document.getElementById('topSaveBtn');
+            
+            topPushBtn.dataset.sku = data.SKU;
+            topSaveBtn.dataset.sku = data.SKU;
+            topSaveBtn.dataset.lp = data.LP || 0;
+            topSaveBtn.dataset.ship = data.SHIP || 0;
+            topSaveBtn.dataset.temuShip = data.temu_ship || 0;
+            topPushPrice.value = data.shopifyb2c_price || data.ebay_price || data.amz_price || '';
+            document.getElementById('ovl30SkuLabel').textContent = data.SKU ? `${data.SKU}` : "0";     
+            document.getElementById('ovl30InvLabel').textContent = data.INV ? `${data.INV}` : "0"; 
+            document.getElementById('ovl30').textContent = data.shopifyb2c_l30 ? `${data.shopifyb2c_l30}` : "0";    
+            document.getElementById('total_views').textContent = data.total_views ? `${data.total_views}` : "0";  
+            document.getElementById('avgCvr').textContent = data.avgCvr ? `${data.avgCvr}` : "0";        
+            const imgEl = document.getElementById('ovl30Img');
+
+            if (imgEl) {
+                if (data.shopifyb2c_image) {
+                    imgEl.src = data.shopifyb2c_image;
+                    imgEl.style.display = "block";   // show image
+                } else {
+                    imgEl.style.display = "none";    // hide if missing
+                }
+            }
+
+
+            document.getElementById('dilPercentage').textContent = data.dilPercentage ? `${data.dilPercentage}` : "0";
+            if (data.dilPercentage) {
+                const dilElement = document.getElementById('dilPercentage');
+                const rounded = data.dilPercentage;
+                
+                if (rounded >= 0 && rounded <= 10) {
+                    dilElement.style.color = "red";
+                } else if (rounded >= 11 && rounded <= 15) {
+                    dilElement.style.backgroundColor = "yellow";
+                    dilElement.style.color = "black"; 
+                    dilElement.style.padding = "2px 4px";
+                    dilElement.style.borderRadius = "4px";
+                } else if (rounded >= 16 && rounded <= 20) {
+                    dilElement.style.color = "blue";
+                } else if (rounded >= 21 && rounded <= 40) {
+                    dilElement.style.color = "green";
+                } else if (rounded >= 41) {
+                    dilElement.style.color = "purple";
+                }
+            }
+            document.getElementById('formattedAvgPrice').textContent = data.formattedAvgPrice ? `${data.formattedAvgPrice}` : " 0";
+            if (data.formattedAvgPrice) {
+                const avgPriceValue = parseFloat(data.formattedAvgPrice.replace(/[^0-9.-]+/g, ''));
+                let textColor;
+                if (!isNaN(avgPriceValue)) {
+                    if (avgPriceValue < 10) {
+                        textColor = '#dc3545'; // red
+                    } else if (avgPriceValue >= 10 && avgPriceValue < 15) {
+                        textColor = '#fd7e14'; // orange
+                    } else if (avgPriceValue >= 15 && avgPriceValue < 20) {
+                        textColor = '#0d6efd'; // blue
+                    } else if (avgPriceValue >= 20) {
+                        textColor = '#198754'; // green
+                    }
+                } else {
+                    textColor = '#6c757d'; // gray
+                }
+                document.getElementById('formattedAvgPrice').style.color = textColor;
+            }
+            document.getElementById('formattedProfitPercentage').textContent = data.avgPftPercent ? `${data.avgPftPercent}` : "0";
+            if (data.avgPftPercent) {
+                let bgColor, textColor;
+                const avgPftPercent = data.avgPftPercent;
+                
+                if (avgPftPercent < 11) {
+                    textColor = '#ff0000';
+                } else if (avgPftPercent >= 10 && avgPftPercent < 15) {
+                    bgColor = 'yellow';
+                    textColor = '#000000';
+                } else if (avgPftPercent >= 15 && avgPftPercent < 20) {
+                    textColor = '#0d6efd';
+                } else if (avgPftPercent >= 21 && avgPftPercent < 50) {
+                    textColor = '#198754';
+                } else {
+                    textColor = '#800080';
+                }
+                
+                const element = document.getElementById('formattedProfitPercentage');
+                element.style.color = textColor;
+                if (bgColor) {
+                    element.style.backgroundColor = bgColor;
+                }
+            }
+            document.getElementById('formattedRoiPercentage').textContent = data.avgRoi ? `${data.avgRoi}` : "0";
+            if (data.avgRoi) {
+                let bgColor, textColor;
+                const avgRoi = data.avgRoi;
+                
+                if (avgRoi < 11) {
+                    textColor = '#ff0000';
+                } else if (avgRoi >= 10 && avgRoi < 15) {
+                    bgColor = 'yellow';
+                    textColor = '#000000'; 
+                } else if (avgRoi >= 15 && avgRoi < 20) {
+                    textColor = '#0d6efd';
+                } else if (avgRoi >= 21 && avgRoi < 50) {
+                    textColor = '#198754';
+                } else {
+                    textColor = '#800080';
+                }
+                
+                const element = document.getElementById('formattedRoiPercentage');
+                element.style.color = textColor;
+                if (bgColor) {
+                    element.style.backgroundColor = bgColor;
+                }
+            }
+
+
+
+            document.getElementById('ovl30Content').innerHTML = buildOVL30Table(data);
+
+            const modalEl = document.getElementById('ovl30Modal');
+            const modal = new bootstrap.Modal(modalEl);
+
+            // Automatically sort by L30 (highest to lowest) when modal opens
+            setTimeout(() => {
+                const table = modalEl.querySelector('.sortable-table');
+                const l30Header = Array.from(table.querySelectorAll('th')).find(th => th.textContent.includes('L30'));
+                if (l30Header) {
+                    // Trigger two clicks if needed to get descending order (highest to lowest)
+                    if (!l30Header.classList.contains('sort-desc')) {
+                        l30Header.click();
+                        if (!l30Header.classList.contains('sort-desc')) {
+                            l30Header.click();
+                        }
+                    }
+                }
+            }, 100);
+
+            // Make modal draggable
+            const dialogEl = modalEl.querySelector('.modal-dialog');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            dialogEl.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+
+            function dragStart(e) {
+                if (e.target.closest('.modal-header')) {
+                    isDragging = true;
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    dialogEl.style.transform = `translate(${currentX}px, ${currentY}px)`;
+                }
+            }
+
+            function dragEnd() {
+                isDragging = false;
+            }
+
+            // Reset position when modal is hidden
+            modalEl.addEventListener('hidden.bs.modal', function() {
+                dialogEl.style.transform = 'none';
+                xOffset = 0;
+                yOffset = 0;
+            });
+
+            // Initialize table sorting
+            initTableSorting(modalEl.querySelector('.sortable-table'));
+            modal.show();
         }
     }
     // Calculate dilPercentage using the formula: L30 / INV
