@@ -59,6 +59,7 @@ use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\ViewServiceProvider;
 use Jasara\AmznSPA\AmznSPA;
 
 class PricingMasterViewsController extends Controller
@@ -169,7 +170,6 @@ class PricingMasterViewsController extends Controller
         $pricingData = PricingMaster::whereIn('sku', $skus)->get()->keyBy('sku');
         $macyData    = MacyProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $reverbData  = ReverbProduct::whereIn('sku', $skus)->get()->keyBy('sku');
-        $tiktokshopLookup = TiktokShopDataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiktokLookup = TiktokSheet::whereIn('sku', $skus)->get()->keyBy('sku');
         $walmartLookup = DB::connection('apicentral')
             ->table('walmart_api_data as api')
@@ -203,7 +203,17 @@ class PricingMasterViewsController extends Controller
             ->keyBy('sku');
 
 
-        $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+        // $ebay2Lookup = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $ebay2Lookup = DB::connection('apicentral')
+            ->table('ebay2_metrics')
+            ->select('sku', 'ebay_price', 'ebay_l30', 'ebay_l60', 'views')
+            ->whereIn('sku', $skus)
+            ->get()
+            ->keyBy('sku');
+
+
+
         $ebay3Lookup = Ebay3Metric::whereIn('sku', $skus)->get()->keyBy('sku');
         $temuMetricLookup = TemuMetric::whereIn('sku', $skus)->get()->keyBy('sku');
         $amazonDataView = AmazonDataView::whereIn('sku', $skus)->get()->keyBy('sku');
@@ -602,8 +612,8 @@ class PricingMasterViewsController extends Controller
                 'tiendamia_cvr' => null, // No views data
                 'tiendamia_buyer_link' => isset($tiendamiaListingData[$sku]) ? ($tiendamiaListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'tiendamia_seller_link' => isset($tiendamiaListingData[$sku]) ? ($tiendamiaListingData[$sku]->value['seller_link'] ?? null) : null,
-
-                // TikTok
+ 
+                // TikTok                          
                 'tiktok_price' => $tiktok ? ($tiktok->price ?? 0) : 0,
                 'tiktok_l30'   => $tiktok ? ($tiktok->l30 ?? 0) : 0,
                 'tiktok_l60'   => $tiktok ? ($tiktok->l60 ?? 0) : 0,
@@ -643,7 +653,16 @@ class PricingMasterViewsController extends Controller
                 ),
 
                 
-                //  100 / cvr * inv not cvr percentage 
+                //  100 / cvr * inv not cvr percentage                             
+
+
+
+
+
+
+
+
+                            
 
 
 
@@ -768,7 +787,7 @@ class PricingMasterViewsController extends Controller
 
 
 
-
+ 
                 'tiktok_sprice' => isset($tiktokDataView[$sku]) ?
                     (is_array($tiktokDataView[$sku]->value) ?
                         ($tiktokDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($tiktokDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
