@@ -13,6 +13,7 @@
             padding: 5px;
             height: 70px;
         }
+
         /* Pagination styling */
         .tabulator .tabulator-footer .tabulator-paginator .tabulator-page {
             padding: 8px 16px;
@@ -32,6 +33,7 @@
             background: #2563eb;
             color: white;
         }
+
         #image-hover-preview {
             transition: opacity 0.2s ease;
         }
@@ -132,6 +134,10 @@
 
                             <button id="total-transit" class="btn btn-info">
                                 Show Transit
+                            </button>
+
+                            <button id="restock_needed" class="btn btn-warning fw-semibold text-white">
+                                Restock Needed: <span id = "total_restock" class="fw-semibold text-white">0</span>
                             </button>
                         </div>
                     </div>
@@ -625,7 +631,7 @@
 
                     const toOrder = Math.round(msl - inv - transit - orderGiven);
 
-                    if(toOrder == 0){
+                    if (toOrder == 0) {
                         return false;
                     }
 
@@ -682,11 +688,21 @@
         let currentColorFilter = null;
         let hideNRYes = true;
         let currentRowTypeFilter = 'all';
+        let currentRestockFilter = false;
 
         function setCombinedFilters() {
             const allData = table.getData();
+            console.log(allData);
             const groupedChildrenMap = {};
             const visibleParentKeys = new Set();
+
+            // Calculate total restock count
+            const restockCount = allData.filter(item => {
+                const invValue = item.raw_data ? item.raw_data["INV"] : item["INV"];
+                const inv = parseFloat(invValue) || 0;
+                return !item.is_parent && inv === 0;
+            }).length;
+            document.getElementById('total_restock').textContent = restockCount;
 
             // Group all children by parent
             allData.forEach(item => {
@@ -701,14 +717,25 @@
             Object.keys(groupedChildrenMap).forEach(parentKey => {
                 const children = groupedChildrenMap[parentKey];
 
-                const matchingChildren = children.filter(child =>
-                    (!hideNRYes || child.nr !== 'NR') &&
-                    (currentColorFilter === 'red' ?
-                        child.to_order < 0 :
-                        currentColorFilter === 'yellow' ?
-                        child.to_order >= 0 :
-                        true)
-                );
+                const matchingChildren = children.filter(child => {
+                    const nrMatch = !hideNRYes || child.nr !== 'NR';
+                    let filterMatch = true;
+                    if (currentRestockFilter) {
+                        const invValue = child.raw_data ? child.raw_data["INV"] : child["INV"];
+                        const l30Value = child.raw_data ? child.raw_data["L30"] : child["L30"];
+                        const inv = parseFloat(invValue) || 0;
+                        const l30 = parseFloat(l30Value) || 0;
+                        const dilOver100 = inv === 0 || (inv > 0 && l30 / inv > 1);
+                        filterMatch = dilOver100;
+                    } else {
+                        filterMatch = currentColorFilter === 'red' ?
+                            child.to_order < 0 :
+                            currentColorFilter === 'yellow' ?
+                            child.to_order >= 0 :
+                            true;
+                    }
+                    return nrMatch && filterMatch;
+                });
 
                 if (matchingChildren.length > 0) {
                     visibleParentKeys.add(parentKey);
@@ -721,12 +748,21 @@
                 const isChild = !data.is_parent;
                 const isParent = data.is_parent;
 
-                const matchesColor =
-                    currentColorFilter === 'red' ?
-                    data.to_order < 0 :
-                    currentColorFilter === 'yellow' ?
-                    data.to_order >= 0 :
-                    true;
+                let matchesFilter = true;
+                if (currentRestockFilter) {
+                    const invValue = data.raw_data ? data.raw_data["INV"] : data["INV"];
+                    const l30Value = data.raw_data ? data.raw_data["L30"] : data["L30"];
+                    const inv = parseFloat(invValue) || 0;
+                    const l30 = parseFloat(l30Value) || 0;
+                    const dilOver100 = inv === 0 || (inv > 0 && l30 / inv > 1);
+                    matchesFilter = dilOver100;
+                } else {
+                    matchesFilter = currentColorFilter === 'red' ?
+                        data.to_order < 0 :
+                        currentColorFilter === 'yellow' ?
+                        data.to_order >= 0 :
+                        true;
+                }
 
                 const matchesNR = hideNRYes ? data.nr !== 'NR' : true;
 
@@ -735,12 +771,12 @@
                     if (isParent) {
                         return data.Parent === currentParentFilter;
                     } else {
-                        return data.Parent === currentParentFilter && matchesColor && matchesNR;
+                        return data.Parent === currentParentFilter && matchesFilter && matchesNR;
                     }
                 }
 
                 if (isChild) {
-                    const showChild = matchesColor && matchesNR;
+                    const showChild = matchesFilter && matchesNR;
                     if (currentRowTypeFilter === 'parent') return false;
                     if (currentRowTypeFilter === 'sku') return showChild;
                     return showChild;
@@ -797,12 +833,19 @@
                     // ✅ Skip update if already updated in ajaxResponse
                     parentGroups[parent].parentRow = row;
                 } else {
-                    parentGroups[parent].approved += parseFloat(data["Approved QTY"]) || 0;
-                    parentGroups[parent].inv += parseFloat(data["INV"]) || 0;
-                    parentGroups[parent].l30 += parseFloat(data["L30"]) || 0;
-                    parentGroups[parent].orderGiven += parseFloat(data["order_given"]) || 0;
-                    parentGroups[parent].transit += parseFloat(data["transit"]) || 0;
-                    parentGroups[parent].toOrder += parseFloat(data["to_order"]) || 0;
+                    const approvedValue = data.raw_data ? data.raw_data["Approved QTY"] : data["Approved QTY"];
+                    const invValue = data.raw_data ? data.raw_data["INV"] : data["INV"];
+                    const l30Value = data.raw_data ? data.raw_data["L30"] : data["L30"];
+                    const orderGivenValue = data.raw_data ? data.raw_data["order_given"] : data["order_given"];
+                    const transitValue = data.raw_data ? data.raw_data["transit"] : data["transit"];
+                    const toOrderValue = data.raw_data ? data.raw_data["to_order"] : data["to_order"];
+
+                    parentGroups[parent].approved += parseFloat(approvedValue) || 0;
+                    parentGroups[parent].inv += parseFloat(invValue) || 0;
+                    parentGroups[parent].l30 += parseFloat(l30Value) || 0;
+                    parentGroups[parent].orderGiven += parseFloat(orderGivenValue) || 0;
+                    parentGroups[parent].transit += parseFloat(transitValue) || 0;
+                    parentGroups[parent].toOrder += parseFloat(toOrderValue) || 0;
                 }
             });
 
@@ -946,7 +989,7 @@
                 div.addEventListener('mouseover', () => {
                     div.style.backgroundColor = '#f8f9fa';
                 });
-                
+
                 div.addEventListener('mouseout', () => {
                     div.style.backgroundColor = 'transparent';
                 });
@@ -980,7 +1023,7 @@
             buildColumnDropdown();
 
             // Toggle column from dropdown
-            document.getElementById("column-dropdown-menu").addEventListener("change", function (e) {
+            document.getElementById("column-dropdown-menu").addEventListener("change", function(e) {
                 if (e.target.type === "checkbox") {
                     const field = e.target.value;
                     const col = table.getColumn(field);
@@ -992,8 +1035,9 @@
             });
 
             // Show All Columns button
-            document.getElementById("show-all-columns-btn").addEventListener("click", function () {
-                const checkboxes = document.querySelectorAll("#column-dropdown-menu input[type='checkbox']");
+            document.getElementById("show-all-columns-btn").addEventListener("click", function() {
+                const checkboxes = document.querySelectorAll(
+                    "#column-dropdown-menu input[type='checkbox']");
                 checkboxes.forEach(cb => {
                     cb.checked = true;
                     const col = table.getColumn(cb.value);
@@ -1003,7 +1047,7 @@
             });
 
             // Handle editable field
-            $(document).off('blur', '.editable-qty').on('blur', '.editable-qty', function () {
+            $(document).off('blur', '.editable-qty').on('blur', '.editable-qty', function() {
                 const $cell = $(this);
                 const newValueRaw = $cell.text().trim();
                 const originalValue = ($cell.data('original') ?? '').toString().trim();
@@ -1012,13 +1056,13 @@
                 const parent = $cell.data('parent');
 
                 // Convert raw value to number safely
-                const newValue = ['Approved QTY', 'S-MSL', 'ORDER given'].includes(field)
-                    ? Number(newValueRaw)
-                    : newValueRaw;
+                const newValue = ['Approved QTY', 'S-MSL', 'ORDER given'].includes(field) ?
+                    Number(newValueRaw) :
+                    newValueRaw;
 
-                const original = ['Approved QTY', 'S-MSL', 'ORDER given'].includes(field)
-                    ? Number(originalValue)
-                    : originalValue;
+                const original = ['Approved QTY', 'S-MSL', 'ORDER given'].includes(field) ?
+                    Number(originalValue) :
+                    originalValue;
 
                 // Avoid unnecessary updates
                 if (newValue === original) return;
@@ -1040,29 +1084,41 @@
                     }
                 }
 
-                updateForecastField({ sku, parent, column: field, value: newValue }, function () {
+                updateForecastField({
+                    sku,
+                    parent,
+                    column: field,
+                    value: newValue
+                }, function() {
                     $cell.data('original', newValue);
 
                     if (field === 'Approved QTY') {
                         const today = new Date();
-                        const currentDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+                        const currentDate = today.getFullYear() + '-' + String(today.getMonth() + 1)
+                            .padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-                        updateForecastField({ sku, parent, column: 'Date of Appr', value: currentDate }, function () {
-                            const row = table.getRows().find(r => r.getData().SKU === sku && r.getData().Parent === parent);
+                        updateForecastField({
+                            sku,
+                            parent,
+                            column: 'Date of Appr',
+                            value: currentDate
+                        }, function() {
+                            const row = table.getRows().find(r => r.getData().SKU === sku &&
+                                r.getData().Parent === parent);
                             if (row) {
                                 row.delete();
                             }
                         });
                     }
                     setCombinedFilters();
-                }, function () {
+                }, function() {
                     $cell.text(originalValue);
                 });
 
             });
 
             // Handle link edit modal save
-            $('#saveLinkBtn').on('click', function () {
+            $('#saveLinkBtn').on('click', function() {
                 const newValue = $('#linkEditInput').val().trim();
                 const field = editingField;
                 const sku = editingRow['SKU'];
@@ -1078,9 +1134,9 @@
                 };
 
 
-                const iconHtml = newValue
-                    ? `<a href="${newValue}" target="_blank" title="${field}">${iconMap[field] || ''}</a>`
-                    : '';
+                const iconHtml = newValue ?
+                    `<a href="${newValue}" target="_blank" title="${field}">${iconMap[field] || ''}</a>` :
+                    '';
 
                 const editIcon = `<a href="#" class="edit-${field.toLowerCase()}" title="Edit ${field}">
                                     <i class="fas fa-edit text-warning"></i>
@@ -1094,59 +1150,71 @@
 
                 $('#linkEditModal').modal('hide');
 
-                updateForecastField(
-                    { sku, parent, column: field, value: newValue },
-                    function () {
+                updateForecastField({
+                        sku,
+                        parent,
+                        column: field,
+                        value: newValue
+                    },
+                    function() {
                         console.log(`${field} saved successfully.`);
                     },
-                    function () {
+                    function() {
                         alert(`Failed to save ${field}.`);
                     }
                 );
             });
 
             // Handle editable select field
-            $(document).off('change', '.editable-select, .editable-date').on('change', '.editable-select, .editable-date', function () {
-                const $el = $(this);
-                const isSelect = $el.hasClass('editable-select');
-                const isDate = $el.hasClass('editable-date');
+            $(document).off('change', '.editable-select, .editable-date').on('change',
+                '.editable-select, .editable-date',
+                function() {
+                    const $el = $(this);
+                    const isSelect = $el.hasClass('editable-select');
+                    const isDate = $el.hasClass('editable-date');
 
-                const newValue = $el.val().trim();
-                const sku = $el.data('sku');
-                const parent = $el.data('parent');
-                const field = isSelect ? $el.data('type') : $el.data('field');
-                const originalValue = isDate ? $el.data('original') : null;
+                    const newValue = $el.val().trim();
+                    const sku = $el.data('sku');
+                    const parent = $el.data('parent');
+                    const field = isSelect ? $el.data('type') : $el.data('field');
+                    const originalValue = isDate ? $el.data('original') : null;
 
-                // For date input: skip if no change
-                if (isDate && newValue === originalValue) return;
+                    // For date input: skip if no change
+                    if (isDate && newValue === originalValue) return;
 
-                updateForecastField(
-                    { sku, parent, column: field, value: newValue },
-                    function () {
-                        if (isDate) {
-                            $el.data('original', newValue); // update reference
+                    updateForecastField({
+                            sku,
+                            parent,
+                            column: field,
+                            value: newValue
+                        },
+                        function() {
+                            if (isDate) {
+                                $el.data('original', newValue); // update reference
+                            }
+                            if (field === 'NR') {
+                                const row = table.getRows().find(r =>
+                                    r.getData().SKU === sku && r.getData().Parent === parent
+                                );
+                                if (row) row.update({
+                                    nr: newValue
+                                });
+
+                                setCombinedFilters();
+                            }
+                            console.log(`Saved ${field}: ${newValue}`);
+                        },
+                        function() {
+                            if (isDate) {
+                                $el.val(originalValue); // revert on fail
+                            }
+                            alert(`Failed to save ${field}.`);
                         }
-                        if (field === 'NR') {
-                            const row = table.getRows().find(r =>
-                                r.getData().SKU === sku && r.getData().Parent === parent
-                            );
-                            if (row) row.update({ nr: newValue });
-
-                            setCombinedFilters();
-                        }
-                        console.log(`Saved ${field}: ${newValue}`);
-                    },
-                    function () {
-                        if (isDate) {
-                            $el.val(originalValue); // revert on fail
-                        }
-                        alert(`Failed to save ${field}.`);
-                    }
-                );
-            });
+                    );
+                });
 
             // Handle notes edit modal save
-            $('#saveNotesBtn').on('click', function () {
+            $('#saveNotesBtn').on('click', function() {
                 const newValue = $('#notesInput').val().trim();
                 const field = editingField;
                 const sku = editingRow['SKU'];
@@ -1155,7 +1223,8 @@
                 editingRow[field] = newValue;
 
                 // Update DOM cell content
-                const display = newValue ? newValue.substring(0, 30) + (newValue.length > 30 ? '...' : '') : '<em class="text-muted">No notes</em>';
+                const display = newValue ? newValue.substring(0, 30) + (newValue.length > 30 ? '...' : '') :
+                    '<em class="text-muted">No notes</em>';
 
                 const updatedHTML = `
                     <div class="d-flex align-items-center justify-content-between notes-cell">
@@ -1169,11 +1238,17 @@
                 $(editingLinkCell).html(updatedHTML);
                 $('#editNotesModal').modal('hide');
 
-                updateForecastField({sku,parent,column: 'Notes',value: newValue},
+                updateForecastField({
+                        sku,
+                        parent,
+                        column: 'Notes',
+                        value: newValue
+                    },
                     () => {
                         $('#editNotesModal').modal('hide');
 
-                        const cell = $(`.edit-notes-btn[data-sku="${sku}"][data-parent="${parent}"]`).closest('td');
+                        const cell = $(`.edit-notes-btn[data-sku="${sku}"][data-parent="${parent}"]`)
+                            .closest('td');
 
                         if (cell.length === 0) {
                             console.warn('Cell not found for SKU:', sku, 'and Parent:', parent);
@@ -1281,25 +1356,25 @@
             setCombinedFilters();
 
             document.querySelectorAll('#order-color-filter-dropdown + .dropdown-menu [data-filter]').forEach(
-            btn => {
-                btn.addEventListener('click', function() {
-                    const filter = this.getAttribute('data-filter');
-                    currentColorFilter = filter || null;
-                    setCombinedFilters();
+                btn => {
+                    btn.addEventListener('click', function() {
+                        const filter = this.getAttribute('data-filter');
+                        currentColorFilter = filter || null;
+                        setCombinedFilters();
 
-                    const buttonText = filter ? filter.charAt(0).toUpperCase() + filter.slice(1) +
-                        ' Filter' : 'All';
-                    document.getElementById('order-color-filter-dropdown').innerHTML =
-                        `<i class="bi bi-funnel-fill"></i> ${buttonText}`;
+                        const buttonText = filter ? filter.charAt(0).toUpperCase() + filter.slice(1) +
+                            ' Filter' : 'All';
+                        document.getElementById('order-color-filter-dropdown').innerHTML =
+                            `<i class="bi bi-funnel-fill"></i> ${buttonText}`;
 
-                    const countContainer = document.getElementById('yellow-count-container');
-                    if (filter === 'yellow') {
-                        countContainer.classList.remove('d-none');
-                    } else {
-                        countContainer.classList.add('d-none');
-                    }
+                        const countContainer = document.getElementById('yellow-count-container');
+                        if (filter === 'yellow') {
+                            countContainer.classList.remove('d-none');
+                        } else {
+                            countContainer.classList.add('d-none');
+                        }
+                    });
                 });
-            });
 
             document.getElementById('toggle-nr-rows').addEventListener('click', function() {
                 hideNRYes = !hideNRYes;
@@ -1403,9 +1478,9 @@
                     <td>${product.dimensions || 'N/A'}</td>
                     <td>
                         ${product.image_url ? `
-                                <a href="${product.image_url}" target="_blank">
-                                    <img src="${product.image_url}" width="60" height="60" style="border-radius:50%;">
-                                </a>` : 'N/A'}
+                                                                <a href="${product.image_url}" target="_blank">
+                                                                    <img src="${product.image_url}" width="60" height="60" style="border-radius:50%;">
+                                                                </a>` : 'N/A'}
                     </td>
                     <td>${product.listing_quality_score || 'N/A'}</td>
                     <td>${product.parent_asin || 'N/A'}</td>
@@ -1436,6 +1511,35 @@
                     const aValue = a.getData().transit ? 1 : 0;
                     const bValue = b.getData().transit ? 1 : 0;
                     return bValue - aValue;
+                }
+            }]);
+        });
+
+        document.getElementById("restock_needed").addEventListener("click", function(e) {
+            currentRestockFilter = true;
+            currentColorFilter = null;
+
+            setCombinedFilters();
+
+            table.setSort([{
+                column: "ov_dil",
+                dir: "desc",
+                sorter: function(a, b) {
+                    const aData = a.getData();
+                    const aInv = parseFloat(aData.raw_data ? aData.raw_data["INV"] : aData[
+                        "INV"]) || 0;
+                    const aL30 = parseFloat(aData.raw_data ? aData.raw_data["L30"] : aData[
+                        "L30"]) || 0;
+                    const aDil = aInv === 0 ? Infinity : (aL30 / aInv) * 100;
+
+                    const bData = b.getData();
+                    const bInv = parseFloat(bData.raw_data ? bData.raw_data["INV"] : bData[
+                        "INV"]) || 0;
+                    const bL30 = parseFloat(bData.raw_data ? bData.raw_data["L30"] : bData[
+                        "L30"]) || 0;
+                    const bDil = bInv === 0 ? Infinity : (bL30 / bInv) * 100;
+
+                    return bDil - aDil;
                 }
             }]);
         });
