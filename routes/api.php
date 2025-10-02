@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\ProductMaster\ProductMasterController;
 use App\Http\Controllers\PricingMaster\PricingMasterViewsController;
+use App\Http\Controllers\PurchaseMaster\SupplierRFQController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,3 +49,10 @@ Route::get('/debug-doba-signature', [PricingMasterViewsController::class, 'debug
 Route::get('/test-doba-item-validation', [PricingMasterViewsController::class, 'testDobaItemValidation']); // Test item validation
 Route::get('/advanced-doba-debug', [PricingMasterViewsController::class, 'advancedDobaDebug']); // Advanced debug with multiple methods
 Route::post('/update-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']); // Doba price update API
+
+// Supplier open rfq form url
+//please dont delete this section 🙏
+Route::prefix('rfq-form')->group(function() {
+    Route::post('/{slug}/submit', [SupplierRFQController::class, 'submitRfqForm'])->name('rfq-form.submit');
+    Route::get('/{slug}', [SupplierRFQController::class, 'showRfqForm'])->name('rfq-form.show');
+});

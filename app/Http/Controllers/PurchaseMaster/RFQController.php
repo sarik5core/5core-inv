@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\RfqForm;
 use App\Models\RfqSubmission;
-use AWS\CRT\Log;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log as FacadesLog;
 use Illuminate\Support\Str;
 
 class RFQController extends Controller
@@ -122,50 +120,6 @@ class RFQController extends Controller
             'success' => true,
             'message' => 'RFQ Form updated successfully!',
         ]);
-    }
-
-
-    public function showRfqForm($slug)
-    {
-        $rfqForm = RfqForm::where('slug', $slug)->firstOrFail();
-
-        return view('purchase-master.rfq-form.rfq-form', compact('rfqForm'));
-    }
-
-    public function submitRfqForm(Request $request, $slug)
-    {
-        $form = RfqForm::where('slug', $slug)->firstOrFail();
-
-        $rules = [];
-        foreach ($form->fields as $field) {
-            if (!empty($field['required'])) {
-                $rules[$field['name']] = 'required';
-            }
-        }
-
-        if ($request->hasFile('additionalPhotos')) {
-            $rules['additionalPhotos.*'] = 'image|mimes:jpg,jpeg,png|max:2048';
-        }
-
-        $request->validate($rules);
-
-        $data = $request->except('_token');
-
-        if ($request->hasFile('additionalPhotos')) {
-            $paths = [];
-            foreach ($request->file('additionalPhotos') as $file) {
-                $paths[] = $file->store('rfq_uploads', 'public');
-            }
-            $data['additionalPhotos'] = $paths;
-        }
-
-        RfqSubmission::create([
-            'rfq_form_id' => $form->id,
-            'data' => $data
-        ]);
-
-        $message = "🎉 Thank you for submitting your quotation! We have successfully received your details. Our team will review your submission and contact you shortly.";
-        return redirect()->back()->with('success', $message);
     }
 
     public function destroy($id)
