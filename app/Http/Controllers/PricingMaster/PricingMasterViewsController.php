@@ -316,7 +316,7 @@ class PricingMasterViewsController extends Controller
                 ($ebay3 ? ($ebay3->views ?? 0) : 0) +
                 ($shein ? ($shein->views_clicks ?? 0) : 0) +
                 ($reverb ? ($reverb->views ?? 0) : 0) +
-                ($temuMetric ? (($temuMetric->product_impressions_l30 ?? 0) + ($temuMetric->product_clicks_l30 ?? 0)) : 0)+
+                ($temuMetric ? ($temuMetric->product_clicks_l30 ?? 0) : 0) +
                 ($tiktok ? ($tiktok->views ?? 0) : 0);
 
             // Calculate total L30 and L60 counts
