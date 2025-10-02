@@ -2628,9 +2628,8 @@
                     $row.append($('<td class="inv_col">').text(item.INV));
                     $row.append($('<td class="ov_l30_col">').text(item.L30));
 
-                    $row.append($('<td class="ov_dil_col" >').html(
-                        `<span class="d-none" data-field="ov_dil">${Math.round(item.ov_dil * 100)}%</span>
-                        <span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>
+                    $row.append($(`<td class="ov_dil_col" data-field="ov_dil" data-value="${Math.round(item.ov_dil * 100)}">`).html(
+                        `<span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>
                          <span class="text-info tooltip-icon wmpnm-view-trigger" 
                                data-bs-toggle="tooltip" 
                                data-bs-placement="left" 
@@ -4896,7 +4895,7 @@
                 // Table ke rows loop karke sbid lete hain
                 $("#ebay-table tbody tr").each(function (index) {
                     let sbid = $(this).find('td[data-field="sbid"]').text().trim();
-                    let ovDil = $(this).find('span[data-field="ov_dil"]').text().trim();
+                    let ovDil = $(this).find('td[data-field="ov_dil"]').data("value");
 
                     if (filteredData[index]) {
                         exportData.push({
