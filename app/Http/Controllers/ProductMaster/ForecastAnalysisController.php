@@ -55,7 +55,6 @@ class ForecastAnalysisController extends Controller
 
         $productListData = DB::table('product_master')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
 
-        // Shopify data with normalized SKU
         $shopifyData = ShopifySku::all()->keyBy(fn($item) => $normalizeSku($item->sku));
 
         $supplierRows = Supplier::where('type', 'Supplier')->get();
@@ -94,7 +93,6 @@ class ForecastAnalysisController extends Controller
             $item->{'GW (LB)'} = $values['wt_act'] ?? '';
             $item->{'GW (KG)'} = is_numeric($values['wt_act'] ?? null) ? round($values['wt_act'] * 0.45, 2) : '';
 
-            // Image logic: prefer Shopify image_src, fallback to product_master.Values.image_path
             $shopify = $shopifyData[$sheetSku] ?? null;
             $imageFromShopify = $shopify->image_src ?? null;
             $imageFromProductMaster = $values['image_path'] ?? null;
