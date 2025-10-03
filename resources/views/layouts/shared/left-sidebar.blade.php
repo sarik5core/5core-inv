@@ -1476,16 +1476,19 @@
                                         <a href="{{ route('ebay.keywords.ads') }}">Ebay Keywords Ads</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-over-uti') }}">EBAY OVER UTIL.</a>
+                                        <a href="{{ route('ebay-over-uti') }}">Ebay OVER UTIL.</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-under-utilize') }}">EBAY UNDER UTIL.</a>
+                                        <a href="{{ route('ebay-under-utilize') }}">Ebay UNDER UTIL.</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-correctly-utilize') }}">EBAY CORRECTLY UTIL.</a>
+                                        <a href="{{ route('ebay-correctly-utilize') }}">Ebay CORRECTLY UTIL.</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay-make-new-campaign-kw') }}">EBAY MAKE CAMP. KW</a>
+                                        <a href="{{ route('ebay.keywords.ads.less-than-twenty') }}">Ebay Ads < $20</a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('ebay-make-new-campaign-kw') }}">Ebay MAKE CAMP. KW</a>
                                     </li>
                                 </ul>
                             </div>
