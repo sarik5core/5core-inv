@@ -889,7 +889,6 @@
                 // const pft = parseNumber(row['Gprofit%']);
                 // totalPft += pft;
                 const cogs = parseNumber(row['G ROI%']);
-                console.log(cogs,'cogs');
                 
                 totalCogs += cogs;
                 // const l30Sales = parseNumber(row['L30 Sales']);
