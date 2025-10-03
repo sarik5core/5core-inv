@@ -1222,7 +1222,7 @@
                     {
                         title: "DIL%",
                         field: "Dil%",
-                        hozAlign: "right",
+                        hozAlign: "center",
                         formatter: function (cell) {
                             const data = cell.getRow().getData();
                             const value = cell.getValue() || 0;
