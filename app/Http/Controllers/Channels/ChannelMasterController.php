@@ -215,6 +215,8 @@ class ChannelMasterController extends Controller
         $amazonRows   = $query->get(['sku', 'price', 'units_ordered_l30','units_ordered_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($amazonRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -247,6 +249,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP from JSON/column ---
@@ -265,8 +270,11 @@ class ChannelMasterController extends Controller
         // Use L30 Sales for denominator
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Amazon')->first();
