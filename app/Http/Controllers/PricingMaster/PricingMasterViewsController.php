@@ -941,6 +941,7 @@ class PricingMasterViewsController extends Controller
             'color' => $cvr <= 7 ? 'blue' : ($cvr <= 13 ? 'green' : 'red')
         ];
     }
+    
 
     protected function getDistinctValues($data)
     {
