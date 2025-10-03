@@ -20,5 +20,6 @@ class FbaInventory extends Model
         'units_ordered_l60',
         'sessions_l60',
         'original_fba_sku',
+        'buy_box_price'
     ];
 }

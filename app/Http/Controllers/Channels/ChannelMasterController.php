@@ -331,6 +331,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'ebay_price', 'ebay_l30','ebay_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -363,6 +365,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+            
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -382,8 +387,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60       = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60       = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'eBay')->first();
@@ -417,7 +425,11 @@ class ChannelMasterController extends Controller
     {
         $result = [];
 
-        $query = Ebay2Metric::where('sku', 'not like', '%Parent%');
+        // $query = Ebay2Metric::where('sku', 'not like', '%Parent%');
+
+        $query = DB::connection('apicentral')
+            ->table('ebay2_metrics')
+            ->where('sku', 'not like', '%Parent%');
 
         $l30Orders = $query->sum('ebay_l30');
         $l60Orders = $query->sum('ebay_l60');
@@ -440,6 +452,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'ebay_price', 'ebay_l30','ebay_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -472,6 +486,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -491,8 +508,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'EbayTwo')->first();
@@ -549,6 +569,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'ebay_price', 'ebay_l30','ebay_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -581,6 +603,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -600,8 +625,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'EbayThree')->first();
@@ -657,6 +685,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'm_l30','m_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -689,6 +719,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -708,8 +741,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60       = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60       = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Macys')->first();
@@ -766,6 +802,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'r_l30','r_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -798,6 +836,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -817,8 +858,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Reverb')->first();
@@ -874,6 +918,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'anticipated_income', 'quantity_l30','quantity_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -906,6 +952,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -925,8 +974,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Doba')->first();
@@ -983,6 +1035,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'temu_sheet_price', 'quantity_purchased_l30','quantity_purchased_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1016,6 +1070,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1035,8 +1092,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60       = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60       = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Temu')->first();
@@ -1093,6 +1153,8 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'l30','l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1125,6 +1187,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1144,8 +1209,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Walmart')->first();
@@ -1201,6 +1269,9 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'm_l30','m_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1233,6 +1304,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1252,8 +1326,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Tiendamia')->first();
@@ -1310,6 +1387,9 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'm_l30','m_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1342,6 +1422,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1361,8 +1444,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'BestBuy USA')->first();
@@ -1418,6 +1504,9 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'p_l30','p_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1450,6 +1539,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1469,8 +1561,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'PLS')->first();
@@ -1527,6 +1622,9 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'l30','l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1559,6 +1657,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1578,8 +1679,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Wayfair')->first();
@@ -1635,6 +1739,9 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'price', 'f_l30','f_l60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1667,6 +1774,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1686,8 +1796,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Faire')->first();
@@ -1743,6 +1856,9 @@ class ChannelMasterController extends Controller
         $ebayRows     = $query->get(['sku', 'shopify_price', 'shopify_sheinl30','shopify_sheinl60']);
         $totalProfit  = 0;
         $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
 
         foreach ($ebayRows as $row) {
             $sku       = strtoupper($row->sku);
@@ -1775,6 +1891,9 @@ class ChannelMasterController extends Controller
 
             $totalProfit += $profitTotal;
             $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
         }
 
         // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
@@ -1794,8 +1913,11 @@ class ChannelMasterController extends Controller
         $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
         $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
 
-        $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
-        $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
 
         // Channel data
         $channelData = ChannelMaster::where('channel', 'Shein')->first();
