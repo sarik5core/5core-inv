@@ -121,7 +121,7 @@ class Kernel extends ConsoleKernel
             ->timezone('America/Los_Angeles');
         $schedule->command('app:fetch-ebay-two-metrics')
             ->dailyAt('01:00')
-            ->timezone('America/Los_Angeles');
+            ->timezone('America/Los_Angeles');   
         $schedule->command('app:ebay2-campaign-reports')
             ->dailyAt('01:15')
             ->timezone('America/Los_Angeles');
