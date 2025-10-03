@@ -188,11 +188,11 @@
                             <a href="{{ url('calculate-cvr-masters') }}">CVR Masters</a>
                         </li>
 
-                           <li>
+                        <li>
                             <a href="{{ url('inventory-by-sales-value') }}">Inv by Sales Value </a>
                         </li>
 
-                          <li>
+                        <li>
                             <a href="{{ url('ads-pricing-master') }}">Advertisment Master</a>
                         </li>
 
@@ -606,7 +606,7 @@
                             <div class="collapse" id="account-health-master">
                                 <ul class="side-nav-second-level">
                                     <li>
-                                         <a href="{{ route('account.health.master.channel.dashboard') }}"
+                                        <a href="{{ route('account.health.master.channel.dashboard') }}"
                                             target="_blank">Dashboard</a>
                                     </li>
                                     <li>
@@ -802,7 +802,7 @@
                                             </ul>
                                         </div>
                                     </li>
-                                    
+
                                     <li class="side-nav-item">
                                         <a data-bs-toggle="collapse" href="#videoSalesSubmenu4" aria-expanded="false"
                                             aria-controls="videoSalesSubmenu4">
@@ -948,7 +948,7 @@
                             </div>
                         </li>
 
-                            <li class="side-nav-item">
+                        <li class="side-nav-item">
                             <a data-bs-toggle="collapse" href="#facebook-web-ads" aria-expanded="false"
                                 aria-controls="facebook-web-ads" class="side-nav-link">
                                 <span>Facebook Web Ads</span>
@@ -959,12 +959,9 @@
                                     <li>
                                         <a href="{{ route('facebook.web.to.video') }}">FB Video to Web</a>
                                     </li>
-                                    {{-- <li>
-                                        <a href="#">Image Carousel Ad Running</a>
-                                    </li>
                                     <li>
-                                        <a href="#">Image Carousel Ad Running</a>
-                                    </li> --}}
+                                        <a href="{{ route('fb.img.caraousal.to.web') }}">FB Img Caraousal to Web</a>
+                                    </li>
                                 </ul>
                             </div>
                         </li>
@@ -1446,22 +1443,28 @@
                                         <div class="collapse" id="ebayAcosSubmenu">
                                             <ul class="side-nav-fourth-level">
                                                 <li>
-                                                    <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > ACOS PINK</a>
+                                                    <a href="{{ route('ebay-over-uti-acos-pink') }}">EBAY > ACOS
+                                                        PINK</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > ACOS GREEN</a>
+                                                    <a href="{{ route('ebay-over-uti-acos-green') }}">EBAY > ACOS
+                                                        GREEN</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > ACOS RED</a>
+                                                    <a href="{{ route('ebay-over-uti-acos-red') }}">EBAY > ACOS
+                                                        RED</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < ACOS PINK</a>
+                                                    <a href="{{ route('ebay-under-uti-acos-pink') }}">EBAY < ACOS
+                                                            PINK</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < ACOS GREEN</a>
+                                                    <a href="{{ route('ebay-under-uti-acos-green') }}">EBAY < ACOS
+                                                            GREEN</a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < ACOS RED</a>
+                                                    <a href="{{ route('ebay-under-uti-acos-red') }}">EBAY < ACOS
+                                                            RED</a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -1948,7 +1951,8 @@
                                         <a href="{{ route('walmart.under.utilized') }}">Walmart Under Utili.</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('walmart.correctly.utilized') }}">Walmart Correctly Utili.</a>
+                                        <a href="{{ route('walmart.correctly.utilized') }}">Walmart Correctly
+                                            Utili.</a>
                                     </li>
                                 </ul>
                             </div>
@@ -1966,10 +1970,12 @@
                                         <a href="{{ route('google.shopping.running') }}">G-Shopping Ads Running</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('google.shopping.over.utilize') }}">G-Shopping Over Util.</a>
+                                        <a href="{{ route('google.shopping.over.utilize') }}">G-Shopping Over
+                                            Util.</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('google.shopping.under.utilize') }}">G-Shopping Under Util.</a>
+                                        <a href="{{ route('google.shopping.under.utilize') }}">G-Shopping Under
+                                            Util.</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('google.shopping.serp') }}">Google SERP</a>
