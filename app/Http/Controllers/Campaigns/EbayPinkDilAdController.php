@@ -9,6 +9,7 @@ use App\Models\EbayPriorityReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EbayPinkDilAdController extends Controller
 {
@@ -89,6 +90,7 @@ class EbayPinkDilAdController extends Controller
             $row['e_l30']  = $ebay->ebay_l30 ?? 0;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
+            $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');
             $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
 
             $adFees   = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
@@ -106,7 +108,7 @@ class EbayPinkDilAdController extends Controller
             $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
             $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
             $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
-            $row['sbid'] = 0.10;
+            $row['sbid'] = 0.05;
 
             $row['NR'] = '';
             if (isset($nrValues[$pm->sku])) {
@@ -118,7 +120,7 @@ class EbayPinkDilAdController extends Controller
                     $row['NR'] = $raw['NR'] ?? null;
                 }
             }
-
+            
             $result[] = (object) $row;
         }
 

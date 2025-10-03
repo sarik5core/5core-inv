@@ -103,7 +103,7 @@ class ProductMasterController extends Controller
     {
         // Fetch all products from the database ordered by parent and SKU
         $products = ProductMaster::orderBy('parent', 'asc')
-            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END") // Put PARENT rows last
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END") 
             ->orderBy('sku', 'asc')
             ->get();
 

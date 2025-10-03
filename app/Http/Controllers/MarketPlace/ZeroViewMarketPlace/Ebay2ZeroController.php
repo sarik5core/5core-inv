@@ -9,6 +9,7 @@ use App\Models\ShopifySku;
 use App\Models\EbayTwoDataView;
 use App\Models\EbayTwoListingStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class Ebay2ZeroController extends Controller
 {
@@ -215,7 +216,15 @@ class Ebay2ZeroController extends Controller
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
         $ebayDataViews = EbayTwoListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
-        $ebayMetrics = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+        // $ebayMetrics = Ebay2Metric::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $ebayMetrics = DB::connection('apicentral')
+        ->table('ebay2_metrics')
+        ->select('sku', 'ebay_price', 'ebay_l30', 'ebay_l60', 'views')
+        ->whereIn('sku', $skus)
+        ->get()
+        ->keyBy('sku');
+
 
         $listedCount = 0;
         $zeroInvOfListed = 0;

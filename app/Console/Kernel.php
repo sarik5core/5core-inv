@@ -29,6 +29,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\AutoUpdateAmazonPinkDilPtAds::class,
         \App\Console\Commands\AutoUpdateAmazonPinkDilHlAds::class,
         \App\Console\Commands\EbayOverUtilzBidsAutoUpdate::class,
+        \App\Console\Commands\EbayPinkDilKwBidsAutoUpdate::class,
     ];
 
     /**
@@ -81,8 +82,6 @@ class Kernel extends ConsoleKernel
             ->dailyAt('00:00')
             ->timezone('UTC');
 
-           
-
         // Sync Main sheet update command
         $schedule->command('app:sync-sheet')
             ->dailyAt('02:10')
@@ -126,6 +125,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:ebay2-campaign-reports')
             ->dailyAt('01:15')
             ->timezone('America/Los_Angeles');
+        // Amazon and Ebay bids update commands
         $schedule->command('amazon:auto-update-over-kw-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
@@ -135,30 +135,18 @@ class Kernel extends ConsoleKernel
         $schedule->command('amazon:auto-update-over-hl-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
-        // $schedule->command('amazon:auto-update-under-kw-bids')
-        //     ->dailyAt('12:00')
-        //     ->timezone('Asia/Kolkata');
-        // $schedule->command('amazon:auto-update-under-pt-bids')
-        //     ->dailyAt('12:00')
-        //     ->timezone('Asia/Kolkata');
-        // $schedule->command('amazon:auto-update-under-hl-bids')
-        //     ->dailyAt('12:00')
-        //     ->timezone('Asia/Kolkata');
         $schedule->command('amazon:auto-update-amz-bgt-kw')
             ->days([1, 4]) // 1 = Monday, 4 = Thursday
             ->at('12:00')
             ->timezone('Asia/Kolkata');
-
         $schedule->command('amazon:auto-update-amz-bgt-pt')
             ->days([1, 4])
             ->at('12:00')
             ->timezone('Asia/Kolkata');
-
         $schedule->command('amazon:auto-update-amz-bgt-hl')
             ->days([1, 4])
             ->at('12:00')
             ->timezone('Asia/Kolkata');
-
         $schedule->command('amazon:auto-update-pink-dil-kw-ads')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
@@ -171,6 +159,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('ebay:auto-update-over-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
+        $schedule->command('ebay:auto-update-pink-dil-bids')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        // end of bids update commands
         $schedule->command('sync:amazon-prices')->everyMinute();
         $schedule->command('sync:sync-temu-sip')->everyMinute();
         $schedule->command('sync:walmart-metrics-data')->everyMinute();

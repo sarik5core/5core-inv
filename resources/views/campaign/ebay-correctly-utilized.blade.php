@@ -197,7 +197,7 @@
                                     </div>
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
-                                        <option value="ENABLED">Enabled</option>
+                                        <option value="RUNNING">Running</option>
                                         <option value="PAUSED">Paused</option>
                                         <option value="ARCHIVED">Archived</option>
                                     </select>
@@ -247,7 +247,7 @@
 
             var table = new Tabulator("#budget-under-table", {
                 index: "Sku",
-                ajaxURL: "/ebay-over-uti-acos-pink/data",
+                ajaxURL: "/ebay-uti-acos/data",
                 layout: "fitData",
                 movableColumns: true,
                 resizableColumns: true,
@@ -465,19 +465,9 @@
                         visible: false
                     },
                     {
-                        title: "SBGT",
-                        field: "sbgt",
-                        hozAlign: "center",
-                        editor: "input",
-                        visible: false
-                    },
-                    {
-                        title: "APR BGT",
-                        field: "apr_bgt",
-                        hozAlign: "center",
-                        editor: "input",
-                        visible: false
-                    },
+                        title: "Status",
+                        field: "campaignStatus",
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
@@ -532,16 +522,19 @@
 
                     if (!(ub7 >= 70 && ub7 <= 90)) return false;
 
+                    // Global search filter
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
                         return false;
                     }
 
+                    // Status filter
                     let statusVal = $("#status-filter").val();
                     if (statusVal && data.campaignStatus !== statusVal) {
                         return false;
                     }
 
+                    // Inventory filter
                     let invFilterVal = $("#inv-filter").val();
                     if (!invFilterVal) {
                         if (parseFloat(data.INV) === 0) return false;
@@ -551,14 +544,10 @@
                         if (parseFloat(data.INV) === 0) return false;
                     }
 
+                    // NR filter (use only data object)
                     let nraFilterVal = $("#nra-filter").val();
                     if (nraFilterVal) {
-                        let rowSelect = document.querySelector(
-                            `select[data-sku="${data.sku}"][data-field="NR"]`
-                        );
-                        let rowVal = rowSelect ? rowSelect.value : "";
-                        if (!rowVal) rowVal = data.NR || "";
-
+                        let rowVal = data.NR || "";
                         if (rowVal !== nraFilterVal) return false;
                     }
 
@@ -568,13 +557,13 @@
                 table.setFilter(combinedFilter);
 
                 function updateCampaignStats() {
-                    let total = table.getDataCount();
-                    let filtered = table.getDataCount("active");
-                    let currentPage = table.getRows("active").length;
+                    let allData = table.getData(); // poora data
+                    let filteredCount = allData.filter(combinedFilter).length; // apply same filter function
 
-                    let percentage = total > 0 ? ((filtered / total) * 100).toFixed(0) : 0;
+                    let total = allData.length;
+                    let percentage = total > 0 ? ((filteredCount / total) * 100).toFixed(0) : 0;
 
-                    document.getElementById("total-campaigns").innerText = currentPage;
+                    document.getElementById("total-campaigns").innerText = filteredCount; // filtered rows count
                     document.getElementById("percentage-campaigns").innerText = percentage + "%";
                 }
 
@@ -584,10 +573,12 @@
 
                 $("#global-search").on("keyup", function() {
                     table.setFilter(combinedFilter);
+                    updateCampaignStats(); // update count immediately
                 });
 
                 $("#status-filter, #inv-filter, #nra-filter").on("change", function() {
                     table.setFilter(combinedFilter);
+                    updateCampaignStats(); // update count immediately
                 });
 
                 updateCampaignStats();
