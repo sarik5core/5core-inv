@@ -9,6 +9,7 @@ use App\Models\EbayPriorityReport;
 use App\Models\ProductMaster;
 use App\Models\ShopifySku;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EbayPinkDilAdController extends Controller
 {
@@ -119,7 +120,7 @@ class EbayPinkDilAdController extends Controller
                     $row['NR'] = $raw['NR'] ?? null;
                 }
             }
-
+            
             $result[] = (object) $row;
         }
 

@@ -886,16 +886,31 @@
             let totalL30Sales = 0;
             data.forEach(function(row) {
                 
-                const pft = parseNumber(row['Gprofit%']);
-                totalPft += pft;
+                // const pft = parseNumber(row['Gprofit%']);
+                // totalPft += pft;
                 const cogs = parseNumber(row['G ROI%']);
+                console.log(cogs,'cogs');
+                
                 totalCogs += cogs;
-                const l30Sales = parseNumber(row['L30 Sales']);
+                // const l30Sales = parseNumber(row['L30 Sales']);
+                // totalL30Sales += l30Sales;
+
+                const l30Sales = parseNumber(row['L30 Sales'] || 0);
+                const gprofitPercent = parseNumber(row['Gprofit%'] || 0);
+
+                // convert % → absolute profit amount for this row
+                const profitAmount = (gprofitPercent / 100) * l30Sales;
+                
+
+                totalPft += profitAmount;
                 totalL30Sales += l30Sales;
             });
             let gProfit = totalL30Sales !== 0 ? (totalPft / totalL30Sales * 100) : null;
             let gRoi = totalCogs !== 0 ? (totalPft / totalCogs * 100) : null;
-            if (gprofitBadge) gprofitBadge.textContent = gProfit !== null ? gProfit.toFixed(1) + '%' : 'N/A';
+            if (gprofitBadge) {
+                gprofitBadge.textContent = gProfit !== null ? gProfit.toFixed(1) + '%' : 'N/A';
+            }
+            // if (gprofitBadge) gprofitBadge.textContent = gProfit !== null ? gProfit.toFixed(1) + '%' : 'N/A';
             if (groiBadge) groiBadge.textContent = gRoi !== null ? gRoi.toFixed(1) + '%' : 'N/A';
         }
 

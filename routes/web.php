@@ -448,12 +448,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/outgoing-data-store', [OutgoingController::class, 'store'])->name('outgoing.store');
     Route::get('/outgoing-data-list', [OutgoingController::class, 'list']);
 
-     //Auto Stock Balance
+    //Auto Stock Balance
     Route::get('/auto-stock-balance-view', [AutoStockBalanceController::class, 'index'])->name('autostock.balance.view');
     Route::post('/auto-stock-balance-store', [AutoStockBalanceController::class, 'store'])->name('autostock.balance.store');
     Route::get('/auto-stock-balance-data-list', [AutoStockBalanceController::class, 'list']);
 
-     //Linked products
+    //Linked products
     Route::get('/linked-products-view', [ProductMasterController::class, 'linkedProductsView'])->name('linked.products.view');
     Route::post('/linked-products-store', [ProductMasterController::class, 'linkedProductStore'])->name('linked.products.store');
     Route::get('/linked-products-data-list', [ProductMasterController::class, 'linkedProductsList']);
@@ -555,7 +555,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         //form reports
         Route::get('/rfq-form/reports/{id}', 'rfqReports')->name('rfq-form.reports');
         Route::get('/rfq-form/reports-data/{id}', 'getRfqReportsData')->name('rfq-form.reports.data');
-
     });
 
     //Sourcingƒvies
@@ -1061,7 +1060,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/inventory-warehouse', [InventoryWarehouseController::class, 'index'])->name('inventory.index');
 
 
-    Route::controller(ArrivedContainerController::class)->group(function(){
+    Route::controller(ArrivedContainerController::class)->group(function () {
         Route::get('/arrived/container', 'index')->name('arrived.container');
         Route::post('/arrived/container/push', 'pushArrivedContainer');
     });
@@ -1150,7 +1149,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/pricing-master/roi-dashboard', [PricingMasterViewsController::class, 'getViewPricingAnalysisROIDashboardData']);
     Route::post('/pricing-master/save', [PricingMasterViewsController::class, 'save']);
     Route::get('/parent.pricing-masters', [PricingMasterViewsController::class, 'pricingMasterCopy']);
-    Route::get('/calculate-cvr-masters', [PricingMasterViewsController::class, 'calculateCVRMasters']); 
+    Route::get('/calculate-cvr-masters', [PricingMasterViewsController::class, 'calculateCVRMasters']);
 
 
 
@@ -1785,6 +1784,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/facebook-ads-control/data', 'index')->name('facebook.ads.index');
         Route::get('/facebook-web-to-video', 'facebookWebToVideo')->name('facebook.web.to.video');
         Route::get('/facebook-web-to-video-data', 'facebookWebToVideoData')->name('facebook.web.to.video.data');
+        Route::get('/fb-img-caraousal-to-web', 'FbImgCaraousalToWeb')->name('fb.img.caraousal.to.web');
+        Route::get('/fb-img-caraousal-to-web-data', 'FbImgCaraousalToWebData')->name('fb.img.caraousal.to.web.data');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
@@ -1842,6 +1843,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::controller(EbayKwAdsController::class)->group(function () {
         Route::get('/ebay/keywords/ads', 'index')->name('ebay.keywords.ads');
         Route::get('/ebay/keywords/ads/data', 'getEbayKwAdsData');
+
+        Route::get('/ebay/keywords/ads/less-than-twenty', 'ebayPriceLessThanTwentyAdsView')->name('ebay.keywords.ads.less-than-twenty');
+        Route::get('/ebay/keywords/ads/less-than-twenty/data', 'ebayPriceLessThanTwentyAdsData');
     });
 
     Route::controller(WalmartUtilisationController::class)->group(function () {
@@ -1871,4 +1875,3 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::post('/ebay-product-price-update', [EbayDataUpdateController::class, 'updatePrice'])->name('ebay_product_price_update');
 });
-

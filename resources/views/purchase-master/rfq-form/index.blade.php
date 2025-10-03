@@ -301,7 +301,7 @@
                         const slug = cell.getValue();
                         if(!slug) return "";
 
-                        const fullUrl = window.location.origin + `/rfq-form/${slug}`;
+                        const fullUrl = window.location.origin + `/api/rfq-form/${slug}`;
 
                         return `
                             <div class="d-flex justify-content-center align-item-center">
