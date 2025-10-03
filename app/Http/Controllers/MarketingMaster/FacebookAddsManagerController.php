@@ -64,4 +64,46 @@ class FacebookAddsManagerController extends Controller
             'status'  => 200,
         ]);
     }
+
+
+    public function FbImgCaraousalToWeb()
+    {
+        return view('marketing-masters.facebook_web_ads.fb-img-caraousal-to-web');
+    }
+
+    public function FbImgCaraousalToWebData()
+    {
+        $productMasters = ProductMaster::orderBy('parent', 'asc')
+            ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
+            ->orderBy('sku', 'asc')
+            ->get();
+
+        $skus = $productMasters->pluck('sku')->filter()->unique()->values()->all();
+
+        $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
+
+        $result = [];
+
+        foreach ($productMasters as $pm) {
+            $sku = strtoupper($pm->sku);
+            $parent = $pm->parent;
+
+            $shopify = $shopifyData[$pm->sku] ?? null;
+
+            $row = [];
+            $row['parent'] = $parent;
+            $row['sku']    = $pm->sku;
+            $row['INV']    = $shopify->inv ?? 0;
+            $row['L30']    = $shopify->quantity ?? 0;
+            $row['fba']    = $pm->fba ?? null;
+
+            $result[] = (object) $row;
+        }
+
+        return response()->json([
+            'message' => 'Data fetched successfully',
+            'data'    => $result,
+            'status'  => 200,
+        ]);
+    }
 }
