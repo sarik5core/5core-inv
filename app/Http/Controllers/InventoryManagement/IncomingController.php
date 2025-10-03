@@ -21,15 +21,18 @@ use Illuminate\Support\Facades\Http;
 class IncomingController extends Controller
 {
 
-    protected $shopifyDomain = '5-core.myshopify.com';
-    protected $shopifyApiKey = '818a43f8d3ae2f7bcfed50abb1e6deb9';
-    protected $shopifyPassword = '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';
+    protected $shopifyDomain;
+    protected $shopifyApiKey;
+    protected $shopifyPassword;
 
     protected $apiController;
 
     public function __construct(ApiController $apiController)
     {
         $this->apiController = $apiController;
+        $this->shopifyDomain = env('SHOPIFY_STORE_URL');
+        $this->shopifyApiKey = env('SHOPIFY_API_KEY');
+        $this->shopifyPassword = env('SHOPIFY_PASSWORD');
     }
 
 

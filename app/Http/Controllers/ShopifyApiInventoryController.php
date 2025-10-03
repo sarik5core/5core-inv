@@ -17,8 +17,8 @@ class ShopifyApiInventoryController extends Controller
     protected $shopifyStoreUrl;
 
 
-    protected $shopifyStoreUrlName = '5-core.myshopify.com';
-    protected $shopifyAccessToken = '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';
+    protected $shopifyStoreUrlName;
+    protected $shopifyAccessToken;
 
     public function __construct()
     {
@@ -29,6 +29,8 @@ class ShopifyApiInventoryController extends Controller
             '',
             config('services.shopify.store_url')
         );
+        $this->shopifyStoreUrlName = env('SHOPIFY_STORE_URL');
+        $this->shopifyAccessToken = env('SHOPIFY_PASSWORD');
     }
 
     public function saveDailyInventory()
@@ -311,8 +313,8 @@ class ShopifyApiInventoryController extends Controller
     public function fetchInventoryWithCommitment(): array
     {
         set_time_limit(60);
-        $shopUrl = 'https://5-core.myshopify.com'; 
-        $token = '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'; 
+        $shopUrl = 'https://' . env('SHOPIFY_STORE_URL'); 
+        $token = env('SHOPIFY_PASSWORD'); 
 
         // Step 1: Get Ohio Location ID
         $locationId = null;

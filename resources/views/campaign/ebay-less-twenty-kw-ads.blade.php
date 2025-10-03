@@ -241,6 +241,9 @@
                 resizableColumns: true,
                 height: "700px",             
                 virtualDom: true,
+                pagination: true,
+                paginationSize: 500,
+                paginationCounter: "rows",
                 rowFormatter: function(row) {
                     const data = row.getData();
                     const sku = data["Sku"] || '';
