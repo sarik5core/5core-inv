@@ -920,6 +920,7 @@
                                         <input type="text" id="skuSearch" class="form-control-sm"
                                             placeholder="Search SKU">
                                     </th>
+                                    <th>UPC</th>
                                     <th>INV</th>
                                     <th>OV L30</th>
                                     <th>STATUS</th>
@@ -973,7 +974,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Emails and columns setup
             const emails = @json($emails ?? []);
-            const columns = ["INV", "OV L30", "STATUS", "Unit", "LP", "CP$", "FRGHT", "SHIP",
+            const columns = ["UPC","INV", "OV L30", "STATUS", "Unit", "LP", "CP$", "FRGHT", "SHIP",
                 "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H", "CBM", "L(2)", "Action"
             ];
             let selectedColumns = [];
@@ -1260,7 +1261,7 @@
 
                 // All available columns
                 const allColumns = [
-                    "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
+                    "Parent", "SKU", "UPC", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
                     "FRGHT", "SHIP", "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                     "CBM", "L(2)", "Action"
                 ];
@@ -1333,6 +1334,10 @@
                                     break;
                                 case "SKU":
                                     cell.textContent = escapeHtml(item.SKU) || '-';
+                                    break;
+                                case "UPC":
+                                    cell.className = 'text-center';
+                                    cell.textContent = formatNumber(item.upc, 0);
                                     break;
                                 case "INV":
                                     cell.innerHTML = `<b>${totals.inv}</b>`;
@@ -1469,12 +1474,16 @@
                                 break;
                             case "SKU":
                                 cell.innerHTML = `
-                        <span class="sku-hover" 
-                            data-sku="${escapeHtml(item.SKU) || ''}" 
-                            data-image="${item.image_path ? item.image_path : ''}">
-                            ${escapeHtml(item.SKU) || '-'}
-                        </span>
-                    `;
+                                    <span class="sku-hover" 
+                                        data-sku="${escapeHtml(item.SKU) || ''}" 
+                                        data-image="${item.image_path ? item.image_path : ''}">
+                                        ${escapeHtml(item.SKU) || '-'}
+                                    </span>
+                                `;
+                                break;
+                            case "UPC":
+                                cell.className = 'text-center';
+                                cell.textContent = formatNumber(item.upc, 0);
                                 break;
                             case "INV":
                                 cell.textContent = escapeHtml(item.shopify_inv) || '-';
@@ -1606,7 +1615,7 @@
 
                 // All available columns
                 const allColumns = [
-                    "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
+                    "Parent", "SKU", "UPC", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
                     "FRGHT", "SHIP", "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                     "CBM", "L(2)", "Action"
                 ];
@@ -1926,7 +1935,7 @@
                 document.getElementById('downloadExcel').addEventListener('click', function() {
                     const hiddenColumns = getUserHiddenColumns();
                     const allColumns = [
-                        "Parent", "SKU", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
+                        "Parent", "SKU", "UPC", "INV", "OV L30", "STATUS", "Unit", "LP", "CP$",
                         "FRGHT", "SHIP", "TEMU SHIP", "EBAY2 SHIP", "INITIAL QUANTITY", "Label QTY", "WT ACT", "WT DECL", "L", "W", "H",
                         "CBM", "L(2)", "DC", "Pcs/Box", "L1", "B", "H1", "Weight", "MSRP", "MAP", "UPC"
                     ];
@@ -1941,6 +1950,9 @@
                         },
                         "SKU": {
                             key: "SKU"
+                        },
+                        "UPC": {
+                            key: "upc"
                         },
                         "INV": {
                             key: "shopify_inv"
