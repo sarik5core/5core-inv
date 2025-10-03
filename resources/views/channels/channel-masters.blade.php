@@ -1757,6 +1757,7 @@
                                     'doba': '/doba',
                                     'walmart': '/walmartAnalysis',
                                     'bestbuy usa': '/bestbuyusa-analytics',
+                                    'shein': '/sheinAnalysis',
                                 };
 
                                 const routeUrl = routeMap[channelName];
