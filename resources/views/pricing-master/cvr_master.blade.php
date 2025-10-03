@@ -689,6 +689,45 @@
     </div>
 </div>
 
+<!-- Remark Modal -->
+<div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="remarkModalLabel">
+                    <i class="fas fa-edit me-2"></i>Edit Remark
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="remarkSkuDisplay" class="form-label fw-bold">SKU:</label>
+                    <span id="remarkSkuDisplay" class="text-primary fw-bold"></span>
+                </div>
+                <div class="mb-3">
+                    <label for="remarkTextarea" class="form-label fw-bold">Remark:</label>
+                    <textarea 
+                        class="form-control" 
+                        id="remarkTextarea" 
+                        rows="4" 
+                        placeholder="Enter your remark here..."
+                        maxlength="1000"
+                    ></textarea>
+                    <div class="form-text">Maximum 1000 characters</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-dark" id="saveRemarkBtn">
+                    <i class="fas fa-save me-1"></i>Save Remark
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @endsection
 @section('script')
@@ -1222,7 +1261,7 @@
                     {
                         title: "DIL%",
                         field: "Dil%",
-                        hozAlign: "right",
+                        hozAlign: "center",
                         formatter: function (cell) {
                             const data = cell.getRow().getData();
                             const value = cell.getValue() || 0;
@@ -1273,24 +1312,61 @@
                     }
                     value = parseFloat(value);
                     if (isNaN(value)) value = 0;
-                    const element = document.createElement("span");
+                    
+                    const rowData = cell.getRow().getData();
+                    const sku = rowData.SKU || '';
+                    const remark = rowData.remark || '';
+                    
+                    const container = document.createElement("div");
+                    container.style.display = "flex";
+                    container.style.alignItems = "center";
+                    container.style.justifyContent = "space-between";
+                    container.style.gap = "5px";
+                    
+                    const valueSpan = document.createElement("span");
                     // Show value with 2 decimals
-                    element.textContent = value.toFixed(1) + "%";
+                    valueSpan.textContent = value.toFixed(1) + "%";
                     if (value >= 0 && value <= 3) {
-                        element.style.color = "red"; // red text
+                        valueSpan.style.color = "red"; // red text
                     } else if (value > 3 && value <= 6) {
-                        element.style.backgroundColor = "yellow"; // yellow background
-                        element.style.color = "black";
-                        element.style.padding = "2px 4px";
-                        element.style.borderRadius = "4px";
+                        valueSpan.style.backgroundColor = "yellow"; // yellow background
+                        valueSpan.style.color = "black";
+                        valueSpan.style.padding = "2px 4px";
+                        valueSpan.style.borderRadius = "4px";
                     } else if (value > 6 && value <= 9) {
-                        element.style.color = "blue"; // blue text
+                        valueSpan.style.color = "blue"; // blue text
                     } else if (value > 9 && value <= 13) {
-                        element.style.color = "green"; // green text
+                        valueSpan.style.color = "green"; // green text
                     } else if (value > 41) {
-                        element.style.color = "purple"; // purple text (41 and above)
+                        valueSpan.style.color = "purple"; // purple text (41 and above)
                     }
-                    return element;
+                    
+                    const pencilBtn = document.createElement("button");
+                    pencilBtn.className = "btn btn-sm btn-outline-primary";
+                    pencilBtn.style.padding = "2px 6px";
+                    pencilBtn.style.border = "1px solid #007bff";
+                    pencilBtn.innerHTML = '<i class="fas fa-pencil-alt" style="font-size: 10px;"></i>';
+                    pencilBtn.title = remark ? `Current remark: ${remark}` : 'Add remark';
+                    pencilBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        openRemarkModal(sku, remark);
+                    };
+                    
+                    // Add a small indicator if remark exists
+                    if (remark && remark.trim()) {
+                        pencilBtn.style.backgroundColor = "#e7f3ff";
+                        pencilBtn.style.borderColor = "#0066cc";
+                        const indicator = document.createElement("span");
+                        indicator.style.color = "#0066cc";
+                        indicator.style.fontSize = "8px";
+                        indicator.style.marginLeft = "2px";
+                        indicator.innerHTML = '●';
+                        pencilBtn.appendChild(indicator);
+                    }
+                    
+                    container.appendChild(valueSpan);
+                    container.appendChild(pencilBtn);
+                    return container;
                 }
             },
             
@@ -3293,6 +3369,71 @@
                     });
                 }
           });
+
+        // Remark modal functions
+        function openRemarkModal(sku, currentRemark) {
+            document.getElementById('remarkSkuDisplay').textContent = sku;
+            document.getElementById('remarkTextarea').value = currentRemark || '';
+            document.getElementById('saveRemarkBtn').setAttribute('data-sku', sku);
+            
+            const modal = new bootstrap.Modal(document.getElementById('remarkModal'));
+            modal.show();
+        }
+
+        // Save remark function
+        document.getElementById('saveRemarkBtn').addEventListener('click', function() {
+            const sku = this.getAttribute('data-sku');
+            const remark = document.getElementById('remarkTextarea').value.trim();
+            const saveBtn = this;
+            
+            // Show loading state
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            // Make AJAX request to save remark
+            fetch('/pricing-master/save-remark', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    sku: sku,
+                    remark: remark
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alert('Remark saved successfully!');
+                    
+                    // Update the table data
+                    const rows = table.getRows();
+                    rows.forEach(row => {
+                        const rowData = row.getData();
+                        if (rowData.SKU === sku) {
+                            rowData.remark = remark;
+                            row.update(rowData);
+                        }
+                    });
+                    
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('remarkModal')).hide();
+                } else {
+                    alert('Error saving remark: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving remark. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save Remark';
+                saveBtn.disabled = false;
+            });
+        });
 
        
     </script>

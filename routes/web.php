@@ -1130,6 +1130,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::post('/push-ebay3-price', action: [PricingMasterViewsController::class, 'pushEbayThreePriceBySku'])->name('ebay3.priceChange');
     Route::post('/pricing-master/save', [PricingMasterController::class, 'save']);
     Route::post('/pricing-master/save-sprice', [PricingMasterViewsController::class, 'saveSprice']);
+    Route::post('/pricing-master/save-remark', [PricingMasterViewsController::class, 'saveRemark']);
     Route::post('/push-walmart-price', [PricingMasterViewsController::class, 'pushPricewalmart']);
     // Route::post('/push-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']);
     Route::post('/update-doba-price', [PricingMasterViewsController::class, 'pushdobaPriceBySku']); // Added for compatibility

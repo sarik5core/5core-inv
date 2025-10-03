@@ -435,6 +435,7 @@ class PricingMasterViewsController extends Controller
             $item = (object) [
                 'SKU'     => $sku,
                 'Parent'  => $product->parent,
+                'remark'  => $product->remark,
                 'L30'     => $l30,
                 'shopify_l30' => $shopify_l30,
                 'total_views' => $total_views,
@@ -1638,6 +1639,35 @@ class PricingMasterViewsController extends Controller
 
 
 
+
+    public function saveRemark(Request $request)
+    {
+        $data = $request->validate([
+            'sku' => 'required|string',
+            'remark' => 'nullable|string',
+        ]);
+
+        $product = ProductMaster::where('sku', $data['sku'])->first();
+        
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found',
+            ], 404);
+        }
+
+        $product->remark = $data['remark'];
+        $product->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Remark saved successfully',
+            'data' => [
+                'sku' => $product->sku,
+                'remark' => $product->remark,
+            ]
+        ]);
+    }
 
     public function pricingMasterCopy(Request $request)
     {
