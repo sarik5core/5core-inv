@@ -382,40 +382,52 @@ class PricingMasterViewsController extends Controller
             }
         }
 
-        $avgCvr = $views_sum > 0
-            ? number_format(($l30_count / $views_sum) * 100, 1) . ' %'
-            : '0.0 %';
 
 
             $total_l30_count_data = 0;
-            
-            // Count channels where both L30 > 0 and views > 0
-            if ($amazon && ($amazon->units_ordered_l30 ?? 0) > 0 && ($amazon->sessions_l30 ?? 0) > 0) {
+
+            // Count channels where L30 > 0, ignore views
+            if ($amazon && ($amazon->units_ordered_l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0 && ($ebay->views ?? 0) > 0) {
+            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0 && ($ebay2->views ?? 0) > 0) {
+            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0 && ($ebay3->views ?? 0) > 0) {
+            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0 && ($temuMetric->{'product_clicks_l30'} ?? 0) > 0) {
+            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            if ($reverb && ($reverb->r_l30 ?? 0) > 0 && ($reverb->views ?? 0) > 0) {
+            if ($reverb && ($reverb->r_l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            // Note: Walmart excluded as it doesn't have views data
-            if ($tiktok && ($tiktok->l30 ?? 0) > 0 && ($tiktok->views ?? 0) > 0) {
+            // Walmart excluded as it doesn't have views data
+            if ($tiktok && ($tiktok->l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
-            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0 && ($shein->views_clicks ?? 0) > 0) {
+            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0) {
                 $total_l30_count_data++;
-            }          
-            
+            }
+
+            // For $avgCvr, use all views
+            $views_sum = 
+                ($amazon->sessions_l30 ?? 0) +
+                ($ebay->views ?? 0) +
+                ($ebay2->views ?? 0) +
+                ($ebay3->views ?? 0) +
+                ($temuMetric->{'product_clicks_l30'} ?? 0) +
+                ($reverb->views ?? 0) +
+                ($tiktok->views ?? 0) +
+                ($shein->views_clicks ?? 0);
+
+            $avgCvr = $views_sum > 0
+                ? number_format(($l30_count / $views_sum) * 100, 1) . ' %'
+                : '0.0 %';
+
 
 
 
@@ -427,7 +439,8 @@ class PricingMasterViewsController extends Controller
                 'shopify_l30' => $shopify_l30,
                 'total_views' => $total_views,
                 'INV'     => $inv,
-                'Dil%'    => $inv > 0 ? round((($shopifyItem->quantity ?? 0) / $inv) * 100) : 0,
+                // 'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 100) : 0,
+                     'Dil%'    => $inv > 0 ? round((($shopifyItem->quantity ?? 0) / $inv) * 100) : 0,
                 'MSRP'    => $msrp,
                 'MAP'     => $map,
                 'LP'      => $lp,

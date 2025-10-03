@@ -1222,7 +1222,7 @@
                     {
                         title: "DIL%",
                         field: "Dil%",
-                        hozAlign: "center",
+                        hozAlign: "right",
                         formatter: function (cell) {
                             const data = cell.getRow().getData();
                             const value = cell.getValue() || 0;
@@ -1529,7 +1529,7 @@
 
                         const amzL30 = parseFloat(data.amz_l30) || 0;
                         const ebayL30 = parseFloat(data.ebay_l30) || 0;
-                        const shopifyL30 = parseFloat(data.shopifyb2c_l30) || 0;
+                        const shopifyL30 = parseFloat(data.shopifyb2c_l30_data) || 0;
                         const macyL30 = parseFloat(data.macy_l30) || 0;
                         const reverbL30 = parseFloat(data.reverb_l30) || 0;
                         const dobaL30 = parseFloat(data.doba_l30) || 0;
