@@ -888,8 +888,10 @@
                 
                 // const pft = parseNumber(row['Gprofit%']);
                 // totalPft += pft;
-                // const cogs = parseNumber(row['G ROI%']);
-                // totalCogs += cogs;
+                const cogs = parseNumber(row['G ROI%']);
+                console.log(cogs,'cogs');
+                
+                totalCogs += cogs;
                 // const l30Sales = parseNumber(row['L30 Sales']);
                 // totalL30Sales += l30Sales;
 
@@ -898,7 +900,6 @@
 
                 // convert % → absolute profit amount for this row
                 const profitAmount = (gprofitPercent / 100) * l30Sales;
-                console.log(profitAmount,'fdf');
                 
 
                 totalPft += profitAmount;
