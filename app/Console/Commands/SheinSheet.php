@@ -71,7 +71,7 @@ class SheinSheet extends Command
         $sixtyDaysAgo = $now->copy()->subDays(60);
         $thirtyDaysAgo = $now->copy()->subDays(30);
 
-        $baseUrl = "https://5-core.myshopify.com/admin/api/2024-10/orders.json";
+        $baseUrl = "https://" . env('SHOPIFY_STORE_URL') . "/admin/api/2024-10/orders.json";
         $params = [
             'status' => 'any',
             'created_at_min' => $sixtyDaysAgo->toISOString(),
@@ -86,7 +86,7 @@ class SheinSheet extends Command
             $url = $baseUrl . '?' . http_build_query($params);
 
             $response = Http::withHeaders([
-                'X-Shopify-Access-Token' => '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'
+                'X-Shopify-Access-Token' => env('SHOPIFY_PASSWORD')
             ])->get($url);
 
             if ($response->failed()) {
