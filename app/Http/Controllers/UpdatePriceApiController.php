@@ -14,9 +14,9 @@ class UpdatePriceApiController extends Controller
     public static function updateShopifyVariantPrice($variantId, $newPrice)
     {
         try {
-            $storeUrl = "https://5-core.myshopify.com";
+            $storeUrl = "https://" . env('SHOPIFY_STORE_URL');
             $apiVersion = "2025-01";
-            $accessToken = env('SHOPIFY_ACCESS_TOKEN', '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');
+            $accessToken = env('SHOPIFY_PASSWORD');
 
             $url = "{$storeUrl}/admin/api/{$apiVersion}/variants/{$variantId}.json";
 
