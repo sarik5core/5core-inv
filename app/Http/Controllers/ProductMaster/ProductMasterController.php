@@ -333,9 +333,10 @@ class ProductMasterController extends Controller
                         ->where('parent', $validated['parent'])
                         ->first();
 
-                    if ($parentRow && $parentRow->trashed()) {
-                        // If soft-deleted, restore it
-                        $parentRow->restore();
+                    if ($parentRow) {
+                        if ($parentRow->trashed()) {
+                            $parentRow->restore();
+                        }
                     } elseif (!$parentRow) {
                         // Only create if it doesn't exist at all
                         ProductMaster::create([

@@ -59,6 +59,7 @@ class EbayKwAdsController extends Controller
 
             $row['campaignName'] = $matchedCampaignL30->campaign_name ?? '';
             $row['campaignBudgetAmount'] = $matchedCampaignL30->campaignBudgetAmount ?? 0;
+            $row['campaignStatus'] = $matchedCampaignL30->campaignStatus ?? '';
 
             if(!$matchedCampaignL30){
                 continue;

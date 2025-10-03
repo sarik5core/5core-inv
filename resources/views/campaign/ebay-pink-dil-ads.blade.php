@@ -169,6 +169,9 @@
                             <!-- Stats -->
                             <div class="col-md-6">
                                 <div class="d-flex gap-2 justify-content-end">
+                                    <button id="apr-all-sbid-btn" class="btn btn-info btn-sm d-none">
+                                        APR ALL SBID
+                                    </button>
                                     <a href="javascript:void(0)" id="export-btn" class="btn btn-sm btn-success d-flex align-items-center justify-content-center">
                                         <i class="fas fa-file-export me-1"></i> Export Excel/CSV
                                     </a>
@@ -186,7 +189,7 @@
                                     </div>
                                     <select id="status-filter" class="form-select form-select-md" style="width: 140px;">
                                         <option value="">All Status</option>
-                                        <option value="ENABLED">Enabled</option>
+                                        <option value="RUNNING">Running</option>
                                         <option value="PAUSED">Paused</option>
                                         <option value="ARCHIVED">Archived</option>
                                     </select>
@@ -198,6 +201,20 @@
                     <!-- Table Section -->
                     <div id="budget-under-table"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="mt-3" style="color: white; font-size: 1.2rem; font-weight: 500;">
+                Updating campaigns...
+            </div>
+            <div style="color: #a3e635; font-size: 0.9rem; margin-top: 0.5rem;">
+                Please wait while we process your request
             </div>
         </div>
     </div>
@@ -237,7 +254,13 @@
                         row.getElement().classList.add("parent-row");
                     }
                 },
-                columns: [
+                columns: [{
+                        formatter: "rowSelection",
+                        titleFormatter: "rowSelection",
+                        hozAlign: "center",
+                        headerSort: false,
+                        width: 50
+                    },
                     {
                         title: "Parent",
                         field: "parent"
@@ -419,6 +442,30 @@
                             var sbid = parseFloat(row.sbid) || 0;
                             return sbid.toFixed(2);
                         }
+                    },
+                    {
+                        title: "APR BID",
+                        field: "apr_bid",
+                        hozAlign: "center",
+                        formatter: function(cell, formatterParams, onRendered) {
+                            var value = cell.getValue() || 0;
+                            return `
+                                <div style="align-items:center; gap:5px;">
+                                    <button class="btn btn-primary update-row-btn">APR BID</button>
+                                </div>
+                            `;
+                        },
+                        cellClick: function(e, cell) {
+                            if (e.target.classList.contains("update-row-btn")) {
+                                var rowData = cell.getRow().getData();
+                                var sbid = parseFloat(rowData.sbid) || 0;
+                                updateBid(sbid, rowData.campaign_id);
+                            }
+                        }
+                    },
+                    {
+                        title: "Status",
+                        field: "campaignStatus",
                     }
                 ],
                 ajaxResponse: function(url, params, response) {
@@ -453,10 +500,18 @@
                 }
             });
 
+            table.on("rowSelectionChanged", function(data, rows) {
+                if (data.length > 0) {
+                    document.getElementById("apr-all-sbid-btn").classList.remove("d-none");
+                } else {
+                    document.getElementById("apr-all-sbid-btn").classList.add("d-none");
+                }
+            });
+
             table.on("tableBuilt", function() {
 
                 function combinedFilter(data) {
-                    const l30 = parseFloat(data.e_l30);
+                    const l30 = parseFloat(data.L30);
                     const inv = parseFloat(data.INV);
 
                     if (!isNaN(l30) && !isNaN(inv) && inv !== 0) {
@@ -506,21 +561,6 @@
 
                 table.setFilter(combinedFilter);
 
-                // function updateCampaignStats() {
-                //     let total = table.getDataCount();
-                //     let filtered = table.getDataCount("active");
-                //     let currentPage = table.getRows("active").length;
-
-                //     let percentage = total > 0 ? ((filtered / total) * 100).toFixed(0) : 0;
-
-                //     document.getElementById("total-campaigns").innerText = currentPage;
-                //     document.getElementById("percentage-campaigns").innerText = percentage + "%";
-                // }
-
-                // table.on("dataFiltered", updateCampaignStats);
-                // table.on("pageLoaded", updateCampaignStats);
-                // table.on("dataProcessed", updateCampaignStats);
-
                 $("#global-search").on("keyup", function() {
                     table.setFilter(combinedFilter);
                 });
@@ -529,7 +569,6 @@
                     table.setFilter(combinedFilter);
                 });
 
-                // updateCampaignStats();
             });
 
             document.addEventListener("click", function(e) {
@@ -546,6 +585,88 @@
                     });
                 }
             });
+
+            document.getElementById("apr-all-sbid-btn").addEventListener("click", function() {
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
+                var filteredData = table.getSelectedRows();
+
+                var campaignIds = [];
+                var bids = [];
+
+                filteredData.forEach(function(row) {
+                    var rowEl = row.getElement();
+                    if(rowEl && rowEl.offsetParent !== null){
+                        
+                        var rowData = row.getData();
+                        var sbid = parseFloat(rowData.sbid) || 0;
+
+                        campaignIds.push(rowData.campaign_id);
+                        bids.push(sbid);
+                    }
+                });
+                console.log("Campaign IDs:", campaignIds);
+                console.log("Bids:", bids);
+                fetch('/update-ebay-keywords-bid-price', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        campaign_ids: campaignIds,
+                        bids: bids
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Backend response:", data);
+                    if (data.status === 200) {
+                        alert("Keywords updated successfully!");
+                    } else {
+                        alert("Something went wrong: " + data.message);
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
+            });
+
+            function updateBid(aprBid, campaignId) {
+                const overlay = document.getElementById("progress-overlay");
+                overlay.style.display = "flex";
+
+                console.log("Updating bid for Campaign ID:", campaignId, "New Bid:", aprBid);
+
+                fetch('/update-ebay-keywords-bid-price', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    body: JSON.stringify({
+                        campaign_ids: [campaignId],
+                        bids: [aprBid]
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Backend response:", data);
+                    if (data.status === 200) {
+                        alert("Keywords updated successfully!");
+                    } else {
+                        alert("Something went wrong: " + data.message);
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => {
+                    overlay.style.display = "none";
+                });
+            }
 
             document.getElementById("export-btn").addEventListener("click", function () {
                 let filteredData = table.getData("active");

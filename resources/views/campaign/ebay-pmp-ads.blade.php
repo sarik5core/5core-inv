@@ -1479,7 +1479,7 @@
                                     <th data-field="el_30" class="el_30_col" style="vertical-align: middle; white-space: nowrap;">
                                         <div class="d-flex flex-column align-items-center" style="gap: 4px">
                                             <div class="d-flex align-items-center">
-                                                EL 30 <span class="sort-arrow">↓</span>
+                                                E L30 <span class="sort-arrow">↓</span>
                                             </div>
                                             <div style="width: 100%; height: 5px; background-color: #9ec7f4;"></div>
                                             <div class="metric-total" id="el30-total">0</div>
@@ -2628,7 +2628,7 @@
                     $row.append($('<td class="inv_col">').text(item.INV));
                     $row.append($('<td class="ov_l30_col">').text(item.L30));
 
-                    $row.append($('<td class="ov_dil_col">').html(
+                    $row.append($(`<td class="ov_dil_col" data-field="ov_dil" data-value="${Math.round(item.ov_dil * 100)}">`).html(
                         `<span class="dil-percent-value ${getDilColor(item.ov_dil)}">${Math.round(item.ov_dil * 100)}%</span>
                          <span class="text-info tooltip-icon wmpnm-view-trigger" 
                                data-bs-toggle="tooltip" 
@@ -2659,6 +2659,11 @@
                     } else {
                         sbid = 2;     
                         sbidColor = "pink";
+                    }
+
+                    // Special override: pink dilution but sold = 0
+                    if (sbidColor === "pink" && item['eBay L30'] === 0) {
+                        sbid = 6;  // override
                     }
 
                     let reqViews = item.INV * 10;
@@ -4890,11 +4895,13 @@
                 // Table ke rows loop karke sbid lete hain
                 $("#ebay-table tbody tr").each(function (index) {
                     let sbid = $(this).find('td[data-field="sbid"]').text().trim();
+                    let ovDil = $(this).find('td[data-field="ov_dil"]').data("value");
 
                     if (filteredData[index]) {
                         exportData.push({
-                            sku: filteredData[index]['(Child) sku'] || "",
-                            sbid: sbid || ""
+                            SKU: filteredData[index]['(Child) sku'] || "",
+                            SBID: sbid || "",
+                            'Dil%': ovDil || ""
                         });
                     }
                 });

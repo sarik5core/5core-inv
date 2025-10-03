@@ -224,9 +224,8 @@ use App\Http\Controllers\PurchaseMaster\RFQController;
 use App\Http\Controllers\PurchaseMaster\SourcingController;
 use App\Http\Controllers\MarketingMaster\FacebookAddsManagerController;
 use App\Http\Controllers\MarketingMaster\MovementPricingMaster;
-use App\Http\Controllers\NewPermissionController;
 use App\Http\Controllers\MarketingMaster\OverallCvrLqsController;
-use App\Models\ArrivedContainer;
+use App\Http\Controllers\PurchaseMaster\SupplierRFQController;
 
 /*  
 |--------------------------------------------------------------------------
@@ -547,8 +546,16 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //RFQ Form
     Route::controller(RFQController::class)->group(function () {
         Route::get('/rfq-form/list', 'index')->name('rfq-form.index');
-        Route::get('/rfq-form/{slug}', 'showRfqForm')->name('rfq-form.show');
+        Route::get('rfq-form/data', 'getRfqFormsData');
         Route::post('/rfq-form/store', 'storeRFQForm')->name('rfq-form.store');
+        Route::get('/rfq-form/edit/{id}', 'edit')->name('rfq-form.edit');
+        Route::post('/rfq-form/update/{id}', 'update')->name('rfq-form.update');
+        Route::delete('/rfq-form/delete/{id}', 'destroy')->name('rfq-form.destroy');
+
+        //form reports
+        Route::get('/rfq-form/reports/{id}', 'rfqReports')->name('rfq-form.reports');
+        Route::get('/rfq-form/reports-data/{id}', 'getRfqReportsData')->name('rfq-form.reports.data');
+
     });
 
     //Sourcingƒvies
@@ -671,12 +678,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/amazonfba/view-data', [OverallAmazonFbaController::class, 'getViewAmazonFbaData'])->name('amazonfba.viewData');
     Route::get('/fbainv/view-data', [AmazonFbaInvController::class, 'getViewAmazonfbaInvData'])->name('fbainv.viewData');
     Route::get('/product-master-data', [ProductMasterController::class, 'product_master_data']);
-
-
-
-
-
-
 
     Route::get('/reverb-pricing-cvr', [ReverbController::class, 'reverbPricingCvr'])->name('reverb');
     Route::get('/reverb-pricing-increase-cvr', [ReverbController::class, 'reverbPricingIncreaseCvr'])->name('reverb');
@@ -1782,7 +1783,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //FaceBook Adds Manager 
     Route::controller(FacebookAddsManagerController::class)->group(function () {
         Route::get('/facebook-ads-control/data', 'index')->name('facebook.ads.index');
-        // Route::get('/facebook-ads-data', 'getFacebookAdsData');
+        Route::get('/facebook-web-to-video', 'facebookWebToVideo')->name('facebook.web.to.video');
+        Route::get('/facebook-web-to-video-data', 'facebookWebToVideoData')->name('facebook.web.to.video.data');
     });
 
     Route::controller(AmazonACOSController::class)->group(function () {
@@ -1869,3 +1871,4 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::post('/ebay-product-price-update', [EbayDataUpdateController::class, 'updatePrice'])->name('ebay_product_price_update');
 });
+

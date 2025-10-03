@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stands Quotation Form</title>
+    <title>{{ $rfqForm->name ?? '' }} Quotation Form</title>
     <style>
         :root {
             --primary-color: #4361ee;
@@ -337,233 +337,350 @@
             }
         }
     </style>
+    <style>
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto; /* 15% from top */
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .modal-content p {
+            margin: 0;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+    </style>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="form-container">
-        <div class="logo-container">
-            <img src="{{ asset('images/5core_logo.png') }}" alt="5core Logo" class="logo">
-        </div>
-        <div class="content-box">
-            <div class="row-header">
-                <div class="title-block">
-                    <h1 class="form-title">📌 {{$rfqForm->title}}</h1>
-                    <p class="form-subtitle">{{ $rfqForm->subtitle }}</p>
-                </div>
-                <div class="image-container">
-                    <img src="{{ asset('storage/' . $rfqForm->main_image) }}" alt="stand" class="image">
-                </div>
+    @if(session('success'))
+        <div id="successModal" class="modal" style="display:block;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>{{ session('success') }}</p>
             </div>
-            <form id="productForm" action="submit.php" method="POST" enctype="multipart/form-data">
-                <div class="section-title">Supplier Details (供应商详情)</div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="supplierName" class="required">Supplier Name</label>
-                        <input type="text" id="supplierName" name="supplierName" required>
+        </div>
+    @else
+        <div class="form-container">
+            <div class="logo-container">
+                <img src="{{ asset('images/5core_logo.png') }}" alt="5core Logo" class="logo">
+            </div>
+            <div class="content-box">
+                <div class="row-header">
+                    <div class="title-block">
+                        <h1 class="form-title">📌 {{$rfqForm->title}}</h1>
+                        <p class="form-subtitle">{{ $rfqForm->subtitle }}</p>
                     </div>
-                    <div class="form-group">
-                        <label for="companyName" class="required">Company Name</label>
-                        <input type="text" id="companyName" name="companyName" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="supplierLink">Supplier Link</label>
-                        <input type="url" id="supplierLink" name="supplierLink" placeholder="https://">
-                    </div>
-                    <div class="form-group">
-                        <label for="productName" class="required">Product Name</label>
-                        <input type="text" id="productName" name="productName" required>
+                    <div class="image-container">
+                        <img src="{{ asset('storage/' . $rfqForm->main_image) }}" alt="stand" class="image">
                     </div>
                 </div>
-
-
-
-                <!-- Product Details Section -->
-                <div class="section-title">Product Specifications(产品规格)</div>
-                <div class="form-row row">
-                    @php
-                        $fields = collect($rfqForm->fields)->sortBy('order')->values();
-                    @endphp
-                    @foreach($fields as $field)
-                        <div class="form-group">
-                            <label class="form-label @if(!empty($field['required'])) required @endif">
-                                {{ $field['label'] }}
-                            </label>
-
-                            @if($field['type'] === 'select')
-                                <select name="{{ $field['name'] }}" class="form-select" @if(!empty($field['required'])) required @endif>
-                                    <option value="">Select</option>
-                                    @if(!empty($field['options']))
-                                        @foreach(explode(',', $field['options']) as $option)
-                                            <option value="{{ trim($option) }}">{{ trim($option) }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            @else
-                                <input type="{{ $field['type'] }}" 
-                                    name="{{ $field['name'] }}" 
-                                    class="form-control"
-                                    @if(!empty($field['required'])) required @endif>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-
-                {{-- Dimension Inner Box --}}
-                @if($rfqForm->dimension_inner === 'true')
+                <form id="productForm" action="{{ route('rfq-form.submit', $rfqForm->slug) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="section-title">Supplier Details (供应商详情)</div>
                     <div class="form-row">
                         <div class="form-group">
-                            <div class="range-inputs">
-                                <span class="dimension-label">Dimension Inner Box - </span>
-                                <div>
-                                    <label for="Length" class="required">Length (cm)</label>
-                                    <input type="number" id="Length" name="Length" step="0.01" min="0"
-                                        placeholder="Length" required>
-                                </div>
-                                <div>
-                                    <label for="Width" class="required">Width (cm)</label>
-                                    <input type="number" id="Width" name="Width" step="0.01" min="0"
-                                        placeholder="Width" required>
-                                </div>
-                                <div>
-                                    <label for="Height" class="required">Height (cm)</label>
-                                    <input type="number" id="Height" name="Height" step="0.01" min="0"
-                                        placeholder="Height" required>
+                            <label for="supplierName" class="required">Supplier Name</label>
+                            <input type="text" id="supplierName" name="supplierName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="companyName" class="required">Company Name</label>
+                            <input type="text" id="companyName" name="companyName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="supplierLink">Supplier Link</label>
+                            <input type="url" id="supplierLink" name="supplierLink" placeholder="https://">
+                        </div>
+                        <div class="form-group">
+                            <label for="productName" class="required">Product Name</label>
+                            <input type="text" id="productName" name="productName" required>
+                        </div>
+                    </div>
+
+                    <!-- Product Details Section -->
+                    <div class="section-title">Product Specifications(产品规格)</div>
+                    <div class="form-row row">
+                        @php
+                            $fields = collect($rfqForm->fields)->sortBy('order')->values();
+                        @endphp
+                        @foreach($fields as $field)
+                            <div class="form-group">
+                                <label class="form-label @if(!empty($field['required'])) required @endif">
+                                    {{ $field['label'] }}
+                                </label>
+
+                                @if($field['type'] === 'select')
+                                    <select name="{{ $field['name'] }}" class="form-select" @if(!empty($field['required'])) required @endif>
+                                        <option value="">Select</option>
+                                        @if(!empty($field['options']))
+                                            @foreach(explode(',', $field['options']) as $option)
+                                                <option value="{{ trim($option) }}">{{ trim($option) }}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                @else
+                                    <input type="{{ $field['type'] }}" 
+                                        name="{{ $field['name'] }}" 
+                                        class="form-control"
+                                        @if(!empty($field['required'])) required @endif>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Dimension Inner Box --}}
+                    @if($rfqForm->dimension_inner === 'true')
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="range-inputs">
+                                    <span class="dimension-label">Dimension Inner Box - </span>
+                                    <div>
+                                        <label for="Length" class="required">Length (cm)</label>
+                                        <input type="number" id="Length" name="length" step="0.01" min="0"
+                                            placeholder="Length" required>
+                                    </div>
+                                    <div>
+                                        <label for="Width" class="required">Width (cm)</label>
+                                        <input type="number" id="Width" name="width" step="0.01" min="0"
+                                            placeholder="Width" required>
+                                    </div>
+                                    <div>
+                                        <label for="Height" class="required">Height (cm)</label>
+                                        <input type="number" id="Height" name="height" step="0.01" min="0"
+                                            placeholder="Height" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
 
-                {{-- Product Dimension --}}
-                @if($rfqForm->product_dimension === 'true')
-                    <div class="form-row">
-                        <div class="form-group">
-                            <div class="range-inputs">
-                                <span class="dimension-label">Product Dimension - </span>
-                                <div>
-                                    <label for="productWidth" class="required">Width (W)</label>
-                                    <input type="number" id="productWidth" name="productWidth" step="0.01"
-                                        min="0" placeholder="Width (cm)" required>
-                                </div>
-                                <div>
-                                    <label for="productDepth" class="required">Depth (D)</label>
-                                    <input type="number" id="productDepth" name="productDepth" step="0.01"
-                                        min="0" placeholder="Depth (cm)" required>
-                                </div>
-                                <div>
-                                    <label for="productHeight" class="required">Height (H)</label>
-                                    <input type="number" id="productHeight" name="productHeight" step="0.01"
-                                        min="0" placeholder="Height (cm)" required>
+                    {{-- Product Dimension --}}
+                    @if($rfqForm->product_dimension === 'true')
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="range-inputs">
+                                    <span class="dimension-label">Product Dimension - </span>
+                                    <div>
+                                        <label for="productWidth" class="required">Width (W)</label>
+                                        <input type="number" id="productWidth" name="productWidth" step="0.01"
+                                            min="0" placeholder="Width (cm)" required>
+                                    </div>
+                                    <div>
+                                        <label for="productDepth" class="required">Depth (D)</label>
+                                        <input type="number" id="productDepth" name="productDepth" step="0.01"
+                                            min="0" placeholder="Depth (cm)" required>
+                                    </div>
+                                    <div>
+                                        <label for="productHeight" class="required">Height (H)</label>
+                                        <input type="number" id="productHeight" name="productHeight" step="0.01"
+                                            min="0" placeholder="Height (cm)" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
 
-                {{-- Package Dimension --}}
-                @if($rfqForm->package_dimension === 'true')
-                    <div class="form-row">
-                        <div class="form-group">
-                            <div class="range-inputs">
-                                <span class="dimension-label">Package Dimension - </span>
-                                <div>
-                                    <label for="packageWidth" class="required">Width (W)</label>
-                                    <input type="number" id="packageWidth" name="packageWidth" step="0.01"
-                                        min="0" placeholder="Width (cm)" required>
-                                </div>
-                                <div>
-                                    <label for="packageDepth" class="required">Depth (D)</label>
-                                    <input type="number" id="packageDepth" name="packageDepth" step="0.01"
-                                        min="0" placeholder="Depth (cm)" required>
-                                </div>
-                                <div>
-                                    <label for="packageHeight" class="required">Height (H)</label>
-                                    <input type="number" id="packageHeight" name="packageHeight" step="0.01"
-                                        min="0" placeholder="Height (cm)" required>
+                    {{-- Package Dimension --}}
+                    @if($rfqForm->package_dimension === 'true')
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="range-inputs">
+                                    <span class="dimension-label">Package Dimension - </span>
+                                    <div>
+                                        <label for="packageWidth" class="required">Width (W)</label>
+                                        <input type="number" id="packageWidth" name="packageWidth" step="0.01"
+                                            min="0" placeholder="Width (cm)" required>
+                                    </div>
+                                    <div>
+                                        <label for="packageDepth" class="required">Depth (D)</label>
+                                        <input type="number" id="packageDepth" name="packageDepth" step="0.01"
+                                            min="0" placeholder="Depth (cm)" required>
+                                    </div>
+                                    <div>
+                                        <label for="packageHeight" class="required">Height (H)</label>
+                                        <input type="number" id="packageHeight" name="packageHeight" step="0.01"
+                                            min="0" placeholder="Height (cm)" required>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
 
 
-                <!-- Pricing Section -->
-                <div class="section-title">Pricing & MOQ (价格和起订量)</div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="usdPrice" class="required">USD Price</label>
-                        <input type="number" id="usdPrice" name="usdPrice" step="0" min="0"
-                            placeholder="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="rmbPrice" class="required">RMB Price</label>
-                        <input type="number" id="rmbPrice" name="rmbPrice" step="0.01" min="0"
-                            placeholder="0.00" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
+                    <!-- Pricing Section -->
+                    <div class="section-title">Pricing & MOQ (价格和起订量)</div>
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="moq" class="required">MOQ</label>
-                            <input type="number" id="moq" name="moq" step="0.01" min="0"
+                            <label for="usdPrice" class="required">USD Price</label>
+                            <input type="number" id="usdPrice" name="usdPrice" step="0" min="0"
                                 placeholder="0" required>
                         </div>
+                        <div class="form-group">
+                            <label for="rmbPrice" class="required">RMB Price</label>
+                            <input type="number" id="rmbPrice" name="rmbPrice" step="0.01" min="0"
+                                placeholder="0.00" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="priceType" class="required">Price Type</label>
-                        <select id="priceType" name="priceType" required>
-                            <option value="">Select</option>
-                            <option value="FOB">FOB</option>
-                            <option value="EXW">EXW</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="cbm" class="required">CBM</label>
-                        <input type="number" id="cbm" name="cbm" step="0.01" min="0"
-                            placeholder="0.00" required>
-                    </div>
-                    <div class="form-group">
-                    </div>
-                </div>
-
-                <!-- Product Photos Section -->
-                <div class="section-title">Product Images Additional (产品附加图片 (Chǎnpǐn fùjiā túpiàn))</div>
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <div id="fileUploadContainer">
-                            <div class="file-upload-group">
-                                <input type="file" name="additionalPhotos[]" accept="image/*" class="file-input"
-                                    multiple>
-                                <img class="file-preview" src="#" alt="Preview">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label for="moq" class="required">MOQ</label>
+                                <input type="number" id="moq" name="moq" step="0.01" min="0"
+                                    placeholder="0" required>
                             </div>
                         </div>
-                        <button type="button" class="add-file-btn" id="addFileBtn">Add another photo</button>
+                        <div class="form-group">
+                            <label for="priceType" class="required">Price Type</label>
+                            <select id="priceType" name="priceType" required>
+                                <option value="">Select</option>
+                                <option value="FOB">FOB</option>
+                                <option value="EXW">EXW</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cbm" class="required">CBM</label>
+                            <input type="number" id="cbm" name="cbm" step="0.01" min="0"
+                                placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                        </div>
+                    </div>
+
+                    <!-- Product Photos Section -->
+                    <div class="section-title">Product Images Additional (产品附加图片 (Chǎnpǐn fùjiā túpiàn))</div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <div id="fileUploadContainer">
+                                <div class="file-upload-group">
+                                    <input type="file" name="additionalPhotos[]" accept="image/*" class="file-input"
+                                        multiple>
+                                    <img class="file-preview" src="#" alt="Preview">
+                                </div>
+                            </div>
+                            <button type="button" class="add-file-btn" id="addFileBtn">Add another photo</button>
+                        </div>
+                    </div>
 
 
-                <!-- Additional Information Section -->
-                <div class="section-title">Additional Information (的中文翻译是)</div>
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="reviews">Add any other point as to why we should consider your product over
-                            others.</label>
-                        <textarea id="reviews" name="reviews"></textarea>
+                    <!-- Additional Information Section -->
+                    <div class="section-title">Additional Information (的中文翻译是)</div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="reviews">Add any other point as to why we should consider your product over
+                                others.</label>
+                            <textarea id="reviews" name="reviews"></textarea>
+                        </div>
                     </div>
-                </div>
-                <button type="submit" class="submit-btn">Submit Product</button>
-            </form>
+                    <button type="submit" class="submit-btn">Submit Product</button>
+                </form>
+            </div>
         </div>
-    </div>
-
+    @endif
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const fileUploadContainer = document.getElementById("fileUploadContainer");
+        const addFileBtn = document.getElementById("addFileBtn");
+
+        // Function: show preview
+        function showPreview(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = input.parentElement.querySelector(".file-preview");
+                    preview.src = e.target.result;
+                    preview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Event: change preview for first input
+        fileUploadContainer.addEventListener("change", function (e) {
+            if (e.target.classList.contains("file-input")) {
+                showPreview(e.target);
+            }
+        });
+
+        // Add more file input
+        addFileBtn.addEventListener("click", function () {
+            const newGroup = document.createElement("div");
+            newGroup.classList.add("file-upload-group");
+            newGroup.innerHTML = `
+                <input type="file" name="additionalPhotos[]" accept="image/*" class="file-input">
+                <img class="file-preview" src="#" alt="Preview" style="display:none;max-width:120px;margin-top:5px;">
+            `;
+            fileUploadContainer.appendChild(newGroup);
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('successModal');
+        if(modal){
+            modal.style.display = 'block';
+
+            modal.querySelector('.close').addEventListener('click', function() {
+                modal.style.display = 'none';
+                window.location.href = 'https://www.baidu.com';
+            });
+
+            window.addEventListener('click', function(event){
+                if(event.target == modal){
+                    modal.style.display = 'none';
+                    window.location.href = 'https://www.baidu.com';
+                }
+            });
+
+            setTimeout(() => {
+                modal.style.display = 'none';
+                window.location.href = 'https://www.baidu.com';
+            }, 8000);
+        }
+    });
+</script>
 
 </html>
