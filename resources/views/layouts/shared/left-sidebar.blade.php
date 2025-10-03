@@ -966,6 +966,60 @@
                             </div>
                         </li>
 
+                        <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#instagram-web-ads" aria-expanded="false"
+                                aria-controls="instagram-web-ads" class="side-nav-link">
+                                <span>Instagram Web Ads</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="instagram-web-ads">
+                                <ul class="side-nav-second-level">
+                                    <li>
+                                        <a href="#">Insta Video to Web</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Insta Img Caraousal to Web</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#youtube-web-ads" aria-expanded="false"
+                                aria-controls="youtube-web-ads" class="side-nav-link">
+                                <span>YouTube Web Ads</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="youtube-web-ads">
+                                <ul class="side-nav-second-level">
+                                    <li>
+                                        <a href="#">YouTube Video to Web</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">YouTube Img Caraousal to Web</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+
+                        <li class="side-nav-item">
+                            <a data-bs-toggle="collapse" href="#tiktok-web-ads" aria-expanded="false"
+                                aria-controls="tiktok-web-ads" class="side-nav-link">
+                                <span>Tiktok Web Ads</span>
+                                <span class="menu-arrow"></span>
+                            </a>
+                            <div class="collapse" id="tiktok-web-ads">
+                                <ul class="side-nav-second-level">
+                                    <li>
+                                        <a href="#">Tiktok Video to Web</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Tiktok Img Caraousal to Web</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
 
                         <li>
                             <a data-bs-toggle="collapse" href="#lqsSubmenu" aria-expanded="false"
@@ -1488,7 +1542,8 @@
                                         <a href="{{ route('ebay-correctly-utilize') }}">Ebay CORRECTLY UTIL.</a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('ebay.keywords.ads.less-than-twenty') }}">Ebay Ads < $20</a>
+                                        <a href="{{ route('ebay.keywords.ads.less-than-twenty') }}">Ebay Ads <
+                                                $20</a>
                                     </li>
                                     <li>
                                         <a href="{{ route('ebay-make-new-campaign-kw') }}">Ebay MAKE CAMP. KW</a>
