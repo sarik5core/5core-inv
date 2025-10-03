@@ -333,6 +333,8 @@ class EbayOverUtilizedBgtController extends Controller
 
         $shopifyData = ShopifySku::whereIn('sku', $skus)->get()->keyBy('sku');
 
+        $ebayMetricData = EbayMetric::whereIn('sku', $skus)->get()->keyBy('sku');
+
         $nrValues = EbayDataView::whereIn('sku', $skus)->pluck('value', 'sku');
 
         $ebayCampaignReportsL7 = EbayPriorityReport::where('report_range', 'L7')
@@ -366,6 +368,7 @@ class EbayOverUtilizedBgtController extends Controller
             $parent = $pm->parent;
 
             $shopify = $shopifyData[$pm->sku] ?? null;
+            $ebay = $ebayMetricData[$pm->sku] ?? null;
 
             $matchedCampaignL7 = $ebayCampaignReportsL7->first(function ($item) use ($sku) {
                 return stripos($item->campaign_name, $sku) !== false;
@@ -388,6 +391,7 @@ class EbayOverUtilizedBgtController extends Controller
             $row['sku']    = $pm->sku;
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
+            $row['price']  = $ebay->ebay_price ?? 0;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
             $row['campaignName'] = $matchedCampaignL7->campaign_name ?? ($matchedCampaignL1->campaign_name ?? '');
             $row['campaignStatus'] = $matchedCampaignL7->campaignStatus ?? ($matchedCampaignL1->campaignStatus ?? '');

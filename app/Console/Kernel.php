@@ -30,6 +30,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\AutoUpdateAmazonPinkDilHlAds::class,
         \App\Console\Commands\EbayOverUtilzBidsAutoUpdate::class,
         \App\Console\Commands\EbayPinkDilKwBidsAutoUpdate::class,
+        \App\Console\Commands\EbayPriceLessBidsAutoUpdate::class,
     ];
 
     /**
@@ -160,6 +161,9 @@ class Kernel extends ConsoleKernel
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         $schedule->command('ebay:auto-update-pink-dil-bids')
+            ->dailyAt('12:00')
+            ->timezone('Asia/Kolkata');
+        $schedule->command('ebay:auto-update-price-less-bids')
             ->dailyAt('12:00')
             ->timezone('Asia/Kolkata');
         // end of bids update commands
