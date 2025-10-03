@@ -10,10 +10,10 @@ use App\Models\ShopifySku;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-class EbayOverUtilzBidsAutoUpdate extends Command
+class EbayPinkDilKwBidsAutoUpdate extends Command
 {
-    protected $signature = 'ebay:auto-update-over-bids';
-    protected $description = 'Automatically update Ebay campaign keyword bids';
+    protected $signature = 'ebay:auto-update-pink-dil-bids';
+    protected $description = 'Automatically update Ebay campaign keyword bids for pink dilution';
 
     protected $profileId;
 
@@ -28,7 +28,7 @@ class EbayOverUtilzBidsAutoUpdate extends Command
 
         $updateOverUtilizedBids = new EbayOverUtilizedBgtController;
 
-        $campaigns = $this->getEbayOverUtilizCampaign();
+        $campaigns = $this->getEbayPinkDilKwCampaign();
 
         if (empty($campaigns)) {
             $this->warn("No campaigns matched filter conditions.");
@@ -43,7 +43,7 @@ class EbayOverUtilzBidsAutoUpdate extends Command
 
     }
 
-    public function getEbayOverUtilizCampaign(){
+    public function getEbayPinkDilKwCampaign(){
 
         $productMasters = ProductMaster::orderBy('parent', 'asc')
             ->orderByRaw("CASE WHEN sku LIKE 'PARENT %' THEN 1 ELSE 0 END")
@@ -95,37 +95,11 @@ class EbayOverUtilzBidsAutoUpdate extends Command
             $row['INV']    = $shopify->inv ?? 0;
             $row['L30']    = $shopify->quantity ?? 0;
             $row['campaign_id'] = $matchedCampaignL7->campaign_id ?? ($matchedCampaignL1->campaign_id ?? '');
-            $row['campaignBudgetAmount'] = $matchedCampaignL7->campaignBudgetAmount ?? ($matchedCampaignL1->campaignBudgetAmount ?? '');
+            $row['sbid'] = 0.05;
 
-            $row['l7_spend'] = (float) str_replace('USD ', '', $matchedCampaignL7->cpc_ad_fees_payout_currency ?? 0);
-            $row['l7_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL7->cost_per_click ?? 0);
-            $row['l1_spend'] = (float) str_replace('USD ', '', $matchedCampaignL1->cpc_ad_fees_payout_currency ?? 0);
-            $row['l1_cpc'] = (float) str_replace('USD ', '', $matchedCampaignL1->cost_per_click ?? 0);
-
-            $l1_cpc = floatval($row['l1_cpc']);
-            $row['sbid'] = round($l1_cpc * 0.95, 2);
-
-            $budget = floatval($row['campaignBudgetAmount']);
-            $l7_spend = floatval($row['l7_spend']);
-
-            $ub7 = $budget > 0 ? ($l7_spend / ($budget * 7)) * 100 : 0;
-
-            $row['NR'] = '';
-            if (isset($nrValues[$pm->sku])) {
-                $raw = $nrValues[$pm->sku];
-                if (!is_array($raw)) {
-                    $raw = json_decode($raw, true);
-                }
-                if (is_array($raw)) {
-                    $row['NR'] = $raw['NR'] ?? null;
-                }
-            }
-
-            if ($row['NR'] !== 'NRA' && $ub7 > 90) {
-                $dilColor = $this->getDilColor($row['L30'], $row['INV']);
-                if ($dilColor !== 'pink') {
-                    $result[] = (object) $row;
-                }
+            $dilColor = $this->getDilColor($row['L30'], $row['INV']);
+            if ($dilColor === 'pink') {
+                $result[] = (object) $row;
             }
 
         }

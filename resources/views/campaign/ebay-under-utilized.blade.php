@@ -541,6 +541,13 @@
 
                     if (!(ub7 < 70)) return false;
 
+                    // Pink DIL filter (exclude pink rows)
+                    let l30 = parseFloat(data.L30);
+                    let inv = parseFloat(data.INV);
+                    let dilDecimal = (!isNaN(l30) && !isNaN(inv) && inv !== 0) ? (l30 / inv) : 0;
+                    let dilColor = getDilColor(dilDecimal);
+                    if (dilColor === "pink") return false;
+
                     // Global search filter
                     let searchVal = $("#global-search").val()?.toLowerCase() || "";
                     if (searchVal && !(data.campaignName?.toLowerCase().includes(searchVal))) {
