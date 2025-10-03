@@ -53,7 +53,7 @@ class ForecastAnalysisController extends Controller
                 ];
             });
 
-        $productListData = DB::table('product_master')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
+        $productListData = DB::table('product_master')->get();
 
         $shopifyData = ShopifySku::all()->keyBy(fn($item) => $normalizeSku($item->sku));
 
@@ -68,12 +68,14 @@ class ForecastAnalysisController extends Controller
             }
         }
 
-        $forecastMap = DB::table('forecast_analysis')->get()->keyBy(fn($item) => $normalizeSku($item->parent) . '|' . $normalizeSku($item->sku));
+        $forecastMap = DB::table('forecast_analysis')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
         $movementMap = DB::table('movement_analysis')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
+        $readyToShipMap = DB::table('ready_to_ship')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
 
         $processedData = [];
 
-        foreach ($productListData as $sheetSku => $prodData) {
+        foreach ($productListData as $prodData) {
+            $sheetSku = $normalizeSku($prodData->sku);
             if (empty($sheetSku)) continue;
 
             $item = new \stdClass();
@@ -105,8 +107,8 @@ class ForecastAnalysisController extends Controller
                 $item->scout_data = json_decode(json_encode($jungleScoutData[$item->Parent]), true);
             }
 
-            if ($forecastMap->has($item->Parent . '|' . $sheetSku)) {
-                $forecast = $forecastMap->get($item->Parent . '|' . $sheetSku);
+            if ($forecastMap->has($sheetSku)) {
+                $forecast = $forecastMap->get($sheetSku);
                 $item->{'s-msl'} = $forecast->s_msl ?? '';
                 $item->{'Approved QTY'} = $forecast->approved_qty ?? '';
                 $item->order_given = $forecast->order_given ?? '';
@@ -120,6 +122,10 @@ class ForecastAnalysisController extends Controller
                 $item->rfq_form_link = $forecast->rfq_form_link ?? '';
                 $item->rfq_report = $forecast->rfq_report ?? '';
                 $item->date_apprvl = $forecast->date_apprvl ?? '';
+            }
+
+            if($readyToShipMap->has($sheetSku)){
+                $item->readyToShipQty = $readyToShipMap->get($sheetSku)->qty ?? 0;
             }
 
             if ($movementMap->has($sheetSku)) {

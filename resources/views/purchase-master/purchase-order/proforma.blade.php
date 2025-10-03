@@ -198,7 +198,9 @@
                 </p>
             </div>
         </div>
-
+        @php
+            $grandTotals = []; 
+        @endphp
         {{-- SKU Table --}}
         <table class="table table-bordered table-responsive" style="padding:0%;">
             <thead>
@@ -220,6 +222,17 @@
                     @php
                         $lineTotal = $item->qty * $item->price;
                         $subtotal += $lineTotal;
+
+                        // Currency symbol
+                        $currencySymbol = '$'; // default
+                        $curr = strtoupper($item->currency ?? 'USD');
+                        if ($curr === 'RMB') $currencySymbol = '¥';
+                        elseif ($curr === 'USD') $currencySymbol = '$';
+
+                        // Grand total per currency
+                        if (!isset($grandTotals[$curr])) $grandTotals[$curr] = 0;
+                        $grandTotals[$curr] += $lineTotal;
+
                     @endphp
                     <tr>
                         <td><img src="/storage/{{ $item->photo }}" width="50px" height="50px" /></td>
@@ -237,7 +250,7 @@
             <tfoot>
                 <tr>
                     <td colspan="8" class="text-end">Grand Total</td>
-                    <td>${{ number_format($subtotal, 2) }}</td>
+                    <td>{{ $currencySymbol }}{{ number_format($subtotal, 2) }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -274,13 +287,14 @@
             </div>
             <div class="col-md-6">
                 <div class="totals-box">
-                    <div>Subtotal: <span class="float-end">${{ number_format($subtotal, 2) }}</span></div>
-                    <div>Advance: <span class="float-end">${{ number_format($order->advance_amount, 2) }}</span></div>
-                    <div>Balance Due: 
-                        <span class="float-end">
-                            ${{ number_format($subtotal - $order->advance_amount, 2) }}
-                        </span>
-                    </div>
+                    @foreach($grandTotals as $curr => $total)
+                        @php
+                            $currencySymbol = $curr === 'RMB' ? '¥' : '$';
+                        @endphp
+                        <div>Subtotal: <span class="float-end">{{ $currencySymbol }}{{ number_format($total, 2) }}</span></div>
+                        <div>Advance: <span class="float-end">{{ $currencySymbol }}{{ number_format($order->advance_amount ?? 0, 2) }}</span></div>
+                        <div>Balance Due: <span class="float-end">{{ $currencySymbol }}{{ number_format($total - ($order->advance_amount ?? 0), 2) }}</span></div>
+                    @endforeach
                 </div>
             </div>
 

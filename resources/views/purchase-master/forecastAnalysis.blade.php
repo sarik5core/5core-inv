@@ -79,7 +79,7 @@
                         <div class="d-flex align-items-center flex-wrap gap-2">
                             <!-- Column Management -->
                             <div class="dropdown">
-                                <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-1"
+                                <button class="btn btn-sm btn-primary dropdown-toggle d-flex align-items-center gap-1"
                                     type="button" id="hide-column-dropdown" data-bs-toggle="dropdown">
                                     <i class="bi bi-grid-3x3-gap-fill"></i>
                                     Manage Columns
@@ -92,7 +92,7 @@
 
                             <!-- 2 ORDER Color Filter -->
                             <div class="dropdown">
-                                <button class="btn btn-outline-warning dropdown-toggle d-flex align-items-center gap-1"
+                                <button class="btn btn-sm btn-outline-warning dropdown-toggle d-flex align-items-center gap-1"
                                     type="button" id="order-color-filter-dropdown" data-bs-toggle="dropdown">
                                     <i class="bi bi-funnel-fill"></i>
                                     2 ORDER
@@ -104,8 +104,7 @@
                             </div>
 
                             <!-- Yellow Count -->
-                            <div id="yellow-count-container"
-                                class="d-none px-3 btn rounded-2 shadow-sm border border-danger bg-danger">
+                            <div id="yellow-count-container" class="d-none px-2 btn btn-sm rounded-2 shadow-sm border border-danger bg-danger">
                                 <div class="d-flex align-items-center gap-1">
                                     <i class="bi bi-star-fill text-white"></i>
                                     <span id="yellow-count-box" class="fw-semibold text-white">Approval Pending: 0</span>
@@ -115,28 +114,28 @@
 
                             <!-- Show All Columns -->
                             <button id="show-all-columns-btn"
-                                class="btn btn-outline-success d-flex align-items-center gap-1">
+                                class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
                                 <i class="bi bi-eye"></i>
                                 Show All
                             </button>
 
                             <!-- Toggle NR -->
-                            <button id="toggle-nr-rows" class="btn btn-outline-secondary">
+                            <button id="toggle-nr-rows" class="btn btn-sm btn-outline-secondary">
                                 Show NR
                             </button>
 
                             <!-- Row Type Filter -->
-                            <select id="row-data-type" class="form-select border border-primary" style="width: 150px;">
+                            <select id="row-data-type" class="form-select-sm border border-primary" style="width: 150px;">
                                 <option value="all">🔁 Show All</option>
                                 <option value="sku">🔹 SKU (Child)</option>
                                 <option value="parent">🔸 Parent</option>
                             </select>
 
-                            <button id="total-transit" class="btn btn-info">
+                            <button id="total-transit" class="btn btn-sm btn-info">
                                 Show Transit
                             </button>
 
-                            <button id="restock_needed" class="btn btn-warning fw-semibold text-white">
+                            <button id="restock_needed" class="btn btn-sm btn-warning fw-semibold text-white">
                                 Restock Needed: <span id = "total_restock" class="fw-semibold text-white">0</span>
                             </button>
                         </div>
@@ -298,10 +297,12 @@
             ajaxConfig: "GET",
             layout: "fitDataFill",
             pagination: true,
-            paginationSize: 100,
+            paginationSize: 200,
+            paginationCounter: "rows",
             movableColumns: false,
             resizableColumns: true,
             height: "650px",
+            index: "SKU",
             rowFormatter: function(row) {
                 const data = row.getData();
                 const sku = data["SKU"] || '';
@@ -311,7 +312,7 @@
                 }
             },
             columns: [{
-                    title: "Image",
+                    title: "#",
                     field: "Image",
                     headerSort: false,
                     formatter: function(cell) {
@@ -462,7 +463,7 @@
                     }
                 },
                 {
-                    title: "Order Given",
+                    title: "MIP",
                     field: "order_given",
                     accessor: row => (row ? row["order_given"] : null),
                     sorter: "number",
@@ -484,6 +485,18 @@
                         style="outline:none; min-width:40px; text-align:center; font-weight:bold;">
                         ${value ?? ''}
                     </div>`;
+                    }
+                },
+                {
+                    title: "R2S",
+                    field: "readyToShipQty",
+                    accessor: row => (row ? row["readyToShipQty"] : null),
+                    sorter: "number",
+                    headerSort: true,
+                    formatter: function(cell) {
+                        const value = cell.getValue();
+                        
+                        return value ?? '';
                     }
                 },
                 {
@@ -520,7 +533,7 @@
 
                         return `<div style="text-align: center;">
                         <span style="
-                            background-color: ${isNegative ? 'red' : 'yellow'};
+                            background-color: ${isNegative ? '#dc3545' : '#ffc107'};
                             color: ${isNegative ? 'white' : 'black'};
                             padding: 2px 6px;
                             border-radius: 4px;
@@ -631,9 +644,9 @@
 
                     const toOrder = Math.round(msl - inv - transit - orderGiven);
 
-                    if (toOrder == 0) {
-                        return false;
-                    }
+                    // if (toOrder == 0) {
+                    //     return false;
+                    // }
 
                     if (!groupedMSL[parentKey]) groupedMSL[parentKey] = 0;
                     groupedMSL[parentKey] += msl;
@@ -642,8 +655,7 @@
                     if (!groupedS_MSL[parentKey]) groupedS_MSL[parentKey] = 0;
                     groupedS_MSL[parentKey] += s_msl_val;
 
-                    const isParent = item.is_parent === true || item.is_parent === "true" || sku
-                        .toUpperCase().includes("PARENT");
+                    const isParent = item.is_parent === true || item.is_parent === "true" || sku.toUpperCase().includes("PARENT");
 
                     const processedItem = {
                         ...item,
@@ -727,7 +739,8 @@
                         const l30 = parseFloat(l30Value) || 0;
                         const dilOver100 = inv === 0 || (inv > 0 && l30 / inv > 1);
                         filterMatch = dilOver100;
-                    } else {
+                    } 
+                    else {
                         filterMatch = currentColorFilter === 'red' ?
                             child.to_order < 0 :
                             currentColorFilter === 'yellow' ?
@@ -1105,9 +1118,9 @@
                         }, function() {
                             const row = table.getRows().find(r => r.getData().SKU === sku &&
                                 r.getData().Parent === parent);
-                            if (row) {
-                                row.delete();
-                            }
+                            // if (row) {
+                            //     row.delete();
+                            // }
                         });
                     }
                     setCombinedFilters();
