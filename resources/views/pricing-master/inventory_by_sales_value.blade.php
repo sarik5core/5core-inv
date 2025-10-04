@@ -1101,7 +1101,7 @@ const table = new Tabulator("#forecast-table", {
             hozAlign: "right",
             formatter: function(cell) {
                 const value = cell.getValue();
-                return `<strong>${value}</strong>`;
+                return `<strong>${Math.round(value)}</strong>`;
             }
             
         },
@@ -1139,7 +1139,7 @@ const table = new Tabulator("#forecast-table", {
                     value = (l30 / inv) * 100; // Calculate DIL%
                 }
                 const element = document.createElement("div");
-                const rounded = parseFloat(value.toFixed(2));
+                const rounded = parseFloat(Math.round(value));
                 element.textContent = rounded + "%";
                 if (rounded >= 0 && rounded <= 10) {
                     element.style.color = "red";
@@ -1210,7 +1210,7 @@ const table = new Tabulator("#forecast-table", {
             headerSort: false,
             formatter: function(cell) {
                 const value = cell.getValue() || 0;
-                return `<span class="text-danger">${value} </span>`;
+                return `<span class="text-danger">${Math.round(value)} </span>`;
             }
             
         },
@@ -2572,7 +2572,7 @@ function setCombinedFilters() {
             initTableSorting(modalEl.querySelector('.sortable-table'));
             modal.show();
         }
-    }
+    
     // Calculate dilPercentage using the formula: L30 / INV
     let dilPercentage = 0;
     const l30 = ovl30Value; // Use the same ovl30Value for consistency
@@ -2734,7 +2734,7 @@ function setCombinedFilters() {
     });
     initTableSorting(modalEl.querySelector('.sortable-table'));
     modal.show();
-}
+
         // Table sorting functionality
         function initTableSorting(table) {
             const headers = table.querySelectorAll('th[data-sort]');
