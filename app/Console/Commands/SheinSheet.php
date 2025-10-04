@@ -76,7 +76,7 @@ class SheinSheet extends Command
             'status' => 'any',
             'created_at_min' => $sixtyDaysAgo->toISOString(),
             'created_at_max' => $now->toISOString(),
-            'limit' => 250  // Max limit per page
+            'limit' => 250 
         ];
 
         $allOrders = [];
