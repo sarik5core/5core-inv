@@ -455,9 +455,9 @@
                                 daysDiff = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
                                 if (daysDiff >= 14) {
-                                    bgColor = "background-color:red; color:white;";
+                                    bgColor = "color:red; font-weight:700;";
                                 } else if (daysDiff >= 7) {
-                                    bgColor = "background-color:yellow; color:black;";
+                                    bgColor = "color:#FFC106; font-weight:700;";
                                 }
                             }
 
