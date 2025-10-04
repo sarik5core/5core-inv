@@ -320,7 +320,7 @@ class PricingMasterViewsController extends Controller
                 ($tiktok ? ($tiktok->views ?? 0) : 0);
 
             // Calculate total L30 and L60 counts
-            $total_l30_count = ($tiktok ? ($tiktok->l30 ?? 0) : 0) +
+            $total_l30_count = ($tiktok ? ($tiktok->shopify_tiktokl30 ?? 0) : 0) +
                 ($shein ? ($shein->shopify_sheinl30 ?? 0) : 0) +
                 ($amazon ? ($amazon->units_ordered_l30 ?? 0) : 0) +
                 ($ebay ? ($ebay->ebay_l30 ?? 0) : 0) +
@@ -337,7 +337,8 @@ class PricingMasterViewsController extends Controller
 
             
 
-            $total_l60_count = ($tiktok ? ($tiktok->l60 ?? 0) : 0) +
+            $total_l60_count = 
+                ($tiktok ? ($tiktok->shopify_tiktokl60 ?? 0) : 0) +
                 ($shein ? ($shein->shopify_sheinl60 ?? 0) : 0) +
                 ($amazon ? ($amazon->units_ordered_l60 ?? 0) : 0) +
                 ($ebay ? ($ebay->ebay_l60 ?? 0) : 0) +
@@ -362,7 +363,7 @@ class PricingMasterViewsController extends Controller
             ['data' => $temuMetric, 'l30' => 'quantity_purchased_l30', 'views' => 'product_clicks_l30'],
             ['data' => $reverb,     'l30' => 'r_l30',                  'views' => 'views'],
             ['data' => $walmart,    'l30' => 'l30',                    'views' => 'views'],
-            ['data' => $tiktok,     'l30' => 'l30',                    'views' => 'views'],
+            ['data' => $tiktok,     'l30' => 'shopify_tiktokl30',                    'views' => 'views'],
             ['data' => $shein,      'l30' => 'shopify_sheinl30',       'views' => 'views_clicks'],
         ];
 
@@ -382,53 +383,61 @@ class PricingMasterViewsController extends Controller
             }
         }
 
-        $avgCvr = $views_sum > 0
-            ? number_format(($l30_count / $views_sum) * 100, 1) . ' %'
-            : '0.0 %';
 
 
             $total_l30_count_data = 0;
-            
-            // Count channels where both L30 > 0 and views > 0
-            if ($amazon && ($amazon->units_ordered_l30 ?? 0) > 0 && ($amazon->sessions_l30 ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0 && ($ebay->views ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0 && ($ebay2->views ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0 && ($ebay3->views ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0 && ($temuMetric->{'product_clicks_l30'} ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            if ($reverb && ($reverb->r_l30 ?? 0) > 0 && ($reverb->views ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            // Note: Walmart excluded as it doesn't have views data
-            if ($tiktok && ($tiktok->l30 ?? 0) > 0 && ($tiktok->views ?? 0) > 0) {
-                $total_l30_count_data++;
-            }
-            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0 && ($shein->views_clicks ?? 0) > 0) {
-                $total_l30_count_data++;
-            }          
-            
 
+            // Count channels where L30 > 0, ignore views
+            if ($amazon && ($amazon->units_ordered_l30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($ebay && ($ebay->ebay_l30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($ebay2 && ($ebay2->ebay_l30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($ebay3 && ($ebay3->ebay_l30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($temuMetric && ($temuMetric->{'quantity_purchased_l30'} ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($reverb && ($reverb->r_l30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            // Walmart excluded as it doesn't have views data
+            if ($tiktok && ($tiktok->shopify_tiktokl30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
 
+            // For $avgCvr, use all views
+            $views_sum = 
+                ($amazon->sessions_l30 ?? 0) +
+                ($ebay->views ?? 0) +
+                ($ebay2->views ?? 0) +
+                ($ebay3->views ?? 0) +
+                ($temuMetric->{'product_clicks_l30'} ?? 0) +
+                ($reverb->views ?? 0) +
+                ($tiktok->views ?? 0) +
+                ($shein->views_clicks ?? 0);
 
+            $avgCvr = $views_sum > 0
+                ? number_format(($l30_count / $views_sum) * 100, 1) . ' %'
+                : '0.0 %';
 
             $item = (object) [
                 'SKU'     => $sku,
                 'Parent'  => $product->parent,
+                'remark'  => $product->remark,
                 'L30'     => $l30,
                 'shopify_l30' => $shopify_l30,
                 'total_views' => $total_views,
                 'INV'     => $inv,
-                'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 100) : 0,
-                //  'Dil%'    => $inv > 0 ? round(($l30 / $inv) * 1) : 0,
+                'Dil%'    => $inv > 0 ? round((($shopifyItem->quantity ?? 0) / $inv) * 100) : 0,
                 'MSRP'    => $msrp,
                 'MAP'     => $map,
                 'LP'      => $lp,
@@ -615,16 +624,16 @@ class PricingMasterViewsController extends Controller
  
                 // TikTok                          
                 'tiktok_price' => $tiktok ? ($tiktok->price ?? 0) : 0,
-                'tiktok_l30'   => $tiktok ? ($tiktok->l30 ?? 0) : 0,
-                'tiktok_l60'   => $tiktok ? ($tiktok->l60 ?? 0) : 0,
+                'tiktok_l30'   => $tiktok ? ($tiktok->shopify_tiktokl30 ?? 0) : 0,
+                'tiktok_l60'   => $tiktok ? ($tiktok->shopify_tiktokl60 ?? 0) : 0,
                 'tiktok_views' => $tiktok ? ($tiktok->views ?? 0) : 0,
                 'tiktok_pft'   => $tiktok && ($tiktok->price ?? 0) > 0 ? (($tiktok->price * 0.64 - $lp - $ship) / $tiktok->price) : 0,
                 'tiktok_roi'   => $tiktok && $lp > 0 && ($tiktok->price ?? 0) > 0 ? (($tiktok->price * 0.64 - $lp - $ship) / $lp) : 0,
 
-                'tiktok_req_view' => $tiktok && $tiktok->views > 0 && $tiktok->l30
-                    ? (($inv / 90) * 30) / (($tiktok->l30 / $tiktok->views))
+                'tiktok_req_view' => $tiktok && $tiktok->views > 0 && $tiktok->shopify_tiktokl30
+                    ? (($inv / 90) * 30) / (($tiktok->shopify_tiktokl30 / $tiktok->views))
                     : 0,
-                'tiktok_cvr'   => $tiktok ? $this->calculateCVR($tiktok->l30 ?? 0, $tiktok->views ?? 0) : null,
+                'tiktok_cvr'   => $tiktok ? $this->calculateCVR($tiktok->shopify_tiktokl30 ?? 0, $tiktok->views ?? 0) : null,
                 'tiktok_buyer_link' => isset($tiktokListingData[$sku]) ? ($tiktokListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'tiktok_seller_link' => isset($tiktokListingData[$sku]) ? ($tiktokListingData[$sku]->value['seller_link'] ?? null) : null,
 
@@ -1626,6 +1635,35 @@ class PricingMasterViewsController extends Controller
 
 
 
+
+    public function saveRemark(Request $request)
+    {
+        $data = $request->validate([
+            'sku' => 'required|string',
+            'remark' => 'nullable|string',
+        ]);
+
+        $product = ProductMaster::where('sku', $data['sku'])->first();
+        
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found',
+            ], 404);
+        }
+
+        $product->remark = $data['remark'];
+        $product->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Remark saved successfully',
+            'data' => [
+                'sku' => $product->sku,
+                'remark' => $product->remark,
+            ]
+        ]);
+    }
 
     public function pricingMasterCopy(Request $request)
     {

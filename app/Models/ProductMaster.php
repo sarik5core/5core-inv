@@ -17,6 +17,7 @@ class ProductMaster extends Model
         'sku',
         'group_id',
         'Values',
+        'remark',
     ];
 
     public function setTemuShipAttribute($value)

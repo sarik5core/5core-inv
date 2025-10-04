@@ -15,8 +15,8 @@ class ShopifyController extends Controller
 
     public function __construct()
     {
-        $this->shopifyDomain = env('SHOPIFY_STORE_URL', '5-core.myshopify.com');
-        $this->accessToken = env('SHOPIFY_ACCESS_TOKEN', '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'); // Use correct token
+        $this->shopifyDomain = env('SHOPIFY_STORE_URL');
+        $this->accessToken = env('SHOPIFY_ACCESS_TOKEN');
     }
 
    public function getProducts()
@@ -105,71 +105,7 @@ class ShopifyController extends Controller
         ]);
     }
 
-    // private function shopifyHeaders()
-    // {
-    //     return [
-    //         'X-Shopify-Access-Token' => $this->accessToken,
-    //         'Content-Type' => 'application/json',
-    //     ];
-    // }
-
-    //  private function getInventoryItemIdBySku($sku)
-    // {
-    //     $response = Http::withHeaders($this->shopifyHeaders())
-    //         ->get("https://{$this->shopifyDomain}/admin/api/{$this->apiVersion}/products.json?fields=variants");
-
-    //     if ($response->failed()) return null;
-
-    //     foreach ($response['products'] as $product) {
-    //         foreach ($product['variants'] as $variant) {
-    //             if ($variant['sku'] === $sku) {
-    //                 return $variant['inventory_item_id'];
-    //             }
-    //         }
-    //     }
-
-    //     return null;
-    // }
-
-
-    // private function getLocationId()
-    // {
-    //     $response = Http::withHeaders($this->shopifyHeaders())
-    //         ->get("https://{$this->shopifyDomain}/admin/api/{$this->apiVersion}/locations.json");
-
-    //     return $response->successful() ? $response['locations'][0]['id'] ?? null : null;
-    // }
-
-    // public function adjustInventory(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'sku' => 'required|string',
-    //         'to_adjust' => 'required|integer',
-    //     ]);
-
-    //     $sku = $validated['sku'];
-    //     $toAdjust = $validated['to_adjust'];
-
-    //     $inventoryItemId = $this->getInventoryItemIdBySku($sku);
-    //     $locationId = $this->getLocationId();
-
-    //     if (!$inventoryItemId || !$locationId) {
-    //         return response()->json(['success' => false, 'message' => 'Inventory item or location not found.'], 404);
-    //     }
-
-    //     $response = Http::withHeaders($this->shopifyHeaders())
-    //         ->post("https://{$this->shopifyDomain}/admin/api/{$this->apiVersion}/inventory_levels/adjust.json", [
-    //             'inventory_item_id' => $inventoryItemId,
-    //             'location_id' => $locationId,
-    //             'available_adjustment' => $toAdjust,
-    //         ]);
-
-    //     if ($response->successful()) {
-    //         return response()->json(['success' => true, 'data' => $response->json()]);
-    //     }
-
-    //     return response()->json(['success' => false, 'message' => 'Failed to adjust inventory.'], 500);
-    // }
+    
 
     public function updateToAdjust(Request $request)
     {
