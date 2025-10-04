@@ -1004,12 +1004,14 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     //To Order Analysis routes
     Route::controller(ToOrderAnalysisController::class)->group(function () {
         Route::get('/test', 'test')->name('test');
-        Route::get('/to-order-analysis', 'index')->name('to.order.analysis');
+        Route::get('/to-order-analysis', 'toOrderAnalysisNew')->name('to.order.analysis');
         Route::get('/to-order-analysis-new', 'toOrderAnalysisNew')->name('to.order.analysis.new');
         Route::get('/to-order-analysis/data', 'getToOrderAnalysis')->name('to.order.analysis.data');
         Route::post('/update-link', 'updateLink')->name('update.rfq.link');
         Route::post('/mfrg-progresses/insert', 'storeMFRG')->name('mfrg.progresses.insert');
         Route::post('/save-to-order-review', 'storeToOrderReview')->name('save.to_order_review');
+        Route::post('/to-order-analysis/delete', 'deleteToOrderAnalysis')->name('to.order.analysis.delete');
+
     });
 
     //Movement Analysis
@@ -1811,6 +1813,7 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/amazon-kw-ads/filter', 'filterKwAds')->name('amazonKwAds.filter');
         Route::get('/amazon/pt/ads', 'amazonPtAdsView')->name('amazon.pt.ads');
         Route::get('/amazon/pt/ads/data', 'getAmazonPtAdsData');
+        Route::get('/amazon-pt-ads/filter', 'filterPtAds')->name('amazonPtAds.filter');
         Route::get('/amazon/hl/ads', 'amazonHlAdsView')->name('amazon.hl.ads');
         Route::get('/amazon/hl/ads/data', 'getAmazonHlAdsData');
 

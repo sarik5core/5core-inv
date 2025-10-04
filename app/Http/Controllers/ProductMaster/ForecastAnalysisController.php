@@ -411,6 +411,8 @@ class ForecastAnalysisController extends Controller
             $toOrderMap = DB::table('to_order_analysis')->select('sku', 'stage')->get()->keyBy(fn($item) => strtoupper(trim($item->sku)));
             $transitContainer = DB::table('transit_container_details')->where('status', '')->select('our_sku', 'tab_name', 'no_of_units', 'total_ctn')->get()->keyBy(fn($item) => strtoupper(trim($item->our_sku)));
             
+            $readyToShipMap = DB::table('ready_to_ship')->get()->keyBy(fn($item) => $normalizeSku($item->sku));
+
             $processedData = [];
 
             foreach($productListDataBySku as $sheetSku => $prodData){
@@ -468,6 +470,10 @@ class ForecastAnalysisController extends Controller
                     $noOfUnit = $transitContainer[strtoupper(trim($prodData->sku))]->no_of_units ?? 0;
                     $totalCtn = $transitContainer[strtoupper(trim($prodData->sku))]->total_ctn	 ?? 0;
                     $item->c_sku_qty = $noOfUnit * $totalCtn;
+
+                if($readyToShipMap->has($sheetSku)){
+                    $item->readyToShipQty = $readyToShipMap->get($sheetSku)->qty ?? 0;
+                }
                     
                 // Movement
                 if($movementMap->has(strtoupper(trim($prodData->sku)))){
