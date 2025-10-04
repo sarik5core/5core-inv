@@ -758,6 +758,8 @@
                 { label: "Bestbuy", prefix: "bestbuy" },
                 { label: "Tiktok", prefix: "tiktok" },
                 { label: "Tiendamia", prefix: "tiendamia" },
+                { label: "Aliexpress", prefix: "aliexpress" }
+
             ];
 
             const labels = [];
@@ -911,7 +913,8 @@
                 (parseFloat(data.shein_l30) || 0) +
                 (parseFloat(data.bestbuy_l30) || 0) +
                 (parseFloat(data.tiktok_l30) || 0) +
-                (parseFloat(data.tiendamia_l30) || 0);
+                (parseFloat(data.tiendamia_l30) || 0) +
+                (parseFloat(data.aliexpress_l30) || 0);
 
             const SHIP = parseFloat(data.SHIP) || 0;
             const temuship = parseFloat(data.temu_ship) || 0;
@@ -947,9 +950,11 @@
 
             const tiktokProfit = data.tiktok_price ? ((parseFloat(data.tiktok_price) * 0.64) - LP - SHIP) * (parseFloat(data
                 .tiktok_l30) || 0) : 0;
+            const aliexpressProfit = data.aliexpress_price ? ((parseFloat(data.aliexpress_price) * 0.89) - LP - SHIP) * (parseFloat(data
+                .aliexpress_l30) || 0) : 0;
 
             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit + reverbProfit +
-                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit + sheinProfit + bestbuyProfit + tiendamiaProfit + tiktokProfit;
+                dobaProfit + temuProfit  + ebay3Profit + ebay2Profit + walmartProfit + sheinProfit + bestbuyProfit + tiendamiaProfit + tiktokProfit + aliexpressProfit;
 
             return totalL30 > 0 ? (totalProfit / totalL30) / LP * 100 : 0;
         }
@@ -975,7 +980,8 @@
                 { name: "shein", price: data.shein_price, l30: data.shein_l30, percent: 0.89 },
                 { name: "tiendamia", price: data.tiendamia_price, l30: data.tiendamia_l30, percent: 0.83 },
                 { name: "bestbuy", price: data.bestbuy_price, l30: data.bestbuy_l30, percent: 0.80 },
-                { name: "tiktok", price: data.tiktok_price, l30: data.tiktok_l30, percent: 0.64 }
+                { name: "tiktok", price: data.tiktok_price, l30: data.tiktok_l30, percent: 0.64 },
+                { name: "aliexpress", price: data.aliexpress_price, l30: data.aliexpress_l30, percent: 0.89 }
             ];
 
             let totalProfit = 0;
@@ -1077,14 +1083,26 @@
                 } else if (value === "all") {
                     table.clearFilter("avgCvr");
                 } else if (value === "high") {
-                    table.setFilter("avgCvr", ">", 5);
+                    table.setFilter(function(data) {
+                        const cvr = parseFloat(data.avgCvr) || 0;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return cvr > 5 && inv > 0 && !sku.includes("PARENT");
+                    });
                 } else if (value === "medium") {
                     table.setFilter(function(data) {
                         const cvr = parseFloat(data.avgCvr) || 0;
-                        return cvr >= 3 && cvr <= 5;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return cvr >= 3 && cvr <= 5 && inv > 0 && !sku.includes("PARENT");
                     });
                 } else if (value === "low") {
-                    table.setFilter("avgCvr", "<", 3);
+                    table.setFilter(function(data) {
+                        const cvr = parseFloat(data.avgCvr) || 0;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return cvr < 3 && inv > 0 && !sku.includes("PARENT");
+                    });
                 }
             });
         });
@@ -1120,33 +1138,64 @@
                 } else if (value === "all") {
                     table.clearFilter("Dil%");
                 } else if (value === "verylow") {
-                    table.setFilter("Dil%", "<=", 10);
+                    table.setFilter(function(data) {
+                        const dil = parseFloat(data["Dil%"]) || 0;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return dil <= 10 && inv > 0 && !sku.includes("PARENT");
+                    });
                 } else if (value === "low") {
                     table.setFilter(function(data) {
                         const dil = parseFloat(data["Dil%"]) || 0;
-                        return dil >= 11 && dil <= 15;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return dil >= 11 && dil <= 15 && inv > 0 && !sku.includes("PARENT");
                     });
                 } else if (value === "medium") {
                     table.setFilter(function(data) {
                         const dil = parseFloat(data["Dil%"]) || 0;
-                        return dil >= 16 && dil <= 20;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return dil >= 16 && dil <= 20 && inv > 0 && !sku.includes("PARENT");
                     });
                 } else if (value === "high") {
                     table.setFilter(function(data) {
                         const dil = parseFloat(data["Dil%"]) || 0;
-                        return dil >= 21 && dil <= 40;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return dil >= 21 && dil <= 40 && inv > 0 && !sku.includes("PARENT");
                     });
                 } else if (value === "veryhigh") {
-                    table.setFilter("Dil%", ">", 40);
+                    table.setFilter(function(data) {
+                        const dil = parseFloat(data["Dil%"]) || 0;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return dil > 40 && inv > 0 && !sku.includes("PARENT");
+                    });
                 }
             });
         });
-        
-        
 
+        // Filter by Margin radio buttons
+        document.querySelectorAll("input[name='marginFilter']").forEach(input => {
+            input.addEventListener("change", function() {
+                let value = this.value;
 
+                if (value === "clear") {
+                    table.clearFilter();
+                } else if (value === "high") {
+                    table.setFilter(function(data) {
+                        const margin = parseFloat(data.avgPftPercent) || 0;
+                        const inv = parseFloat(data.INV) || 0;
+                        const sku = (data.SKU || "").toUpperCase();
+                        return margin > 20 && inv > 0 && !sku.includes("PARENT");
+                    });
+                }
+            });
+        });
 
-       const table = new Tabulator("#forecast-table", {
+        // Initialize Tabulator table
+        const table = new Tabulator("#forecast-table", {
             ajaxURL: "/pricing-master-data-views",
             fixedHeader: true,
          
@@ -1292,12 +1341,10 @@
 
                  ,
 
-            {
+               {
                 title: "Avg CVR",
                 field: "avgCvr",
                 hozAlign: "center",
-                headerSort: true,
-                
               
                 formatterParams: {
                     decimal: 2,
@@ -1312,64 +1359,26 @@
                     }
                     value = parseFloat(value);
                     if (isNaN(value)) value = 0;
-                    
-                    const rowData = cell.getRow().getData();
-                    const sku = rowData.SKU || '';
-                    const remark = rowData.remark || '';
-                    
-                    const container = document.createElement("div");
-                    container.style.display = "flex";
-                    container.style.alignItems = "center";
-                    container.style.justifyContent = "space-between";
-                    container.style.gap = "5px";
-                    
-                    const valueSpan = document.createElement("span");
+                    const element = document.createElement("span");
                     // Show value with 2 decimals
-                    valueSpan.textContent = value.toFixed(1) + "%";
+                    element.textContent = value.toFixed(1) + "%";
                     if (value >= 0 && value <= 3) {
-                        valueSpan.style.color = "red"; // red text
+                        element.style.color = "red"; // red text
                     } else if (value > 3 && value <= 6) {
-                        valueSpan.style.backgroundColor = "yellow"; // yellow background
-                        valueSpan.style.color = "black";
-                        valueSpan.style.padding = "2px 4px";
-                        valueSpan.style.borderRadius = "4px";
+                        element.style.backgroundColor = "yellow"; // yellow background
+                        element.style.color = "black";
+                        element.style.padding = "2px 4px";
+                        element.style.borderRadius = "4px";
                     } else if (value > 6 && value <= 9) {
-                        valueSpan.style.color = "blue"; // blue text
+                        element.style.color = "blue"; // blue text
                     } else if (value > 9 && value <= 13) {
-                        valueSpan.style.color = "green"; // green text
+                        element.style.color = "green"; // green text
                     } else if (value > 41) {
-                        valueSpan.style.color = "purple"; // purple text (41 and above)
+                        element.style.color = "purple"; // purple text (41 and above)
                     }
-                    
-                    const pencilBtn = document.createElement("button");
-                    pencilBtn.className = "btn btn-sm btn-outline-primary";
-                    pencilBtn.style.padding = "2px 6px";
-                    pencilBtn.style.border = "1px solid #007bff";
-                    pencilBtn.innerHTML = '<i class="fas fa-pencil-alt" style="font-size: 10px;"></i>';
-                    pencilBtn.title = remark ? `Current remark: ${remark}` : 'Add remark';
-                    pencilBtn.onclick = function(e) {
-                        e.stopPropagation();
-                        openRemarkModal(sku, remark);
-                    };
-                    
-                    // Add a small indicator if remark exists
-                    if (remark && remark.trim()) {
-                        pencilBtn.style.backgroundColor = "#e7f3ff";
-                        pencilBtn.style.borderColor = "#0066cc";
-                        const indicator = document.createElement("span");
-                        indicator.style.color = "#0066cc";
-                        indicator.style.fontSize = "8px";
-                        indicator.style.marginLeft = "2px";
-                        indicator.innerHTML = '●';
-                        pencilBtn.appendChild(indicator);
-                    }
-                    
-                    container.appendChild(valueSpan);
-                    container.appendChild(pencilBtn);
-                    return container;
+                    return element;
                 }
             },
-            
 
             {
                     title: "Total Views",
@@ -1393,6 +1402,19 @@
                         return `<span class="text-dark">${Math.round(value)} </span>`;
                     }
                     
+                },
+
+                {
+                    title: "Remark",
+                    field: "remark",
+                    hozAlign: "center",
+                    headerSort: false,
+                    formatter: function(cell) {
+                        const data = cell.getRow().getData();
+                        const remark = data.remark || '';
+                        const buttonColor = remark ? 'btn-outline-primary' : 'btn-outline-danger';
+                        return `<button class="btn ${buttonColor} btn-sm" onclick="openRemarkModal('${data.SKU}', '${remark}')" title="${remark ? 'Edit remark' : 'Add remark'}"><i class="fas fa-edit"></i></button>`;
+                    }
                 },
 
                 
@@ -1462,7 +1484,7 @@
                                     price: data.ebay2_price,
                                     l30: data.ebay2_l30
                                 },
-                                {
+                               {
                                     price: data.walmart_price,
                                     l30: data.walmart_l30
                                 },
@@ -1485,7 +1507,12 @@
                                 {
                                     price: data.tiktok_price,
                                     l30: data.tiktok_l30
+                                },
+                                {
+                                    price: data.aliexpress_price,
+                                    l30: data.aliexpress_l30
                                 }
+
                             ];
 
                             let totalWeightedPrice = 0;
@@ -1602,6 +1629,7 @@
                         const bestbuyPrice = parseFloat(data.bestbuy_price) || 0;
                         const tiendamiaPrice = parseFloat(data.tiendamia_price) || 0;
                         const tiktokPrice = parseFloat(data.tiktok_price) || 0;
+                        const aliexpressPrice = parseFloat(data.aliexpress_price) || 0;
 
                         const amzL30 = parseFloat(data.amz_l30) || 0;
                         const ebayL30 = parseFloat(data.ebay_l30) || 0;
@@ -1617,6 +1645,7 @@
                         const bestbuyL30 = parseFloat(data.bestbuy_l30) || 0;
                         const tiendamiaL30 = parseFloat(data.tiendamia_l30) || 0;
                         const tiktokL30 = parseFloat(data.tiktok_l30) || 0;
+                        const aliexpressL30 = parseFloat(data.aliexpress_l30) || 0;
 
                         // Calculate profit for each marketplace
                         const amzProfit = ((amzPrice * 0.70) - LP - SHIP)  ;
@@ -1633,6 +1662,7 @@
                         const bestbuyProfit = ((bestbuyPrice * 0.80) - LP - SHIP) ;
                         const tiendamiaProfit = ((tiendamiaPrice * 0.83) - LP - SHIP) ;
                         const tiktokProfit = ((tiktokPrice * 0.64) - LP - SHIP) ;
+                        const aliexpressProfit = ((aliexpressPrice * 0.89) - LP - SHIP) ;
 
  
 
@@ -1641,7 +1671,7 @@
                             reverbProfit * reverbL30 + dobaProfit * dobaL30 + temuProfit * temuL30 +
                             ebay3Profit * ebay3L30 + ebay2Profit * ebay2L30 + walmartProfit * walmartL30 +
                             sheinProfit * sheinL30 + bestbuyProfit * bestbuyL30 + tiendamiaProfit * tiendamiaL30 +
-                            tiktokProfit * tiktokL30;
+                            tiktokProfit * tiktokL30 + aliexpressProfit * aliexpressL30;
 
                         // Calculate total revenue
                         const totalRevenue =
@@ -1658,7 +1688,8 @@
                             (sheinPrice * sheinL30) +
                             (bestbuyPrice * bestbuyL30) +
                             (tiendamiaPrice * tiendamiaL30) +
-                            (tiktokPrice * tiktokL30);
+                            (tiktokPrice * tiktokL30) +
+                            (aliexpressPrice * aliexpressL30);
 
                         // Calculate average profit percentage and round to nearest integer
                         let avgPftPercent = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
@@ -1771,9 +1802,10 @@
                             const bestbuyL30  = parseFloat(data.bestbuy_l30) || 0;
                             const tiendamiaL30 = parseFloat(data.tiendamia_l30) || 0;
                             const tiktokL30   = parseFloat(data.tiktok_l30) || 0;
+                            const aliexpressL30 = parseFloat(data.aliexpress_l30) || 0; 
 
                             // Total L30 across marketplaces
-                            const totalL30 = amzL30 + ebayL30 + shopifyL30 + macyL30 + reverbL30 + dobaL30 + temuL30  + ebay3L30 + ebay2L30 + walmartL30 + sheinL30 + bestbuyL30 + tiendamiaL30 + tiktokL30;
+                            const totalL30 = amzL30 + ebayL30 + shopifyL30 + macyL30 + reverbL30 + dobaL30 + temuL30  + ebay3L30 + ebay2L30 + walmartL30 + sheinL30 + bestbuyL30 + tiendamiaL30 + tiktokL30 + aliexpressL30;
 
                             // Profit calculations (use parsed *_L30 variables)
                             const amzProfit     = data.amz_price        ? ((parseFloat(data.amz_price) * 0.70) - LP - SHIP) * amzL30 : 0;
@@ -1790,11 +1822,11 @@
                             const bestbuyProfit  = data.bestbuy_price    ? ((parseFloat(data.bestbuy_price) * 0.80) - LP - SHIP) * bestbuyL30 : 0;
                             const tiendamiaProfit = data.tiendamia_price ? ((parseFloat(data.tiendamia_price) * 0.83) - LP - SHIP) * tiendamiaL30 : 0;
                             const tiktokProfit    = data.tiktok_price    ? ((parseFloat(data.tiktok_price) * 0.64) - LP - SHIP) * tiktokL30 : 0;
-
+                            const aliexpressProfit = data.aliexpress_price ? ((parseFloat(data.aliexpress_price) * 0.89) - LP - SHIP) * aliexpressL30 : 0;
                             // Total profit
                             const totalProfit = amzProfit + ebayProfit + shopifyProfit + macyProfit +
                                                 reverbProfit + dobaProfit + temuProfit  +
-                                                ebay3Profit + ebay2Profit + walmartProfit + sheinProfit + bestbuyProfit + tiendamiaProfit + tiktokProfit;
+                                                ebay3Profit + ebay2Profit + walmartProfit + sheinProfit + bestbuyProfit + tiendamiaProfit + tiktokProfit + aliexpressProfit;
 
 
                             
@@ -1935,7 +1967,7 @@
             });
 
             // Marketplaces for l30 sum and price weighted average
-            const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c'];
+            const mps = ['amz', 'ebay', 'macy', 'reverb', 'doba', 'temu', 'ebay3', 'ebay2', 'walmart', 'shein', 'shopifyb2c', 'aliexpress', 'tiktok', 'bestbuy' ,'tiendamia'];
             mps.forEach(mp => {
                 const l30Field = (mp === 'shopifyb2c' ? 'shopifyb2c_l30' : `${mp}_l30`);
                 const priceField = (mp === 'shopifyb2c' ? 'shopifyb2c_price' : `${mp}_price`);
@@ -1967,7 +1999,7 @@
             parent.COGS = (lp * inv).toFixed(2);
 
             // Recalculate avgPftPercent for parent
-            const marketplaces = [
+               const marketplaces = [
                 { price: parent.amz_price, l30: parent.amz_l30, factor: 0.70 },
                 { price: parent.ebay_price, l30: parent.ebay_l30, factor: 0.72 },
                 { price: parent.shopifyb2c_price, l30: parent.shopifyb2c_l30, factor: 0.75 },
@@ -1978,8 +2010,15 @@
                 { price: parent.ebay3_price, l30: parent.ebay3_l30, factor: 0.71 },
                 { price: parent.ebay2_price, l30: parent.ebay2_l30, factor: 0.80 },
                 { price: parent.walmart_price, l30: parent.walmart_l30, factor: 0.80 },
-                { price: parent.shein_price, l30: parent.shein_l30, factor: 0.89 }
+                { price: parent.shein_price, l30: parent.shein_l30, factor: 0.89 },
+                { price: parent.aliexpress_price, l30: parent.aliexpress_l30, factor: 0.89 },
+                { price: parent.tiktok_price, l30: parent.tiktok_l30, factor: 0.64 },
+                { price: parent.bestbuy_price, l30: parent.bestbuy_l30, factor: 0.80 },
+                { price: parent.tiendamia_price, l30: parent.tiendamia_price, factor: 0.83 },
+                { price: parent.aliexpress_price, l30: parent.aliexpress_price, factor: 0.89 }
+
             ];
+
 
             let totalProfit = 0;
             let totalRevenue = 0;
@@ -2179,7 +2218,8 @@
                 { label: "Shein", prefix: "shein", logo: "{{ asset('uploads/Shein.jpg') }}" },
                 { label: "Bestbuy", prefix: "bestbuy", logo: "{{ asset('uploads/bestbuy.jpeg') }}" },
                 { label: "Tiendamia", prefix: "tiendamia", logo: "{{ asset('uploads/ten.jpg') }}" },
-                { label: "TikTok", prefix: "tiktok", logo: "{{ asset('uploads/tiktok.png') }}" }
+                { label: "TikTok", prefix: "tiktok", logo: "{{ asset('uploads/tiktok.png') }}" },
+                { label: "AliExpress", prefix: "aliexpress", logo: "{{ asset('uploads/aliexpress.png') }}" }
             ];
 
 
@@ -2308,6 +2348,10 @@
                                     ${data.tiktok_seller_link ? `<div><strong>SL:</strong> <a href="${data.tiktok_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
                                     ${data.tiktok_buyer_link ? `<div><strong>BL:</strong> <a href="${data.tiktok_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
                                 ` : ''}
+                                ${r.prefix === 'aliexpress' ? `
+                                    ${data.aliexpress_seller_link ? `<div><strong>SL:</strong> <a href="${data.aliexpress_seller_link}" target="_blank" class="text-info">Seller Link</a></div>` : ''}
+                                    ${data.aliexpress_buyer_link ? `<div><strong>BL:</strong> <a href="${data.aliexpress_buyer_link}" target="_blank" class="text-success">Buyer Link</a></div>` : ''}
+                                ` : ''}
 
                             </div>
                         </div>
@@ -2353,6 +2397,7 @@
                                 : r.prefix === 'reverb' ? (data.reverb_views ?? "-")
                                 : r.prefix === 'temu' ? (data.temu_views ?? "-")
                                 : r.prefix === 'tiktok' ? (data.tiktok_views ?? "-")
+                                : r.prefix === 'aliexpress' ? (data.aliexpress_views ?? "-")
                                 : "-" }
                         </div>
                     </td>
@@ -2376,6 +2421,9 @@
                                 else if (r.prefix === 'tiktok' && cvr) {
                                     return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
                                 }
+                                else if (r.prefix === 'aliexpress' && cvr) {
+                                    return `<span style="color: ${cvr.color}">${Math.round(cvr.value)}%</span>`;
+                                }
 
                                 return "N/A";
                             })()} 
@@ -2392,7 +2440,8 @@
                             r.prefix === 'temu' ? Math.round(data.temu_req_view) ?? "-" :
                             r.prefix === 'bestbuy' ? Math.round(data.bestbuy_req_view) ?? "-" :
                             r.prefix === 'tiendamia' ? Math.round(data.tiendamia_req_view) ?? "-" :
-                            r.prefix === 'tiktok' ? Math.round(data.tiktok_req_view) ?? "-" : "-"}
+                            r.prefix === 'tiktok' ? Math.round(data.tiktok_req_view) ?? "-" :
+                            r.prefix === 'aliexpress' ? Math.round(data.aliexpress_req_view) ?? "-" : "-"}
                         </div>
                     </td>
 
@@ -2403,6 +2452,7 @@
                                 : r.prefix === 'ebay' ? fmtMoney(data.ebay_price_lmpa) 
                                 : r.prefix === 'shein' ? fmtMoney(data.lmp) 
                                 : r.prefix === 'tiktok' ? fmtMoney(data.tiktok_price_lmpa) 
+                                : r.prefix === 'aliexpress' ? fmtMoney(data.aliexpress_price_lmpa) 
                                 : '-'}
                         </div>
                     </td>
@@ -2429,6 +2479,7 @@
                                 : r.prefix === 'bestbuy' ? (data.bestbuy_sprice || '')
                                 : r.prefix === 'tiendamia' ? (data.tiendamia_sprice || '')
                                 : r.prefix === 'tiktok' ? (data.tiktok_sprice || '')
+                                : r.prefix === 'aliexpress' ? (data.aliexpress_sprice || '')
                             
                                 : ''
                             }"
@@ -2488,6 +2539,9 @@
                             } else if (r.prefix === 'tiktok' && data.tiktok_spft) {
                                 value = Math.round(data.tiktok_spft);
                             }
+                            else if (r.prefix === 'aliexpress' && data.aliexpress_spft) {
+                                value = Math.round(data.aliexpress_spft);
+                            }
 
 
                             if (value !== undefined) {
@@ -2543,6 +2597,9 @@
                                 value = Math.round(data.tiendamia_sroi);
                             } else if (r.prefix === 'tiktok' && data.tiktok_sroi) {
                                 value = Math.round(data.tiktok_sroi);
+                            }
+                            else if (r.prefix === 'aliexpress' && data.aliexpress_sroi) {
+                                value = Math.round(data.aliexpress_sroi);
                             }
 
 

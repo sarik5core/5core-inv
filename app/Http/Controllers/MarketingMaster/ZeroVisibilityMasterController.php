@@ -220,6 +220,8 @@ class ZeroVisibilityMasterController extends Controller
         $controllerMap = [
             'ebaythree' => 'Ebay3ZeroController',
             'ebaytwo'   => 'Ebay2ZeroController',
+            'tiktokshop' => 'TiktokShopZeroController',
+            'doba'      => 'DobaZeroController'
             // Add more mappings as needed
         ];
 

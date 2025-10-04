@@ -5,6 +5,9 @@ namespace App\Http\Controllers\PricingMaster;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UpdatePriceApiController;
+use App\Models\AliexpressDataView;
+use App\Models\AliexpressListingStatus;
+use App\Models\AliExpressSheetData;
 use App\Models\AmazonListingStatus;
 use App\Models\EbayListingStatus;
 use App\Models\EbayTwoListingStatus;
@@ -163,6 +166,7 @@ class PricingMasterViewsController extends Controller
         $dobaListingData = DobaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiendamiaListingData = TiendamiaListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiktokListingData = TiktokShopListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
+        $aliexpressListingData = AliexpressListingStatus::whereIn('sku', $skus)->get()->keyBy('sku');
 
 
 
@@ -183,10 +187,6 @@ class PricingMasterViewsController extends Controller
             ->whereIn('api.sku', $skus)
             ->get()
             ->keyBy('sku');
-
-
-            
-
 
 
         $dobaData = DB::connection('apicentral')
@@ -229,6 +229,8 @@ class PricingMasterViewsController extends Controller
         $bestbuyUsaDataView = BestbuyUSADataView::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiendamiaLookup = TiendamiaProduct::whereIn('sku', $skus)->get()->keyBy('sku');
         $tiendamiaDataView = TiendamiaDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $aliexpressDataView = AliexpressDataView::whereIn('sku', $skus)->get()->keyBy('sku');
+        $aliexpressLookup = AliExpressSheetData::whereIn('sku', $skus)->get()->keyBy('sku');
 
         // Fetch LMPA data from 5core_repricer database - get lowest price per SKU (excluding 0 prices)
         $lmpaLookup = collect();
@@ -303,6 +305,8 @@ class PricingMasterViewsController extends Controller
             $bestbuyUsa = $bestbuyUsaLookup[$sku] ?? null;
             $tiendamia = $tiendamiaLookup[$sku] ?? null;
             $tiktok = $tiktokLookup[$sku] ?? null;
+            $aliexpress = $aliexpressLookup[$sku] ?? null;
+
 
             // Get Shopify data for L30 and INV
             $shopifyItem = $shopifyData[trim(strtoupper($sku))] ?? null;
@@ -332,7 +336,8 @@ class PricingMasterViewsController extends Controller
                 ($macy ? ($macy->m_l30 ?? 0) : 0) +
                 ($bestbuyUsa ? ($bestbuyUsa->m_l30 ?? 0) : 0) +
                 ($tiendamia ? ($tiendamia->m_l30 ?? 0) : 0) +
-                ($doba ? ($doba->l30 ?? 0) : 0);
+                ($doba ? ($doba->l30 ?? 0) : 0) +
+                ($aliexpress ? ($aliexpress->aliexpress_l30 ?? 0) : 0);
 
 
             
@@ -350,7 +355,8 @@ class PricingMasterViewsController extends Controller
                 ($macy ? ($macy->m_l60 ?? 0) : 0) +
                 ($bestbuyUsa ? ($bestbuyUsa->m_l60 ?? 0) : 0) +
                 ($tiendamia ? ($tiendamia->m_l60 ?? 0) : 0) +
-                ($doba ? ($doba->l60 ?? 0) : 0);
+                ($doba ? ($doba->l60 ?? 0) : 0) +
+                ($aliexpress ? ($aliexpress->aliexpress_l60 ?? 0) : 0);
             
 
 
@@ -411,6 +417,9 @@ class PricingMasterViewsController extends Controller
                 $total_l30_count_data++;
             }
             if ($shein && ($shein->shopify_sheinl30 ?? 0) > 0) {
+                $total_l30_count_data++;
+            }
+            if ($aliexpress && ($aliexpress->aliexpress_l30 ?? 0) > 0) {
                 $total_l30_count_data++;
             }
 
@@ -637,19 +646,19 @@ class PricingMasterViewsController extends Controller
                 'tiktok_buyer_link' => isset($tiktokListingData[$sku]) ? ($tiktokListingData[$sku]->value['buyer_link'] ?? null) : null,
                 'tiktok_seller_link' => isset($tiktokListingData[$sku]) ? ($tiktokListingData[$sku]->value['seller_link'] ?? null) : null,
 
+                // AliExpress
+                'aliexpress_price' => $aliexpress ? ($aliexpress->price ?? 0) : 0,
+                'aliexpress_l30'   => $aliexpress ? ($aliexpress->aliexpress_l30 ?? 0) : 0,
+                'aliexpress_l60'   => $aliexpress ? ($aliexpress->aliexpress_l60 ?? 0) : 0,
+                'aliexpress_pft'   => $aliexpress && ($aliexpress->price ?? 0) > 0 ? (($aliexpress->price * 0.89 - $lp - $ship) / $aliexpress->price) : 0,
+                'aliexpress_roi'   => $aliexpress && $lp > 0 && ($aliexpress->price ?? 0) > 0 ? (($aliexpress->price * 0.89 - $lp - $ship) / $lp) : 0,
+                'aliexpress_buyer_link' => isset($aliexpressListingData[$sku]) ? ($aliexpressListingData[$sku]->value['buyer_link'] ?? null) : null,
+                'aliexpress_seller_link' => isset($aliexpressListingData[$sku]) ? ($aliexpressListingData[$sku]->value['seller_link'] ?? null) : null,
+
                 // Direct assignments for blade template
                 'views_clicks' => $shein ? ($shein->views_clicks ?? 0) : 0,
                 'lmp' => $shein ? ($shein->lmp ?? 0) : 0,
                 'shopify_sheinl30' => $shein ? ($shein->shopify_sheinl30 ?? 0) : 0,
-
-
-                // Total required views from all channels
-                // 'total_req_view' => (
-                //     ($ebay && $ebay->views  && $ebay->ebay_l30 ? (($inv / 30) * 30) / (($ebay->ebay_l30 / $ebay->views)) : 0) +
-                //     ($ebay2 && $ebay2->views  && $ebay2->ebay_l30 ? (($inv / 30) * 30) / (($ebay2->ebay_l30 / $ebay2->views)) : 0) +
-                //     ($ebay3 && $ebay3->views  && $ebay3->ebay_l30 ? (($inv / 30) * 30) / (($ebay3->ebay_l30 / $ebay3->views)) : 0) +
-                //     ($amazon && $amazon->sessions_l30  && $amazon->units_ordered_l30 ? (($inv / 30) * 30) / (($amazon->units_ordered_l30 / $amazon->sessions_l30)) : 0)
-                // ),
 
                 'total_req_view' => (
                     ($ebay && $ebay->views && $ebay->ebay_l30 ? ($inv * 20) : 0) +
@@ -805,6 +814,17 @@ class PricingMasterViewsController extends Controller
                 'tiktok_sroi' => isset($tiktokDataView[$sku]) ?
                     (is_array($tiktokDataView[$sku]->value) ?
                         ($tiktokDataView[$sku]->value['SROI'] ?? null) : (json_decode($tiktokDataView[$sku]->value, true)['SROI'] ?? null)) : null,
+
+
+
+                'aliexpress_sprice' => isset($aliexpressDataView[$sku]) ?
+                    (is_array($aliexpressDataView[$sku]->value) ?
+                        ($aliexpressDataView[$sku]->value['SPRICE'] ?? null) : (json_decode($aliexpressDataView[$sku]->value, true)['SPRICE'] ?? null)) : null,
+                'aliexpress_spft' => isset($aliexpressDataView[$sku]) ? (is_array($aliexpressDataView[$sku]->value) ?
+                    ($aliexpressDataView[$sku]->value['SPFT'] ?? null) : (json_decode($aliexpressDataView[$sku]->value, true)['SPFT'] ?? null)) : null,
+                'aliexpress_sroi' => isset($aliexpressDataView[$sku]) ?
+                    (is_array($aliexpressDataView[$sku]->value) ?
+                        ($aliexpressDataView[$sku]->value['SROI'] ?? null) : (json_decode($aliexpressDataView[$sku]->value, true)['SROI'] ?? null)) : null,
 
 
 
@@ -1236,7 +1256,8 @@ class PricingMasterViewsController extends Controller
                     'reverb' => 0.84,
                     'macy' => 0.76,
                     'walmart' => 0.80,
-                    'tiktok' => 0.64
+                    'tiktok' => 0.64,
+                    'aliexpress' => 0.89
                 ];
 
                 foreach ($marketplaces as $mp => $percent) {
@@ -1296,6 +1317,10 @@ class PricingMasterViewsController extends Controller
                             $tiktokSheet->price = $sprice;
                             $tiktokSheet->save();
                             continue 2; // Skip the rest of the processing for TikTok
+                        case 'aliexpress':
+                            $dataView = AliexpressDataView::firstOrNew(['sku' => $sku]);
+                            $existing = is_array($dataView->value) ? $dataView->value : (json_decode($dataView->value, true) ?: []);
+                            break;
                     }
 
                     $existing['SPRICE'] = number_format($sprice, 2, '.', '');
@@ -1323,6 +1348,22 @@ class PricingMasterViewsController extends Controller
                     $product->Values = json_encode($values);
                     $product->save();
                 }
+                break;
+
+            case 'aliexpress':
+                // AliExpress logic
+                $aliexpressDataView = AliexpressDataView::firstOrNew(['sku' => $sku]);
+                $existing = is_array($aliexpressDataView->value) ? $aliexpressDataView->value : (json_decode($aliexpressDataView->value, true) ?: []);
+
+                $spft = $sprice > 0 ? round(((($sprice * 0.89) - $lp - $ship) / $sprice) * 100, 2) : 0;
+                $sroi = $lp > 0 ? ((($sprice * 0.89) - $lp - $ship) / $lp) * 100 : 0;
+
+                $existing['SPRICE'] = number_format($sprice, 2, '.', '');
+                $existing['SPFT'] = number_format($spft, 2, '.', '');
+                $existing['SROI'] = number_format($sroi, 2, '.', '');
+
+                $aliexpressDataView->value = $existing;
+                $aliexpressDataView->save();
                 break;
 
             default:
