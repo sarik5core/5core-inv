@@ -18,6 +18,9 @@ class TiktokSheet extends Model
         'l30',
         'l60',
         'views',
+        'shopify_tiktok_price',
+        'shopify_tiktokl30',
+        'shopify_tiktokl60'
     ];
 
 }
