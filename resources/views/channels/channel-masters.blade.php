@@ -1773,6 +1773,7 @@
                                     'bestbuy usa': '/bestbuyusa-analytics',
                                     'shein': '/sheinAnalysis',
                                     'tiktok shop': '/tiktokAnalysis',
+                                    'aliexpress': '/aliexpressAnalysis',
                                 };
 
                                 const routeUrl = routeMap[channelName];
