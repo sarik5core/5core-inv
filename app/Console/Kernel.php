@@ -172,6 +172,15 @@ class Kernel extends ConsoleKernel
         $schedule->command('sync:walmart-metrics-data')->everyMinute();
         $schedule->command('sync:tiktok-sheet-data')->everyMinute();
         $schedule->command('app:aliexpress-sheet-sync')->everyMinute();
+          $schedule->call(function () {
+            DB::connection('apicentral')
+                ->table('google_ads_campaigns')
+                ->where('id', 1)
+                ->update(['sbid_status' => 0]);
+        })->dailyAt('00:00');
+        $schedule->command('sbid:update')
+            ->dailyAt('00:01') 
+            ->timezone('Asia/Kolkata');
     }
 
     /**
