@@ -221,7 +221,9 @@ class ZeroVisibilityMasterController extends Controller
             'ebaythree' => 'Ebay3ZeroController',
             'ebaytwo'   => 'Ebay2ZeroController',
             'tiktokshop' => 'TiktokShopZeroController',
-            'doba'      => 'DobaZeroController'
+            'doba'      => 'DobaZeroController',
+            'walmart'      => 'WalmartZeroController',
+            'shein'      => 'SheinZeroController',
             // Add more mappings as needed
         ];
 
