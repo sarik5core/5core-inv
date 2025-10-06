@@ -185,8 +185,6 @@ class AmazonAdRunningController extends Controller
                 $row['hl_spend_L30'] = 0;
                 $row['hl_spend_L7']  = 0;
             }
-
-            Log::info("Parent: {$parent}, SKU: {$sku}, HL Spend L30: {$row['hl_spend_L30']}, HL Spend L7: {$row['hl_spend_L7']}");
             
             $childCount = $parentSkuCounts[$parent] ?? 0;
             $childCount = max($childCount, 1);
