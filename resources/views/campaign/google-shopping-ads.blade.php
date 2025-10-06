@@ -194,7 +194,6 @@
                                         <option value="">All Status</option>
                                         <option value="ENABLED">Enabled</option>
                                         <option value="PAUSED">Paused</option>
-                                        <option value="ARCHIVED">Archived</option>
                                     </select>
                                 </div>
                             </div>
@@ -431,6 +430,10 @@
                             }
                         }
                     },
+                    {
+                        title: "AD STATUS",
+                        field: "status",
+                    }
                 ],
                 ajaxResponse: function(url, params, response) {
                     return response.data;
