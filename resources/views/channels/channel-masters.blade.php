@@ -1772,7 +1772,8 @@
                                     'walmart': '/walmartAnalysis',
                                     'bestbuy usa': '/bestbuyusa-analytics',
                                     'shein': '/sheinAnalysis',
-                                    'tiktokshop': '/tiktokAnalysis',
+                                    'tiktok shop': '/tiktokAnalysis',
+                                    'aliexpress': '/aliexpressAnalysis',
                                 };
 
                                 const routeUrl = routeMap[channelName];

@@ -1107,7 +1107,7 @@ class ApiController extends Controller
     }
 
 
-    // Fetch data from Newegg B2C master Apps Script
+    // Fetch data from Faire master Apps Script
     public function fetchDataFromFairMasterGoogleSheet()
     {
         // URL of the Google Apps Script web app
@@ -1153,10 +1153,6 @@ class ApiController extends Controller
             ], 500);
         }
     }
-
-
-
-
 
     // Fetch data from Ebay Apps Script
     public function fetchDobaListingData()
