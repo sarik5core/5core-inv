@@ -26,7 +26,7 @@ class SyncWayfairSheet extends Command
      *
      * @var string
      */
-    protected $description = 'Sync Wayfair Product Sheet';
+    protected $description = 'Sync Wayfair Product Sheet'; 
 
     /**
      * Execute the console command.
