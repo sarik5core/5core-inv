@@ -58,6 +58,8 @@ use App\Models\FaireProductSheet;
 use App\Models\InstagramShopSheetdata;
 use App\Models\MacyProduct;
 use App\Models\MarketplacePercentage;
+use App\Models\MercariWoShipSheetdata;
+use App\Models\MercariWShipSheetdata;
 use App\Models\PLSProduct;
 use App\Models\ProductMaster;
 use App\Models\ReverbProduct;
@@ -140,6 +142,7 @@ class ChannelMasterController extends Controller
             'instagramshop' => 'getInstagramChannelData',
             'aliexpress' => 'getAliexpressChannelData',
             'mercariwship' => 'getMercariWShipChannelData',
+            'mercariwoship' => 'getMercariWoShipChannelData',
             // 'walmart' => 'getWalmartChannelData',
             // 'shopify' => 'getShopifyChannelData',
         ];
@@ -2309,7 +2312,7 @@ class ChannelMasterController extends Controller
     {
         $result = [];
 
-        $query = TiktokSheet::where('sku', 'not like', '%Parent%');
+        $query = MercariWShipSheetdata::where('sku', 'not like', '%Parent%');
 
         $l30Orders = $query->sum('l30');
         $l60Orders = $query->sum('l60');
@@ -2400,6 +2403,123 @@ class ChannelMasterController extends Controller
 
         $result[] = [
             'Channel '   => 'Mercari w ship',
+            'L-60 Sales' => intval($l60Sales),
+            'L30 Sales'  => intval($l30Sales),
+            'Growth'     => round($growth, 2) . '%',
+            'L60 Orders' => $l60Orders,
+            'L30 Orders' => $l30Orders,
+            'Gprofit%'   => round($gProfitPct, 2) . '%',
+            'gprofitL60' => round($gprofitL60, 2) . '%',
+            'G Roi'      => round($gRoi, 2),
+            'G RoiL60'   => round($gRoiL60, 2),
+            'type'       => $channelData->type ?? '',
+            'W/Ads'      => $channelData->w_ads ?? 0,
+            'NR'         => $channelData->nr ?? 0,
+            'Update'     => $channelData->update ?? 0,
+        ];
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'wayfair channel data fetched successfully',
+            'data' => $result,
+        ]);
+    }
+
+    public function getMercariWoShipChannelData(Request $request)
+    {
+        $result = [];
+
+        $query = MercariWoShipSheetdata::where('sku', 'not like', '%Parent%');
+
+        $l30Orders = $query->sum('l30');
+        $l60Orders = $query->sum('l60');
+
+        $l30Sales  = (clone $query)->selectRaw('SUM(l30 * price) as total')->value('total') ?? 0;
+        $l60Sales  = (clone $query)->selectRaw('SUM(l60 * price) as total')->value('total') ?? 0;
+
+        $growth = $l30Sales > 0 ? (($l30Sales - $l60Sales) / $l30Sales) * 100 : 0;
+
+        // Get eBay marketing percentage
+        $percentage = ChannelMaster::where('channel', 'Mercari wo ship')->value('channel_percentage') ?? 100;
+        $percentage = $percentage / 100; // convert % to fraction
+
+        // Load product masters (lp, ship) keyed by SKU
+        $productMasters = ProductMaster::all()->keyBy(function ($item) {
+            return strtoupper($item->sku);
+        });
+
+        // Calculate total profit
+        $ebayRows     = $query->get(['sku', 'price', 'l30','l60']);
+        $totalProfit  = 0;
+        $totalProfitL60  = 0;
+        $totalCogs       = 0;
+        $totalCogsL60    = 0;
+
+
+        foreach ($ebayRows as $row) {
+            $sku       = strtoupper($row->sku);
+            $price     = (float) $row->price;
+            $unitsL30  = (int) $row->l30;
+            $unitsL60  = (int) $row->l60;
+
+            $soldAmount = $unitsL30 * $price;
+            if ($soldAmount <= 0) {
+                continue;
+            }
+
+            $lp   = 0;
+            $ship = 0;
+
+            if (isset($productMasters[$sku])) {
+                $pm = $productMasters[$sku];
+
+                $values = is_array($pm->Values) ? $pm->Values :
+                        (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+                $lp   = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
+                $ship = isset($values['ship']) ? (float) $values['ship'] : ($pm->ship ?? 0);
+            }
+
+            // Profit per unit
+            $profitPerUnit = ($price * $percentage) - $lp - $ship;
+            $profitTotal   = $profitPerUnit * $unitsL30;
+            $profitTotalL60   = $profitPerUnit * $unitsL60;
+
+            $totalProfit += $profitTotal;
+            $totalProfitL60 += $profitTotalL60;
+
+            $totalCogs    += ($unitsL30 * $lp);
+            $totalCogsL60 += ($unitsL60 * $lp);
+        }
+
+        // --- FIX: Calculate total LP only for SKUs in eBayMetrics ---
+        $ebaySkus   = $ebayRows->pluck('sku')->map(fn($s) => strtoupper($s))->toArray();
+        $ebayPMs    = ProductMaster::whereIn('sku', $ebaySkus)->get();
+
+        $totalLpValue = 0;
+        foreach ($ebayPMs as $pm) {
+            $values = is_array($pm->Values) ? $pm->Values :
+                    (is_string($pm->Values) ? json_decode($pm->Values, true) : []);
+
+            $lp = isset($values['lp']) ? (float) $values['lp'] : ($pm->lp ?? 0);
+            $totalLpValue += $lp;
+        }
+
+        // Use L30 Sales for denominator
+        $gProfitPct = $l30Sales > 0 ? ($totalProfit / $l30Sales) * 100 : 0;
+        $gprofitL60 = $l60Sales > 0 ? ($totalProfitL60 / $l60Sales) * 100 : 0;
+
+        // $gRoi       = $totalLpValue > 0 ? ($totalProfit / $totalLpValue) : 0;
+        // $gRoiL60    = $totalLpValue > 0 ? ($totalProfitL60 / $totalLpValue) : 0;
+
+        $gRoi    = $totalCogs > 0 ? ($totalProfit / $totalCogs) * 100 : 0;
+        $gRoiL60 = $totalCogsL60 > 0 ? ($totalProfitL60 / $totalCogsL60) * 100 : 0;
+
+        // Channel data
+        $channelData = ChannelMaster::where('channel', 'Mercari wo ship')->first();
+
+        $result[] = [
+            'Channel '   => 'Mercari wo ship',
             'L-60 Sales' => intval($l60Sales),
             'L30 Sales'  => intval($l30Sales),
             'Growth'     => round($growth, 2) . '%',
