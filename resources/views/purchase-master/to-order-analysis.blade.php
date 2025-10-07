@@ -767,7 +767,6 @@
 
                     if (!result.success) {
                         console.error('Update failed:', result.message);
-                        toastr.error(result.message || 'Update failed');
                         return;
                     }
 
@@ -777,7 +776,6 @@
                             const targetRow = table.searchRows("SKU", "=", sku)[0];
                             if (targetRow) {
                                 targetRow.delete();
-                                toastr.success('Row removed successfully');
                             }
                         }
                     }
@@ -813,7 +811,6 @@
 
                 } catch (error) {
                     console.error('Network error:', error);
-                    toastr.error('Failed to update. Please check your connection.');
                 }
             });
 

@@ -109,9 +109,9 @@ class ForecastAnalysisController extends Controller
 
             if ($forecastMap->has($sheetSku)) {
                 $forecast = $forecastMap->get($sheetSku);
-                $item->{'s-msl'} = $forecast->s_msl ?? '';
-                $item->{'Approved QTY'} = $forecast->approved_qty ?? '';
-                $item->order_given = $forecast->order_given ?? '';
+                $item->{'s-msl'} = $forecast->s_msl ?? 0;
+                $item->{'Approved QTY'} = $forecast->approved_qty ?? 0;
+                $item->order_given = $forecast->order_given ?? 0;
                 $item->transit = $forecast->transit ?? '';
                 $item->nr = $forecast->nr ?? '';
                 $item->req = $forecast->req ?? '';
@@ -203,7 +203,7 @@ class ForecastAnalysisController extends Controller
             'Olink' => 'olink',
             'rfq_form_link' => 'rfq_form_link',
             'rfq_report' => 'rfq_report',
-            'ORDER given' => 'order_given',
+            'order_given' => 'order_given',
             'Transit' => 'transit',
             'Date of Appr' => 'date_apprvl',
         ];
