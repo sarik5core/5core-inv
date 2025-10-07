@@ -102,7 +102,7 @@ class PricingMasterViewsController extends Controller
 
         $processedData = $this->processPricingData();
 
-        return view('pricing-master.inventory_by_sales_value', [
+        return view('pricing-master.inv_by_sales', [
             'mode' => $mode,
             'demo' => $demo,
             'records' => $processedData, // processed data table ke liye
@@ -849,6 +849,12 @@ class PricingMasterViewsController extends Controller
             $item->shopifyb2c_pft = $item->shopifyb2c_price > 0 ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $item->shopifyb2c_price) : 0;
             $item->shopifyb2c_roi = ($lp > 0 && $item->shopifyb2c_price > 0) ? (($item->shopifyb2c_price * 0.75 - $lp - $ship) / $lp) : 0;
 
+            // Add inv_value and COGS calculations
+            // inv_value = INV × shopifyb2c_price (total inventory worth at selling price)
+            $item->inv_value = $inv * $item->shopifyb2c_price;
+            
+            // COGS = LP × INV (cost of goods sold - total cost of current inventory)
+            $item->COGS = $lp * $inv;
 
             // Add analysis action buttons
             $item->l30_analysis = '<button class="btn btn-sm btn-info" onclick="showL30Modal(this)" data-sku="' . $item->SKU . '">L30</button>';
